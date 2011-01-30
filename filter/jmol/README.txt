@@ -1,5 +1,6 @@
 This is a very simple filter taking advantage of the excellent open-source 
-"Jmol" molecular visualisation project (http://jmol.sourceforge.net). The filter includes some some basic controls and a help file.
+"Jmol" molecular visualisation project (http://jmol.sourceforge.net). 
+The filter includes some some basic controls and help files.
 
 TO INSTALL:
 
