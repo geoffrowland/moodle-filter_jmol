@@ -6,7 +6,7 @@ TO INSTALL:
 1. Unpack the .zip or .tar.gz download.
 2. Rename the unpacked file jmol. 
 It should contain directly contain a jmolappet and lang folder/directory and additional files including filter.php
-3. Add the jmol folder inside the /filter folder of your Moodle 2.0.x installation i.e. alongside the folders for other filters
+3. Copythis jmol folder (and all its contents) to the inside of the /filter folder of your Moodle 2.0.x installation i.e. alongside the folders for other filters
 Remember to activate the filter in Moodle's filter admin screen. 
 Depending on settings, you may need to activate this filter in individual Moodle courses.
 
