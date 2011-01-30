@@ -50,7 +50,7 @@ function filter($text, array $options = array()){
     }
 
 
-    $search = '/<a\\b([^>]*?)href=\"((?:\.|\\\|https?:\/\/'.$_SERVER["HTTP_HOST"].')[^\"]+\.(mol|pdb\.gz|pdb|csmol|xyz|cml))\??(.*?)\"([^>]*)>(.*?)<\/a>(\s*JMOLSCRIPT\{(.*?)\})?/is';
+    $search = '/<a\\b([^>]*?)href=\"((?:\.|\\\|https?:\/\/'.$_SERVER["HTTP_HOST"].')[^\"]+\.(cif|mol|mol2|pdb\.gz|pdb|csmol|xyz|cml))\??(.*?)\"([^>]*)>(.*?)<\/a>(\s*JMOLSCRIPT\{(.*?)\})?/is';
 
 
     $callbackfunction = '    
