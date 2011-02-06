@@ -89,8 +89,8 @@ function jmol_filter($courseid, $text) {
                   jmolCheckbox("set unitcell 4;color unitcell goldenrod", "set unitcell off", "'.$unitcell.'");
                   jmolHtml(" ");
                   jmolCheckbox("spin on", "spin off", "'.$spin.'");
-                  jmolHtml(" ");
-                  jmolCheckbox("set antialiasDisplay on", "set antialiasDisplay off", "'.$antialias.'");
+                  // jmolHtml(" ");
+                  // jmolCheckbox("set antialiasDisplay on", "set antialiasDisplay off", "'.$antialias.'");
                   jmolHtml(" ");
                   </script><a href="\'.$matches[2].\'" title="Download the .\'.$matches[3].\' structure data file"><img align="absmiddle" height="17" width="17" src="'.$u.'/filter/jmol/download.gif" /></a> <a target="popup" href = "'.$u.'/help.php?module=jmol&amp;file=jmol.html" onclick = "return openpopup(\\\'/help.php?module=jmol&amp;file=jmol.html\\\', \\\'popup\\\', \\\'menubar=0,location=0,scrollbars,resizeable,width=515,height=515\\\', 0);" title="'.$helpwithjmol.'"><img align="absmiddle" height="17" width="17" src="'.$u.'/pix/help.gif" /></a>\';
                  break;
@@ -106,8 +106,8 @@ function jmol_filter($courseid, $text) {
                   ]);
                   jmolHtml(" ");
                   jmolCheckbox("spin on", "spin off", "'.$spin.'");
-                  jmolHtml(" ");
-                  jmolCheckbox("set antialiasDisplay on", "set antialiasDisplay off", "'.$antialias.'");
+                  // jmolHtml(" ");
+                  // jmolCheckbox("set antialiasDisplay on", "set antialiasDisplay off", "'.$antialias.'");
                   jmolHtml(" ");
                   </script><a href="\'.$matches[2].\'" title="Download the .\'.$matches[3].\' structure data file"><img align="absmiddle" height="17" width="17" src="'.$u.'/filter/jmol/download.gif" /></a> <a target="popup" href = "'.$u.'/help.php?module=jmol&amp;file=jmol.html" onclick = "return openpopup(\\\'/help.php?module=jmol&amp;file=jmol.html\\\', \\\'popup\\\', \\\'menubar=0,location=0,scrollbars,resizeable,width=515,height=515\\\', 0);" title="'.$helpwithjmol.'"><img align="absmiddle" height="17" width="17" src="'.$u.'/pix/help.gif" /></a>\';
                  break;
@@ -121,8 +121,8 @@ function jmol_filter($courseid, $text) {
                   ]);
                   jmolHtml(" ");
                   jmolCheckbox("spin on", "spin off", "'.$spin.'");
-                  jmolHtml(" ");
-                  jmolCheckbox("set antialiasDisplay on", "set antialiasDisplay off", "'.$antialias.'");
+                  // jmolHtml(" ");
+                  // jmolCheckbox("set antialiasDisplay on", "set antialiasDisplay off", "'.$antialias.'");
                   jmolHtml(" ");
                   </script><a href="\'.$matches[2].\'" title="Download the .\'.$matches[3].\' structure data file"><img align="absmiddle" height="17" width="17" src="'.$u.'/filter/jmol/download.gif" /></a> <a target="popup" href = "'.$u.'/help.php?module=jmol&amp;file=jmol.html" onclick = "return openpopup(\\\'/help.php?module=jmol&amp;file=jmol.html\\\', \\\'popup\\\', \\\'menubar=0,location=0,scrollbars,resizeable,width=515,height=515\\\', 0);" title="'.$helpwithjmol.'"><img align="absmiddle" height="17" width="17" src="'.$u.'/pix/help.gif" /></a>\';
                } // End of switch
@@ -133,7 +133,9 @@ function jmol_filter($courseid, $text) {
                $initscript = "";
              }
              return "<script type=\\"text/javascript\\">
-                  jmolApplet($size, \\"load $matches[2]; $initscript\\");
+             // set antialiasDisplay true - gives much nicer graphics at the cost of increased processing load
+             // set antialiasDisplay false - if end-users have low performance systems
+                  jmolApplet($size, \\"load $matches[2]; set antialiasDisplay true; $initscript\\");
                   " . $controls . "";
              //return "Parameters:<dl><dt>url:</dt><dd>".htmlspecialchars($matches[2])."</dd><dt>opts:</dt><dd>".htmlspecialchars($matches[4])."</dd><dt>Size:</dt><dd>$size</dd><dt>Controls:</dt><dd>$controls</dd></dl>";
              ';
