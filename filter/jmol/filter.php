@@ -3,7 +3,7 @@
 //  jmol plugin filtering for viewing molecules online
 // 
 //  This filter will replace any links to a .MOL, .CSMOL, .PDB, 
-//  .XYZ, .CML file 
+//  .XYZ, .CML, .CIF, .MOL2 file 
 //  with the Javascript needed to display the molecular structure inline
 //
 //  To activate this filter, go to admin and enable 'jmol'.
@@ -60,7 +60,7 @@ function jmol_filter($courseid, $text) {
       $relurl = str_repeat('../', $numdirs) . $relurl;
     }
 
-    $search = '/<a\\b([^>]*?)href=\"((?:\.|\\\|https?:\/\/'.$_SERVER["HTTP_HOST"].')[^\"]+\.(mol|pdb\.gz|pdb|csmol|xyz|cml))\??(.*?)\"([^>]*)>(.*?)<\/a>(\s*JMOLSCRIPT\{(.*?)\})?/is';
+    $search = '/<a\\b([^>]*?)href=\"((?:\.|\\\|https?:\/\/'.$_SERVER["HTTP_HOST"].')[^\"]+\.(cif|mol|mol2|pdb\.gz|pdb|csmol|xyz|cml))\??(.*?)\"([^>]*)>(.*?)<\/a>(\s*JMOLSCRIPT\{(.*?)\})?/is';
 
 
     $callbackfunction = '    
