@@ -2,9 +2,52 @@
 # NOTE: Generally only bug fixes should be entered here. 
 # NOTE: New features should be introduced in the trunk version 12.1.x
 
-version=12.0.28
+version=12.0.30
 
+# bug fix: scriptLevelMax 20 too small -- changed to 100
+# bug fix: for/while local variables improperly localized in iterative functions
+# bug fix: 12.0.29 should not have changed <string> + <array> to be <array> 
+# --------------------------------------------------------------
+
+#version=12.0.29
+
+# new feature: <array1> | x (for consistency with 12.1)
+#   -- IN PLACE concatenation
+#   -- array1 will be appended to
+#   -- if x is an array of length n, then n  elements will be added
+#   -- works as    a |= b
+#   -- to append a full array as one element, use   a |= [x]
+#   -- to append with creating a NEW array, use a + x or a + [x] instead
+
+# bug fix: a = {} initialized as bitset, not associative array
+# bug fix: <bitset> | <integer> should set bit <integer>
+# bug fix: <bitset> | <array> should set bits indicated in <array>
+# bug fix: <bitset> & <integer> should return true if bit <integer> is set
+# bug fix: <bitset> % n when n < 0 should do "last n + 1"
+# bug fix: <array> | [a,b,c] should append elements to array -- IN PLACE
+# bug fix: animation incompatible with spin for largish structures
+# bug fix: _modelFile variable incorrect for file read from zip file
+# bug fix: drag/drop file typer null pointer error when not recognized
+# bug fix: If a script such as "test.spt" creates a function 
+#          test(), then the next implicit script command "test.spt" will fail
+# bug fix: implicit script command Test.spt loses case of filename
+# bug fix: array appending appends string values
+# bug fix: array appending of strings should not split them by line  
+# bug fix: frame 0.0 does NOT enable all frames; breaks "quaternion" command
 # bug fix: isosurface fragment fix
+# bug fix: cartesian exporter capping cylinders flat and spherical both
+# bug fix: Jmol logo was missing from the Help>What's New window.
+# bug fix (improvement): the Help>User Guide window was too narrow.
+
+# code: isosurface/color mapping upgraded to 12.1 level
+# code: ScriptVariable simplified
+#   -- ScriptVariable[]objects --> (ArrayList<ScriptVariable>)value
+# code: Vector --> List/ArrayList
+
+# --------------------------------------------------------------
+
+#version=12.0.28
+
 # bug fix: Jmol 12.0.23+ does not allow load xxx.xxx 1  (single-model load) 
 # bug fix: Jmol 11.9.24+ will read states created by prior versions incorrectly
 #   -- fixed by adding "legacyAutoBonding" setting

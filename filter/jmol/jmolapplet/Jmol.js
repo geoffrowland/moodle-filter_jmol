@@ -1,4 +1,4 @@
-/* Jmol 12.0 script library Jmol.js 9:48 PM 4/5/2010 Bob Hanson
+/* Jmol 12.0 script library Jmol.js 9:48 PM 1/31/2011 Bob Hanson
 
  checkbox heirarchy -- see http://chemapps.stolaf.edu/jmol/docs/examples-11/check.htm
 
@@ -79,6 +79,8 @@ try{if(typeof(_jmol)!="undefined")exit()
 //               function myfunc(jmolControlObject, [myfunc,"my param 1", "my param 2"], target){...}
 //               and allows much more flexibility with responding to controls
 // bh 4/2010  -- added jmolSetMemoryMb(nMb)
+// ah 1/2011  -- wider detection of browsers; more browsers now use the object tag instead of the applet tag; 
+//               fix of object tag (removed classid) accounts for change of behavior in Chrome
 
 var defaultdir = "."
 var defaultjar = "JmolApplet.jar"
@@ -585,21 +587,20 @@ var _jmol = {
 	boxmessage: "Downloading JmolApplet ..."
   },
   ua: navigator.userAgent.toLowerCase(),
-  uaVersion: parseFloat(navigator.appVersion),
+  // uaVersion: parseFloat(navigator.appVersion),  // not used
   
   os: "unknown",
   browser: "unknown",
   browserVersion: 0,
   hasGetElementById: !!document.getElementById,
   isJavaEnabled: navigator.javaEnabled(),
-  isNetscape47Win: false,
-  isIEWin: false,
+  // isNetscape47Win: false,  // not used, N4.7 is no longer supported even for detection
   useIEObject: false,
   useHtml4Object: false,
   
   windowsClassId: "clsid:8AD9C840-044E-11D1-B3E9-00805F499D93",
   windowsCabUrl:
-   "http://java.sun.com/update/1.5.0/jinstall-1_5_0_05-windows-i586.cab",
+   "http://java.sun.com/update/1.6.0/jinstall-6u22-windows-i586.cab",
 
   isBrowserCompliant: false,
   isJavaCompliant: false,
@@ -641,21 +642,23 @@ with (_jmol) {
   }
   
   _jmolTestUA("konqueror") ||
-  _jmolTestUA("safari") ||
+  _jmolTestUA("webkit") ||
   _jmolTestUA("omniweb") ||
   _jmolTestUA("opera") ||
   _jmolTestUA("webtv") ||
   _jmolTestUA("icab") ||
   _jmolTestUA("msie") ||
-  (_jmol.ua.indexOf("compatible") < 0 && _jmolTestUA("mozilla"));
+  (_jmol.ua.indexOf("compatible") < 0 && _jmolTestUA("mozilla")); //Netscape, Mozilla, Seamonkey, Firefox and anything assimilated
   
   _jmolTestOS("linux") ||
   _jmolTestOS("unix") ||
   _jmolTestOS("mac") ||
   _jmolTestOS("win");
 
-  isNetscape47Win = (os == "win" && browser == "mozilla" &&
+  /* not used:
+	isNetscape47Win = (os == "win" && browser == "mozilla" &&
                      browserVersion >= 4.78 && browserVersion <= 4.8);
+	*/
 
   if (os == "win") {
     isBrowserCompliant = hasGetElementById;
@@ -673,7 +676,7 @@ with (_jmol) {
     } else {
       isBrowserCompliant = hasGetElementById &&
         !((browser == "msie") ||
-          (browser == "safari" && browserVersion < 125.12));
+          (browser == "webkit" && browserVersion < 125.12));
     }
   } else if (os == "linux" || os == "unix") {
     if (browser == "konqueror" && browserVersion <= 3.3)
@@ -689,13 +692,11 @@ with (_jmol) {
 
   isFullyCompliant = isBrowserCompliant && isJavaCompliant;
 
-  // IE5.5 works just fine ... but let's push them to Sun Java
-  isIEWin = (os == "win" && browser == "msie" && browserVersion >= 5.5);
-  useIEObject = isIEWin;
+  useIEObject = (os == "win" && browser == "msie" && browserVersion >= 5.5);
   useHtml4Object =
-   (os != "mac" && browser == "mozilla" && browserVersion >= 5) ||
-   (os == "win" && browser == "opera" && browserVersion >= 8) ||
-   (os == "mac" && browser == "safari" && browserVersion >= 412.2);
+   (browser == "mozilla" && browserVersion >= 5) ||
+   (browser == "opera" && browserVersion >= 8) ||
+   (browser == "webkit" && browserVersion >= 412.2);
  try {
   if (top.location.search.indexOf("JMOLJAR=")>=0)
     jmoljar = top.location.search.split("JMOLJAR=")[1].split("&")[0];
@@ -777,42 +778,42 @@ function _jmolApplet(size, inlineModel, script, nameSuffix) {
     var tHeader, tFooter;
     codebase || jmolInitialize(".");
     if (useIEObject || useHtml4Object) {
-      params.name = 'jmolApplet' + nameSuffix;
       params.archive = archivePath;
       params.mayscript = 'true';
       params.codebase = codebase;
-    }
-    if (java_arguments)
-      params.java_arguments = java_arguments;
-    if (useIEObject) { // use MSFT IE6 object tag with .cab file reference
-      winCodebase = (windowsCabUrl ? " codebase='" + windowsCabUrl + "'\n" : "");
       params.code = 'JmolApplet';
       tHeader = 
         "<object name='jmolApplet" + nameSuffix +
         "' id='jmolApplet" + nameSuffix + "' " + appletCssText + "\n" +
-	" classid='" + windowsClassId + "'\n" + winCodebase + widthAndHeight + ">\n";
+				widthAndHeight + "\n";
       tFooter = "</object>";
+    }
+    if (java_arguments)
+      params.java_arguments = java_arguments;
+    if (useIEObject) { // use MSFT IE6 object tag with .cab file reference
+      tHeader += " classid='" + windowsClassId + "'\n" +
+      (windowsCabUrl ? " codebase='" + windowsCabUrl + "'\n" : "") + ">\n";
     } else if (useHtml4Object) { // use HTML4 object tag
-      tHeader = 
-        "<object name='jmolApplet" + nameSuffix +
-        "' id='jmolApplet" + nameSuffix + "' " + appletCssText + "\n" +
-	" classid='java:JmolApplet'\n" +
-        " type='application/x-java-applet'\n" +
-        widthAndHeight + ">\n";
-      tFooter = "</object>";
+      tHeader += " type='application/x-java-applet'\n>\n";
+				/*	" classid='java:JmolApplet'\n" +	AH removed this
+				  Chromium Issue 62076: 	Java Applets using an <object> with a classid paramater don't load.
+					http://code.google.com/p/chromium/issues/detail?id=62076
+					They say this is the correct behavior according to the spec, and there's no indication at this point 
+					that WebKit will be changing the handling, so eventually Safari will acquire this behavior too.
+					Removing the classid parameter seems to be well tolerated by all browsers (even IE!).
+				*/
     } else { // use applet tag
       tHeader = 
         "<applet name='jmolApplet" + nameSuffix +
-        "' id='jmolApplet" + nameSuffix +
-        "' " + appletCssText +
+        "' id='jmolApplet" + nameSuffix + "' " + appletCssText + "\n" +
+				widthAndHeight + "\n" +
         " code='JmolApplet'" +
         " archive='" + archivePath + "' codebase='" + codebase + "'\n" +
-		widthAndHeight +
         " mayscript='true'>\n";
       tFooter = "</applet>";
     }
     var visitJava;
-    if (isIEWin || useHtml4Object) {
+    if (useIEObject || useHtml4Object) {
 		var szX = "width:" + sz[0]
 		if ( szX.indexOf("%")==-1 ) szX+="px" 
 		var szY = "height:" + sz[1]
@@ -1077,8 +1078,7 @@ function _jmolSearchFrames(win, target) {
 
 function _jmolFindAppletInWindow(win, target) {
     var doc = win.document;
-    // getElementById fails on MacOSX Safari & Mozilla	
-    if (_jmol.useHtml4Object || _jmol.useIEObject)
+		if (doc.getElementById(target))
       return doc.getElementById(target);
     else if (doc.applets)
       return doc.applets[target];
