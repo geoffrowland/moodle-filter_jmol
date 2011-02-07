@@ -3,7 +3,7 @@
 //  jmol plugin filtering for viewing molecules online
 // 
 //  This filter will replace any links to a .MOL, .CSMOL, .PDB, 
-//  .XYZ, .CML file 
+//  .PDB.GZ .XYZ, .CML, .MOL2, .CIF file 
 //  with the Javascript needed to display the molecular structure inline
 //
 //  To activate this filter, go to admin and enable 'jmol'.
@@ -11,7 +11,7 @@
 //  Jmol is designed only to display files held on your own server -
 //  remember that!
 //
-//  Filter written by Dan Stowell and Geoffrey Rowland.
+//  Filter written by Dan Stowell and updated by Geoffrey Rowland.
 //
 ////////////////////////////////////////////////////////////////////////
 
