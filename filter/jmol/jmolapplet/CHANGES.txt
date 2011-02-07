@@ -2,11 +2,26 @@
 # NOTE: Generally only bug fixes should be entered here. 
 # NOTE: New features should be introduced in the trunk version 12.1.x
 
-version=12.0.30
+version=12.0.31
+
+# bug fix: {xxx}.element = "B" does not work
+# bug fix: JavaScript getPropertyAsArray("auxiliaryInfo.models") will fail for crystal structures 
+# bug fix: undocumented select within(hkl,...) and select within(plane,...) missing
+# bug fix: message @x   should replace x with a variable; "message @x is the value of x" should not
+# bug fix: older syntax MESSAGE %{x} for variable value missing
+# bug fix: variable pointers such as @x = 3 and y = 3 + @x not working 
+# bug fix: AMBER CYX not recognized in @cystine definition
+# bug fix: MD topology/coord file loading problems; general trajectory problems
+# bug fix: drag/drop CUBE files should use isosurface sign red blue $FILENAME$
+
+# --------------------------------------------------------------
+
+#version=12.0.30
 
 # bug fix: scriptLevelMax 20 too small -- changed to 100
 # bug fix: for/while local variables improperly localized in iterative functions
 # bug fix: 12.0.29 should not have changed <string> + <array> to be <array> 
+
 # --------------------------------------------------------------
 
 #version=12.0.29
