@@ -140,7 +140,7 @@ function filter($text, array $options = array()){
 The 3D viewer uses JavaScript to create the Java viewing window. If you are unable 
 to make use of this technology, you can use the "download" link to download the 
 file. If you are still unable to make use of the information, contact your 
-' . get_string('teacher') . '.
+' . get_string('defaultcourseteacher') . '.
 </noscript>
 '
              . $newtext;
