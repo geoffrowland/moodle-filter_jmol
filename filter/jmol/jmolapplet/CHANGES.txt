@@ -2,7 +2,17 @@
 # NOTE: Generally only bug fixes should be entered here. 
 # NOTE: New features should be introduced in the trunk version 12.1.x
 
-version=12.0.31
+version=12.0.32
+
+# bug fix: SMILES generator error for cationic aromatic nitrogen
+# bug fix: application with file name does not run jmolscript: embedded scripts
+# bug fix: isosurface x.xx should default to "isosurface CUTOFF x.xx" for legacy compatibility
+# bug fix: {xxx}.label = "xxx" does not allow saving state
+# bug fix: {xxx}.element = "B" only assigns "B" to first atom in set
+
+# --------------------------------------------------------------
+
+#version=12.0.31
 
 # bug fix: {xxx}.element = "B" does not work
 # bug fix: JavaScript getPropertyAsArray("auxiliaryInfo.models") will fail for crystal structures 
