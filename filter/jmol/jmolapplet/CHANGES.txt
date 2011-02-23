@@ -2,7 +2,20 @@
 # NOTE: Generally only bug fixes should be entered here. 
 # NOTE: New features should be introduced in the trunk version 12.1.x
 
-version=12.0.32
+version=12.0.33
+
+# bug fix: set bondPicking deletes bond
+# new feature: Molden reader filter options INPUT, NOOPT
+# bug fix: Molden reader does not read optimizations
+# bug fix: Molden reader nonfunctional
+# bug fix: Spartan reader fails when no MO calculation
+# bug fix: Spartan MO d6/f10 reader problems
+# bug fix: load ? broken in 12.0.31
+# bug fix: getProperty  by itself does not return SORTED list of properties
+
+# --------------------------------------------------------------
+
+#version=12.0.32
 
 # bug fix: SMILES generator error for cationic aromatic nitrogen
 # bug fix: application with file name does not run jmolscript: embedded scripts
