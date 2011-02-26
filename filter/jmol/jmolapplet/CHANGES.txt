@@ -2,7 +2,25 @@
 # NOTE: Generally only bug fixes should be entered here. 
 # NOTE: New features should be introduced in the trunk version 12.1.x
 
-version=12.0.33
+version=12.0.34
+
+# bug fix: set PICKING OFF nonfunctional
+# bug fix: unnecessary moveto commands in state 
+# bug fix: CTRL-SHIFT-LEFT on Macintosh must be pressed with LEFT first. go figure... (Old, old problem fixed)
+#   -- problem was that CTRL-SHIFT-LEFT-DRAG specifically was delivered as CTRL-SHIFT-MOVE
+#   -- specifically relates to changing the slab after slab ON
+# new feature: (relevant to Macintosh only) COMMAND-SHIFT-LEFT-DRAG same as CTRL-SHIFT-LEFT-DRAG
+# bug fix: isosurface for trajectory not working
+# bug fix: Var x in function x() not recognized
+# bug fix: Var data followed by data++ causes syntax error
+# bug fix: isosurface .... map select {...} not saved properly in state
+# bug fix: MO HOMO should select highest non-negative value if no occupancy info
+# bug fix: Spartan reader not reporting HOMO
+# bug fix: load xxxx.top should default to xxxx.trj for coord files
+
+# --------------------------------------------------------------
+
+#version=12.0.33
 
 # bug fix: set bondPicking deletes bond
 # new feature: Molden reader filter options INPUT, NOOPT
