@@ -2,7 +2,24 @@
 # NOTE: Generally only bug fixes should be entered here. 
 # NOTE: New features should be introduced in the trunk version 12.1.x
 
-version=12.0.34
+version=12.0.35
+
+# bug fix: Jaguar reader not reading vibrations correctly
+# bug fix: load of model when animation is on may cause animation NEXT to fail
+# new feature: (fixing property smoothing) isosurface... map property x WITHIN x.y
+#  -- allows a maximum distance to be defined; speeds up calculation
+#  -- defaults to 5.0 when set isosurfacePropertySmoothing FALSE
+# bug fix: isosurface VDW can ignore H2O
+# bug fix: load FILES <series of PDB files> incorrectly autobonds CONECTed atoms
+# bug fix: draw LIST broken
+# bug fix: (signed applet only) write FRAMES multiple calls to file dialog 
+# bug fix: draw/show pointGroup not correct when {0 0 0} is not center of model
+# bug fix: draw pointGroup deletes all draw objects, not just of this model's point group
+# bug fix: multimodel show pointGroup does not reset when frame is changed
+
+# --------------------------------------------------------------
+
+#version=12.0.34
 
 # bug fix: set PICKING OFF nonfunctional
 # bug fix: unnecessary moveto commands in state 
