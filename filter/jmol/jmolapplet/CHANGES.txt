@@ -2,9 +2,19 @@
 # NOTE: Generally only bug fixes should be entered here. 
 # NOTE: New features should be introduced in the trunk version 12.1.x
 
-version=12.0.35
+version=12.0.36
 
+# bug fix: write of stereo image only shows one half of dual display
+# bug fix: application does not update menus properly
+# new feature: load MENU -- if user-defined menu label is "null" then that menu item is removed
+#  -- for example:  labelName | null      or      labelMenu | null
 # bug fix: Jaguar reader not reading vibrations correctly
+# bug fix: write JMOL (instead of write xxx.jmol)		 not implemented
+
+# --------------------------------------------------------------
+
+#version=12.0.35
+
 # bug fix: load of model when animation is on may cause animation NEXT to fail
 # new feature: (fixing property smoothing) isosurface... map property x WITHIN x.y
 #  -- allows a maximum distance to be defined; speeds up calculation
