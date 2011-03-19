@@ -2,7 +2,19 @@
 # NOTE: Generally only bug fixes should be entered here. 
 # NOTE: New features should be introduced in the trunk version 12.1.x
 
-version=12.0.36
+version=12.0.37
+
+# bug fix: within(xxx, <only first atom in a model>) will fail
+# bug fix: Crystal09 reader upgrade
+# bug fix: adaptation for improperly CONECTed PDB files such as 1W7R
+# bug fix: select *y defaults to select {*}(y) instead of select {:y}
+# bug fix: newer cml format for crystal information
+# bug fix: vibration ON  not saved in state
+# bug fix: not reading MOPAC 6, 7, or 2009 files
+
+# --------------------------------------------------------------
+
+#version=12.0.36
 
 # bug fix: write of stereo image only shows one half of dual display
 # bug fix: application does not update menus properly
