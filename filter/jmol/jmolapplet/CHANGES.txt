@@ -2,7 +2,32 @@
 # NOTE: Generally only bug fixes should be entered here. 
 # NOTE: New features should be introduced in the trunk version 12.1.x
 
-version=12.0.37
+version=12.0.39
+
+# bug fix: menu labels incorrect in 12.0.38
+
+# --------------------------------------------------------------
+
+#version=12.0.38
+
+# bug fix: for(_x...) not disallowed
+# bug fix: Spartan .smol files: default for charges is now ESPCHARGES (what SpartanStudent reports), not MULLIKEN
+#  -- filter "MULLIKEN" now reads those charges
+# bug fix: {*}.resno, .atomno, etc. where the property is an integer returns sum, not average
+# bug fix: closing a prompt dialog with ESCAPE can cause crash; should return "null"
+# bug fix: conflicting (Edit) selectMenu removed
+#  -- can't have two menus with exactly the same name, or language will only update one
+# bug fix: image creation does not lock out mouse or system refreshes
+# bug fix: select {*} (color=...) fails (specifically math functions doubling as atom properties)
+# bug fix: cross-applet script output from print script("show ...", "B") not working 
+# bug fix: synchronize command broken 
+# bug fix: "string"%-n right-side truncation one character short
+
+# code: MouseManager14, ActionManager simplifications
+
+# --------------------------------------------------------------
+
+#version=12.0.37
 
 # bug fix: within(xxx, <only first atom in a model>) will fail
 # bug fix: Crystal09 reader upgrade
@@ -16,10 +41,11 @@ version=12.0.37
 
 #version=12.0.36
 
-# bug fix: write of stereo image only shows one half of dual display
-# bug fix: application does not update menus properly
 # new feature: load MENU -- if user-defined menu label is "null" then that menu item is removed
 #  -- for example:  labelName | null      or      labelMenu | null
+
+# bug fix: write of stereo image only shows one half of dual display
+# bug fix: application does not update menus properly
 # bug fix: Jaguar reader not reading vibrations correctly
 # bug fix: write JMOL (instead of write xxx.jmol)		 not implemented
 
@@ -27,10 +53,11 @@ version=12.0.37
 
 #version=12.0.35
 
-# bug fix: load of model when animation is on may cause animation NEXT to fail
 # new feature: (fixing property smoothing) isosurface... map property x WITHIN x.y
 #  -- allows a maximum distance to be defined; speeds up calculation
 #  -- defaults to 5.0 when set isosurfacePropertySmoothing FALSE
+
+# bug fix: load of model when animation is on may cause animation NEXT to fail
 # bug fix: isosurface VDW can ignore H2O
 # bug fix: load FILES <series of PDB files> incorrectly autobonds CONECTed atoms
 # bug fix: draw LIST broken
@@ -43,12 +70,13 @@ version=12.0.37
 
 #version=12.0.34
 
+# new feature: (relevant to Macintosh only) COMMAND-SHIFT-LEFT-DRAG same as CTRL-SHIFT-LEFT-DRAG
+
 # bug fix: set PICKING OFF nonfunctional
 # bug fix: unnecessary moveto commands in state 
 # bug fix: CTRL-SHIFT-LEFT on Macintosh must be pressed with LEFT first. go figure... (Old, old problem fixed)
 #   -- problem was that CTRL-SHIFT-LEFT-DRAG specifically was delivered as CTRL-SHIFT-MOVE
 #   -- specifically relates to changing the slab after slab ON
-# new feature: (relevant to Macintosh only) COMMAND-SHIFT-LEFT-DRAG same as CTRL-SHIFT-LEFT-DRAG
 # bug fix: isosurface for trajectory not working
 # bug fix: Var x in function x() not recognized
 # bug fix: Var data followed by data++ causes syntax error
@@ -61,8 +89,9 @@ version=12.0.37
 
 #version=12.0.33
 
-# bug fix: set bondPicking deletes bond
 # new feature: Molden reader filter options INPUT, NOOPT
+
+# bug fix: set bondPicking deletes bond
 # bug fix: Molden reader does not read optimizations
 # bug fix: Molden reader nonfunctional
 # bug fix: Spartan reader fails when no MO calculation
@@ -186,9 +215,10 @@ version=12.0.37
 # bug fix: space before [ not recognized as significant when following $xxx or {...}
 # new feature: isosurface/draw .length (also added to 12.1.27)
 # bug fix: undocumented $isosurface1[3] fixed
-# code: parameterExpression cleanup
 # bug fix: set echo myecho [x y] after set echo myecho {3 3 3} does not work
 # bug fix: isosurface set 0  does not display all sets
+
+# code: parameterExpression cleanup
 
 # --------------------------------------------------------------
 
@@ -196,6 +226,7 @@ version=12.0.37
 
 # new feature: (part of write MOL bug fix) write SDF creates multi-model SDfile based on models of selected atoms
 # new feature: (part of write MOL bug fix) write V3000 creates V3000 file; see http://www.symyx.com/downloads/public/ctfile/ctfile.pdf
+
 # bug fix: write MOL creates V2000 file
 # bug fix: over-run of SDF, MOL/V2000 reports error
 # bug fix: Web Export and write xx.jmol fail for load XXX:: forcing file type
