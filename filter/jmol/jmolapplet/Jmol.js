@@ -81,6 +81,11 @@ try{if(typeof(_jmol)!="undefined")exit()
 // bh 4/2010  -- added jmolSetMemoryMb(nMb)
 // ah 1/2011  -- wider detection of browsers; more browsers now use the object tag instead of the applet tag; 
 //               fix of object tag (removed classid) accounts for change of behavior in Chrome
+// bh 3/2011  -- added jmolLoadAjax_STOLAF_NIH
+// ah 9/2011  -- Applet is now wrapped in a <span> tag (might break existing user code).
+//               Added jmolSwitchToSignedApplet(); replaces an applet with the signed applet, 
+//               preserving size, model and state; an additional script may be specified. 
+//               Note: as a result, unsigned and signed applets may coexist in a page.
 
 var defaultdir = "."
 var defaultjar = "JmolApplet.jar"
@@ -99,6 +104,9 @@ var defaultjar = "JmolApplet.jar"
 // then the user is presented with a warning and asked whether it is OK to change Jar files.
 // The default action, if the user just presses "OK" is to NOT allow the change. 
 // The user must type the word "yes" in the prompt box for the change to be approved.
+
+// For a simple change to the signed applet in the same original directory (if it's available),
+// you can use JMOLJAR=SIGNED on the URL.
 
 // If you don't want people to be able to switch in their own JAR file on your page,
 // simply set this next line to read "var allowJMOLJAR = false".
@@ -127,6 +135,7 @@ function jmolInitialize(codebaseDirectory, fileNameOrUseSignedApplet) {
         alert("The web page URL was ignored. Continuing using " + _jmol.archivePath + ' in directory "' + codebaseDirectory + '"');
       }
     } else {
+			if (f=="SIGNED") { f=true; }
       fileNameOrUseSignedApplet = f;
     }
   }
@@ -487,6 +496,26 @@ function jmolCheckBrowser(action, urlOrMessage, nowOrLater) {
     _jmolCheckBrowser();
 }
 
+var _jmolScriptForSwitching;
+function jmolSwitchToSignedApplet(targetSuffix, additionalScript) {
+  if (!targetSuffix) { targetSuffix = "0"; }
+  if (!additionalScript) { additionalScript = ""; }
+  var s = jmolEvaluate("_signedApplet",targetSuffix);
+  var w = jmolEvaluate("_width",targetSuffix); 
+  var h = jmolEvaluate("_height",targetSuffix); 
+  if (s=="true") { 
+    jmolScript(additionalScript,targetSuffix);
+    return;
+  }
+  var appletParent = document.getElementById("jmolApplet"+targetSuffix).parentNode;
+  _jmolScriptForSwitching = jmolGetPropertyAsString("stateInfo", "", targetSuffix) + additionalScript;
+  appletParent.innerHTML = ""; 
+  _jmolGetJarFilename(true);
+  jmolSetDocument(false);
+  appletParent.innerHTML = jmolApplet([w,h], "javascript jmolScript(_jmolScriptForSwitching," + targetSuffix + ")", targetSuffix);
+  jmolSetDocument(document);
+}
+
 ////////////////////////////////////////////////////////////////
 // Cascading Style Sheet Class support
 ////////////////////////////////////////////////////////////////
@@ -655,36 +684,14 @@ with (_jmol) {
   _jmolTestOS("mac") ||
   _jmolTestOS("win");
 
-  /* not used:
-	isNetscape47Win = (os == "win" && browser == "mozilla" &&
-                     browserVersion >= 4.78 && browserVersion <= 4.8);
-	*/
-
-  if (os == "win") {
-    isBrowserCompliant = hasGetElementById;
-  } else if (os == "mac") { // mac is the problem child :-(
-    if (browser == "mozilla" && browserVersion >= 5) {
-      // miguel 2004 11 17
-      // checking the plugins array does not work because
-      // Netscape 7.2 OS X still has Java 1.3.1 listed even though
-      // javaplugin.sf.net is installed to upgrade to 1.4.2
-      eval("try {var v = java.lang.System.getProperty('java.version');" +
-           " _jmol.isBrowserCompliant = v >= '1.4.2';" +
-           " } catch (e) { }");
-    } else if (browser == "opera" && browserVersion <= 7.54) {
-      isBrowserCompliant = false;
-    } else {
-      isBrowserCompliant = hasGetElementById &&
-        !((browser == "msie") ||
-          (browser == "webkit" && browserVersion < 125.12));
-    }
-  } else if (os == "linux" || os == "unix") {
-    if (browser == "konqueror" && browserVersion <= 3.3)
-      isBrowserCompliant = false;
-    else
-      isBrowserCompliant = hasGetElementById;
-  } else { // other OS
-    isBrowserCompliant = hasGetElementById;
+  isBrowserCompliant = hasGetElementById;
+  // known exceptions (old browsers):
+  if (browser == "opera" && browserVersion <= 7.54 && os == "mac" 
+      || browser == "webkit" && browserVersion < 125.12
+      || browser == "msie" && os == "mac" 
+      || browser == "konqueror" && browserVersion <= 3.3
+    ) {
+    isBrowserCompliant = false;
   }
 
   // possibly more checks in the future for this
@@ -782,11 +789,11 @@ function _jmolApplet(size, inlineModel, script, nameSuffix) {
       params.mayscript = 'true';
       params.codebase = codebase;
       params.code = 'JmolApplet';
-      tHeader = 
+      tHeader = "<span>" +
         "<object name='jmolApplet" + nameSuffix +
         "' id='jmolApplet" + nameSuffix + "' " + appletCssText + "\n" +
 				widthAndHeight + "\n";
-      tFooter = "</object>";
+      tFooter = "</object></span>";
     }
     if (java_arguments)
       params.java_arguments = java_arguments;
@@ -803,14 +810,14 @@ function _jmolApplet(size, inlineModel, script, nameSuffix) {
 					Removing the classid parameter seems to be well tolerated by all browsers (even IE!).
 				*/
     } else { // use applet tag
-      tHeader = 
+      tHeader = "<span>" +
         "<applet name='jmolApplet" + nameSuffix +
         "' id='jmolApplet" + nameSuffix + "' " + appletCssText + "\n" +
 				widthAndHeight + "\n" +
         " code='JmolApplet'" +
         " archive='" + archivePath + "' codebase='" + codebase + "'\n" +
         " mayscript='true'>\n";
-      tFooter = "</applet>";
+      tFooter = "</applet></span>";
     }
     var visitJava;
     if (useIEObject || useHtml4Object) {
@@ -1502,6 +1509,29 @@ function jmolLoadAjax_STOLAF_RCSB(fileformat,pdbid,optionalscript,targetSuffix){
  _jmolDomScriptLoad(url)
  return url
 }
+
+
+///////////////auto load NIH CACTVS data -- compound name or SMILES ///////////
+
+function jmolLoadAjax_STOLAF_NIH(compoundid,optionalscript,targetSuffix){
+ _jmol.thismodel || (_jmol.thismodel = "aspirin")
+ _jmol.serverURL || (_jmol.serverURL="http://fusion.stolaf.edu/chemistry/jmol/getajaxjs.cfm")
+ _jmol.defaultURL_NIH || (_jmol.defaultURL_NIH="http://cactus.nci.nih.gov/chemical/structure/FILE/file?format=sdf&get3d=True")
+ compoundid || (compoundid=prompt("Enter a compound name or a SMILES string:",_jmol.thismodel))
+ if(!compoundid)return ""
+ targetSuffix || (targetSuffix="0")
+ optionalscript || (optionalscript="")
+ var url=_jmol.defaultURL_NIH.replace(/FILE/g,compoundid)
+ _jmol.optionalscript=optionalscript
+ _jmol.thismodel=compoundid
+ _jmol.thistargetsuffix=targetSuffix
+ _jmol.thisurl=url
+ _jmol.modelArray = []
+ url=_jmol.serverURL+"?returnfunction=_jmolLoadModel&returnArray=_jmol.modelArray&id="+targetSuffix+_jmolExtractPostData(url)
+ _jmolDomScriptLoad(url)
+ return url
+}
+
 
 /////////////// St. Olaf College AJAX server -- ANY URL ///////////
 

@@ -1,8 +1,2290 @@
 # NOTE: This is not the development trunk. It is the release branch.
 # NOTE: Generally only bug fixes should be entered here. 
-# NOTE: New features should be introduced in the trunk version 12.1.x
+# NOTE: New features should be introduced in the trunk version 12.3.x
 
-version=12.0.39
+version=12.2.1
+
+# bug fix: SMILES comparison when the number of stereocenters is not the same is wrong
+# new feature: compare("XXX","XXXX","ISOMER") comparison now includes "AMBIGUOUS STEREOCHEMISTRY!"
+# code: popup/modelkit refactoring to isolate awt/Swing references
+# bug fix: connection deletion removes all measurements -- can't imagine why...
+# bug fix: H2,H3 connected to terminal N of protein not backbone
+# bug fix: select PROTEIN selects non-PDB atoms
+# bug fix: Molden reader does not read "Sym=X" (missing space after '=')
+# bug fix: Molden reader does not read angstrom units
+# bug fix: color isosurface {atomset} <color>  does not work if isosurface has not already been mapped.
+# bug fix: PDB reader not reading Rasmol-style files with multiple bonding
+#  CONECT   1  2  2
+#    or
+#  CONECT   1  2      
+#  CONECT   1  2 
+#     means for Rasmol double bond between atoms 1 and 2
+
+# bug fix: Molden file reader error with [5D] flag before [GTO]
+
+# ------------------------------------------------------------------------------
+
+# version=12.2.0
+
+# October 3, 2011
+
+# ------------------------------------------------------------------------------
+
+# bug fix: MO overlaying orbitals
+# bug fix: PDB reader not reading Rasmol-style files with multiple bonding
+#  -- CONECT   1  2  2      means for Rasmol double bond between atoms 1 and 2
+
+# 224 new features
+
+# summary of feature changes between Jmol 12.0 and 12.2:
+
+# FEATURE CHANGE: "ligand" definition changed to 
+#    !(protein,nucleic,water,UREA)"
+#        instead of "hetero and not solvent"
+# FEATURE CHANGE: default zShadePower set to 3
+# FEATURE CHANGE: undocumented a[13] = 3  (where a is a matrix, for a[1][3]) removed
+# FEATURE CHANGE:  DSSP default for "calculate structure" 
+#    -- old way is now "calculate structure RAMACHANDRAN"
+# FEATURE CHANGE:  DSSP default for LOAD of PDB file with no header.
+#   in previous versions, Jmol used a ramachandran-angle-based calculation
+#   for secondary structure determination when a PDB file had no HELIX or SHEET records.
+#   It just seems reasonable to use the industry-standard DSSP method instead.
+
+# new feature: JmolSmilesApplet method (smiles1)
+# new feature: JmolSmilesApplet method getRelationship(smiles1, smiles2)
+# new feature: The Jmol application can now communicate via sockets
+#   with other Jmol applications or specialized servers. 
+#   The SYNC command has been expanded to make this very easy: 
+#
+#     sync -nnnn   starts a server on local port nnnn accepting only local connections
+#     sync nnnn "background white" (from another app, generally) would execute that 
+#                                command on the app acting as a server
+#
+#   You can also do this from one app frame to another, because they are independent
+#   instances of Jmol.
+#
+#   Jmol can provide server service to other apps using:
+#
+#   sync -3000
+#   [start other app, connecting on 3000]
+#   sync 3000 .....
+#
+#   Because once the server is started and another app has connected, 
+#   Jmol will send messages to that other app, not itself. 
+#   
+#   To test the service within one application, just create the server and send 
+#   commands to itself using a negative port number:
+#
+#   sync -3000;sync -3000 'Mouse: rotateZBy 30'
+#
+#   Note that in this context the "server" is the one getting commands from the "client"
+#   But the server can also send commands to the client provided the client has given the
+#   appropriate handshake: {"magic":"JmolApp","event":"out"}
+#
+# Sent from Jmol (via outSocket): 
+# 
+#   {"magic" : "JmolApp", "role" : "out"}  (socket initialization for messages TO jmol)
+#   {"magic" : "JmolApp", "role" : "in"}   (socket initialization for messages FROM jmol)
+#   {"type" : "script", "event" : "done"}  (script completed)
+#   
+# Sent to Jmol (via inSocket):
+# 
+#   {"type" : "banner", "visibility" : "ON" or "OFF" }   (set banner for kiosk)
+#   {"type" : "banner", "text" : bannerText }      (set banner for kiosk)
+#   {"type" : "command", "command" : command }  (script command request)
+#   {"type" : "content", "id" : id }            (load content request)
+#   {"type" : "move", "style" : (see below) }   (mouse command request)
+#   {"type" : "quit" }                          (shut down request)
+#   {"type" : "sync", "sync" : (see below) }    (sync command request)
+#   {"type" : "touch",                          (a raw touch event)
+#        "eventType" : eventType,
+#        "touchID"   : touchID,
+#        "iData"     : idata,
+#        "time"      : time,
+#        "x" : x, "y" : y, "z" : z }
+#    
+#   For details on the "touch" type, see org.jmol.viewer.ActionManagerMT::processEvent
+#   Content is assumed to be in a location determined by the Jmol variable
+#   nioContentPath, with %ID% being replaced by some sort of ID number of tag provided by
+#   the other half of the system. That file contains more JSON code:
+#   
+#   {"startup_script" : scriptFileName, "banner_text" : text } 
+#   
+#   An additional option "banner" : "off" turns off the title banner.
+#   The startup script must be in the same directory as the .json file, typically as a .spt file
+#   
+#   Move/sync commands include:
+#   
+#   {"type" : "move", "style" : "rotate", "x" : deltaX, "y", deltaY }
+#   {"type" : "move", "style" : "translate", "x" : deltaX, "y", deltaY }
+#   {"type" : "move", "style" : "zoom", "scale" : scale }  (1.0 = 100%)
+#   {"type" : "sync", "sync" : syncText }
+#   
+#   Note that all these moves utilize the Jmol sync functionality originally intended for
+#   applets. So any valid sync command may be used with the "sync" style. These include 
+#   essentially all the actions that a user can make with a mouse, including the
+#   following, where the notation <....> represents a number of a given type. These
+#   events interrupt any currently running script, just as with typical mouse actions.
+#   
+#   "centerAt <int:x> <int:y> <float:ptx> <float:pty> <float:ptz>"
+#      -- set {ptx,pty,ptz} at screen (x,y)
+#   "rotateMolecule <float:deltaX> <float:deltaY>"
+#   "rotateXYBy <float:deltaX> <float:deltaY>"
+#   "rotateZBy <int:degrees>"
+#   "rotateZBy <int:degrees> <int:x> <int:y>" (with center reset)
+#   "rotateArcBall <int:x> <int:y> <float:factor>"
+#   "spinXYBy <int:x> <int:y> <float:speed>"
+#      -- a "flick" gesture
+#   "translateXYBy <float:deltaX, float:deltaY>"
+#   "zoomBy <int:pixels>"
+#   "zoomByFactor <float:factor>"
+#   "zoomByFactor <float:factor> <int:x> <int:y>" (with center reset)
+# 
+# new feature: preliminary QuantumEspresso XML reader
+# new feature: Jmol Application flags  -k and -P
+#  -- -k kiosk mode: like applet, but with a banner across the top
+#  -- -P <port> JSON NIO client mode over port <port>
+#  -- for JSON NIO, use -J or -j to set nioContentPath and nioTerminatorMessage
+#     to the desired values. For example:
+#  Jmol -k -P 31461 -j "nioContentPath='./%ID%/%ID%.json';nioTerminatorMessage='SCRIPT_DONE'"
+#
+# new feature: Jmol.js adds jmolSwitchToSignedApplet().
+#        This needed a new <span> tag that is now inserted around the applet.
+# new feature: filter "_Xx" for filtering element Xx
+
+# bug fix: MO SLAB n never implemented
+# bug fix: MOLDEN reader not reading spherical basis functions
+# bug fix: contact command not symmetric
+#   Set A should generally be the ligand. However, consider note:
+#        // check for O--H...N or O...H--N and not considering
+#        // hydrogens and still have a filter
+#        // a bit of asymmetry here: set A may or may not have H atoms added.
+#        // This is particularly important for amines
+#    The issue here is that we do not assume that hydrogens have been
+#    added to ligands. So we make some allowances there.
+#
+# bug fix: SMILES [#6]-[#6] should not match bonds in benzene, only biphenyl
+# bug fix: in SMARTS matching of SMILES string, aromatic ring conditions were not matched
+# bug fix: null pointer exceptions when model with unit cell is appended to model without unit cell
+# bug fix: CIF reader not implemented with filter "CONF n"
+# bug fix: unit cell not turned off in state for PDB files loaded with biomolecule
+# bug fix: mo points 1000  broken
+# bug fix:   xxx = {*}; xxx.property_x = 3   improperly parsed as a script command
+# bug fix: getproperty minimizationInfo returns JSON instead of readable string 
+# bug fix: JaguarReader not reading D6 MOs properly
+#
+# code: all references to java.awt and javax.swing isolated to 
+#   org.jmol.awt, rg.jmol.export, and org.jmol.multitouch
+# code: refactored Jmol core Swing classes restricted to 
+#        applet, console, export, modelkit, multitouch, popup
+# TODO: Question about what c=c should do. For now, changing that to NOT match C=C of benzene 
+# --------------------------------------------------------------
+
+#version=12.2.RC7
+
+# new feature: load TRAJECTORY now loads vibrations as trajectories
+
+# bug fix: SMILES [#6A] and [#6a] should be distinct
+# bug fix: load SMILES should not allow 2D return
+# bug fix: load SMILES not saved properly in state
+# bug fix: set isosurfaceKey not displaying key for planar contour plot
+# bug fix: GAUSSIAN reader cannot read MOs when more than 1000 orbitals
+# new feature: CASTEP reader for .md and .geom trajectories
+# bug fix: atomic orbitals should be assigned 0 if |psi| < 1e-7
+# bug fix: load TRAJECTORY does not assign model names
+
+# --------------------------------------------------------------
+
+#version=12.2.RC6
+
+# new feature: transparent background PNG images with WRITE PNGT xxxx.png
+#  -- set ANTIALIASEIMAGES false to avoid slight trim issue
+#  -- use an unusual color, such as [x010101] for the background
+# new feature: preliminary CASTEP .phonon frequency file reader
+#  -- preliminary only
+#  -- reads q=0 and q#0 points
+#  -- use load ... SUPERCELL  to select out a specific q-point
+#  -- for example:
+#   load c60.phonon {1 1 1} SUPERCELL {2 1 2} # will select for q = (0.5 0 0.5)
+#   load c60.phonon -5 {1 1 1} SUPERCELL {2 1 2} # and only mode 5 for q = (0.5 0 0.5)
+#   load c60.phonon -5 {2 2 2} SUPERCELL {-4 1 2} # eight supercells; mode 5 only for q=(-0.25 0 0.5)
+
+# new feature: unitcell {xxx yyy z} where z is negative fills entire (standard) xxx yyy space with unit cells of size z
+# new feature: forgotten feature: load "xxxx.xxx" [ list of models to load ]
+#  -- for example:   load "cyclohexane_movie.xyz" [ 1 6 11 26 ]
+# new feature: set minPixelSelRadius
+# new feature: CRYSTAL reader reads property files for tensor quantities
+#  -- displayed as ELLIPSOID
+#  -- note that scale is set using ELLIPSOID N  where N is a percent; default 50; max 100
+# new feature: unitcell {xxx yyy scale}
+#  -- allows for display of a block of unit cells in 444 555 notation
+#  -- cleared by   unitcell {0 0 0}
+# feature change: contact full/trim returned to simpler original non-paired idea
+# new feature: UNDO/REDO 
+#  -- console-only commands same as buttons
+#  -- full file reload (saving of full state)
+# new feature: undoMove/redoMove 
+#  -- script commands
+#  -- act like CTRL-Z/(CTRL-SHIFT-Z or CTRL-Y)
+#  -- just move atoms; no file loading (just atom positions saved)
+#              UNDOMOVE/UNDOMOVE 1 # undo last movement
+#              UNDOMOVE n      # undo last n movements
+#              UNDOMOVE 0/UNDOMOVE ALL  # undo all movements
+#              REDOMOVE/REDOMOVE 1 # redo last movement
+#              REDOMOVE n      # redo last n movements
+#              REDOMOVE 0/REDOMOVE ALL  # redo all movements
+#              UNDOMOVE -1     # clear UNDO history
+#              REDOMOVE -1     # clear REDO history
+#              REDOMOVE -2/UNDOMOVE -2 # clear both histories
+#
+# bug fix: load PACKED SUPERCELL produces red0undant atoms 
+# bug fix: AtomSetChooser set up too late -- can override embedded jmolScript vibration/vector scale commands
+# bug fix: set naviationPeriodic while navigating should disallow unit cell and standard axes
+# bug fix: MO LIST broken
+# bug fix: linear combination of MOs broken in 12.1.49
+# bug fix: Crystal reader not handling CONV option properly
+# bug fix: CIF reader not reading isotopes such as D and T
+# bug fix: load slab/polymer with PACKED does not work
+# bug fix: imines SMILES may cause null pointer exception
+# bug fix: SOE added to carbohydrate list (L-sorbose in pyranose form; SOL is the open form, 3AI3.pdb)
+# bug fix: setting DOTS off can cause null pointer exception
+# bug fix: saving state of contact broken
+# bug fix: contact SLAB n not working
+# bug fix: deleting of the first model in a set that has load APPEND will not produce the correct state
+# bug fix: deletion of models having a		toms with dots can generate null pointer exception 
+# bug fix: QuantumEspresso reader not reading ALAT/A_0 files correctly
+# bug fix: measurements, picking not allowed to FIXED atoms
+# bug fix: (contact) ligand nitrogens not protonated and become hbond acceptors
+#  -- solution for now is to consider all N/O HETATM atoms "ambiguous"
+# bug fix: undocumented "redo" "undo" application-only commands changed to "redocmd" "undocmd"
+
+# --------------------------------------------------------------
+
+#version=12.2.RC5
+
+# new feature: set isosurfaceKey ON|OFF
+#  -- creates a vertical hoverable key on the left
+#  -- only the most recent and visible isosurface
+#  -- is not exported
+# bug fix: "$phosphorus pentoxide" label %[shape] indicates AX4E not AX4 hybridization on phosphorus
+# bug fix: show colorscheme "high"   causes exception 
+
+# --------------------------------------------------------------
+
+#version=12.2.RC4
+
+# new feature: selection of surfaces in SurfaceTool
+#
+# bug fix: setting a timeout should reset the timer of a running timeout with the same ID
+# bug fix: contact translucent carries over to next contact command
+# bug fix: modelKit increase/decrease charge not working
+# bug fix: show SMILES|CHEMICAL NAME broken
+# bug fix: for(x in...) where x is not defined causes exception
+# bug fix: CONTINUE in switch within  for or while loops infinitely
+# bug fix: zap; load append ... ignores the zap!
+
+# --------------------------------------------------------------
+
+#version=12.2.RC3
+
+# bug fix: color broken in 12.2.RC2
+# bug fix: isosurface pmesh INLINE broken
+# bug fix: 1jgq phosphorus-only default rendering disabled
+
+# --------------------------------------------------------------
+
+#version=12.2.RC2
+
+# FEATURE CHANGE: "ligand" definition changed to 
+#    !(protein,nucleic,water,UREA)"
+#        instead of "hetero and not solvent"
+# new feature: contact VDW shows clash-contacts with equal-volume
+#  -- combination with CLASH gives bulls-eyes -- plane only
+# new feature: real-time docking with visual scoring test:
+#  set pdbAddHydrogens
+#  load caffeine.xyz;load append 1crn.pdb
+#  frame *
+#  select protein;wireframe only
+#  select none
+#  set picking dragMolecule
+#  timeout "t1" -1000 "contact {selected} {!selected} color type"
+# new feature x = compare({1.1}, {2.1}, "MAP", {1.1}.find("smiles"))
+#  -- MAP returns a set of correlations between set 1.1 and set 2.1 based on the given smiles string
+#  -- format is an array of arrays of [i,j] 
+#    
+# bug fix: select deuterium, HOH, _1H, _H1 isotope business messed up
+# bug fix: timeouts not waiting for their own completion
+# bug fix: !quit not interrupting timeouts
+# bug fix: command line -M sparshui  not working
+# bug fix: isosurface color density not picking up last yz points
+# bug fix: 12.2.RC1 doesn't allow for isosurface color XXX t.jvxl 
+# bug fix: Old legacy Chime *.C for _C in non PDB files -- only when one model, and it is not a PDB file
+# bug fix: setting VDW radius after creating isosurfaces or contacts should delete that
+#          surface if set of atoms involved in surface intersects set of changed vdw radii
+# bug fix: H-bond contact to water O categorized as clash
+# bug fix: MO for multi-model file does not save state properly
+# bug fix: GROMACS reader should not use sorbital group 3 name SOL for water -- changed to WAT
+# bug fix: SOL considered solvent, but is sorbitol; SOL added to carbohydrate list instead
+#
+# code: better-protected Binary Sorted Tree Forest invalidation
+# code: enum class for Structure
+# code: enum class for Vdw and RadiusData
+# code: enum class for file load state
+# code: enum class for color palettes
+# code: enum class for stereoMode
+# code: enum class for animationMode
+# code: enum class for quantum shells -- less than ideal!
+# code: enum class for draw
+# code: enum class for Callbacks 
+#   -- NOTE: THIS AFFECTS ALL EMBEDDED APPLICATIONS 
+#   -- WITH CALLBACKS (in a good and simple way!)
+# code: enum class for axes modes
+
+# --------------------------------------------------------------
+
+#version=12.2.RC1
+
+# new feature: Surface Tool now does capping. Surface Tool layout rearrangement.
+# new feature; CONTACT command -- generates contact surfaces
+#   CONTACT {setA} {setB} [contact options] [contact type] [display option] [display type] [color options] 
+#   
+#   where we have:
+#
+#   {setA}    the only required parameter, the set of atoms around which to show contacts
+#   {setB}    the surrounding set (default: "all other atoms in this model")
+#   [contact options]
+#   within <distance>
+#   resolution <points per angstrom>
+#   +/-x.x  
+#   intermolecular
+#   intramolecular
+#   parameters [cutoff,....]
+#   [contact type]
+#   hbond
+#   clash
+#   vdw
+#   nci    
+#   [display options]        
+#   slab ....
+#   minset
+#   [display type]        
+#   full
+#   trim
+#   plane
+#   connect
+#   cap
+#   surface
+#   [color options]
+#   color <color>
+#   (color) DENSITY <dotSize, default: 0.15>
+#   color TYPE     
+#
+#  --examples
+#  contact {ligand}
+#  contact {ligand} color type
+#  contact {:A} {:B}
+#  contact {2001:A} NCI
+# 
+# new feature: set VDW JMOL --- resets any user-set vdw radii
+# new feature: set VDW PROBE  --- sets VDW radii as follows
+#   as per Word, et al, J. Mol. Biol. (1999) 285, 1711-1733
+#       {_H}.vdw = 1.0;
+#       {_H and connected(_C) and not connected(within(smiles,'[r6]'))}.vdw = 1.17;
+#       {_C}.vdw = 1.75;
+#       {_C and connected(3) and connected(_O)}.vdw = 1.65;
+#       {_N}.vdw = 1.55;
+#       {_O}.vdw = 1.4;
+#       {_P}.vdw = 1.8;
+#       {_S}.vdw = 1.8;
+#
+# new feature: zoom 0     default zoom for visible atoms
+# bug fix: H atom attachment fixed at 1.1 Angstroms, which is fine for C, but
+#  a bit high for O,N (1.0) and low for third row (1.3)
+# bug fix: isosurface parameters @x  does not work even when x is an array 
+# new feature: ISOSURFACE Kinemage file reader (for contact/clash dots)
+#  -- colors are set from the kin file
+#  -- parameters [cutoff, valueMin, valueMax, pointType]
+#  -- valueMin -- minimum value to display
+#  -- valueMax -- maxiumum value to display
+#       color.equals("greentint") ? 4f        H-bond
+#         : color.equals("blue") ? 0.35f       wide contact
+#         : color.equals("sky") ? 0.25f        almost wide contact 
+#         : color.equals("sea") ? 0.15f        close contact
+#         : color.equals("green") ? 0.0f       contact
+#         : color.equals("yellowtint") ? -0.1f small overlap
+#         : color.equals("yellow") ? -0.2f     small overlap
+#         : color.equals("orange") ? -0.3f     small overlap
+#         : color.equals("red") ? -0.4f        almost bad overlap
+#         : -0.5f);                            bad overlap
+#  -- pointType:
+#       0   all points
+#   	1	'M' {McMc contacts}
+#  		2   'S' {ScSc contacts}
+#       3   'P' {McSc contacts}
+#       4   'O' {Hets contacts}
+#
+#  -- dot size controllable via "set dotscale"
+#  -- example:
+#
+#    isosurface 2bxaH-multi.kin  # all overlaps
+#    isosurface parameters [0 -1 -0.1] 2bxaH-multi.kin # just non-H-bond overlaps
+#    isosurface slab within 3.0 {2001:A}; display group contact(2001:A); zoom {displayed} 0
+#   
+# new feature: slab/cap for MO
+# new feature: contact() function
+#  -- selects atoms with VDW overlap 
+#  -- examples:
+#  display group contact(2001:A) # groups involving contacts at vdw 100%
+#  select contact(110, 2001:A)   # just the atoms in contact at vdw 110%
+#  print contact(0.4, {2001:A}) # vdw + 0.4
+#  print contact(0.4, {2001:A and _O}, {_N})  # specific cross-interactions
+# new feature: Surface Tool GUI -- just slicing so far and does all surfaces rather
+#		then selected. (Jonathan Gutow)
+# --  Many angle units (degree, radians, gradians, fraction of circle, factors of pi
+# --  pmesh and isosurface slicing
+# --  adjustments to generalize what can be sliced.
+# new feature: select within(x.x, VDW, aaaa)
+#  -- selects atoms that have overlapping VDW surfaces with set aaaa
+#  -- if x.x is present, BOTH interacting atom radii are adjusted:
+#  -- if x.x > 10, then this is assumed to be a percent, such as 110%, 100%, 90%
+#  -- if x.x <= 10, then this is assumed to be a distance to be added to the VDW radii
+#  -- so, for example, select within(1.4, VDW, aaaa) selects groups with overlapping solvent-accessible surfaces
+# new feature: getProperty isosurfaceInfo
+# -- includes vertexCount, polygonCount, vertices, vertexValues, and polygons
+# new feature: isosurface atomicOrbital <n> <l> <m> <z> POINTS <radius> <seed>
+#  -- new default cutoff of 0.04 corresponds to factoring in 1/2sqrtPI
+#  -- <radius> is new 
+#    -- must be a decimal number to distinguish it from the seed. 
+#    -- specifies a given radius 
+# new feature: getProperty ligandInfo
+#  -- treatment of ligands as individually covalently bonded units
+#     INDEPENDENTLY of how they are bonded to other atoms such as proteins
+#  -- delivers a Hashtable
+#     "ligands" ArrayList
+#         "reslist" "2001-2003:A/1.1"
+#         "atoms"   ({....})
+#         "groupNames"  "NAG-NAM-NAG"
+#
+# bug fix: for(y in x) when x is an array can give odd results when y[i] is then used 
+# bug fix: ++ipt not working
+# bug fix: zap of model with measurements causes exception
+# bug fix: DATA "append @xxx" fails
+# bug fix: MOL-2D files loaded then saved to PNG do not reload hydrogen atoms
+# bug fix: MOPAC (LINUX) not recognized
+# bug fix: NWCHEM reader problems when multiple models
+# bug fix: isosurface slab of isosurface MO causes null pointer exception
+# bug fix: isosurface slab translucent of translucent isosurfaces causes problems
+#  -- isosurface slab translucent ---> will now turn isosurface opaque first
+#  -- isosurface slab translucent without a color ---> will now take on current color of isosurface rather than white
+#  -- color isosurface translucent of translucent-slabbed isosurface will remove ALL slabbing
+# bug fix: WebExport not getting Jmol Icon for title bar.
+# bug fix: PDB reader may read bfactors off by 0.01 
+# bug fix: NWChem reader without input deck but with frequencies fails to load
+# bug fix: 12.1.51 breaks isosurface... colorscheme...
+# bug fix: 12.1.51 breaks mo reading from Chem3D XML, which was not working anyway, but now is.
+# bug fix: isosurface slab -@xxxx... will negate variable xxxx if it is a plane
+# bug fix: contact {setA} {setB} should not allow overall of setA and setB unless NCI.
+# bug fix: contact FULL set to minimum resolution 10 (pairwise)
+# bug fix: isosurface intersection .... function "..." ignores function and just does "a-b"
+# bug fix: SUBSET command not resetting properly
+
+# code: super-fast "micro-isosurface" merging for CONTACT. Wow!
+# -- set pdbAddHydrogens; load =2bxa; contact {:A} {:A} 
+# -- merges 2341 microisosurfaces in 325 ms on BH laptop!
+# code: fast pointilist atomic orbitals. THANK YOU, Pshemak Maslak, Brian Hardock, Rob Caldwell, and Tom Stitt!
+# code: new iterator for multimodel sets
+
+# --------------------------------------------------------------
+
+#version=12.1.51
+
+# new feature: contact CAP (for Art Olson)
+# new feature: isosurface ... COLORSCHEME (or just COLOR) <color1> TO <color2> n
+# new feature: color isosurface <color1> TO <color2> n
+#  -- for example, isosurface molecular map property atomno colorScheme red to white
+#  -- optional n defaults to 35 distinct colors
+# new feature: drag/drop into application offers resize option (# preferredWidthHeight in state script)
+# new feature: plane({three-atom atomset})
+# new feature: "@" for "atomno="
+#  -- both in Jmol math and atom expressions
+#  -- select @42 or @52
+#  -- print @42.xyz
+#  -- @42.xyz = {1,2,3}
+# new feature: {atomset}.x?
+#  -- creates an associative array of atom properties with names starting with "x"
+#  -- print @1.?  lists ALL atom properties
+#  -- print {atomno < 3}.?  creates an associative array of arrays  
+#  -- for example:
+#       $ load caffeine.xyz;print @1.atom?
+#	atomID	:	0
+#	atomIndex	:	0
+#	atomName	:	H1
+#	atomType	:	H1
+#	atomX	:	-3.380413
+#	atomY	:	-1.1272367
+#	atomZ	:	0.5733036
+#	atomno	:	1
+#
+#       $ show @{{atomno < 3}.atomn?}
+#   { "atomName":["H1","N2"], "atomno":[1,2] }
+#
+# new feature: set measurementUnits VDW
+#  -- percent VDW (in relation to sum of two VDW radii)
+# new feature: select/display/hide [ADD|REMOVE] ...
+#  -- must be first parameter
+#  -- applies appropriate logic:
+#  -- "select ADD" means "select selected or"
+#  -- "display REMOVE" means "display displayed and not"
+# new feature: select/display/hide GROUP
+#  -- applies within(group,...) to the expression
+#  -- similar to the PyMOL "byres" option
+#  -- must be first parameter, unless ADD|REMOVE present, then must be second parameter 
+#  -- examples:
+#       display add group @22
+#       select remove group picked
+# new feature PICKED variable
+#  -- accumulates recently picked atoms into a set
+#  -- cleared using "SET PICKING"
+#  -- may be set/cleared by user
+# new feature: select within(VDW, aaaa)
+#  -- selects atoms that have overlapping VDW surfaces with set aaaa
+# new feature: measure {aaaa} {bbbb} vdw nnn%
+#  -- intermolecular by default
+#  -- adjustable size
+# new feature:  measure INTRAMOLECULAR ....
+#  -- only measure intramolecular distances
+# new feature:  measure INTERMOLECULAR ....
+#  -- only measure intermolecular distances
+# new feature: set ligandLoadFormat
+# new feature: set pdbAddHydrogens
+#   -- for file loading
+#   -- adds 3 H to terminal N of chains.
+#   -- adds hydrogens to ALL groups, including HET groups
+#   -- unlike PDB2PQR, then, ligands are properly shown
+#   -- also adds all multiple bonds to PDB files
+#   -- for altlocs you should use load option FILTER "CONF 1" (or some other specific configuration)
+#   -- atom numbers are appended to maximum number in file
+# new feature: CIF reader for Ligand CIF files (e.g. http://www.rcsb.org/pdb/files/ligand/AMU.cif)
+# new feature: calculate HYDROGEN now works for standard amino acids and nucleic acids
+#  -- adds "GROUP" option to connect -- puts new atoms in group of previous
+#  -- saves connection in state with negative first atom -- indicating that we need to assign the group
+# new feature: LOAD command reports header/title for PDB files
+#   -- specifically when scriptLevel = 0 (typed entry)
+# new feature: isosurface SLAB OFF  -- for SLAB n, this turns that slabbing off.
+# new feature: isosurface FUNCTIONXY = "x * y" and  isosurface FUNCTIONXYZ = "x * x + y + z"
+#  -- default is from -10 to 10 every 0.25 Angstroms
+# new feature: CONTACT {xxx} TRIM
+# new feature: CONTACT {xxx} MISC, and redefinition of HYDROPHOBIC
+# new feature: CONTACT {xxx} VDW
+#  -- just maps a VDW isosurface with distances to another VDW isosurface
+# new feature: CONTACT command (Erik Wyatt/Bob Hanson 6/22/2011)
+#  -- creates an object of a variety of forms that
+#     indicates nonbonding interactions
+#  -- can be a planar disk perpendicular to the interaction,
+#     or a cigar-shaped connector
+#  -- HBOND (just between O and/or N)
+#  -- HYDROPHOBIC (not between O and/or N)
+#  -- percent of van der Waals distance
+#
+#  -- works by doing a sum or difference of two complementary
+#     van der Waals surfaces (PLANAR) or by showing the 
+#     intersection of the two surfaces (FULL) or by doing an NCI
+#     (noncovalent interaction) PROMOLECULAR calculation. 
+#
+#  -- DENSITY x.x (spot size) option does rough volume rendering.
+#       
+#
+#  contact 
+#
+#  -- parameters
+#
+#  required:
+#          {setA}
+#  optional:
+#          ID aaaa (if present, must be the very FIRST parameter
+#          ON/OFF/DELETE/LIST (if present must be the only parameter other than ID
+#          {setB} 
+#          DENSITY x.x
+#          COLOR DENSITY
+#          IGNORE {ignoreSet} 
+#          DISTANCE x.x
+#          PARAMETERS [....] 
+#          FULL|PLANAR|CONNECT|NCI|ISOSURFACE
+#          HYDROPHOBIC|HBOND
+#          INTRAMOLECULAR|INTERMOLECULAR
+#          nnn%
+#          COLOR ...
+#          TRANSLUCENT/OPAQUE/MESH/NOMESH, etc...  (must be last parameters)
+#
+# new feature: show LIGHTING
+
+# bug fix: try {} does not pass VAR variables into its context.
+# bug fix: PovRAY starting with antialiasDisplay does not work properly. 
+# bug fix: isosurface ORBITAL slightly off in probability -- at the cost of speed
+# -- uses abs(PSI) not PSI^2 for probability -- this is not quite right
+# -- adding option SQUARED to use PSI^2 instead -- but this may take a LONG time to process
+# bug fix: catch(err) not setting variable "err"
+# bug fix: select within(@n,...) does not work (distance implied)
+# bug fix: probability "pointilist" atomic orbitals (isosurface ORBITAL 3 2 1 points 10000) does not predict max value close enough
+# bug fix: important to temporarily set pdbAddHydrogens OFF for state being read without "set pdbAddHydrogens" command ("pdbNoHydrogens in htParams)
+# bug fix: isosurface mapping of properties will not be smoothed well due to "fix" in 12.1.50
+# bug fix: writing state for isosurfaces that span multiple frames will fail to display isosurface when reloaded
+# bug fix: no slabbing for atomic orbitals; not saving phase color for atomic orbitals
+# new feature: isosurface slab TRANLSUCENT 0.6 red x=3
+#  -- translucent slabbing
+#  -- JVXL, PovRay, state -- done 
+
+# TODO: isosurface vdw map mep; isosurface slab none slab translucent 0.6 within range 0 -0.05
+# TODO: load =1hiv
+#select protein
+#color yellow
+#wireframe only
+#contact resolution 8 {[1zk]} {![1zk]} cap
+#contact slab translucent 0.1 red within range -100 0
+
+# bug fix: CIF file reading may miss molecules in highly angled triclinic systems.
+# bug fix: over 2047 colors can overrun colix storage 
+# new feature: with slab ON, the right-side zooming runs the slabbing plane, same as (ALT_CTRL_SHIFT_LEFT)
+# bug fix: CML files with atoms starting with both aNN and aNN_ will not bond correctly 
+# bug fix: polyhedra on/off does not work.
+# bug fix: set defaultVDW user not working
+# bug fix: _smilesString variable not being cleared when a PDB file is loaded
+# bug fix: isosurface VDW mapping onto plane now has somewhat different coloration, 
+#           and properly slabs to the VDW radius. This is just a SLAB option that can
+#           be removed like all others using isosurface SLAB NONE
+# TODO: contours from saved JVXL planar isosurfaces does not seem to be correct. 
+# bug fix: WebMO reader fails to read HOMO/LUMO business.
+# bug fix: AMU added (NAM-NAG sequences)
+# bug fix: NDG added (epimer of NAG)
+# bug fix: definition of CARBOHYDRATE was updated:
+#  -- [A2G],[NGA],[SIA],[SLB],[LBT] added (GalNAc, NeuNAc, lactose)
+#  -- [ASF],[NAM] removed, they are not carbohydrates
+#  -- a few existing ones are deprecated by PDB; they are left for compatibility 
+#       but are now listed as such (maybe remove them in future).
+# bug fix: This obscure fix: http://jmol.svn.sourceforge.net/viewvc/jmol/trunk/Jmol/src/org/jmol/adapter/readers/cifpdb/PdbReader.java?r1=13502&r2=13525
+#          broke Jmol reading of the Epcot hemoglobin file. Only relevant to sequential or trajectory PDB files that do not have MODEL statements. 
+#          So then any version starting with 12.0.RC_24 (7/8/2010) through now (7/2/2011) will read the files
+#          correctly -- not missing the first atom -- but that messes up earlier scripts. Unfortunately the Epcot business
+#          (Touch-A-Molecule) was written using 12.9.23 (1/24/2010), so that is affected. 
+#          This fix only affects states written prior to 12.0.RC_1 and just makes it so that they display correctly (though missing that one atom)
+#          when they involve PDB trajectories of file without MODEL records separating models. Pretty sure this is just that one file. 
+# bug fix: contact fULL followed by contact HBOND can cause exception
+# bug fix: set fontScaling does not scale offset with font
+# bug fix: application Help menu item no long pushed right.
+# bug fix: @{} (empty Jmol math braces) can call exception
+# bug fix: pdbAddHydrogens should not add H of CO2H, SO4H, PO3H2 
+# bug fix: PDB reader may misread X in GLX/ASX as xenon
+# bug fix: error message clarifications: web export not clear about not finding Jmol.js
+#      jmolApplet.jar.
+# bug fix: export to web was looking for JmolApplet0.jar when jmoljarpath = "."
+# bug fix: plane(r, theta, phi) script function was measuring phi from -Y not +X.
+# bug fix: Bad Jmol.js
+# bug fix: draw pointgroup fixed to first model
+
+# code: better CONTACT MISC algorithm  
+# code: refactored ModelLoader and org.jmol.modelsetbio.Resolver
+#  -- moves all PDBaddHydrogen business to modelsetbio
+#  -- makes class ModelLoader only temporarily instantiated
+# code: much more efficient plane creation and mapping
+# code: work on isosurface, JVXL, plane mapping
+# code: Viewer passes stateScriptVersionInt on to file readers
+
+# --------------------------------------------------------------
+
+#version=12.1.50
+
+# new feature: .count and .count(x)
+#  -- .count equivalent to .size -- length of array, string, or atom/bond set
+#  -- .count() operating on an array gives an array of [value, count] pairs
+#  -- .count(x) gives the number of "x" in the array or string
+#  -- examples:
+#
+#       print {*}.radius.all.count()
+#       print {*.ca}.label("%m").count("Q")
+#       print {*}.find("SMILES").count("(")
+#
+# new feature: tab completion on $... or first word after DRAW or ISOSURFACE 
+#
+# new feature: JVXL files now save and return color and colorscheme information
+#              as well as rending (mesh, fill, front/back/fullylit)
+#
+# new feature:  isosurface origin {...} steps {...} points {...} 
+#  -- allows specific origin, steps, and counts (x, y, z axes assumed)
+#     for an isosurface that is not from a CUBE file. 
+#  -- allows matching other data or fine-tuning a calculation
+#
+# new feature:  isosurface origin {...} steps {...} points {...} FUNCTIONXY = "function of x, y"
+# new feature:  isosurface origin {...} steps {...} points {...} FUNCTIONXYX = "function of x, y, z"
+#  -- simple rendering of functions based on an origin, steps, and counts
+#  -- origin, steps, counts are all required. 
+#  -- examples (note that all angles in Jmol are in degrees):
+#
+#   isosurface origin {-5 -5 -5} steps {0.2 0.2 0.2} points {50 50 50} functionxy "x * y * cos(x * 100)"
+#   isosurface origin {-5 -5 -5} steps {0.2 0.2 0.2} points {50 50 50} functionxyz "x * y * cos(z * 100)"
+#   isosurface cutoff 2.0 origin {-5 -5 -5} steps {0.2 0.2 0.2} points {50 50 50} functionxyz "x * y * cos(z*100)" map functionxy "x * y"
+#
+# new feature:  isosurface INTERSECTION {atomset1}  (Bob Hanson and Erik Wyatt, 6/17/2011)
+#
+#  -- produces a nice plot of noncovalent interaction regions between atomset1
+#     and nearby atoms.
+#  -- generates an isosurface that is the result of applying a function, to
+#     two VDW data sets.
+#  -- full command: isosurface INTERSECTION {atomset1} {atomset2} function "XXX" VDW 100% 
+#  -- The Jmol function will be of the form:  function fname(a, b) { return XXX }
+#
+#   isosurface INTERSECTION {ligand} {protein} function "a-b" VDW 100%
+#   isosurface slab within range -100 0
+#
+#   -- default:
+#       -- "within(5.0, atomset1) and not within(molecule,atomset1)"
+#       -- function a-b
+#       -- "VDW 100%"        
+#       -- "slab within range -100 0"
+#
+# new feature: color isosurface {atom expression} <color>
+#  -- specific to surface types (vdw, molecular, sasurface)
+#  -- similar to PyMOL command "set surface_color, (color), (selection)"
+#  -- allows painting of specific atom-related isosurface areas specific colors
+#  -- example:   isosurface molecular; color isosurface {hydrophobic} white 
+#
+# new feature: super-fast isosurface MAP PROPERTY when isosurfacePropertySmoothing = false
+#
+# new feature: within(distance, $surfaceID)
+# new feature: isosurface slab [point array]
+#   -- for example: isosurface slab within 5.0 {3}
+#
+# new feature: set defaultLabelPDB "%m%r" -- for set picking LABEL (typically labeling groups)
+# new feature: set defaultLabelXYZ "%a"   -- for set picking LABEL (typically labeling atoms)
+#
+# new feature: reversible isosurface SLAB  (Bob Hanson and Erik Wyatt, 6/13/2011)
+#   isosurface slab x=2 slab -x=2 sphere 5.0
+#   isosurface slab y=2
+#   -- any number of slabs either in the instruction or after it
+#   -- isosurface slab NONE removes slabs
+#   -- any number of CAP as well, but those must be in the statement
+#      that creates the isosurface, not in a later statement,
+#      and they may not work as expected, as they are quite minimal
+#
+# new feature: isosurface parameters [0 1] NCI "density.cube" (discrete SCF NCI with intramolecular option)
+# new feature: isosurface parameters [0 2] NCI "density.cube" (discrete SCF NCI with intermolecular option)
+# new feature: isosurface parameters [0 -1] NCI "grad.cube" MAP "dens.cube" (intramolecular filtering of NCIPLOT cubes)
+# new feature: isosurface parameters [0 -2] NCI "grad.cube" MAP "dens.cube" (intermolecular filtering of NCIPLOT cubes)
+#
+# new feature: plane(r, theta, phi)  
+#   - spherical coordinates
+#   - plane through a point distance r from the origin perpendicular to the vector:
+#     R[z,theta]R[x,phi]{0 0 1}
+#   - angles in degrees
+#
+# bug fix: for (Var x in y){ {x}.xxxx =  ...} does not work properly
+# bug fix: for (Var x in y){...} did not work unless y is enclosed in { }
+# bug fix: (application) Jmol console not receiving echo messages
+# bug fix: UFF full listing (set loglevel 6;minimize steps 0;show minimization) missing n and cosNphi0 in torsions
+# bug fix: isosurface SLAB not saved in JVXL; (now as vertex data only)
+# note: {*}.find("MF") was not documented (Jmol 12.0)
+# bug fix: isosurface slab within 5.0 {3} -- should be ALL those atoms, not just center
+#   -- as opposed to the CENTER using  isosurface slab within 5.0 @{{3}.xyz}
+# bug fix: PQR reader allowing < 0.9 radius for H
+# bug fix: PQR reader mistaking " HD3" as deuterium
+# bug fix: pointilist isosurfaces do not respond to "color isosurface red"
+# bug fix: isosurface select {x} only VDW MAP select {!x} VDW 
+#   -- now allows mapping of a VDW (or SA, not molecular) surface 
+#      with values that are the exact minimum distance of that point
+#      to atoms of another set. This can directly pinpoint contact regions
+# bug fix: throwing script parsing error on correct "isosurface slab within [4 elements
+#         representing the slab box]" (was losing last "]").
+# bug fix: on Mac systems, not finding local files to include in .jmol file (was losing first "/").
+#
+# code: Renderers made entirely independent
+#
+# unimplemented: slice command provides for simple two sided slicing of isosurfaces
+#         syntax: slice <isosurface name> angleXY anglefromZ position thickness
+#                         all numerical parameters must be decimals.
+#                    angleXY-angle in XY plane (decimal in radians)
+#                    anglefromZ- angle from Z axis (decimal in radians)
+#                         these angles specify the direction vector perpendicular
+#                         to the slice.
+#                    position - 0-100 (% in decimal) specifies the position along the 
+#                          vector as a percent of the boundbox diagonal.  50% is origin.
+#                    thickness  - slice thickness as a percentage of the boundbox
+#                           diagonal (0-100 in decimal format).
+#                 slice left on - creates a transparent plane at the left of the slice.
+#                 slice right on - creates the right plane
+#                 slice right|left off - turns them off.
+# implemented: isosurface slab [several options, see above] does all of the above
+#              except left/right transparent planes, which I think could be implemented
+#              differently. 
+
+# --------------------------------------------------------------
+
+#version=12.1.49
+
+# new feature: set zSlab {atom expression or point}; set zShade ON 
+#  -- sets the front of the shading to be at a position in space 
+#  -- very nice for ligands!
+# FEATURE CHANGE: default zShadePower set to 3
+
+# bug fix: MarchingCubes not reading last plane of data
+# code: isosurface NCI (promolecular) reads progressively
+ 
+# new feature: isosurface NCI (noncovalent interactions) -- Henry Rzepa suggested incorporating this
+#
+#   -- NCIPLOT promolecule calculation for reduced density.
+#      Plots reduced density mapped with ABS(rho)*SIGN(lambda2)
+#      where lambda2 is the middle eigenvalue of the Hessian matrix of
+#      promolecular electron density. Innovates a discrete SCF option not
+#      available in NCIPLOT itself.
+#
+#      default is "promolecular" approximation
+#
+#        isosurface NCI
+#
+#      DISCRETE SCF -- starting with standard CUBEGEN file
+#
+#        isosurface NCI "dens.cube"  
+#
+#      DISCRETE SCF -- starting with NCIPLOT's xx-nci-dens.cube file        
+#
+#        isosurface parameters [0 0 0 0 0 0.01] NCI "dens.cube"
+# 
+#      Extended to all volume file formats, including
+#            ABPS, CUBE, Jaguar, MRC, OMAP, CCP4, XPLOR  
+#
+#      Isosurface parameters [cutoff, p1, p2, p3, p4] NCI ...
+#
+#         -- p1 = 0(all, default), 1(intramolecular), 2(intermolecular)
+#         -- p2 = rhoMin   (min rho cutoff to remove very low density points)
+#         -- p3 = rhoPlot  (cutoff used to remove covalent density, default 0.07 for promolecular, 0.05 for SCF)
+#         -- p4 = rhoParam (fraction of total rho that defines intramolecular, default 0.95)
+#         -- p5 = dataScaling (default 1, but set to 0.01 to read back in NCIPLOT -dens.cube file)
+#
+#  references: 
+#
+#   "Revealing Noncovalent Interactions", 
+#   Erin R. Johnson, Shahar Keinan, Paula Mori-Sanchez, Julia Contreras-Garcia, Aron J. Cohen, and Weitao Yang, 
+#   J. Am. Chem. Soc., 2010, 132, 6498-6506. email to julia.contreras@duke.edu
+# 
+#   "NCIPLOT: A Program for Plotting Noncovalent Interaction Regions"
+#   Julia Contreras-García, Erin R. Johnson, Shahar Keinan, Robin Chaudret, Jean-Philip Piquemal, David N. Beratan, and Weitao Yang,
+#   J. of Chemical Theory and Computation, 2011, 7, 625-632
+
+# new feature: quaternion() with no parameters gives "current molecular quaternion" -- same as quaternion(script("show rotation"))
+
+# bug fix: POVRAY export of mapped surfaces fails
+
+# new feature: isosurface PARAMETERS [cutoff, p1, p2, p3...]
+#   -- allows passing parameters to an isosurface generator
+#   -- if parameters are 0, then some default value is used instead
+
+# bug fix: isosurface cavity algorithm error makes cavity too large
+# bug fix: 12.1.48 feature MO/ORBITAL POINTS delivers twice the number of desired points
+# bug fix: (not fixed in 12.0) set picking label requires picking of ATOM, not its label. 
+# bug fix: load "xxxx" filter "biomolecule 1" broken
+# bug fix: font labels 16 bold   does not work (i.e. missing face)
+
+# new feature: color atoms property VECTORSCALE
+# new feature: isosurface slab n  -- Erik Wyatt idea
+
+# --------------------------------------------------------------
+
+#version=12.1.48
+
+# new feature: atomMovedCallback parameter: BitSet of atoms moved
+# new feature: appletReadyCallback parameters: htmlName, TRUE/FALSE 
+#  -- fired ONCE upon applet ready, once upon applet destroyed
+# new feature: load spacegroup "" loads data with current file's space group
+# new feature: load unitcell "" loads data with current file's unit cell and offset
+#  set appendNew false 
+#  LOAD DATA "append"
+#  1
+#  testing
+#  Na 0.5 0 0.5 
+#  end "append" {1 1 1} spacegroup "P4/mmm" unitcell ""
+
+# new feature: draw ARROW [ATOM {aa} | BOND {bb} {cc}] [ATOM {aa} | BOND {bb} {cc}]
+#  -- allows easy creation of curved mechanistic arrows from atoms to bonds, 
+#     bonds to atoms, atoms to atoms, or bonds to bonds.
+#  -- when atoms are moved, these arrows follow the atoms. 
+ 
+# new feature: isosurface CONNECT {xxx}
+#  -- connects an isosurface to an atom (only the first in the set) so that
+#     If that atom is moved, then entire isosurface is moved. 
+#  -- STATE ISSUE: From the state, all isosurfaces are created AFTER atoms are moved, 
+#     so an isosurface such as a molecular surface will not be recreated properly from the state
+
+# new feature: show state FILE "filename"  --- show embedded state from file (for example, an image)
+
+# new feature: MO POINTS / AO POINTS mapping onto a plane
+#   for (var i = -5;i < 5;i += 0.2) {isosurface color range -1.0 1.0 plane x= @i map atomicorbital 4 3 1 points 1000;refresh}
+
+# bug fix: set appendNew false; load =1q0y; load APPEND =1crn causes exception
+# bug fix: lcaoCartoon does not get hidden when atom deleted
+# bug fix: isosurface mesh incompatible with fullylit and frontonly
+# bug fix: isosurface SELECT should also set model index
+# bug fix: navigate broken
+# bug fix: modelKit dragMinimizeAtom broken in 12.0.43
+# bug fix: dragMinimize should select all non-fixed atoms if there are fixed atoms
+# bug fix: write @{"xxxx"} fails
+# bug fix: xmlns designations for jvxl and cml added to JVXL file creation 
+# bug fix: isosurface ... map VDW -- mapping not saved in state
+# bug fix: CRYSTAL reader does not read vibrations for atoms with two-character symbols
+# bug fix: cartoons with hermite level do not reposition for atom position changes or trajectories
+# bug fix: isosurface plane x=-1 (with no spaces) not accepted 
+# bug fix: x = write("VRML") should give VRML contents and not write to disk
+# bug fix: third oxygen atom in 5'-terminal phosphate was not assigned to backbone (e.g. 4tna.pdb)
+# bug fix: update in Jmol.js: Java version detection got broken in Mac Firefox 4.0.1 (part of browser compatibility test)
+
+# --------------------------------------------------------------
+
+#version=12.1.47
+
+# new feature: MO POINTS npts seed   -- displays MOs as pointilist objects
+#     load c6h6.smol
+#     mo points 5000
+#     mo homo
+#     mo points 3000 13  # optional random number seed reproduces previous results
+#
+# new feature: isosurface atomicOrbital n l m [zeff] [ POINTS npts seed]
+#       allows Monte Carlo type orbital display, as for http://stolaf.edu/people/hansonr/origami/WIN/orbital1.zip
+#       (see http://stolaf.edu/people/hansonr/orbital), e.g.:
+#
+#         isosurface phase atomicOrbital 3 2 1 POINTS 5000
+#
+#       optional random number seed reproduces previous results
+#
+# new feature: contoured planes and 3D objects can be remapped and recontoured using ISOSURFACE MAP
+#
+# new feature: set dotScale applies to isosurface points in pointilist objects
+#
+# new feature: SCALE parameter implemented for atomic orbitals.
+#
+# bug fix: remapping of a contoured isosurface fails
+# bug fix: user-defined @ atom sets should be saved in state
+# bug fix: defined @ atom sets not indicating changes when models are deleted
+# bug fix: parameter setting of Jmol integer parameters with float values may not set variables
+#    example: set dotScale 3.0   does set that variable, but there is no effect. (not fixed in 12.0)
+
+# --------------------------------------------------------------
+
+#version=12.1.46
+
+# new feature: set partialDots  -- partial bonds rendered with dots rather than dashes
+# new feature: set PICKING dragSelected
+#   -- like dragMolecule; must be over an atom (any atom)
+#   -- use ALT to rotate selected atoms
+#
+# note: For dragging and rotating atoms, chains, and molecules
+#       there are several parameters that govern the process 
+#       because there are several different ways of going about it. 
+#
+#       -- You can specify a set of atoms to FIX in place and not allow movement: FIX
+#       -- You can specify whether or not to allow rotation of atoms when dragging: set allowRotateSelected
+#       -- You can specify to move preselected atoms only, and you can specify the atoms
+#          either with SELECT commands using set picking dragSelected
+#          or by clicking on them (using set picking SELECT...)
+#
+#        set dragSelected (12.0)
+#             Allows dragging of selected atoms but, by itself, no rotation.
+#             pressing ALT shows selected atoms that will be moved   
+#             ALT-SHIFT-LEFT moves, CTRL-Z undos, CTRL-SHIFT-Z or CTRL-Y redos  
+#             along with set picking SELECT x
+#             where x is one of: atom, group, chain, molecule, polymer, structure, model
+#             You can also use set picking extendedSelect for Rasmol-style picking, where
+#             you get one group at a time only; the default is to toggle selections on and off
+#
+#        set dragSelected; set allowRotateSelected (12.0)
+#             AllowRotateSelected by itself does nothing, but with set dragSelected 
+#               also allows rotation.
+#             Rotations, though allowed, are carried out on FULL MOLECULES ONLY.
+#             pressing ALT shows selected atoms that will be moved   
+#             ALT-LEFT rotates, ALT-SHIFT-LEFT moves, CTRL-Z undos, CTRL-SHIFT-Z or CTRL-Y redos
+#  
+#        set allowMoveAtoms TRUE (12.2)
+#             A setting that enables/disables dragSelected and allowRotateSelected
+#             and also allows rotation of atoms within molecules. 
+#             pressing ALT shows selected atoms that will be moved   
+#             ALT-LEFT rotates, ALT-SHIFT-LEFT moves, CTRL-Z undos, CTRL-SHIFT-Z or CTRL-Y redos
+#  
+#        set allowMoveAtoms FALSE (12.2)
+#             turns off dragSelected, allowRotateSelected, and itself, forcing selected rotations
+#             to act on complete molecules 
+#
+#        set picking dragSelected (12.2, new)
+#             (requires set allowMoveAtoms;set allowRotateSelected)
+#             Based on those currently selected atoms, simple access to drag/rotate: 
+#             LEFT (on those atoms) moves, ALT-LEFT (on those atoms) rotates, 
+#             CTRL-Z undos, CTRL-SHIFT-Z or CTRL-Y redos  
+#
+# bug fix: no ALT-x menu action in application
+# bug fix: FIX command not working properly
+# bug fix: CTRL-SHIFT-Z not working for "redo"
+# bug fix: select within(chain, atomno=xxx) will not select all desired atoms
+#          if the chain is spread out over multiple regions of the file (1gzx)
+# bug fix: undo (CTRL-Z) and redo (CTRL-Y) not implemented for dragSelected
+# bug fix: set dragselected may not turn off transient selection halos 
+# bug fix: molecules incorrectly assigned for covalently attached cofactors, such as HEM (1gzx)
+#       What about hydrogen bonding? 
+
+# bug fix: set picking dragMolecule then use of SHIFT after rotate COMPARE will result in unwanted translation
+
+# --------------------------------------------------------------
+
+#version=12.1.45
+
+# new feature: NBO second-order data saved in modata:
+#   Var x = getProperty("auxiliaryInfo.models[2].moData.secondOrderData")
+#   show x
+#   >> x = [[69.0,115.0,1.2800001,0.044],[69.0,134.0,0.67,0.026],...[mo1, mo2, E(2), f(i,j),...]
+#   where mo1 and mo2 are indexes into the MO list (Note that they are floats, not integers.)
+#   and E(2) and f(i,j) are the E(2) value calculated by genNBO.
+
+# bug fix: quaternion N frame off slightly due to bisection error.
+#   -- also affects Rasmol hydrogen bond calculation
+# bug fix: select a will not select P-only DNA adenosines (1jgq)
+# bug fix: select A and select a  may be different for P-only DNA strands (1jgq)
+# bug fix: help needs to add version to http call
+# bug fix: properties of type float[][] not saved as ScriptVariable lists
+# bug fix: AIMS reader upgrade to include atom/atom_frac line mix
+# bug fix: PSI3 reader for WebMO
+# bug fix: NWChem reader skips vibration info; set to skip only translation/rotation models
+# bug fix: data connect can cause null pointer exception if data statement has white-space-only lines
+
+# --------------------------------------------------------------
+
+#version=12.1.44
+
+# bug fix: MOs broken in 12.1.43
+# bug fix: drawpicking fails for drawn polyhedra. (turned off for now)
+
+# --------------------------------------------------------------
+
+#version=12.1.43
+
+# new feature: show chemical name
+# new feature: show chemical InChI
+# new feature: show chemical InChIKey
+# new feature: set echo ID "xxxx"
+# new feature: show drawing  (2D line drawing, from NIH)
+# new feature: isosurfaces can be remapped.
+#   isosurface molecular map property temperature
+#   isosurface map property partialcharge
+#   isosurface vdw
+#   isosurface map mep
+
+# bug fix: { echo testing } causes compiler error
+# bug fix: { echo "testing" } causes compiler error
+# bug fix: cannot access site_xxx definitions created by PDB file read
+# bug fix: echo myecho ... after echo ALL still does ALL
+# bug fix: cube file reader (load command) does not convert z coordinates to Angstroms.
+# bug fix: isosurface CAVITY cannot be mapped
+# bug fix: isosurface CAVITY broken
+# bug fix: application load menu unnecessarily creates new frame and loses current script processing
+
+# code: setEcho rewrite
+
+# --------------------------------------------------------------
+
+#version=12.1.42
+
+# new feature: for (var x in [....]) {...}
+#  -- array option
+# code: Swing class instantiation failure caught
+# bug fix: set picking identifyBond  not implemented
+# bug fix: leaving modelKitMode does not leave bondPickingMode "ident"
+
+# --------------------------------------------------------------
+
+#version=12.1.41
+
+# new feature: for (var x in {...}) {...} 
+#  -- for example:
+#  for (x in {selected}) { print x }
+# new feature: x = {*}.mass.sum   (and .max, .min, etc.)
+#  -- note, like other atom properties, {*}.mass by itself is an AVERAGE of masses of all atoms
+#  -- accounts for isotopes, but otherwise just uses average masses. Source: John Moore/Jon Holmes, J. Chem. Educ. 
+# new feature: x = plane(<point>, <vector>, true)
+
+# bug fix: for(_x...) not disallowed
+# bug fix: Spartan .smol files: default for charges is now ESPCHARGES (what SpartanStudent reports), not MULLIKEN
+#  -- filter "MULLIKEN" now reads those charges
+# bug fix: {*}.resno, .atomno, etc. where the property is an integer returns sum, not average
+# bug fix: closing a prompt dialog with ESCAPE can cause crash; should return "null"
+# bug fix: conflicting (Edit) selectMenu removed
+#  -- can't have two menus with exactly the same name, or language will only update one
+# bug fix: miscalculating distances for atom exclusion in CifReader molecular option
+# bug fix: image creation does not lock out mouse or system refreshes
+# bug fix: select {*} (color=...) fails (specifically math functions doubling as atom properties)
+# bug fix: cross-applet script output from print script("show ...", "B") not working 
+# bug fix: synchronize command broken 
+# bug fix: "string"%-n right-side truncation one character short
+
+# code: MouseManager14, ActionManager simplifications
+
+# --------------------------------------------------------------
+
+#version=12.1.40
+
+# new feature: frame title @someArray
+# -- for example:
+#  x = getproperty("modelinfo.models.energy")
+#  y = x.sub(x.min).mul(2625.5)  # relative energies, in kJ
+#  frame *;frame title @y
+# new feature: write butane.xyzvib # write simple multimodel xyz file
+
+# bug fix: within(xxx, <only first atom in a model>) will fail
+# bug fix: Crystal09 reader upgrade
+# bug fix: VASP outcar atom naming error
+# bug fix: adaptation for improperly CONECTed PDB files such as 1W7R
+# bug fix: select *y defaults to select {*}(y) instead of select {:y}
+# bug fix: cml bug fix for bonds not applied to symmetry
+# bug fix: newer cml format for crystal information
+# bug fix: vibration ON  not saved in state
+# bug fix: not reading MOPAC 6, 7, or 2009 files
+
+# --------------------------------------------------------------
+
+#version=12.1.39
+
+# new feature: load MENU -- if user-defined menu label is "null" then that menu item is removed
+#  -- for example:  labelName | null      or      labelMenu | null
+# new feature: write COORD XYZVIB filename
+#  -- writes multimodel xyz file, with vibrational frequencies if present
+# new feature draw ARROW..... BARB
+#  -- fish-hook "radical" arrows
+#  -- included in POVRAY exporter only
+#
+# bug fix: write of stereo image only shows one half of dual display
+# bug fix: application does not update menus properly
+# bug fix: Jaguar reader not reading vibrations correctly
+# bug fix: write JMOL (instead of write xxx.jmol) not implemented
+# bug fix: Jaguar reader not reading vibrations correctly
+
+# --------------------------------------------------------------
+
+#version=12.1.38
+
+# new feature: isosurface... map property x WITHIN x.y
+#  -- allows a maximum distance to be defined; speeds up calculation
+#  -- defaults to 5.0 when set isosurfacePropertySmoothing FALSE
+#
+# bug fix: load of model when animation is on may cause animation NEXT to fail
+# bug fix: isosurface VDW can ignore H2O
+# bug fix: load FILES <series of PDB files> incorrectly autobonds CONECTed atoms
+# bug fix: (signed applet only) write FRAMES multiple calls to file dialog 
+# bug fix: draw/show pointGroup not correct when {0 0 0} is not center of model
+# bug fix: draw pointGroup deletes all draw objects, not just of this model's point group
+# bug fix: multimodel show pointGroup does not reset when frame is changed
+
+# --------------------------------------------------------------
+
+#version=12.1.37
+
+# new feature: (relevant to Macintosh only) COMMAND-SHIFT-LEFT-DRAG same as CTRL-SHIFT-LEFT-DRAG
+# new feature: you can put element numbers in place of element symbols in XYZ files,
+#              and you can have a sixth column that is radius e.g.
+#    elemno x y z charge radius
+#              or (for just the radius with no charge)
+#    elemno x y z - radius
+#              note that charge can be formal (integer) or partial (decimal)
+#
+# bug fix: set PICKING OFF  nonfunctional	
+# bug fix: unnecessary moveto commands in state 
+# bug fix: CTRL-SHIFT-LEFT on Macintosh must be pressed with LEFT first. go figure... (Old, old problem fixed)
+#   -- problem was that CTRL-SHIFT-LEFT-DRAG specifically was delivered as CTRL-SHIFT-MOVE
+#   -- specifically relates to changing the slab after slab ON
+# bug fix: isosurface for trajectory not working
+# bug fix: Var x in function x() not recognized
+# bug fix: Var data followed by data++ causes syntax error
+# bug fix: isosurface .... map select {...} not saved properly in state
+# bug fix: MO HOMO should select highest non-negative value if no occupancy info
+# bug fix: Spartan reader not reporting HOMO
+# bug fix: load xxxx.top should default to xxxx.trj for coord files
+
+# --------------------------------------------------------------
+
+#version=12.1.36
+
+# new feature: preliminary DCD file format reader
+#  --   load trajectory "c:/temp/t.pdb" coord "c:/temp/t.dcd" 
+# new feature: mo -n  -- switches phase of orbital
+#
+# bug fix: set bondPicking deletes bond
+# new feature: Molden reader filter options VIBONLY, OPTONLY, NOOPT, NOVIB
+# bug fix: Molden reader does not read optimizations
+# bug fix: Molden reader nonfunctional
+# bug fix: Spartan reader fails when no MO calculation
+# bug fix: Spartan MO d6/f10 reader problems
+# bug fix: QuantumEspresso reader first-model not read as Cartesian coordinates
+# bug fix: load ? broken in 12.1.34
+# bug fix: getProperty  by itself does not return SORTED list of properties
+#
+# code: binary model file reading capability added 
+# code: JPEG encoder stores state in APP1 (FFE1) tag set instead of comment field
+# code: MOCalculation streamlined
+
+# --------------------------------------------------------------
+
+#version=12.1.35
+
+# new feature: linear combinations of molecular orbitals
+#   -- any number of orbitals may be combined: mo [c1, mo1, c2, mo2, c3, mo3...], for example:
+#      mo [0.5, 20, 0.5, 21]
+#   -- coefficients will automatically be normalized such that SUM_i(c_i*c_i) = 1.00
+#   -- if variables are involved, one needs @{...}:
+#      load c6h6.smol; for (f = 0; f <= 10; f++) { mo @{[f/10.0, 20, (10-f)/10.0, 21]}; refresh }
+  
+# bug fix: SMILES generator error for cationic aromatic nitrogen
+# bug fix: application with file name does not run jmolscript: embedded scripts
+# bug fix: isosurface x.xx should default to "isosurface CUTOFF x.xx" for legacy compatibility
+# bug fix: {xxx}.label = "xxx" does not allow saving state
+# bug fix: {xxx}.element = "B" only assigns "B" to first atom in set
+
+# --------------------------------------------------------------
+
+#version=12.1.34
+
+# new feature: CTRL-V "dropping" of a url into Jmol loads the model found at that URL.
+
+# bug fix: {xxx}.element = "B" does not work
+# bug fix: JavaScript getPropertyAsArray("auxiliaryInfo.models") will fail for crystal structures 
+# bug fix: undocumented select within(hkl,...) and select within(plane,...) missing
+# bug fix: message @x   should replace x with a variable; "message @x is the value of x" should not
+# bug fix: older syntax MESSAGE %{x} for variable value missing
+# bug fix: variable pointers such as @x = 3 and y = 3 + @x not working 
+# bug fix: subtle label off bug leaves atom "clickable"
+# bug fix: subtle bond deletion bug leaves atoms with bonds unclickable
+# bug fix: AMBER CYX not recognized in @cystine definition
+# bug fix: MD topology/coord file loading problems; general trajectory problems
+# bug fix: write xxx.obj upgrade
+# bug fix: drag/drop CUBE files should use isosurface sign red blue $FILENAME$
+
+# --------------------------------------------------------------
+
+#version=12.1.33
+
+# new feature: write xxx.OBJ -- WaveFront OBJ file writing
+# new feature: isosurface MRC keyword indicates file is MRC type (for nonstandard MRC files)
+
+# bug fix: CIF reader not reading files with multiple models involving GEOM_BOND
+# bug fix: scriptLevelMax 20 too small -- changed to 100
+# bug fix: for/while local variables improperly localized in iterative functions
+# bug fix: 12.1.32 should not have changed <string> + <array> to be <array> 
+
+# --------------------------------------------------------------
+
+#version=12.1.32
+
+# new feature: simple embedded application version of evalStringWaitStatus
+#              that returns output from print/message/echo commands
+#  -- see TestScriptOutput:
+#     http://jmol.svn.sourceforge.net/viewvc/jmol/trunk/Jmol/examples/basic/org/jmol/TestScriptOutput.java?content-type=text%2Fplain
+# new feature: preliminary NWChem orbital reading
+#   -- still not normalized correctly
+#   -- d and f orbitals not checked
+#   -- UHF alpha/beta not checked
+# new feature: <array1> | x
+#   -- IN PLACE concatenation
+#   -- array1 will be appended to
+#   -- if x is an array of length n, then n  elements will be added
+#   -- works as    a |= b
+#   -- to append a full array as one element, use   a |= [x]
+#   -- to append with creating a NEW array, use a + x or a + [x] instead
+# new feature: "unset" command same as "reset"
+#   -- for example:
+#       a = array([1,2,3],[4,5,6],[7,8,9])
+#       y = a[3]
+#       unset a
+#       show variables
+#         y = [7,8,9];
+#   -- just looks better for variables
+#   -- good to use this if just a small part of a large array
+#      or hashtable is wanted and the rest can be discarded
+# new feature: sort/reverse does array sorting IN PLACE, not by copying
+#   -- for example:
+#        y = x.sort
+#      x is sorted, and y is a copy of that
+#   -- still need x = x.sort in general, because "x.sort" is not a command
+# new feature: array assignment is always by reference, as for JavaScript and Java 
+#   -- y = x[3], if x[3] = [3, 4, 5], assigns y to [3, 4, 5], so if later
+#      one uses y[4] = "new", then at that point x[3] = [3, 4, 5, "new"] 
+#   -- y == x[3] distinction removed
+# new feature: x = intersection(plane, plane)
+# new feature: x = intersection(pt, plane) (i.e. line perp to plane through pt)
+# new feature: x = intersection(ptLine, vLine, plane)
+# new feature: x = intersection(ptLine, vLine, point) (i.e. plane perp to line through point -- projection of point onto line)
+# new feature: draw polygon @x @y where @x and @y are arrays of points and faces, respectively
+
+# bug fix: a = {} initialized as bitset, not associative array
+# bug fix: <bitset> | <integer> should set bit <integer>
+# bug fix: <bitset> | <array> should set bits indicated in <array>
+# bug fix: <bitset> & <integer> should return true if bit <integer> is set
+# bug fix: <bitset> % n when n < 0 should do "last n + 1"
+# bug fix: <array> | [a,b,c] should append elements to array -- IN PLACE
+# bug fix: animation incompatible with spin for largish structures
+# bug fix: _modelFile variable incorrect for file read from zip file
+# bug fix: If a script such as "test.spt" creates a function 
+#          test(), then the next implicit script command "test.spt" will fail
+# bug fix: implicit script command XXXX.xxx loses case of filename
+# bug fix: array appending appends string values  
+# bug fix: frame 0.0 does NOT enable all frames; breaks "quaternion" command
+# bug fix: isosurface fragment fix
+# bug fix: cartesian exporter capping cylinders flat and spherical both
+# bug fix: Jmol logo was missing from the Help>What's New window.
+# bug fix (improvement): the Help>User Guide window was too narrow.
+# bug fix: echo @x when x is an associative array
+# bug fix: write t.jvxl does not work for new solvent/molecular surfaces business
+
+# code:  ArrayList X ... --> List X 
+# code: ScriptVariable simplified
+#   -- ScriptVariable[]objects --> (ArrayList<ScriptVariable>)value
+
+# --------------------------------------------------------------
+
+#version=12.1.31
+
+# feature change: undocumented a[13] = 3  (where a is a matrix, for a[1][3]) removed
+
+# new feature: MOL reader reads > <PUBCHEM_MMFF94_PARTIAL_CHARGES>
+# new feature: load FILTER "*.CA,/=5" 
+#   -- every 5th alpha carbon
+#   -- note comma before /=
+# new feature: write xxxx.OBJ 
+#   -- Wavefront OBJ files
+#   -- export/_ObjExporter written by Ken Evans 
+# new feature: write xxxx.XYZRN  
+#   -- input for MSMS
+#   -- suggest first using   set DEFAULTVDW BABEL 
+# new feature: multidimensional array assignment: a[1][2] = 10
+#   -- allows setting of a specific element of a multidimensional array	
+#   -- value can be anything -- a number, an array, an hashtable, a bitset, etc.
+#   -- allowed also for matrices, but if the value is not a number, or
+#      the row/column pointers are outside the range 1-3 or 1-4, then 
+#      the matrix is turned into an array automatically
+#   -- for an array, when not a direct assignment, you need parentheses:
+#        x = (a[1])[2]; if ((a[1])[2] == 3)....
+#      because in general a[1][2] means "array a, elements 1 through 2"
+#   -- for a matrix, you can use a[1][2] anywhere -- this is a difference between matrices and arrays 
+# new feature: y == x[3]  (double "=" in context of assignment) (removed in 12.1.32)
+#   -- y is now an alias for x[3], not a copy
+#   -- allows, for example:
+#        y = x[3]; y[2] = 6; 
+#        equivalent to (x[3])[2] = 6 (which is not a valid syntax)
+# new feature: x.sort(n)
+#   -- array sorting by nth object 1 - arrayLength; 0 == last, -1 = next to last, etc.
+# new feature: load 1blu.pdb filter "*.CA | HETATM,![HOH]"
+#  - "|" means "OR", so this reads:
+#     load only alpha carbons OR (HETATM and not HOH)
+
+# bug fix: Jmol 11.9.24+ will read states created by prior versions incorrectly
+#   -- fixed by adding "legacyAutoBonding" setting
+# bug fix: loading a file on command line does not allow 
+#          for write xxxx.jmol to include model file in zip file
+# bug fix: fails:  load 1mbo.cif; isosurface select(not solvent) ignore(none) sasurface;  
+# bug fix: passing an array to a function does not correctly pass by reference
+# bug fix: dot function included in array  x = [(whatever).something...]   fails
+# bug fix: array sorting for objects
+# bug fix: creating arrays from variables does not copy variable value
+# bug fix: draw .... @s  does not work for title, but @{s} does
+# bug fix: ZAP should not set appendNew TRUE
+# bug fix: load APPEND after ZAP inserts ZAP into state after load command
+# bug fix: write MOL writes incorrect charge
+
+# code: overhaul of ScriptVariable
+#   -- "list" type renamed "varray" 
+#   -- value = null now for varray
+#   -- way more efficient use of arrays
+#   -- may have introduced problems, but they should all be catastrophic.
+
+# --------------------------------------------------------------
+
+#version=12.1.30
+
+# new feature: Finnish translation
+
+# bug fix: isosurface POCKET broken
+# bug fix: isosurface MOLECULAR or SETS with DOTS gives too many dots
+# bug fix: draw TRIANGLES not working
+# bug fix: annoying tic label side-switching removed
+# bug fix: set measurementLabels off not working for ticks
+# bug fix: isosurface color mesh blue   not working
+# bug fix: (modelkit) load $PCl5; assign atom ({2}) "C"  fails to place H atoms correctly
+# bug fix: not all translated html text was escaped in web export widgets
+
+# code: Commentized WebMaker.java in prep for complete removal.  Fixes to Widgets javadocs.
+# code: isosurface MOLECULAR efficiencies
+
+# --------------------------------------------------------------
+
+#version=12.1.29
+
+# new feature: isosurface SLAB within x.y {point}
+#   -- smooth circular slabbing
+#   -- negative x.y --> "not within" (creates a circular hole at this position)
+
+# bug fix: isosurface molecular/solvent improvements
+# bug fix: logFile/logCommands/logGestures should not be saved in state
+# bug fix: log file cannot be turned off by setting value to ""
+# bug fix: user-defined function calls should be able to look like Jmol commands, without ()
+
+# code: isosurface MOLECULAR/SOLVENT x.y completed; "FULL" option removed
+# code: (new concept) nonlinear Marching Cubes for IsoSolventReader
+
+# --------------------------------------------------------------
+
+#version=12.1.28
+
+# bug fix: 12.1.27 writing of script lists # /*file*/ inappropriately.
+# bug fix: 12.1.27 isosurface area is 1/3 actual.
+# bug fix: isosurface molecular/solvent better version, adds tripod-test logging
+# bug fix: write xxx.jmol can fail if the same file is used twice in two different contexts
+
+# --------------------------------------------------------------
+
+#version=12.1.27
+
+# new feature: isosurface molecular FULL
+# new feature: isosurface solvent [optionalRadius default:1.2] FULL
+#    -- very fast solvent excluded surface
+#    -- FULL option does reduced-surface analysis, 
+#    -- uses Marching Cubes to create the surface
+#    -- very close fit to MSMS; slightly smaller area and volume
+#    -- replaces work from 12.1.24
+#    -- use isosurface SET 1 generally
+#    -- irrelevant inner surface removed due to negative volume.
+#       TODO: test for this with cavities
+# new feature: isosurface MSMS xxxx.vert  -- creates isosurface from MSMS output files
+#   -- implies xxxx.face is also present in the same directory as xxxx.vert.
+#   -- if only .vert are present, only dots will be generated
+# new feature: QuantumEspresso reader
+# new feature: GULP reader  
+# new feature: isosurface/draw .length (also added to 12.0.26)
+
+# bug fix: isosurface sets not sorted by number of vertices 
+# bug fix: failure to create atomicOrbital does not clear that isosurface
+# bug fix: popup menu does not show load {1 1 1} options correctly
+# bug fix: draw intersection/polygon without vertices does not clear existing object
+# bug fix: isosurface slab for plane not working
+# bug fix: space before [ not recognized as significant when following $xxx or {...}
+# bug fix: undocumented $isosurface1[3] fixed
+# bug fix: isosurface set 0  does not display all sets
+
+# --------------------------------------------------------------
+
+#version=12.1.26
+
+# new feature: write SDF creates multi-model SDfile based on models of selected atoms
+# new feature: write V3000 creates V3000 file; see http://www.symyx.com/downloads/public/ctfile/ctfile.pdf
+# new feature: the list of languages in the popup menu  
+#   -- is ordered by language code
+#   -- displays each language name both in the current language and in the native language
+#   -- is updated adding a new language if this is chosen via script (or maybe by the OS default)
+# new feature: plane(pt1, pt2) -- returns bisecting plane
+# new feature: draw SLAB $draw1 PLANE @{plane({...} {....})}
+#   -- clips a drawn polygon based on a plane
+#   -- $draw1 must be a draw POLYGON definition
+#   -- draw draw1 SLAB $draw1... is allowed
+#   -- for example:
+#   draw p4 polygon 4 {1 2 3} {2 3 4} {4 5 6} {7 8 9} 2 [0 1 2 0] [2 3 0 0]
+#   draw p4 slab $p4 PLANE @{plane({0 0 0}, {10 0 0})}
+# new feature: measure list  -- same as show measurements
+
+# bug fix: GenNBO reader does not read MOs properly
+# bug fix: GenNBO reader does not read UHF data
+# bug fix: GenNBO reader does not read xxx.31 file P orbitals not in X Y Z order
+# bug fix: applying unit cell in LOAD command to XYZ file containing multiple models 
+#          does not convert later model coordinates to fractional ones.
+# bug fix: Web Export and write xx.jmol fail for load XXX:: forcing file type
+# bug fix: write MOL creates V2000 file
+# bug fix: over-run of SDF, MOL/V2000 reports error
+# bug fix: assigning array elements using x[i] = pt, where pt is a 
+#          variable that is a cartsian point or a plane does not copy variable
+# bug fix: SMILES generator in certain cases may not return stereochem (c-C(OH)(H)-c)
+# bug fix: mistyped command such as measure LIST (with LIST present) crashes Jmol
+# bug fix: pop-up menu after zap 1.1 in set of two models crashes Jmol
+
+# code: V3000Reader integrated into MolReader
+# code: JUnit test for file reading GenNBO and CIF files lacks viewer object
+
+# --------------------------------------------------------------
+
+#version=12.1.25
+
+# new feature: default for loading of CIF files with GEOM_BOND records is to load them
+#   -- as full molecules (symop=1 or connected to such (or within autobonding range of such)
+#   -- without unit cell 
+#   -- Cartesian coordinates
+#   -- similar to the way CCDC Mercury loads these files
+#   -- attaches H atoms and otherwise respects GEOM_BOND designations explicitly
+# new feature: CIF load FILTER "MOLECULAR" 
+#   -- does molecular load even when no GEOM_BOND records
+#   -- defaults to {1 1 1}
+# new feature: pop-up menu includes load "" FILTER "MOLECULAR" option (under SYMMETRY...)
+
+# bug fix: failure to read properly data "connect_atoms" from state 
+#          when struts or hbonds turned OFF
+# bug fix: 12.1.16-24 fail to write state properly -- saved settings not saved
+# bug fix: CIF reader does not recognize -1 for _atom_site_disorder_group
+# bug fix: VaspOutcarReader misreads file with line containing "Therefore set LREAL=.FALSE. in the  INCAR file"
+
+# code: rename VaspReader VaspOutcarReader
+
+# --------------------------------------------------------------
+
+#version=12.1.24
+
+# new feature: streamlined STATE for appended files
+# new feature: Jmol SMILES generation includes stereochemistry 
+#              for octahedr	al and trigonal bipyramidal 
+
+# bug fix: isosurface t.obj should be discernable as OBJ if created by PyMOL
+# bug fix: set drawPicking does not pick visible isosurfaces
+# bug fix: draw * translucent does nothing
+# bug fix: isosurface on frame other than first will be incorrect
+# bug fix: draw with multiple models can fail to save state
+# bug fix: SMILES check for c=c can fail.
+# bug fix: Mopac MGF reader upgrade allows orbital subset
+# bug fix: Mopac MGF reader upgrade allows filter "alpha", filter "beta"
+# bug fix: isosurface OBJ pymol.obj not reading Pymol output
+# bug fix: appending data to models with unit cells can cause odd results
+# bug fix: JME load append does not get saved properly in state
+# bug fix: bond set variables [{1 2 3}] incorrectly shown as atom bitsets ({1 2 3}) 
+# bug fix: xxx.yyy when "yyy" has been defined as a local variable using VAR fails
+# bug fix: find("SMILES", smilesString) does not find Jmol atomIndex == 0
+# bug fix: find("SMILES", smilesString) does not find [2H]
+# bug fix: slightly better response to command line input errors (complete command in history)
+# new feature: print point(3.5) -- rounds down (toward 0) to nearest integer
+# bug fix: IDTF exporter inverts rotation matrix from pt1, pt2, for dx = dy = 0
+# bug fix: Linux file completion from LOAD "  improperly lowers the case of file names
+ 
+# --------------------------------------------------------------
+
+#version=12.1.23
+
+# bug fix: labels OFF broken in 12.1.22
+
+# --------------------------------------------------------------
+
+#version=12.1.22
+
+# new feature: P2N reader -- see http://q4md-forcefieldtools.org/
+#    -- adds "altName" auxiliary data
+#    -- allows FILTER "altName"
+#    -- allows label %{altName}
+# new feature: label %{dataName}  -- UNDOCUMENTED
+#    -- allows reading values from a DATA array.
+#    -- case-sensitive
+#    -- data are read sequencially as string data, one per data line.
+#    -- if data of that name are not found, looks for data in auxiliaryInfo of that name.
+#         and bases the index as atom index relative to the model.
+# new feature: Edit...Preferences...Clear History 
+#    -- resets window positions and clear all history. 
+#    -- thank you, Tami Caraballo!
+# bug fix: zap 1.1 when models have cartoons or other bioshapes crashes Jmol
+# bug fix: Ramachandran approximation of P straightness off by a few percent
+# bug fix: SMILES matching string with ".[C@H]" reads stereochemistry incorrectly
+# bug fix: load SMILES with %nn fails 
+# bug fix: Jmol creating possibly ambiguous aromatic amine SMILES
+#          1-H-4-methylimidazole was: n1cnc(C)c1; now: [nH]1c[n]c(C)c1 
+# bug fix: {*}.find("SMILES",smilesString) does not include aromatic H
+# bug fix: Smiles MF calculation for aromatic atoms N and C in error.
+#    NOTE: Jmol may undercount the number of hydrogen atoms
+#          for aromatic amines where the ring bonding to N is 
+#          not explicit. Each "n" will be assigned a bonding count
+#          of two unless explicitly indicated as -n-.
+#          Thus, we take the position that "n" is the 
+#          N of pyridine unless otherwise indicated.
+#         
+#          For example:
+#            $ print "c1ncccc1C".find("SMILES","MF")
+#            H 7 C 5 N 1   (correct)
+#            $ print "c1nc-n-c1C".find("SMILES","MF")
+#            H 6 C 4 N 2   (correct)
+#          but
+#            $ print "c1ncnc1C".find("SMILES","MF")
+#            H 5 C 4 N 2   (incorrect)
+
+# code: efficiencies in LabelToken
+
+# --------------------------------------------------------------
+
+#version=12.1.21
+
+# new feature: set allowMoveAtoms
+#    -- automatically sets/unsets allowRotateSelected and dragSelected
+#    -- ALT-left --> rotates selected set
+#    -- ALT-SHIFT-left --> drags selected set
+
+# bug fix: popup submenu "file" only enabled for application or signed applet 
+# bug fix: load xxx.jmol broken in 12.1.17
+# bug fix: write JMOL missing from popup menu
+
+# --------------------------------------------------------------
+
+#version=12.1.20
+
+# bug fix: WRITE PDB not padding to 80 char
+# TODO: WRITE PDB not adding TER records
+# bug fix: PDB reader not flagging models as PDB properly when all groups are same amino acid
+
+# --------------------------------------------------------------
+
+# version=12.1.19
+
+# new feature: (Application) toolbar "set picking center"
+
+# bug fix: bad build of 12.1.18 for distribution
+
+# --------------------------------------------------------------
+
+# version=12.1.18
+
+# bug fix: 12.1.17 breaks popup menu
+# bug fix: relaxing single-model requirement for isosurface
+#          as long as only a single model's atoms are selected
+
+# --------------------------------------------------------------
+
+# version=12.1.17
+
+# new feature: "getPopupMenu" added to JmolViewer.getProperty("DATA_API","getPopupMenu","current"|null)
+#    -- null --> java.awt.Container
+#    -- "current" --> current menu
+# new feature: isosurface ROTATE <quaternion>
+#    -- rotates an isosurface based on a quaternion
+#    -- a display property, like OFFSET or SCALE3D
+#    -- useful if model coordinates are changed and an isosurface is present
+#    -- rotations are cumulative.
+#    -- rotations are about {0 0 0}, not the centroid of the isosurface
+#    -- ROTATE NONE removes the rotation
+#    -- for example:
+# 
+#          isosurface sasurface ROTATE @{quaternion({1 0 0}, 90)}
+#          isosurface ROTATE @{quaternion({1 0 0}, 90)} ROTATE @{quaternion({0 0 1}, 90)}
+# new feature: reset STRUCTURE -- resets structure to author's after calculate STRUCTURE
+# new feature: load OFFSET {x y z} 
+#    --follows UNITCELL parameter, if present
+#    --offsets the atoms in the file by a given amount
+#    --may be fractional
+#    --added to allow for shifts in origin for nonstandard CIF files
+#    --applicable to ALL readers
+#    --for example:
+#         load quartz.cif {1 1 1} spacegroup "ignoreoperators" offset{0 0 2/3}
+#         load caffeine.xyz offset {8.0 0 0}
+#              
+
+# bug fix: no callback for ZAP model=1
+# bug fix: compare(...) with @SP, @OH, @TB gives null pointer exception
+# bug fix: set picking invert stereo/delete atom  not sending pick callback
+# bug fix: Argus .agl reader not setting viewpoint transform
+# bug fix: load xxx where x is a flawed data file can try to load file as a script or isosurface
+# new feature: VASP OUTCAR reader (xtal/VaspReader)
+# bug fix: compiler function(){{ double brace error
+# bug fix: compiler context { var chain=3;print chain } not recognizing context variable for "chain"
+# bug fix: PDB reader not reading files with empty group name field
+# bug fix: popup menu does not include measure SEQUENCE
+# new feature: auxiliaryInfo.models[1].infoUnitCell
+#    -- 17-element array
+#    -- a, b, c, alpha, beta, gamma
+#    -- Va, Vb, Vc
+#    -- dimension = 1 (polymer), 2 (slab), 3 (standard)
+#    -- volume (Angstrom^3)
+#
+# bug fix: set picking measure SEQUENCE not reporting to application console
+# bug fix: (application only) distance picking not being reported in console
+# bug fix: set picking chain, then mouse click does not report number of atoms selected
+# bug fix: LINUX file dropper returning \r\n with name
+# bug fix: DRAW $xxx reverses order of points
+# bug fix: load PACKED for slab/polymer does not work 
+# bug fix: load "" does not work after loading a SET of models using load DATA
+# bug fix: CIF reader cannot read files with _space_group_symop_operation_xyz field
+
+# --------------------------------------------------------------
+
+#version=12.1.16
+
+# new feature: function calls can look like Jmol commands (also added to 12.0):
+#      function myfunc(a, b, c, d){....}
+#      myfunc a b c d
+#      -- these are MATHEMATICAL commands 
+#      -- use just a b, not @a @b
+#
+# new feature: custom overloading of Jmol commands (also added to 12.0)
+#      function measure(a, b) { print "measuring " + a + " " + b; measure @a @b }
+#      measure {atomno=2} {atomno=3}
+#      -- within function X, command X is standard Jmol; 
+#      -- outside the function, it is a reference to that function
+#      -- overloaded functions are not saved in the state
+#
+# new feature: load xxx.pdb filter "CONF 1" does a front-end filter of just
+#          the first alt-loc atoms within a given residue. This leads to proper
+#          formation of polymers in certain cases (2BLN, 2CI1).
+
+# bug fix: naming functions or variables after Jmol token names fails or acts unexpectedly
+#          (fixing this bug required script compiler changes, and that lead to the
+#           two new features below)
+# bug fix: User variables and functions removed from state because they are 
+#          no longer necessary and also indeterminant in terms of the "state".
+#          Originally these were needed because ECHO and DEFINE can be dynamic
+#          -- which is still true -- and because certain commands such as ISOSURFACE
+#          were being saved in the state just as their strings instead of their 
+#          intepreted code. But that was changed for 12.0, and this fix also changes 
+#          ECHO to be saved in its current state, not its dynamic state. While 
+#          dynamic DEFINE types may include variables, they aren't really
+#          part of the "state" per se and aren't needed to recreate the state. So
+#          they are dropped from the state with this fix as well. 
+# bug fix: array variable elements cannot be changed
+# bug fix: "var chains" does not work -- i.e. a name of a "within" option. 
+#          solution was to allow var ANYTHING, understanding that if you 
+#          use "var CARTOONS" for instance, then CARTOONS ON is no longer
+#          a command within the scope of that assignment.
+# bug fix: cartoon helix in 1TF6 broken by DSSP HHHGGG run
+# bug fix: not loading MOL files having no bonds
+# bug fix: load append INLINE ... not working
+# bug fix: max for Rasmol/chime units 499 -- should be 1000
+# bug fix: show state/xxxx incorrectly case-sensitive
+
+# code: undocumented load RANGE [i, j, k,...] removed (see load MODELS)
+# code: load FILTER clean-up, standardization
+
+# --------------------------------------------------------------
+
+#version=12.1.15
+
+# feature change:  DSSP default for "calculate structure" 
+#    -- old way is now "calculate structure RAMACHANDRAN"
+# feature change:  DSSP default for LOAD of PDB file with no header.
+#   in previous versions, Jmol used a ramachandran-angle-based calculation
+#   for secondary structure determination when a PDB file had no HELIX or SHEET records.
+#   It just seems reasonable to use the industry-standard DSSP method instead.
+# new feature: PDB and CIF readers read helix subtypes alpha, 3/10, and pi  
+# new feature: atom property substructure includes helixalpha(8), helix310(7) and helixpi(9)
+# new feature: defaultStructureDSSP  (default TRUE)
+#   --setting this FALSE gives previous behavior (see above)
+#   --for the CALCULATE STRUCTURE and LOAD commands
+#   --in the case of LOAD, only relevant when PDB header is missing HELIX/SHEET records
+#
+# bug fix: QCHEM reader fails
+# bug fix: CRYSTAL reader fails to read formico_opt.out
+# bug fix: CIF reader not reading insertion codes (since forever!)
+# bug fix: set appendNew FALSE fails
+# bug fix: getproperty IMAGE (returning JPG64) doubles font size with set antialiasDisplay true
+# bug fix: "configuration 1" should select all if no alternative locations
+# bug fix: load FILTER does not include %x for PDB files
+# bug fix: conformation n  definition changed for PDB files to be consistent with DSSP
+# bug fix: isosurface "xxxx.jvxl" colorscheme "rwb" does not work (jvxl files specifically)
+
+# code: http://jmol.svn.sourceforge.net/viewvc/jmol/trunk/Jmol-datafiles/dssp/cullpdb_pc20_res1.6_R0.25_d101001_chains1769
+#         was used for DSSP validation along with checkdssp.spt in that same directory
+#
+
+# --------------------------------------------------------------
+
+#version=12.1.14
+
+# new feature: "xxxx"%9999 == "to upper case"; "xXxX"%-9999 == "to lower case"
+# new feature: Accurate DSSP structure determination should be identical to DSSP
+#              using CALCULATE STRUCTURE DSSP
+#
+#   Also available is a version that takes into account already-determined
+#   amide hydrogen positions using SET dsspCalculateHydrogenAlways FALSE
+#
+#   DSSP details available using SHOW DSSP
+#   DSSP debugging available with SET DEBUG
+#   DSSP structure-determining hydrogen bonds available with CALCULATE HBONDS STRUCTURE
+#   DSSP substructure (helix310 and helixPI) available with SELECT HELIX310 and SELECT HELIXPI
+#         -- for an example of helixPI (>>555<<), see 2JC9
+#
+# new feature: show state/xxxxx   where xxxxx is any phrase. Does a line-by-line filter of the
+#              state script for xxxxx. So, for example:
+#
+#   show state/load
+#   show state/isosurface
+#   show state/hbond
+#   show state/draw
+#   show state/measure
+#   show state/connect
+#        
+# new feature: STRUCTURE HELIX310 ....
+# new feature: STRUCTURE HELIXPI ....
+#
+# new feature: calculate hbonds STRUCTURE (only those that define the DSSP "HGITEB" markings)
+# new feature: set dsspCalculateHydrogenAlways (default TRUE -- standard DSSP; set to FALSE
+#              to ensure that file-based NH atoms are used instead of rough approximations)
+# new feature: show DSSP  (just produces a report)
+# new feature: calculate structure DSSP
+# new feature: load reports model count and overall number and model number for MOs 
+# new feature: helix310 and helixPI structures may be set using the STRUCTURE command
+# new feature: select helix310 and select helixPI -- provided those have been set. 
+#              Note that select HELIX only selects "4-turn" aka "alpha" helices, as previously.
+#
+# new feature: load SUPERCELL "2x, x+y, 2z"
+#              load SUPERCELL {2 2 2}
+#              load {20 20 2} SUPERCELL {2 2 2}
+# new feature: new 5th parameter for measureCallback is actual, unrounded value
+#
+
+# bug fix: conformation n  definition changed for PDB files to be consistent with DSSP
+# bug fix: hetero group protein check should not care about C CA N O file order (1YC5)
+# bug fix: conformation not working when an alternate location is for key atoms such as N, C, O, CA
+# bug fix: loading a multi-structure PDB file with CONECT bonding may not autobond (2q3t)
+# bug fix: undocumented save STRUCTURE not working for initial structure state
+# bug fix: calculate structure only works with last model loaded
+# bug fix: calculate structure after zap x.y fails
+# bug fix: GAMESS reader (US) not reading full atom name such as "MOLYBDENUM"
+# bug fix: load append after calculating structure recalculates structure for other models
+# bug fix: calculate structure does not target selected model
+# bug fix: bioshapes not clearing automatically after calculate STRUCTURE
+# bug fix: switch DEFAULT not working
+# bug fix: label %1 will cause exception
+# bug fix: load '@x' not saved properly in state
+# bug fix: arrays of hashtables and other more complex variables not being saved or created in usable form
+# bug fix: isosurface MEP with multiple frames fails on second isosurface
+# bug fix: //comments not searched properly for GOTO operation
+# bug fix: data "connect_atoms" does not update bond diameter, order, or energy
+# bug fix: %8.4VALUE still truncating in set defaultdistancelabel
+
+# code: removal of unnecessary structure class in ModelCollection
+# code: Efficient Java bitset-based DSSP calculation based solely on a careful reading of
+#       W. Kabsch and C. Sander, Biopolymers, vol 22, 1983, pp 2577-2637
+#       with detailed quote-based comments from the article explaining the process.
+#       Includes options to create the structures, just make a report, or just deliver a set of
+#       hydrogen bonds. (MUCH appreciated permission by Gert Vriend to implement DSSP as open-
+#       source Java code in Jmol.)
+#
+# --------------------------------------------------------------
+
+#version=12.1.13
+
+# new feature: hide/display bonds
+# new feature: hide/display [{bond set}]
+# new feature: set STRUCTURE HELIX|SHEET|TURN [a, b, c, d, a1, b1, c1, d1,...]
+#    allows customization of Jmol's phi/psi-based structure calculation
+#    phi >= a && phi <= b && psi >= c && psi <= d 
+#  || phi >= a1 && phi <= b1 && psi >= c1 && psi <= d1 
+#  etc.
+
+# bug fix: unbind unknownName unbinds LEFT mouse!
+# bug fix: Safari slideZoom issue upon leaving and returning to applet (mouse MOVE not issued by OS)
+# bug fix: naming a variable after a function name such as "color" should be allowed
+# bug fix: "smilesString" changed to "_smilesString" and properly set
+# bug fix: Application filename for $xxxx not properly set
+# bug fix: language changing doesn't set tool tips
+# bug fix: MEP menu item is using MOLECULAR with default range; should be using VDW with range ALL
+# bug fix: unescaped spaces in load "$ethyl ether" cause fault at NIH.
+# bug fix: error writing isosurface color density JVXL file
+# bug fix: catch without catch(e) causes exception
+# bug fix: isolated H atoms when calculating hydrogen bonds causes exception
+# bug fix: Spartan reader not reading INPUT file coord -- adding filter "INPUT"
+# bug fix: calculate structure requiring {xxx}
+
+# code: deprecated "commandOption" shape property removed
+
+# --------------------------------------------------------------
+
+#version=12.1.12
+
+# bug fix: reading unmapped isosurface from JVXL files broken in 12.0.13
+
+# code: JmolViewer interface Component display --> Container display (JPanel, JFrame, JDialog)
+# code: consoles work
+# code: examples get proper termination upon window closing
+
+# --------------------------------------------------------------
+
+#version=12.1.11
+
+# new feature: set multipleBondRadiusFactor 0.75
+# new feature: multipleBondSpacing
+#   set multipleBondSpacing = -1 (default, varies with viewing angle)
+#   set multipleBondSpacing = -0.5 (half that distance; varies with viewing angle)
+#   set multipleBondSpacing = 0.35 (positive ==> fixed multiple bond spacing)
+# new feature: set isosurfacePropertySmoothingPower
+#   0 (no property smoothing)
+#  10 (very strong smoothing)
+#   7 (default, same as Jmol 11.8)
+# new feature: AppletConsole allows embedding in larger applications
+# new feature: smooth on-the-fly language changes in applet and application
+# new feature: integrated AppConsole for embedded Jmol -- see Integration.java
+
+# bug fix: MO NOPLANE not working
+# bug fix: SmarterJmolAdapter should not read zip bytes it doesn't have to 
+# bug fix: spacefill JMOL does not work
+# bug fix: Jmol 12 does not read old 11.1 isosurface commands from states
+# bug fix: load {i j k} RANGE x.x not expanding load box by 1 in each direction
+# bug fix: applet console does not display startup message
+# bug fix: console buttons do not change with new language
+# bug fix: undo/redo problems in AppConsole
+# bug fix: crystal reader can't read selected model
+# bug fix: 3.5E+0.0 read as "3.5 0.0"
+# bug fix: navY/navy color issue
+# bug fix: write PDB for nonPDB files incorrect
+
+# code: streamlined AppConsole and AppletConsole
+# code: GuiMap/JmolConsole AbstractButton methods merged
+# code: AppConsole now implements JmolCallbackListener, called by JmolPanel.notifyCallback
+
+# --------------------------------------------------------------
+
+#version=12.1.10
+
+# new feature: Spartan reader filter "ESPCHARGES" for ESP charges, if available, instead of Mulliken charges
+# new feature: reset SPIN
+# new feature: set slabRange 5.0 -- a zoom-independent slabbing plane
+
+# bug fix: JavaScript jmolScriptWait() can fail
+# bug fix: mep color range error (12.1.9, 12.0.11)
+# bug fix: color structure for carbohydrate fails
+# bug fix: reset should not reset spin (introduced in 11.7.47); new RESET SPIN includes reset spinning
+# bug fix: SMILES generator allowing sp3 center in aromatic
+# bug fix: storing atom properties from CrystalReader messes up model atom bitset 
+# bug fix: non PDB large molecule should not change default rendering 
+# bug fix: PDB large molecule default rendering flaws
+
+# --------------------------------------------------------------
+
+#version=12.1.9
+
+# new feature: label %[shape]
+# new feature: lcaoCartoons sp3d (a,b,c,d,e), sp3d2 (a,b,c,d,e,f)
+
+# bug fix: set usercolorscheme not working. 
+# bug fix: color label none when already none and after rendering for multi-line labels or with antialiasdisplay crashes Jmol
+# bug fix: lcaoCartoon p orbitals for CO2
+# bug fix: isosurface ISSQUARED
+# bug fix: PLOT command broken (Parser.parseStringInfestedFloatArray)
+# bug fix: color PROPERTY x   with set rangeSelected does not work
+# bug fix: isosurface contour colors
+# bug fix: #....... #.... two # in one line with first in first character fails
+# bug fix: isosurface plane problems
+# bug fix: set drawHover isosurface hover error kills hover watcher
+# bug fix: isosurface "t.jvxl" map property temperature nonfunctional
+# bug fix: isosurface PROPERTY ("VDW 100%" implied) not working
+# bug fix: WRITE xxx should do SHOW not clipboard for application
+# bug fix: % at end of line acts as a line continuation
+# bug fix: "sp3a" not "first bonded atom"
+# bug fix: failure to read old-style JVXL files. 
+# bug fix: reading nth model from a file within a ZIP collection not possible
+
+# code: AtomPropertyMapper isolated from IsoSolventReader
+# code: rewrite of calculateHydrogen/hybridization code
+
+# --------------------------------------------------------------
+
+#version=12.1.8
+
+# bug fix: LcaoCartoon capping/slabbing not saved in state
+# bug fix: isosurface planar mapping, contours, atomic orbital speed and scaling problems
+# bug fix: oops; isosurface atomicOrbital REALLY not scaling well
+
+# --------------------------------------------------------------
+
+#version=12.1.7
+
+# new feature: load SMILES to use http://cactus.nci.nih.gov/chemical/structure/..../file?format=sdf&get3d=True
+# new feature: zSlab, zDepth -- default 0,0 meaning "use slab and depth" settings
+# new feature: slab and depth are variables and can be read and set as for any other
+# new feature: Vasp reader shows enthalpy and Gibbs energy in model name
+# new feature: getProperty can drill down a list for a hashtable entry:
+#   print getProperty("shapeInfo.isosurface.id")
+#     s2
+#     isosurface1
+
+# bug fix: isosurface atomicOrbital not scaling well
+# bug fix: undo and smilesurlformat tokens missing
+# bug fix: isosurface ... map SQUARED ... nonfunctional
+# bug fix: exit, quit are stopping spinning -- should just be stopping moveTo
+#          unless !exit or !quit.
+# bug fix: associative array problems with some auxiliaryInfo data saving to state
+# bug fix: binary map files within zip directories cannot be read
+# bug fix: mouse-based slab does not refresh
+# bug fix: JME reader misreading "Br+"
+# bug fix: Writing PDB file with residue number > 9999 trashes file. Now writes "0000" "0001" etc. 
+
+# --------------------------------------------------------------
+
+#version=12.1.6
+
+# bug fix: very first start of Jmol, with no history, fails.
+# bug fix: QChem reader not indicating symmetry A B properly
+# bug fix: QChem reader filter "BETA" fails
+# bug fix: obscure error when array variable is in place of required expression
+# bug fix: ColorEncoder not allowing for override of BW and WB palette
+# bug fix: GAMESS reader UHF caught on reading orbitals with LZ VALUE line
+
+# code: ColorEncoder cleaner, no inappropriately static classes
+
+# --------------------------------------------------------------
+
+#version=12.1.5
+
+# new feature: color() function:
+#   color("") -- full details on current propertyColorScheme
+#   color("$someID") -- full details on isosurface ID "someID" color scheme
+#   color("xxx") -- full details for a named scheme where "xxx" is "rwb", for instance
+#   color("myscale = [xFF0000] [	x00FF00] [x0000FF]") creation of a scheme and return of details
+#   color("roygb", n) -- nth color of a standard color scheme
+#   color("", x.y) -- color for a property value x.y
+#   color("$someID", x.y) -- color for isosurface ID "someID" value x.y
+#   color("roygb", min, max) -- color/value pairs (two arrays)
+#   color("roygb", min, max, value) -- color for specific value
+#   print color("myscale = [xFF0000] [x00FF00] [x0000FF]")
+# colors	:
+# {255.0 0.0 0.0}
+# {0.0 255.0 0.0}
+# {0.0 0.0 255.0}
+# 
+# max	:	4.0
+# min	:	1.0
+# name	:	myscale
+# reversed	:	false
+# values	:
+# 1.0
+# 2.0
+# 3.0
+# 4.0
+#
+# print color("myscale = [xFF0000] [x00FF00] [x0000FF]", 0, 10, 0)
+# {255.0 0.0 0.0}
+#
+# The scheme is constructed, so it can be used later:
+#
+# print color("myscale", 0, 10, 5)
+# {0.0 255.0 0.0}
+# 
+# new feature: getProperty shapeInfo reports colorKey for isosurfaces:
+#   getproperty shapeInfo.isosurface[1].colorKey
+#
+# shapeinfo.isosurface[1].colorkey.colors	*List[31]	
+# shapeinfo.isosurface[1].colorkey.colors[1]	{255.0 0.0 0.0}
+# shapeinfo.isosurface[1].colorkey.colors[2]	{255.0 0.0 0.0}
+# ...
+# shapeinfo.isosurface[1].colorkey.colors[31]	{16.0 16.0 255.0}
+# shapeinfo.isosurface[1].colorkey.color	{255.0 165.0 0.0}
+# shapeinfo.isosurface[1].colorkey.values	*float[32]	[50.0,48.387096,46.774193,...,0.0]
+# shapeinfo.isosurface[1].colorkey.name     "roygb"
+# shapeinfo.isosurface[1].colorkey.max      31
+# shapeinfo.isosurface[1].colorkey.min      1
+
+# bug fix: set defaults RASMOL broken
+# bug fix: CRYSTAL reader FREQUENCY needs fragment numbers sorted
+# bug fix: rotation QUATERNION broken by 11.9.36, Mar 25, 2009 - Does not rotation about {0 0 0}
+# bug fix: CURSOR_WAIT hourglass not turning off automatically after set picking JmolScript operation
+# bug fix: associative array function .keys should report sorted key list
+# bug fix: associative arrays as ScriptVariables must be checked for type
+# bug fix: associative array key sorting, new line for arrayed values
+# bug fix: isosurface color range should not carry over to general "color property"  
+# bug fix: isosurface colorscheme TRANSLUCENT "xxx" fillTriangle error
+# bug fix: should not allow isosurface ... map colorscheme "xxx" TRANSLUCENT
+# bug fix: CRYSTAL reader FREQUENCY when input deck is missing VIBRATION record
+
+# --------------------------------------------------------------
+
+#version=12.1.4
+
+# new feature: isosurface display within 2.0 {atomset} -- renderable subset of isosurface
+# new feature: isosurface display all
+
+# bug fix: CRYSTAL reader not allowing {555 555 0} load
+# bug fix: CRYSTAL reader orientation error
+# bug fix: show info not showing molecule info
+# bug fix: isosurface LATTICE {x y z} should be relative to current UNITCELL
+# bug fix: broken selectExtended mode
+# bug fix: some isosurface display properties not generalized to wildcard
+# bug fix: Parallel processing not creating process-specific copies of shapes
+# bug fix: load unitcell for slab/polymer should allow 0, not just -1
+# bug fix: diastereomer check still checking stereochemistry 
+# bug fix: SMILES generator should not produce stereochemistry for RX2R'
+
+# --------------------------------------------------------------
+
+#version=12.1.3
+
+# new feature: load "myfile.xxx" {1 1 1} unitcell [ax ay az  bx by bz  cx cy cz]
+# new feature: x = compare({atomset1}, {atomset2}, "ISOMER")
+# new feature: x = compare(smilesString1, smilesString2, "ISOMER")
+
+# bug fix: set picking invertStereo not working for non-ring stereocenters
+# bug fix: "CCCC".find("SMILES","CCCC") should return 1 (other returns 0 and -1)
+# bug fix: "CCCC".find("SMARTS","CCC") should return [1,5,8,11] (other returns [] and "?"
+# bug fix: SmilesGeneration stereochemistry error 
+# bug fix: "smilesString".find("smarts","pattern") should return "?" upon parsing error
+# bug fix: proper "false AND"/"true OR" action where second operand is skipped
+
+# --------------------------------------------------------------
+
+#version=12.1.2
+
+# new feature: Application Display menu item "resize" (also added to 12.0)
+
+# bug fix: SmilesGeneration fails for double bond stereochemistry
+# bug fix: documented within("SMILES",...) missing and required for SmilesGenerator
+# bug fix: select within(branch,{},{}) exception
+# bug fix: "sheet" token missing, so select within(sheet) fails
+# bug fix: struts not restored from state
+# bug fix: color STRUTS also colors hbonds
+# bug fix: draw CYLINDER n ... where n is an integer does not give flat ends
+# bug fix: PNG file state for multiple file load cannot be read
+# bug fix: Jmol application not accepting -g
+# bug fix: "no atoms found returns wrong error message
+# bug fix: XYZ reader fails with load "filename" 3
+# bug fix: "[1,3,4,5]" can be translated to [1,3,4] 
+# bug fix: slab/depth mouse action does not automatically refresh
+
+# code: Java 1.5 upgrade -- many generics still have warnings
+
+# --------------------------------------------------------------
+
+#version=12.1.1
+
+# bug fix: measure search("...{X}....{X}...") does not work
+# bug fix: draw arrows are being FIXED in state
+# bug fix: if ( )....; single-line syntax broken
+# bug fix: try/catch in functions not implemented correctly
+# bug fix: SMILES nested $(...) broken
+# bug fix: binary pmesh reader broken
+# bug fix: better coding for isosurface file typer
+# bug fix: print write("ramachandran")
+# bug fix: reading background images from PNG images within zip files
+# bug fix: write xxxx.jmol zip sets cannot be read
+# bug fix: binary surface readers map and ccp4 can misread file type
+# bug fix: isosurface "=xxx" missing check for isSyntaxCheck
+# bug fix: isosurface slab for polymer/slab symmetry
+
+# --------------------------------------------------------------
+
+# version=12.1.0
+
+# July 28, 2010
+
+#version=12.0.50_dev
+
+# bug fix: AtomSetChooser set up too late -- can override embedded jmolScript vibration/vector scale commands
+
+# --------------------------------------------------------------
+
+#version=12.0.49
+
+# bug fix: show colorscheme "high"   causes exception 
+# bug fix: CONTINUE in switch within  for or while loops infinitely
+# bug fix: select deuterium, HOH, _1H, _H1 isotope business messed up
+# bug fix: isosurface parameters @x  does not work even when x is an array 
+# bug fix: ++ipt; not working
+# bug fix: zap of model with measurements causes exception
+# bug fix: PDB reader may read bfactors off by 0.01 
+# bug fix: isosurface slab -@xxxx... will negate variable xxxx if it is a plane
+
+# --------------------------------------------------------------
+
+#version=12.0.48
+
+# bug fix: try {} does not pass VAR variables into its context.
+# bug fix: catch(err) not setting variable "err"
+# bug fix: CML files with atoms starting with both aNN and aNN_ will not bond correctly 
+# bug fix: set fontScaling does not scale offset with font
+# bug fix: application Help menu item no long pushed right.
+
+# --------------------------------------------------------------
+
+#version=12.0.47
+
+# bug fix: definition of CARBOHYDRATE was updated:
+#  -- [A2G],[NGA],[SIA],[SLB],[LBT],[NDG],[AMU] added (GalNAc, NeuNAc, lactose, GlcNAc, MurNAc)
+#  -- [ASF],[NAM] removed, they are no longer carbohydrates
+#  -- a few existing ones are deprecated by PDB; they are left for compatibility 
+#       but are now listed as such (maybe remove them in future).
+# bug fix: Bad Jmol.js
+# bug fix: draw pointgroup fixed to first model
+
+# --------------------------------------------------------------
+
+#version=12.0.46
+
+# bug fix: _smilesString variable not being cleared when a PDB file is loaded
+# bug fix: WebMO reader fails to read HOMO/LUMO business.
+# bug fix: throwing script parsing error on correct "isosurface slab within [4 elements
+#         representing the slab box]" (was losing last "]").
+# bug fix: (application) Jmol console not receiving echo messages
+# bug fix: UFF full listing (set loglevel 6;minimize steps 0;show minimization) missing n and cosNphi0 in torsions
+# bug fix: PQR reader mistaking " HD3" as deuterium
+
+# --------------------------------------------------------------
+
+#version=12.0.45
+
+# bug fix: isosurface cavity algorithm error makes cavity too large
+# bug fix: font labels 16 bold   does not work (i.e. missing face)
+
+# --------------------------------------------------------------
+
+#version=12.0.44
+
+# bug fix: set appendNew false; load =1q0y; load APPEND =1crn causes exception
+# bug fix: lcaoCartoon does not get hidden when atom deleted
+# bug fix: isosurface SELECT should also set model index
+# bug fix: isosurface mesh incompatible with fullylit and frontonly
+# bug fix: navigate broken
+# bug fix: modelKit dragMinimizeAtom broken in 12.0.43
+# bug fix: dragMinimize should select all non-fixed atoms if there are fixed atoms
+# bug fix: write @{"xxxx"} fails
+# bug fix: isosurface ... map VDW -- mapping not saved in state
+# bug fix: CRYSTAL reader does not read vibrations for atoms with two-character symbols
+# bug fix: third oxygen atom in 5'-terminal phosphate was not assigned to backbone (e.g. 4tna.pdb)
+# bug fix: cartoons with hermite level do not reposition for atom position changes or trajectories
+# bug fix: isosurface plane x=-1 (with no spaces) not accepted 
+# bug fix: x = write("VRML") should give VRML contents and not write to disk
+# bug fix: defined @ variables not indicating changes when models are deleted
+# bug fix: calculate structure RAMACHANDRAN broken in 12.0.18
+# bug fix: update in Jmol.js: Java version detection got broken in Mac Firefox 4.0.1 (part of browser compatibility test)
+
+# --------------------------------------------------------------
+
+#version=12.0.43
+
+# bug fix: undocumented "redo" "undo" application-only commands changed to "redocmd" "undocmd"
+# bug fix: transcient halos not always transient for dragSelected
+# bug fix: FIX command not working properly
+# bug fix: select within(chain, atomno=xxx) will not select all desired atoms
+#          if the chain is spread out over multiple regions of the file (1gzx)
+# bug fix: set dragselected may not turn off transient selection halos 
+# bug fix: undo (CTRL-Z) and redo (CTRL-SHIFT-Z/CTRL-Y) not implemented for dragSelected
+# bug fix: molecules incorrectly assigned for covalently attached cofactors, such as HEM (1gzx)
+# bug fix: set picking dragMolecule then use of SHIFT after rotate COMPARE will result in unwanted translation
+
+# --------------------------------------------------------------
+
+#version=12.0.42
+
+# bug fix: quaternion N frame off slightly due to bisection error.
+#   -- also affects Rasmol hydrogen bond calculation
+# bug fix: select a will not select P-only DNA adenosines (1jgq)
+# bug fix: select A and select a  may be different for P-only DNA strands (1jgq)
+# bug fix: properties of type float[][] not saved as ScriptVariable lists
+# bug fix: AIMS reader upgrade to include atom/atom_frac line mix
+# bug fix: PSI3 reader for WebMO
+# bug fix: data connect can cause null pointer exception if data statement has white-space-only lines
+
+# --------------------------------------------------------------
+
+#version=12.0.41
+
+# bug fix: { echo testing } causes compiler error
+# bug fix: { echo "testing" } causes compiler error
+# bug fix: cannot access site_xxx definitions created by PDB file read
+# bug fix: echo myecho ... after echo ALL still does ALL
+# bug fix: isosurface CAVITY cannot be mapped
+# bug fix: PDB load filter mix of (CONF or BIOMOLECULE) and chain filter such as *:A will include additional chains ("C", "O", "N", "S", etc.) 
+# bug fix: application load menu unnecessarily creates new frame and loses current script processing
+
+# --------------------------------------------------------------
+
+#version=12.0.40
+
+# bug fix: set picking identifyBond  not implemented
+# bug fix: leaving modelKitMode does not leave bondPickingMode "identifyBond"
+
+# --------------------------------------------------------------
+
+#version=12.0.39
 
 # bug fix: menu labels incorrect in 12.0.38
 
