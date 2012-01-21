@@ -49,9 +49,9 @@ function filter($text, array $options = array()){
       $relurl = str_repeat('../', $numdirs) . $relurl;
     }
 
-
-    $search = '/<a\\b([^>]*?)href=\"((?:\.|\\\|https?:\/\/'.$_SERVER["HTTP_HOST"].')[^\"]+\.(cif|mol|mol2|pdb\.gz|pdb|csmol|xyz|cml))\??(.*?)\"([^>]*)>(.*?)<\/a>(\s*JMOLSCRIPT\{(.*?)\})?/is';
-
+//  $search = '/<a\\b([^>]*?)href=\"((?:\.|\\\|https?:\/\/'.$_SERVER["HTTP_HOST"].')[^\"]+\.(cif|mol|mol2|pdb\.gz|pdb|csmol|xyz|cml))\??(.*?)\"([^>]*)>(.*?)<\/a>(\s*JMOLSCRIPT\{(.*?)\})?/is';
+    $host = preg_replace('~^.*://([^:/]*).*$~', '$1', $u);
+    $search = '/<a\\b([^>]*?)href=\"((?:\.|\\\|https?:\/\/' . $host . ')[^\"]+\.(cif|mol|mol2|pdb\.gz|pdb|csmol|xyz|cml))\??(.*?)\"([^>]*)>(.*?)<\/a>(\s*JMOLSCRIPT\{(.*?)\})?/is';
 
     $callbackfunction = '    
              if(preg_match(\'/s=(\d{1,3})/\', $matches[4], $optmatch))
