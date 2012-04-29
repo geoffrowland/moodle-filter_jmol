@@ -2,7 +2,258 @@
 # NOTE: Generally only bug fixes should be entered here. 
 # NOTE: New features should be introduced in the trunk version 12.3.x
 
-version=12.2.1
+date=$Date: 2012-04-24 14:20:45 +0200 (mar., 24 avr. 2012) $
+
+version=12.2.23
+
+# bug fix: callback functions for modular calls: applet0.readCallback(....)
+# bug fix: Molden reader problems reading frequencies
+# bug fix: VASP reader with {n n n} and vibration vectors problem
+# bug fix: in 2bat, SIA was considered part of the carbohydrate chain because we were not checking bonding
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.22
+
+# bug fix: "connect;" command in states saved prior to 11.9.24 and then read by versions after that
+#          The order in which Jmol created bonds changed in 11.9.24. Due to this, Jmol must check for the
+#          version number of Jmol used to create a state, and if it was before this point, it must
+#          apply "legacy" autobonding methods. Unfortunately, if that state from pre-11.9.24 versions
+#          contains the "connect;" command, which it would if someone used the CONNECT command by itself
+#          to regenerate all bonds in a model PRIOR to saving the state (Proteopedia does this), then
+#          those scripts will be misread in versions 11.9.24-12.2.21/12.3.21.
+# bug fix: antialiasDisplay does not show drag-box properly
+# bug fix: SMARTS syntax [${xxx}n] and [${xxx}m-n] changed to [$n{xxx}] and [$m-n{xxx}] 
+#          to avoid conflict with specifying isotope 
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.21
+
+# bug fix: PDB reader 
+#     and state scripts created with 12.1.51-12.2.20 and 12.3.0-12.3.20
+#     state scripts prior to those versions with multiple models
+#     and also select BOND commands will read the bond indexes incorrectly
+#     and, in addition, will assign proper CONECT links only to the last model 
+# bug fix:   if (....) # comment   fails
+# bug fix: Molden reader hack for bad Molden files with ** instead of atom number in [GTO] 
+# note: Headless operation with image creation works perfectly using JmolData.jar
+#     java -Djava.awt.headless=true -Xmx512m -jar "JmolData.jar" -J "load $tylenol;write image 1000 1000 t.jpg"
+#     see also: http://leshazlewood.com/2009/08/26/linux-javaawtheadless-and-the-display-environment-variable/
+# bug fix: headless creation of JPG fails
+# bug fix: spin .... 30    takes 30 to be number of degrees, not rate
+
+# version=12.2.20 skipped
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.19
+
+# bug fix: set dragSelected disallows popup menu
+# bug fix: MOPAC (PUBLIC DOMAIN) output reader can fail on reading vibrations
+# bug fix: Spartan 10 archives have .gz and .carc files. This fix adds .gz reading;
+#          work-around is that Spartan 10 allows saving of Archive without carc compression,
+#          which is a proprietary format. From Wavefunction:
+#          "If you want all files to use the "text" version, you can go to the
+#           Options->Preferences->X-Platform pane and make sure "Use Binary Archive" is unchecked."  
+# bug fix: rotateSelected of models that have had dots at one point retrieved from a state file fails
+# bug fix: Jmol defaults not being loaded with startup option -n (no display)
+# bug fix: UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName()
+#            failed for non-graphics system, and even though it is an exception, it
+#            isn't trapped by try/catch. 
+# bug fix: point() function does not accept 3x1 array
+# bug fix: show x where x is a matrix does not have ',' before tabs, so it can't be clipped directly
+#            back into Jmol
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.18
+
+# bug fix: allow for alternating list/hash entry:
+#   for example: print getproperty("jspecview","##TITLE")["items"][1]["spectra"][1]["id"]
+#   instead of:  print ((getproperty("jspecview","##TITLE")["items"][1])["spectra"][1])["id"]
+# bug fix: GaussianReader not reading "Natural Orbitals" section from  
+#          B3LYP 6-31g sp gfprint pop(full,NO)
+# bug fix: support for file reading with BOM UTF-8, UTF-16, or UTF-32
+# bug fix: script processor not recognizing UTF-8 Binary Order Mark at start of script
+# bug fix: (undocumented) POLYHEDRA {...} to {...} with COLOR or TRANSLUCENT fails
+# bug fix: POLYHEDRA command or COLOR POLYHEDRA can change selection
+# bug fix: PDB reader doesn't recognize 16 LINK records at start of file
+# bug fix: script xxxx(xxx)xxx/xx.xxx fails at "(" due to revision 16201 2011-10-02
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.17
+
+# bug fix: jvxl issue when color PHASE and translucent
+#   -- upon reading JVXL doesn't handle translucency right
+#   -- upon writing SPT doesn't preserve colors
+# bug fix: user variable lower case "x" not cleared by "X = none"
+# bug fix: draw HELIX fails for residue numbers < 0
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.16
+
+# bug fix: GAMESS-US reader error reading NBOs
+# bug fix: first attempt to fix macromolecular ellipsoids -- PDB ANISOU records
+# bug fix: print [2, 3, 4].mul([3,4,5]) fails
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.15
+
+# bug fix: SLAB unit cell not showing all lines
+# bug fix: CRYSTAL reader needs to change to MOLECULAR when X(ANGSTROMS) found (fullerene slab)
+# bug fix: Popup Menu item hbond calculate should not require PDB
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.14
+
+# bug fix: state after frame RANGE or frame 0 not saved properly (state saves "frame all" instead of "frame 0")
+# bug fix: frame n  does not work properly after load APPEND
+# bug fix: measurement units may appear as full word "nanometers" instead of "nm"
+# bug fix: user bindings do not access _atomPicked
+#  -- solution is to add _ATOM _BOND _POINT _OBJECT to user binding actions
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.13
+
+# bug fix: getProperty("bondinfo",[{13}]) gets info for atom 13 instead of bond 13 
+# bug fix: bind xxx _select does not work in conjunction with bind yyy _atomPicking
+# bug fix: {*}.atomno and related expressions broken
+# bug fix: isosurface offset does not change boundbox or zoom/center points
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.12
+
+# bug fix: show spacegroup not working
+# bug fix: lcaocartoon for allene central carbon py incorrect
+# bug fix: antialiasdisplay (and image writing) not compatible with scaleAngstromsPerInch
+# bug fix: cannot write JPG images
+# bug fix: last group of protein cartoon will not display if it is not helix and not sheet
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.11
+
+# bug fix: changes in defaultDistanceLabel not always preserved in state correctly
+# bug fix: parameters can be set to invalid values using xxx = ... instead of set xxx ...
+# bug fix: (Application) proper Edit...Preferences dialog action
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.10
+
+# bug fix: script @{x} fails
+# bug fix: lcaoCartoon dual color p orbitals giving white for one lobe
+# bug fix: after "ZAP; LOAD append"  show orientation will have incorrect zyz script  
+# bug fix: function call with @x or @1 in parameters fails
+# bug fix: H5T should not be used as a lead atom ever, because of set showHydrogens FALSE
+# bug fix: adding H atoms to mol2 file faulty
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.9
+
+# bug fix: set isKiosk should:
+#      (a) not be reversible
+#      (b) not allow file saves other than logging
+#      (c) not allow prompt dialogs
+#      (d) not allow console or popup menu or ScriptEditor
+# bug fix: background colors saved to state can be off very slightly
+# bug fix: draw PLANE with three vertices problems after save -- four-atom planes, not three
+# bug fix: x = file("?") fails on Cancel
+# bug fix: delay not allowed within try{...}
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.8
+
+# bug fix: set picking DRAW does not work on polygon sets
+# bug fix: set picking DRAW does not report position change
+# bug fix: CifReader (molecular type, with GEOM_BOND records) adds 
+#          extra atoms when embedded in JMOL or PNGJ file or part load FILES command
+#                       
+# bug fix: PdbReader -- crystallographic non-PDB files not checking special positions
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.7
+
+# bug fix: show orientation shows incorrect zyz format if reset uses file-based orientation matrix (smol, Sygress)
+# bug fix: isosurface plane xy map mep
+# bug fix: user variables should not be rest by INITIALIZE in an spt file
+# bug fix: x3d/vrml outputting unnecessary spheres
+#  -- bond caps within opaque atoms removed (not precisely correct to do that)
+# bug fix: minimization broken
+# bug fix: contact command hbond/clash cutoff not sensitive to H-O/N vs O/N-O/N
+#   -- set to -1.2 for H-N/O, -1.0 for N/O-N/O
+# bug fix: contact command default probe radius should be 0.0 except for VDW (0.25) 
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.6
+
+# bug fix: minimize constraint CLEAR  broken
+# bug fix: constraints not reported in show minimization
+# bug fix: set measures off broken
+# bug fix: contact color density broken
+# bug fix: contact volume report not correct for color density
+# bug fix: MO HOMO not set properly when using LUMO = "lowest E > 0" (GAMESS-US reader)
+# bug fix: zSlab settings not stored properly in parameters; should have default zSlab = 50
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.5
+
+# bug fix: isosurface scale 0.5 plane... broken if no atoms present
+# bug fix: isosurface color density broken
+# bug fix: set PdbAddHydrogens does not transfer C atomSymmetry to H atoms
+# bug fix: contact() function not working when typed from console
+# bug fix: set axesOrientationRasmol not working properly (since 11.5.51)
+# bug fix: frame x.y - y.z not working 
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.4
+
+# bug fix: with antialiasDisplay, dragMolecule goes 1/2 speed of cursor
+# bug fix: nucleic acid residues with HO5' may render last group strangely (since 12.0.RC16, 6/6/2010)
+# bug fix: workaround for weird Mac Point3i(Point3i pt) class initializer bug
+# bug fix: MO readers can fail if inappropriate filter "TLS" is given
+# bug fix: array.bin(low,high,binSize) not documented and can cause exception
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.3
+
+# bug fix: CRYSTAL reader not properly setting model properties
+# bug fix: userFunction(x,@y) should operate as per all math 
+#  -- parens - value of variable pointed to by y
+#  -- x = myfunc(x, @y) same action as just myfunc(x, @y)
+# bug fix: userFunction x @y  
+#  -- no parens - should operate as value of x and value of y
+#  -- @ is unnecessary but allowed
+# bug fix: reading of JVXL files for color density fails to color properly
+# bug fix: .... vdw 100.0%  --- should be OK with float there, even if it rounds.
+# bug fix: load append twice can cause zap to be in wrong place in state file
+# bug fix: for (x IN {*}) ... makes x a bitset and leads to array[1] for x.atomName
+# bug fix: for (x IN {*}.bonds) does not work
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.2
+
+# bug fix: POV-Ray export of cartoons broken
+# bug fix: script javascript:xxxx()  broken
+
+# ------------------------------------------------------------------------------
+
+#version=12.2.1
 
 # bug fix: SMILES comparison when the number of stereocenters is not the same is wrong
 # new feature: compare("XXX","XXXX","ISOMER") comparison now includes "AMBIGUOUS STEREOCHEMISTRY!"
@@ -3316,8 +3567,8 @@ version=12.2.1
 # bug fix: rotate symop not functional for some symops
 # bug fix: phosphorus-only polymer quaternions not operational
 # bug fix: 3D-SMARTS multiple nesting
-# new feature: 3D-SMARTS [$(...)n]
-# new feature: 3D-SMARTS [$(...)nMin-nMax]
+# new feature: 3D-SMARTS [$(...)n] -- NOTE: CHANGED to [$n(...)] in Jmol 12.2.22/12.3.22
+# new feature: 3D-SMARTS [$(...)nMin-nMax] -- NOTE: CHANGED to [$min-max(...)] in Jmol 12.2.22/12.3.22
 # new feature: 3D-SMARTS pattern1 || pattern2
 # new feature: data "property_atom.xxxx" can be used like "property_xxxx" but xxxx must be a
 #    settable atom property, which it will set.
