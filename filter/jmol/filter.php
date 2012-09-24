@@ -53,79 +53,7 @@ function filter($text, array $options = array()){
     $host = preg_replace('~^.*://([^:/]*).*$~', '$1', $u);
     $search = '/<a\\b([^>]*?)href=\"((?:\.|\\\|https?:\/\/' . $host . ')[^\"]+\.(cif|mol|mol2|pdb\.gz|pdb|csmol|xyz|cml))\??(.*?)\"([^>]*)>(.*?)<\/a>(\s*JMOLSCRIPT\{(.*?)\})?/is';
 
-    $callbackfunction = '    
-             if(preg_match(\'/s=(\d{1,3})/\', $matches[4], $optmatch))
-               $size = $optmatch[1];
-             else
-               $size = 350;
-             if(!preg_match(\'/c=(\d{1,2})/\', $matches[4], $optmatch))
-             {
-               $optmatch = array(1=>1);
-             }
-               switch($optmatch[1])
-               {
-               case 0:
-                 $controls = \'</script>\';
-                 break;
-               case 2:
-                 $controls =\'jmolBr();
-                  jmolHtml("Atoms ");
-                  jmolRadioGroup([
-                     ["spacefill off", "off"],
-                     ["spacefill 20%", "20%", "checked"],
-                     ["spacefill 100%", "100%"]
-                  ]);
-                  jmolHtml(" ");
-                  jmolCheckbox("set unitcell 4;color unitcell goldenrod", "set unitcell off", "Unit Cell");
-                  jmolHtml(" ");
-                  jmolCheckbox("spin on", "spin off", "Spin");
-                  jmolHtml(" ");
-                  </script><a href="\'.$matches[2].\'" title="Download the .\'.$matches[3].\' structure data file"><img align="absmiddle" height="17" width="17" src="'.$u.'/filter/jmol/download.gif" /></a> <a target="popup" href = "'.$u.'/filter/jmol/help.php" onclick = "return openpopup(\\\'/filter/jmol/help.php\\\', \\\'popup\\\', \\\'menubar=0,location=0,statusbar=0,scrollbars=1,resizeable=1,width=550,height=550\\\', 0);" title="Help with Jmol"><img align="absmiddle" height="17" width="17" src="'.$u.'/pix/help.gif" /></a>\';
-                 break;
-               case 3:
-                 $controls =\'jmolBr();
-                  jmolHtml("Atoms ");
-                  jmolRadioGroup([
-                     ["backbone off;cartoons off;wireframe on;spacefill off", "off"],
-                     ["backbone off;cartoons off;wireframe on;spacefill 20%", "20%", "checked"],
-                     ["backbone off;cartoons off;wireframe on;spacefill 100%", "100%"],
-                     ["spacefill off;cartoons off;wireframe off;backbone 0.5;color backbone group", "backbone"],
-                     ["spacefill off;backbone off;wireframe off;cartoons on;color cartoons structure", "cartoon"]
-                  ]);
-                  jmolHtml(" ");
-                  jmolCheckbox("spin on", "spin off", "Spin");
-                  jmolHtml(" ");
-                  </script><a href="\'.$matches[2].\'" title="Download the .\'.$matches[3].\' structure data file"><img align="absmiddle" height="17" width="17" src="'.$u.'/filter/jmol/download.gif" /></a> <a target="popup" href = "'.$u.'/filter/jmol/help.php" onclick = "return openpopup(\\\'/filter/jmol/help.php\\\', \\\'popup\\\', \\\'menubar=0,location=0,statusbar=0,scrollbars=1,resizeable=1,width=550,height=550\\\', 0);" title="Help with Jmol"><img align="absmiddle" height="17" width="17" src="'.$u.'/pix/help.gif" /></a>\';
-                 break;
-              default:
-                $controls =\'jmolBr();
-                  jmolHtml("Atoms ");
-                  jmolRadioGroup([
-                     ["spacefill off", "off"],
-                     ["spacefill 20%", "20%", "checked"],
-                     ["spacefill 100%", "100%"]
-                  ]);
-                  jmolHtml(" ");
-                  jmolCheckbox("spin on", "spin off", "Spin");
-                  jmolHtml(" ");
-                  </script><a href="\'.$matches[2].\'" title="Download the .\'.$matches[3].\' structure data file"><img align="absmiddle" height="17" width="17" src="'.$u.'/filter/jmol/download.gif" /></a> <a target="popup" href = "'.$u.'/filter/jmol/help.php" onclick = "return openpopup(\\\'/filter/jmol/help.php\\\', \\\'popup\\\', \\\'menubar=no,toolbar=no,statusbar=no,location=no,scrollbars=yes,resizeable=yes,width=550,height=550\\\', 0);" title="Help with Jmol"><img align="absmiddle" height="17" width="17" src="'.$u.'/pix/help.gif" /></a>\';
-               } // End of switch
-             if(sizeof($matches)>8){
-               //echo "Found Jmol script: $matches[8]";
-               $initscript = preg_replace("@(\s|<br />)+@si", " ", str_replace(array("\\n","\\"", "<br />"), array("; ", "", ""), $matches[8]));
-             }else{
-               $initscript = "";
-             }
-             return "<script type=\\"text/javascript\\">
-                  jmolApplet($size, \\"load $matches[2]; set antialiasDisplay true; $initscript\\");
-                  " . $controls . "";
-             //return "Parameters:<dl><dt>url:</dt><dd>".htmlspecialchars($matches[2])."</dd><dt>opts:</dt><dd>".htmlspecialchars($matches[4])."</dd><dt>Size:</dt><dd>$size</dd><dt>Controls:</dt><dd>$controls</dd></dl>";
-             ';
-
-//    echo "<pre>".htmlspecialchars($callbackfunction)."</pre>";
-
-    $newtext = preg_replace_callback($search, 
-        create_function('$matches', $callbackfunction), $text);
+    $newtext = preg_replace_callback($search, 'filter_jmol_replace_callback', $text);
   
     // We also want to output the script which initialises Jmol in a page. 
     // Here's the tricky bit: we only ever want to output it once in a page!
@@ -169,4 +97,80 @@ document.onclick = function() {
 return $newtext;
 }
 }
-?>
+
+function filter_jmol_replace_callback($matches) {
+    global $CFG;
+    $u = $CFG->wwwroot;
+
+    if (preg_match('/s=(\d{1,3})/', $matches[4], $optmatch)) {
+        $size = $optmatch[1];
+    } else {
+        $size = 350;
+    }
+
+    if (!preg_match('/c=(\d{1,2})/', $matches[4], $optmatch)) {
+        $optmatch = array(1 => 1);
+    }
+
+    switch($optmatch[1]) {
+        case 0:
+            $controls = '</script>';
+            break;
+
+        case 2:
+            $controls = 'jmolBr();
+                jmolHtml("Atoms ");
+                jmolRadioGroup([
+                    ["spacefill off", "off"],
+                    ["spacefill 20%", "20%", "checked"],
+                    ["spacefill 100%", "100%"]
+                ]);
+                jmolHtml(" ");
+                jmolCheckbox("set unitcell 4;color unitcell goldenrod", "set unitcell off", "Unit Cell");
+                jmolHtml(" ");
+                jmolCheckbox("spin on", "spin off", "Spin");
+                jmolHtml(" ");
+                </script><a href="'.$matches[2].'" title="Download the .'.$matches[3].' structure data file"><img align="absmiddle" height="17" width="17" src="'.$u.'/filter/jmol/download.gif" /></a> <a target="popup" href = "'.$u.'/filter/jmol/help.php" onclick = "return openpopup(\'/filter/jmol/help.php\', \'popup\', \'menubar=0,location=0,statusbar=0,scrollbars=1,resizeable=1,width=550,height=550\', 0);" title="Help with Jmol"><img align="absmiddle" height="17" width="17" src="'.$u.'/pix/help.gif" /></a>';
+            break;
+
+        case 3:
+            $controls = 'jmolBr();
+                jmolHtml("Atoms ");
+                jmolRadioGroup([
+                    ["backbone off;cartoons off;wireframe on;spacefill off", "off"],
+                    ["backbone off;cartoons off;wireframe on;spacefill 20%", "20%", "checked"],
+                    ["backbone off;cartoons off;wireframe on;spacefill 100%", "100%"],
+                    ["spacefill off;cartoons off;wireframe off;backbone 0.5;color backbone group", "backbone"],
+                    ["spacefill off;backbone off;wireframe off;cartoons on;color cartoons structure", "cartoon"]
+                ]);
+                jmolHtml(" ");
+                jmolCheckbox("spin on", "spin off", "Spin");
+                jmolHtml(" ");
+                </script><a href="'.$matches[2].'" title="Download the .'.$matches[3].' structure data file"><img align="absmiddle" height="17" width="17" src="'.$u.'/filter/jmol/download.gif" /></a> <a target="popup" href = "'.$u.'/filter/jmol/help.php" onclick = "return openpopup(\'/filter/jmol/help.php\', \'popup\', \'menubar=0,location=0,statusbar=0,scrollbars=1,resizeable=1,width=550,height=550\', 0);" title="Help with Jmol"><img align="absmiddle" height="17" width="17" src="'.$u.'/pix/help.gif" /></a>';
+             break;
+
+        default:
+            $controls = 'jmolBr();
+                jmolHtml("Atoms ");
+                jmolRadioGroup([
+                    ["spacefill off", "off"],
+                    ["spacefill 20%", "20%", "checked"],
+                    ["spacefill 100%", "100%"]
+                ]);
+                jmolHtml(" ");
+                jmolCheckbox("spin on", "spin off", "Spin");
+                jmolHtml(" ");
+                </script><a href="'.$matches[2].'" title="Download the .'.$matches[3].' structure data file"><img align="absmiddle" height="17" width="17" src="'.$u.'/filter/jmol/download.gif" /></a> <a target="popup" href = "'.$u.'/filter/jmol/help.php" onclick = "return openpopup(\'/filter/jmol/help.php\', \'popup\', \'menubar=no,toolbar=no,statusbar=no,location=no,scrollbars=yes,resizeable=yes,width=550,height=550\', 0);" title="Help with Jmol"><img align="absmiddle" height="17" width="17" src="'.$u.'/pix/help.gif" /></a>';
+     } // End of switch
+
+     if (sizeof($matches) > 8) {
+         //echo "Found Jmol script: $matches[8]";
+         $initscript = preg_replace("@(\s|<br />)+@si", " ", str_replace(array("\n",'"', '<br />'), array("; ", "", ""), $matches[8]));
+     } else {
+         $initscript = '';
+     }
+
+     return "<script type=\"text/javascript\">
+          jmolApplet($size, \"load $matches[2]; set antialiasDisplay true; $initscript\");
+          " . $controls;
+}
