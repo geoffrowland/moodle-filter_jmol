@@ -162,9 +162,9 @@ function filter_jmol_replace_callback($matches) {
     // The Y.on('load', function () {} is important in ensuring that JSmol does not interfere with Moodle YUI functions.
     // Each JSmol instance, in a page, has a unique ID.
     if ($matches[3] == "cif") {
-        $loadscript = 'load \"'.$matches[2].'\" {1 1 1} PACKED; set antialiasDisplay on';
+        $loadscript = 'load \"'.$matches[2].'\" {1 1 1} PACKED; set antialiasDisplay on;';
     } else if ($matches[3] == "pdb") {
-        $loadscript =  'set pdbAddHydrogens true; load \"'.$matches[2].'\"; set antialiasDisplay on';
+        $loadscript =  'set pdbAddHydrogens true; load \"'.$matches[2].'\"; set antialiasDisplay on;';
     } else {
         $loadscript = 'load \"'.$matches[2].'\"; set antialiasDisplay on;';
     }
@@ -177,7 +177,7 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $initscript = '';
     }
-    return "<div id='jmoldiv".$id."' style='width:".$size."px; height:".$size."px; border-style: solid; border-color: lightgrey'>
+    return "<div id='jmoldiv".$id."' style='width:".$size."px; height:".$size."px; border: 1px solid lightgray'>
     <noscript>".$jsdisabled."</noscript>
     </div>
     <div style='width: ".$size."px'>
