@@ -140,6 +140,7 @@ this.viewer.freeTempEnum (this.structureTypes);
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "initializePolymer", 
 ($fz = function (bioShape) {
+var bsDeleted = this.viewer.getDeletedAtoms ();
 if (this.viewer.isJmolDataFrameForModel (bioShape.modelIndex)) {
 this.controlPoints = bioShape.bioPolymer.getControlPoints (true, 0, false);
 } else {
@@ -153,7 +154,7 @@ this.bsVisible.clearAll ();
 var haveVisible = false;
 if (this.invalidateMesh) bioShape.falsifyMesh ();
 for (var i = this.monomerCount; --i >= 0; ) {
-if ((this.monomers[i].shapeVisibilityFlags & this.myVisibilityFlag) == 0 || this.modelSet.isAtomHidden (this.leadAtomIndices[i])) continue;
+if ((this.monomers[i].shapeVisibilityFlags & this.myVisibilityFlag) == 0 || this.modelSet.isAtomHidden (this.leadAtomIndices[i]) || bsDeleted != null && bsDeleted.get (this.leadAtomIndices[i])) continue;
 var lead = this.modelSet.atoms[this.leadAtomIndices[i]];
 if (!this.g3d.isInDisplayRange (lead.screenX, lead.screenY)) continue;
 this.bsVisible.set (i);
@@ -249,9 +250,9 @@ this.madEnd = this.madBeg;
 }} else {
 if (!thisTypeOnly || this.structureTypes[i] === this.structureTypes[this.iPrev]) this.madBeg = (((this.mads[this.iPrev] == 0 ? this.madMid : this.mads[this.iPrev]) + this.madMid) >> 1);
 if (!thisTypeOnly || this.structureTypes[i] === this.structureTypes[this.iNext]) this.madEnd = (((this.mads[this.iNext] == 0 ? this.madMid : this.mads[this.iNext]) + this.madMid) >> 1);
-}this.diameterBeg = this.viewer.scaleToScreen (this.controlPointScreens[i].z, this.madBeg);
-this.diameterMid = this.viewer.scaleToScreen (this.monomers[i].getLeadAtom ().screenZ, this.madMid);
-this.diameterEnd = this.viewer.scaleToScreen (this.controlPointScreens[this.iNext].z, this.madEnd);
+}this.diameterBeg = Clazz.floatToInt (this.viewer.scaleToScreen (this.controlPointScreens[i].z, this.madBeg));
+this.diameterMid = Clazz.floatToInt (this.viewer.scaleToScreen (this.monomers[i].getLeadAtom ().screenZ, this.madMid));
+this.diameterEnd = Clazz.floatToInt (this.viewer.scaleToScreen (this.controlPointScreens[this.iNext].z, this.madEnd));
 this.doCap0 = (i == this.iPrev || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iPrev]);
 this.doCap1 = (this.iNext == this.iNext2 || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iNext]);
 return ((this.aspectRatio > 0 && (this.exportType == 1 || this.checkDiameter (this.diameterBeg) || this.checkDiameter (this.diameterMid) || this.checkDiameter (this.diameterEnd))));
@@ -345,12 +346,6 @@ this.g3d.drawHermite7 (true, this.ribbonBorder, this.isNucleic ? 4 : 7, this.scr
 if (this.ribbonBorder && this.aspectRatio == 0) {
 this.g3d.fillCylinderXYZ (this.colix, this.colix, 3, (this.exportType == 1 ? 50 : 3), this.screenArrowTop.x, this.screenArrowTop.y, this.screenArrowTop.z, this.screenArrowBot.x, this.screenArrowBot.y, this.screenArrowBot.z);
 }}, "~N");
-$_M(c$, "renderCone", 
-function (i, pointBegin, pointEnd, screenPtBegin, screenPtEnd) {
-var coneDiameter = this.mad + (this.mad >> 2);
-coneDiameter = this.viewer.scaleToScreen (Clazz.doubleToInt (Math.floor (screenPtBegin.z)), coneDiameter);
-this.g3d.fillConeSceen3f (2, coneDiameter, screenPtBegin, screenPtEnd);
-}, "~N,J.util.P3,J.util.P3,J.util.P3,J.util.P3");
 $_M(c$, "createMesh", 
 ($fz = function (i, madBeg, madMid, madEnd, aspectRatio) {
 this.setNeighbors (i);

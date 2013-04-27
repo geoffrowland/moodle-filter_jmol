@@ -27,7 +27,7 @@ this.mad = this.mads[i];
 if (this.mad < 0) {
 this.g3d.drawLine (colixA, colixB, xA, yA, zA, xB, yB, zB);
 } else {
-var width = (this.exportType == 1 ? this.mad : this.viewer.scaleToScreen (Clazz.doubleToInt ((zA + zB) / 2), this.mad));
+var width = Clazz.floatToInt (this.exportType == 1 ? this.mad : this.viewer.scaleToScreen (Clazz.doubleToInt ((zA + zB) / 2), this.mad));
 this.g3d.fillCylinderXYZ (colixA, colixB, 3, width, xA, yA, zA, xB, yB, zB);
 }}
 }, "J.shapebio.BioShape");

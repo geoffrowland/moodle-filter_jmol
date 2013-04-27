@@ -1,11 +1,11 @@
 Clazz.declarePackage ("J.render");
-Clazz.load (["J.render.ShapeRenderer", "J.util.P3i"], "J.render.EchoRenderer", ["J.render.TextRenderer", "J.util.C"], function () {
+Clazz.load (["J.render.LabelsRenderer", "J.util.P3i"], "J.render.EchoRenderer", ["J.render.TextRenderer", "J.util.C"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.imageFontScaling = 0;
 this.ptAtom = null;
 this.pt = null;
 Clazz.instantialize (this, arguments);
-}, J.render, "EchoRenderer", J.render.ShapeRenderer);
+}, J.render, "EchoRenderer", J.render.LabelsRenderer);
 Clazz.prepareFields (c$, function () {
 this.pt =  new J.util.P3i ();
 });
@@ -27,7 +27,7 @@ t.setXYZs (this.pt.x, this.pt.y, this.pt.z, this.pt.z);
 } else if (t.movableZPercent != 2147483647) {
 var z = this.viewer.zValueFromPercent (t.movableZPercent);
 t.setZs (z, z);
-}J.render.TextRenderer.render (t, this.g3d, scalePixelsPerMicron, this.imageFontScaling, false, null);
+}J.render.TextRenderer.render (t, this.viewer, this.g3d, scalePixelsPerMicron, this.imageFontScaling, false, null, this.xy);
 if (J.util.C.isColixTranslucent (t.bgcolix) || J.util.C.isColixTranslucent (t.colix)) haveTranslucent = true;
 }
 if (!this.isExport) {

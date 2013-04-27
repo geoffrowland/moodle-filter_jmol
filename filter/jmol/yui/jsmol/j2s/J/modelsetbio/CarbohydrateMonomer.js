@@ -34,7 +34,7 @@ var anomericO = this.getLeadAtom ();
 var marBegin = (Clazz.doubleToInt (madBegin / 2));
 if (marBegin < 1200) marBegin = 1200;
 if (anomericO.screenZ == 0) return;
-var radiusBegin = this.scaleToScreen (anomericO.screenZ, marBegin);
+var radiusBegin = Clazz.floatToInt (this.scaleToScreen (anomericO.screenZ, marBegin));
 if (radiusBegin < 4) radiusBegin = 4;
 if (this.isCursorOnTopOf (anomericO, x, y, radiusBegin, competitor)) closest[0] = anomericO;
 }, "~N,~N,~A,~N,~N");

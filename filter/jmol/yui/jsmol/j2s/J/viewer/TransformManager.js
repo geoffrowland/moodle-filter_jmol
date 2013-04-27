@@ -832,7 +832,7 @@ this.scaleDefaultPixelsPerAngstrom = this.defaultScaleToScreen (this.modelRadius
 $_M(c$, "scaleToScreen", 
 function (z, milliAngstroms) {
 if (milliAngstroms == 0 || z < 2) return 0;
-var pixelSize = Clazz.floatToInt (this.scaleToPerspective (z, milliAngstroms * this.scalePixelsPerAngstrom / 1000));
+var pixelSize = this.scaleToPerspective (z, milliAngstroms * this.scalePixelsPerAngstrom / 1000);
 return (pixelSize > 0 ? pixelSize : 1);
 }, "~N,~N");
 $_M(c$, "unscaleToScreen", 

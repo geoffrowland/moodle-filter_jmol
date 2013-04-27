@@ -125,7 +125,6 @@ if (xRight >= 0 && xRight < this.width) this.drawVLine (xRight, y, z, h);
 }, "~N,~N,~N,~N,~N,~N");
 $_M(c$, "drawHLine", 
 ($fz = function (x, y, z, w) {
-var argbCurrent = this.g3d.getColorArgbOrGray (this.colix);
 }, $fz.isPrivate = true, $fz), "~N,~N,~N,~N");
 $_M(c$, "drawVLine", 
 ($fz = function (x, y, z, h) {

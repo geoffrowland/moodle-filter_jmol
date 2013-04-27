@@ -16,6 +16,8 @@ this.textHeight = 0;
 this.widths = null;
 this.image = null;
 this.imageScale = 1;
+this.xAdj = 0;
+this.yAdj = 0;
 Clazz.instantialize (this, arguments);
 }, J.shape, "Text", J.shape.Object2d);
 Clazz.overrideMethod (c$, "setScalePixelsPerMicron", 
@@ -23,23 +25,27 @@ function (scalePixelsPerMicron) {
 this.fontScale = 0;
 this.scalePixelsPerMicron = scalePixelsPerMicron;
 }, "~N");
+$_M(c$, "getText", 
+function () {
+return this.text;
+});
 Clazz.makeConstructor (c$, 
 function () {
 Clazz.superConstructor (this, J.shape.Text, []);
 });
 c$.newLabel = $_M(c$, "newLabel", 
-function (gdata, font, text, colix, bgcolix, x, y, z, zSlab, align, scalePixelsPerMicron) {
+function (gdata, font, text, colix, bgcolix, x, y, z, zSlab, align, scalePixelsPerMicron, pymolOffsetAngstroms) {
 var t =  new J.shape.Text ();
-t.set (gdata, font, colix, align, true, scalePixelsPerMicron);
+t.set (gdata, font, colix, align, true, scalePixelsPerMicron, pymolOffsetAngstroms);
 t.setText (text);
 t.bgcolix = bgcolix;
 t.setXYZs (x, y, z, zSlab);
 return t;
-}, "J.util.GData,J.util.JmolFont,~S,~N,~N,~N,~N,~N,~N,~N,~N");
+}, "J.util.GData,J.util.JmolFont,~S,~N,~N,~N,~N,~N,~N,~N,~N,J.util.P3");
 c$.newEcho = $_M(c$, "newEcho", 
 function (viewer, gdata, font, target, colix, valign, align, scalePixelsPerMicron) {
 var t =  new J.shape.Text ();
-t.set (gdata, font, colix, align, false, scalePixelsPerMicron);
+t.set (gdata, font, colix, align, false, scalePixelsPerMicron, null);
 t.viewer = viewer;
 t.target = target;
 if (target.equals ("error")) valign = 1;
@@ -49,14 +55,15 @@ t.zSlab = -2147483648;
 return t;
 }, "J.viewer.Viewer,J.util.GData,J.util.JmolFont,~S,~N,~N,~N,~N");
 $_M(c$, "set", 
-($fz = function (gdata, font, colix, align, isLabelOrHover, scalePixelsPerMicron) {
+($fz = function (gdata, font, colix, align, isLabelOrHover, scalePixelsPerMicron, pymolOffsetAngstroms) {
 this.scalePixelsPerMicron = scalePixelsPerMicron;
 this.gdata = gdata;
 this.isLabelOrHover = isLabelOrHover;
 this.colix = colix;
 this.align = align;
+this.pymolOffset = pymolOffsetAngstroms;
 this.setFont (font, isLabelOrHover);
-}, $fz.isPrivate = true, $fz), "J.util.GData,J.util.JmolFont,~N,~N,~B,~N");
+}, $fz.isPrivate = true, $fz), "J.util.GData,J.util.JmolFont,~N,~N,~B,~N,J.util.P3");
 $_M(c$, "getFontMetrics", 
 ($fz = function () {
 this.descent = this.font.getDescent ();
@@ -142,23 +149,48 @@ this.text = (this.viewer == null ? this.textUnformatted : this.viewer.formatText
 this.recalc ();
 });
 $_M(c$, "setPosition", 
-function (width, height, scalePixelsPerMicron, imageFontScaling, isExact, boxXY) {
+function (viewer, g3d, scalePixelsPerMicron, imageFontScaling, isExact, boxXY) {
+var width = g3d.getRenderWidth ();
+var height = g3d.getRenderHeight ();
 if (boxXY == null) boxXY = this.boxXY;
  else this.boxXY = boxXY;
 this.setWindow (width, height, scalePixelsPerMicron);
 if (scalePixelsPerMicron != 0 && this.scalePixelsPerMicron != 0) this.setFontScale (scalePixelsPerMicron / this.scalePixelsPerMicron);
  else if (this.fontScale != imageFontScaling) this.setFontScale (imageFontScaling);
 if (this.doFormatText) this.formatText ();
+var dx = this.offsetX * imageFontScaling;
+var dy = this.offsetY * imageFontScaling;
+this.xAdj = (this.fontScale >= 2 ? 8 : 4);
+this.yAdj = this.ascent - this.lineHeight + this.xAdj;
 if (this.isLabelOrHover) {
 boxXY[0] = this.movableX;
 boxXY[1] = this.movableY;
-J.shape.Text.setBoxXY (this.boxWidth, this.boxHeight, this.offsetX * imageFontScaling, this.offsetY * imageFontScaling, boxXY, isExact);
+if (this.pymolOffset != null) {
+var pixelsPerAngstrom = viewer.scaleToScreen (this.z, 1000);
+this.z -= Clazz.floatToInt (this.pymolOffset.z * pixelsPerAngstrom);
+pixelsPerAngstrom = viewer.scaleToScreen (this.z, 1000);
+var isOld = (this.pymolOffset.x >= -1 && this.pymolOffset.x <= 1 && this.pymolOffset.y >= -1 && this.pymolOffset.y <= 1);
+if (isOld) {
+dx = this.textWidth * (this.pymolOffset.x - 1) / 2;
+dy = -this.textHeight * ((this.pymolOffset.y - 1) / 2);
+dy += this.descent;
+} else {
+dx = this.pymolOffset.x * pixelsPerAngstrom;
+dy = -this.pymolOffset.y * pixelsPerAngstrom;
+dy *= 1.05;
+dy += this.textHeight * 0.66;
+}this.xAdj = (this.fontScale >= 2 ? 8 : 4);
+this.yAdj = 0;
+boxXY[0] = this.movableX - this.xAdj;
+boxXY[1] = this.movableY - this.yAdj;
+isExact = true;
+}J.shape.Text.setBoxXY (this.boxWidth, this.boxHeight, dx, dy, boxXY, isExact);
 } else {
 this.setPos (this.fontScale);
 }this.boxX = boxXY[0];
 this.boxY = boxXY[1];
 if (this.adjustForWindow) this.setBoxOffsetsInWindow (0, this.isLabelOrHover ? 16 * this.fontScale + this.lineHeight : 0, this.boxY - this.textHeight);
-}, "~N,~N,~N,~N,~B,~A");
+}, "J.viewer.Viewer,J.api.JmolRendererInterface,~N,~N,~B,~A");
 $_M(c$, "setPos", 
 ($fz = function (scale) {
 var xLeft;
@@ -289,20 +321,19 @@ return w;
 $_M(c$, "setXYA", 
 function (xy, i) {
 if (i == 0) {
-var adj = (this.fontScale >= 2 ? 8 : 4);
 xy[2] = this.boxX;
 switch (this.align) {
 case 2:
 xy[2] += this.boxWidth / 2;
 break;
 case 3:
-xy[2] += this.boxWidth - adj;
+xy[2] += this.boxWidth - this.xAdj;
 break;
 default:
-xy[2] += adj;
+xy[2] += this.xAdj;
 }
 xy[0] = xy[2];
-xy[1] = this.boxY + this.ascent - this.lineHeight + adj;
+xy[1] = this.boxY + this.yAdj;
 }switch (this.align) {
 case 2:
 xy[0] = xy[2] - Clazz.doubleToInt (this.widths[i] / 2);
@@ -312,4 +343,12 @@ xy[0] = xy[2] - this.widths[i];
 }
 xy[1] += this.lineHeight;
 }, "~A,~N");
+$_M(c$, "getCommand", 
+function () {
+var cmd =  new J.util.SB ();
+cmd.append ("label ").append (J.util.Escape.eS (this.textUnformatted));
+if (this.pymolOffset == null) return cmd.toString ();
+cmd.append (";set labelOffset ").append (J.util.Escape.eP (this.pymolOffset));
+return cmd.toString ();
+});
 });

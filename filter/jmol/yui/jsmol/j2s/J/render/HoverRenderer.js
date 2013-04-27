@@ -1,6 +1,6 @@
 Clazz.declarePackage ("J.render");
-Clazz.load (["J.render.ShapeRenderer"], "J.render.HoverRenderer", ["J.modelset.LabelToken", "J.render.TextRenderer"], function () {
-c$ = Clazz.declareType (J.render, "HoverRenderer", J.render.ShapeRenderer);
+Clazz.load (["J.render.LabelsRenderer"], "J.render.HoverRenderer", ["J.modelset.LabelToken", "J.render.TextRenderer"], function () {
+c$ = Clazz.declareType (J.render, "HoverRenderer", J.render.LabelsRenderer);
 Clazz.overrideMethod (c$, "render", 
 function () {
 if (this.viewer.isNavigating ()) return false;
@@ -20,7 +20,7 @@ text.setMovableX (hover.xy.x);
 text.setMovableY (hover.xy.y);
 } else {
 return true;
-}J.render.TextRenderer.render (text, this.g3d, 0, antialias ? 2 : 1, false, null);
+}J.render.TextRenderer.render (text, this.viewer, this.g3d, 0, antialias ? 2 : 1, false, null, this.xy);
 return true;
 });
 $_M(c$, "fixLabel", 

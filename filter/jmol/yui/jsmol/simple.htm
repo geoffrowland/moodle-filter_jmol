@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
 <script type="text/javascript" src="JSmol.min.js"></script>
@@ -100,8 +101,8 @@ jmolApplet0 = Jmol.getApplet("jmolApplet0", Info)
 </td><td>
 <form><!-- (FORM tag is important to automatically set checkbox off when page reloads) -->
 <script type="text/javascript">
-Jmol.setButtonCss(null,"style='width:160'")
-Jmol.setMenuCss(null,"style='width:160'")
+Jmol.setButtonCss(null,"style='width:160px'")
+Jmol.setMenuCss(null,"style='width:160px'")
 jmolButton("if (!xid) { xid = '1crn'};var x = prompt('Enter a four-digit PDB ID',xid);if (!x) { quit }; xid = x; load @{'=' + x}","Load PDB by ID")
 jmolBr()
 jmolCheckbox("set pdbAddHydrogens TRUE","set pdbAddHydrogens FALSE","with hydrogens",false)
@@ -149,7 +150,7 @@ jmolBr()
 
 <script type="text/javascript">
 jmolBr()
-Jmol.setButtonCss(null,"style='width:120'")
+Jmol.setButtonCss(null,"style='width:120px'")
 jmolButton("color cpk")
 jmolButton("color group")
 jmolButton("color amino")
@@ -160,17 +161,17 @@ jmolButton("cartoon only")
 jmolButton("backbone only")
 jmolButton("spacefill only;spacefill 23%;wireframe 0.15","ball&stick")
 jmolBr()
-Jmol.setButtonCss(null,"style='width:60'")
+Jmol.setButtonCss(null,"style='width:60px'")
 jmolButton("Model")
-Jmol.setButtonCss(null,"style='width:50'")
+Jmol.setButtonCss(null,"style='width:50px'")
 jmolButton("model; if (!isDssp) { save structure s1; isDssp = true; calculate structure DSSP;cartoons only;color structure}", "DSSP")
-Jmol.setButtonCss(null,"style='width:50'")
+Jmol.setButtonCss(null,"style='width:50px'")
 jmolButton("model; if (isDssp) { restore structure s1; isDssp = false; cartoons only;color structure}", "Auth")
-Jmol.setButtonCss(null,"style='width:160'")
+Jmol.setButtonCss(null,"style='width:160px'")
 jmolButton("Ramachandran relative")
 jmolButton("Quaternion difference")
 jmolBr()
-Jmol.setButtonCss(null,"style='width:100'")
+Jmol.setButtonCss(null,"style='width:100px'")
 jmolButton("console")
 Jmol.jmolCommandInput(jmolApplet0)
 </script>

@@ -23,6 +23,8 @@ this.bsNearby = null;
 this.doAddHydrogens = false;
 this.havePlane = false;
 this.doUseIterator = false;
+this.theProperty = 0;
+this.haveOneProperty = false;
 this.minPtsPerAng = 0;
 this.thisPlane = null;
 this.thisAtomSet = null;
@@ -134,6 +136,8 @@ this.myAtomCount = J.util.BSUtil.cardinalityOf (this.bsMySelected);
 var atomSet = J.util.BSUtil.copy (this.bsMySelected);
 var nH = 0;
 this.atomProp = null;
+this.theProperty = 3.4028235E38;
+this.haveOneProperty = false;
 var props = this.params.theProperty;
 if (this.myAtomCount > 0) {
 var hAtoms = null;
@@ -157,11 +161,11 @@ for (var i = 0; i < nH; i++) {
 if (getRadii) this.atomRadius[i] = rH;
 this.atomXyz[i] = hAtoms[i];
 this.atomNo[i] = -1;
-if (this.atomProp != null) this.atomProp[i] = NaN;
+if (this.atomProp != null) this.addAtomProp (i, NaN);
 }
 this.myAtomCount = nH;
 for (var i = atomSet.nextSetBit (0); i >= 0; i = atomSet.nextSetBit (i + 1)) {
-if (this.atomProp != null) this.atomProp[this.myAtomCount] = (props != null && i < props.length ? props[i] : NaN);
+if (this.atomProp != null) this.addAtomProp (this.myAtomCount, (props != null && i < props.length ? props[i] : NaN));
 this.atomXyz[this.myAtomCount] = this.atomData.atomXyz[i];
 this.atomNo[this.myAtomCount] = this.atomData.atomicNumber[i];
 this.atomIndex[this.myAtomCount] = i;
@@ -206,13 +210,20 @@ this.atomXyz = J.util.ArrayUtil.arrayCopyObject (this.atomXyz, nAtoms);
 if (this.atomIndex != null) this.atomIndex = J.util.ArrayUtil.arrayCopyI (this.atomIndex, nAtoms);
 if (props != null) this.atomProp = J.util.ArrayUtil.arrayCopyF (this.atomProp, nAtoms);
 for (var i = this.bsNearby.nextSetBit (0); i >= 0; i = this.bsNearby.nextSetBit (i + 1)) {
-if (props != null) this.atomProp[this.myAtomCount] = props[i];
+if (props != null) this.addAtomProp (this.myAtomCount, props[i]);
 this.myIndex[i] = this.myAtomCount;
 this.atomIndex[this.myAtomCount] = i;
 this.atomXyz[this.myAtomCount] = this.atomData.atomXyz[i];
 this.atomRadius[this.myAtomCount++] = this.atomData.atomRadius[i];
 }
-}}, "J.util.BS,~B,~B,~B,~B,~B,~B,~N");
+}this.haveOneProperty = (!Float.isNaN (this.theProperty));
+System.out.println ("AtomDataR theProperty=" + this.theProperty);
+}, "J.util.BS,~B,~B,~B,~B,~B,~B,~N");
+$_M(c$, "addAtomProp", 
+($fz = function (i, f) {
+this.atomProp[i] = f;
+if (!Float.isNaN (this.theProperty)) if (f != this.theProperty) this.theProperty = (this.theProperty == 3.4028235E38 ? f : NaN);
+}, $fz.isPrivate = true, $fz), "~N,~N");
 $_M(c$, "getWorkingRadius", 
 ($fz = function (i, marginAtoms) {
 var r = (i < 0 ? this.atomData.hAtomRadius : this.atomData.atomRadius[i]);

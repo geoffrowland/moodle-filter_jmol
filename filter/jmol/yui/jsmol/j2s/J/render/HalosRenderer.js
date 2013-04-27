@@ -48,18 +48,17 @@ needTranslucent = true;
 this.colix = 0;
 if (colixFill == 0 || !this.g3d.setColix (colixFill)) return needTranslucent;
 }var z = atom.screenZ;
-var diameter = this.mad;
-if (diameter < 0) {
-diameter = atom.screenDiameter;
-if (diameter == 0) {
+var d = this.mad;
+if (d < 0) {
+d = atom.screenDiameter;
+if (d == 0) {
 var ellipsemax = atom.getADPMinMax (true);
-if (ellipsemax > 0) diameter = this.viewer.scaleToScreen (z, Clazz.doubleToInt (Math.floor (ellipsemax * 2000)));
-if (diameter == 0) {
-diameter = this.viewer.scaleToScreen (z, this.mad == -2 ? 250 : 500);
+if (ellipsemax > 0) d = this.viewer.scaleToScreen (z, Clazz.doubleToInt (Math.floor (ellipsemax * 2000)));
+if (d == 0) {
+d = Clazz.floatToInt (this.viewer.scaleToScreen (z, this.mad == -2 ? 250 : 500));
 }}} else {
-diameter = this.viewer.scaleToScreen (z, this.mad);
-}var d = diameter;
-if (this.isAntialiased) d /= 2;
+d = this.viewer.scaleToScreen (z, this.mad);
+}if (this.isAntialiased) d /= 2;
 var more = (d / 2);
 if (this.mad == -2) more /= 2;
 if (more < 8) more = 8;

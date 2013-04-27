@@ -2049,10 +2049,10 @@ this.inverseMatrix.transform (this.ptXyzTemp);
 pt3i.set (Math.round (this.ptXyzTemp.x), Math.round (this.ptXyzTemp.y), Math.round (this.ptXyzTemp.z));
 }, "~N,~N,~N,J.util.P3i");
 Clazz.overrideMethod (c$, "lookupInterpolatedVoxelValue", 
-function (point) {
+function (point, getSource) {
 if (this.mappingPlane != null) return this.distanceToMappingPlane (point);
 if (this.sr != null) {
-var v = this.sr.getValueAtPoint (point);
+var v = this.sr.getValueAtPoint (point, getSource);
 return (this.isSquared ? v * v : v);
 }this.ptXyzTemp.sub2 (point, this.volumetricOrigin);
 this.inverseMatrix.transform (this.ptXyzTemp);
@@ -2066,7 +2066,7 @@ var zUpper = this.indexUpper (this.ptXyzTemp.z, zLower, iMax);
 var v1 = J.jvxl.data.VolumeData.getFractional2DValue (this.mantissa (this.ptXyzTemp.x - xLower), this.mantissa (this.ptXyzTemp.y - yLower), this.getVoxelValue (xLower, yLower, zLower), this.getVoxelValue (xUpper, yLower, zLower), this.getVoxelValue (xLower, yUpper, zLower), this.getVoxelValue (xUpper, yUpper, zLower));
 var v2 = J.jvxl.data.VolumeData.getFractional2DValue (this.mantissa (this.ptXyzTemp.x - xLower), this.mantissa (this.ptXyzTemp.y - yLower), this.getVoxelValue (xLower, yLower, zUpper), this.getVoxelValue (xUpper, yLower, zUpper), this.getVoxelValue (xLower, yUpper, zUpper), this.getVoxelValue (xUpper, yUpper, zUpper));
 return v1 + this.mantissa (this.ptXyzTemp.z - zLower) * (v2 - v1);
-}, "J.util.P3");
+}, "J.util.P3,~B");
 $_M(c$, "mantissa", 
 ($fz = function (f) {
 return (this.isPeriodic ? f - Math.floor (f) : f);
@@ -2181,7 +2181,7 @@ pt.scaleAdd2 (fraction, this.edgeVector, pointA);
 if (this.sr == null || !this.doIterate || valueB == valueA || fraction < 0.01 || fraction > 0.99 || (this.edgeVector.length ()) < 0.01) return cutoff;
 var n = 0;
 this.ptTemp.setT (pt);
-var v = this.lookupInterpolatedVoxelValue (this.ptTemp);
+var v = this.lookupInterpolatedVoxelValue (this.ptTemp, false);
 var v0 = NaN;
 while (++n < 10) {
 var fnew = (v - valueA) / d;
@@ -2193,7 +2193,7 @@ pt.setT (this.ptTemp);
 v0 = v;
 if (Math.abs (diff) < 0.005) break;
 this.ptTemp.scaleAdd2 (diff, this.edgeVector, pt);
-v = this.lookupInterpolatedVoxelValue (this.ptTemp);
+v = this.lookupInterpolatedVoxelValue (this.ptTemp, false);
 }
 return v0;
 }, "~N,J.util.P3,J.util.P3,~N,~N,J.util.P3");
@@ -2352,7 +2352,7 @@ return String.copyValueOf (chars);
 //// J\jvxl\data\MeshData.js 
 // 
 Clazz.declarePackage ("J.jvxl.data");
-Clazz.load (["J.util.MeshSurface"], "J.jvxl.data.MeshData", ["java.lang.Float", "java.util.Arrays", "J.util.ArrayUtil", "$.BS", "$.V3"], function () {
+Clazz.load (["J.util.MeshSurface"], "J.jvxl.data.MeshData", ["java.lang.Float", "java.util.Arrays", "J.util.ArrayUtil", "$.BS", "$.Escape", "$.V3"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.setsSuccessful = false;
 this.vertexIncrement = 1;
@@ -2375,7 +2375,7 @@ function () {
 return (this.surfaceSet == null ? this.getSurfaceSetForLevel (0) : this.surfaceSet);
 });
 $_M(c$, "getSurfaceSetForLevel", 
-function (level) {
+($fz = function (level) {
 if (level == 0) {
 this.surfaceSet =  new Array (100);
 this.nSets = 0;
@@ -2418,7 +2418,7 @@ if (level == 0) {
 this.sortSurfaceSets ();
 this.setVertexSets (false);
 }return this.surfaceSet;
-}, "~N");
+}, $fz.isPrivate = true, $fz), "~N");
 $_M(c$, "sortSurfaceSets", 
 ($fz = function () {
 var sets =  new Array (this.nSets);
@@ -2515,6 +2515,7 @@ var factor = (isArea ? 2 : 6);
 for (var i = 0; i < n; i++) v[i] /= factor;
 
 if (justOne && thisSet != -2147483648) return Float.$valueOf (v[0]);
+System.out.println ("MeshData calcVolume " + J.util.Escape.e (v));
 return v;
 }, "~N,~B,~B");
 $_M(c$, "updateInvalidatedVertices", 
@@ -3343,7 +3344,11 @@ if (Clazz.instanceOf (value, J.jvxl.data.VolumeData)) {
 this.volumeData = value;
 return this.newReader ("VolumeDataReader");
 }if (Clazz.instanceOf (value, java.util.Map)) {
-this.volumeData = (value).get ("volumeData");
+var map = value;
+if (map.containsKey ("__pymolSurfaceData__")) {
+this.readerData = map;
+return this.newReaderBr ("PyMOLMeshReader", null);
+}this.volumeData = map.get ("volumeData");
 return this.newReader ("VolumeDataReader");
 }var data = null;
 if (Clazz.instanceOf (value, String)) {
@@ -4536,8 +4541,9 @@ value = this.meshData.vertexSets[i];
 } else if (this.params.colorByPhase) {
 value = this.getPhase (this.meshData.vertices[i]);
 } else {
-value = this.volumeData.lookupInterpolatedVoxelValue (this.meshData.vertices[i]);
-if (this.haveSurfaceAtoms) this.meshData.vertexSource[i] = this.getSurfaceAtomIndex ();
+var needSource = (this.haveSurfaceAtoms && this.meshData.vertexSource[i] < 0);
+value = this.volumeData.lookupInterpolatedVoxelValue (this.meshData.vertices[i], needSource);
+if (needSource) this.meshData.vertexSource[i] = this.getSurfaceAtomIndex ();
 }if (value < min) min = value;
 if (value > max && value != 3.4028235E38) max = value;
 this.meshData.vertexValues[i] = value;
@@ -4644,7 +4650,7 @@ var useVertexValue = (haveData || this.jvxlDataIs2dContour || this.vertexDataOnl
 for (var i = this.meshData.mergeVertexCount0; i < vertexCount; i++) {
 var v;
 if (useVertexValue) v = this.meshData.vertexValues[i];
- else v = this.volumeData.lookupInterpolatedVoxelValue (vertexes[i]);
+ else v = this.volumeData.lookupInterpolatedVoxelValue (vertexes[i], false);
 if (v < min) min = v;
 if (v > max && v != 3.4028235E38) max = v;
 }
@@ -4736,9 +4742,9 @@ this.xyzMax = J.util.P3.new3 (-3.4028235E38, -3.4028235E38, -3.4028235E38);
 }J.util.BoxInfo.addPoint (pt, this.xyzMin, this.xyzMax, margin);
 }, "J.util.P3,~N");
 $_M(c$, "getValueAtPoint", 
-function (pt) {
+function (pt, getSource) {
 return 0;
-}, "J.util.P3");
+}, "J.util.P3,~B");
 $_M(c$, "initializeMapping", 
 function () {
 });
@@ -5221,7 +5227,7 @@ var value;
 if (haveData) {
 value = c.value;
 } else {
-value = this.volumeData.lookupInterpolatedVoxelValue (c);
+value = this.volumeData.lookupInterpolatedVoxelValue (c, false);
 c.setValue (value);
 }if (value < this.contourPlaneMinimumValue) this.contourPlaneMinimumValue = value;
 if (value > this.contourPlaneMaximumValue) this.contourPlaneMaximumValue = value;
@@ -6203,6 +6209,8 @@ this.bsNearby = null;
 this.doAddHydrogens = false;
 this.havePlane = false;
 this.doUseIterator = false;
+this.theProperty = 0;
+this.haveOneProperty = false;
 this.minPtsPerAng = 0;
 this.thisPlane = null;
 this.thisAtomSet = null;
@@ -6314,6 +6322,8 @@ this.myAtomCount = J.util.BSUtil.cardinalityOf (this.bsMySelected);
 var atomSet = J.util.BSUtil.copy (this.bsMySelected);
 var nH = 0;
 this.atomProp = null;
+this.theProperty = 3.4028235E38;
+this.haveOneProperty = false;
 var props = this.params.theProperty;
 if (this.myAtomCount > 0) {
 var hAtoms = null;
@@ -6337,11 +6347,11 @@ for (var i = 0; i < nH; i++) {
 if (getRadii) this.atomRadius[i] = rH;
 this.atomXyz[i] = hAtoms[i];
 this.atomNo[i] = -1;
-if (this.atomProp != null) this.atomProp[i] = NaN;
+if (this.atomProp != null) this.addAtomProp (i, NaN);
 }
 this.myAtomCount = nH;
 for (var i = atomSet.nextSetBit (0); i >= 0; i = atomSet.nextSetBit (i + 1)) {
-if (this.atomProp != null) this.atomProp[this.myAtomCount] = (props != null && i < props.length ? props[i] : NaN);
+if (this.atomProp != null) this.addAtomProp (this.myAtomCount, (props != null && i < props.length ? props[i] : NaN));
 this.atomXyz[this.myAtomCount] = this.atomData.atomXyz[i];
 this.atomNo[this.myAtomCount] = this.atomData.atomicNumber[i];
 this.atomIndex[this.myAtomCount] = i;
@@ -6386,13 +6396,20 @@ this.atomXyz = J.util.ArrayUtil.arrayCopyObject (this.atomXyz, nAtoms);
 if (this.atomIndex != null) this.atomIndex = J.util.ArrayUtil.arrayCopyI (this.atomIndex, nAtoms);
 if (props != null) this.atomProp = J.util.ArrayUtil.arrayCopyF (this.atomProp, nAtoms);
 for (var i = this.bsNearby.nextSetBit (0); i >= 0; i = this.bsNearby.nextSetBit (i + 1)) {
-if (props != null) this.atomProp[this.myAtomCount] = props[i];
+if (props != null) this.addAtomProp (this.myAtomCount, props[i]);
 this.myIndex[i] = this.myAtomCount;
 this.atomIndex[this.myAtomCount] = i;
 this.atomXyz[this.myAtomCount] = this.atomData.atomXyz[i];
 this.atomRadius[this.myAtomCount++] = this.atomData.atomRadius[i];
 }
-}}, "J.util.BS,~B,~B,~B,~B,~B,~B,~N");
+}this.haveOneProperty = (!Float.isNaN (this.theProperty));
+System.out.println ("AtomDataR theProperty=" + this.theProperty);
+}, "J.util.BS,~B,~B,~B,~B,~B,~B,~N");
+$_M(c$, "addAtomProp", 
+($fz = function (i, f) {
+this.atomProp[i] = f;
+if (!Float.isNaN (this.theProperty)) if (f != this.theProperty) this.theProperty = (this.theProperty == 3.4028235E38 ? f : NaN);
+}, $fz.isPrivate = true, $fz), "~N,~N");
 $_M(c$, "getWorkingRadius", 
 ($fz = function (i, marginAtoms) {
 var r = (i < 0 ? this.atomData.hAtomRadius : this.atomData.atomRadius[i]);
@@ -6715,10 +6732,19 @@ var bsSurfaces = this.meshData.getSurfaceSet ();
 var bsSources = null;
 var volumes = (this.isPocket ? null : this.meshData.calculateVolumeOrArea (-1, false, false));
 var minVolume = (1.5 * 3.141592653589793 * Math.pow (this.solventRadius, 3));
+var maxVolume = 0;
+var maxIsNegative = false;
+if (volumes != null && !this.isCavity) for (var i = 0; i < this.meshData.nSets; i++) {
+var v = volumes[i];
+if (Math.abs (v) > maxVolume) {
+maxVolume = Math.abs (v);
+maxIsNegative = (v < 0);
+}}
+var factor = (maxIsNegative ? -1 : 1);
 for (var i = 0; i < this.meshData.nSets; i++) {
 var bss = bsSurfaces[i];
 if (bss.intersects (this.bsSurfacePoints)) {
-if (volumes == null || Math.abs (volumes[i]) > minVolume) if (this.params.vertexSource != null) {
+if (volumes == null || volumes[i] * factor > minVolume) if (this.params.vertexSource != null) {
 var bs =  new J.util.BS ();
 if (bsSources == null) bsSources =  new Array (bsSurfaces.length);
 for (var j = bss.nextSetBit (0); j >= 0; j = bss.nextSetBit (j + 1)) {
@@ -7081,7 +7107,7 @@ J.util.Measure.getPlaneThroughPoint (this.p, this.vTemp, this.plane);
 return Math.sin (angleBAS) * rAS;
 }, "~N,~N");
 Clazz.overrideMethod (c$, "getValueAtPoint", 
-function (pt) {
+function (pt, getSource) {
 if (this.contactPair != null) return pt.distance (this.contactPair.myAtoms[1]) - this.contactPair.radii[1];
 var value = 3.4028235E38;
 for (var iAtom = 0; iAtom < this.firstNearbyAtom; iAtom++) {
@@ -7089,7 +7115,7 @@ var r = pt.distance (this.atomXyz[iAtom]) - this.atomRadius[iAtom] - this.solven
 if (r < value) value = r;
 }
 return (value == 3.4028235E38 ? NaN : value);
-}, "J.util.P3");
+}, "J.util.P3,~B");
 Clazz.overrideMethod (c$, "getPlane", 
 function (x) {
 if (this.yzCount == 0) {
@@ -7280,7 +7306,7 @@ case 2:
 this.g3d.setColor (colors[i]);
 break;
 }
-this.g3d.fillRect (x, y, 5, 5, dx, dy);
+this.g3d.fillRect (x, y, 5, -2147483648, dx, dy);
 }
 this.isosurface.keyXy[1] = Clazz.doubleToInt ((y + dy) / factor);
 }, $fz.isPrivate = true, $fz));
@@ -7332,7 +7358,7 @@ $_M(c$, "renderLonePair",
 ($fz = function (isRadical) {
 this.pt2f.setT (this.vertices[1]);
 this.viewer.transformPt3f (this.pt2f, this.pt2f);
-var r = this.viewer.scaleToScreen (Clazz.floatToInt (this.pt2f.z), 100);
+var r = Clazz.floatToInt (this.viewer.scaleToScreen (Clazz.floatToInt (this.pt2f.z), 100));
 if (r < 1) r = 1;
 if (!isRadical) {
 var v1 =  new J.util.V3 ();
@@ -7403,7 +7429,7 @@ var s = i + (this.imesh.isColorSolid ? "" : " " + this.imesh.vertexValues[i]);
 this.g3d.setColix (4);
 this.g3d.drawStringNoSlab (s, null, this.screens[i].x, this.screens[i].y, this.screens[i].z - 30, 0);
 }if (this.volumeRender) {
-diam = this.viewer.scaleToScreen (this.screens[i].z, ptSize);
+diam = Clazz.floatToInt (this.viewer.scaleToScreen (this.screens[i].z, ptSize));
 this.g3d.volumeRender4 (diam, this.screens[i].x, this.screens[i].y, this.screens[i].z);
 } else {
 this.g3d.fillSphereI (diam, this.screens[i]);
@@ -7479,6 +7505,7 @@ if (this.haveBsSlabGhost) colixA = colixB = colixC = J.util.C.copyColixTransluce
 }}if (diam == -2147483648) {
 if (this.imesh.diameter <= 0) {
 diam = (this.meshScale < 0 ? this.meshScale = this.viewer.getInt (553648151) : this.meshScale);
+if (this.g3d.isAntialiased ()) diam *= 2;
 } else {
 diam = Clazz.doubleToInt (this.viewer.getScreenDim () / 100);
 }if (diam < 1) diam = 1;

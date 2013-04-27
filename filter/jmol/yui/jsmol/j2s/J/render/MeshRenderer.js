@@ -268,7 +268,7 @@ this.pt1f.add (vB);
 this.pt1f.scale (0.5);
 this.viewer.transformPtScr (this.pt1f, this.pt1i);
 var mad = Clazz.doubleToInt (Math.floor (Math.abs (this.width) * 1000));
-this.diameter = (this.exportType == 1 ? mad : this.viewer.scaleToScreen (this.pt1i.z, mad));
+this.diameter = Clazz.floatToInt (this.exportType == 1 ? mad : this.viewer.scaleToScreen (this.pt1i.z, mad));
 if (this.diameter == 0) this.diameter = 1;
 this.viewer.transformPt3f (vA, this.pt1f);
 this.viewer.transformPt3f (vB, this.pt2f);

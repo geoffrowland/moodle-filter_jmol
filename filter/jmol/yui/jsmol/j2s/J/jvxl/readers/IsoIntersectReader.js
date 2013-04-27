@@ -114,9 +114,9 @@ return this.atomDataServer.evalFunctionFloat (this.func[0], this.func[1], this.v
 }
 }, $fz.isPrivate = true, $fz), "~N,~N");
 Clazz.overrideMethod (c$, "getValueAtPoint", 
-function (pt) {
+function (pt, getSource) {
 return this.getValueAB (this.getValueAtPoint2 (pt, this.myBsA), this.getValueAtPoint2 (pt, this.myBsB));
-}, "J.util.P3");
+}, "J.util.P3,~B");
 $_M(c$, "getValueAtPoint2", 
 ($fz = function (pt, bs) {
 var value = 3.4028235E38;

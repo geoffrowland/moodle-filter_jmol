@@ -2,14 +2,16 @@ Clazz.declarePackage ("J.render");
 Clazz.load (null, "J.render.TextRenderer", ["J.shape.Text"], function () {
 c$ = Clazz.declareType (J.render, "TextRenderer");
 c$.render = $_M(c$, "render", 
-function (text, g3d, scalePixelsPerMicron, imageFontScaling, isExact, boxXY) {
+function (text, viewer, g3d, scalePixelsPerMicron, imageFontScaling, isExact, boxXY, xy) {
 if (text == null || text.image == null && text.lines == null) return;
-text.setPosition (g3d.getRenderWidth (), g3d.getRenderHeight (), scalePixelsPerMicron, imageFontScaling, isExact, boxXY);
+var showText = g3d.setColix (text.colix);
+if (!showText && (text.image == null && (text.bgcolix == 0 || !g3d.setColix (text.bgcolix)))) return;
+text.setPosition (viewer, g3d, scalePixelsPerMicron, imageFontScaling, isExact, boxXY);
 if (text.image == null && text.bgcolix != 0) {
-if (g3d.setColix (text.bgcolix)) J.render.TextRenderer.showBox (g3d, text.colix, Clazz.floatToInt (text.boxX), Clazz.floatToInt (text.boxY), text.z + 2, text.zSlab, Clazz.floatToInt (text.boxWidth), Clazz.floatToInt (text.boxHeight), text.fontScale, text.isLabelOrHover);
-}if (g3d.setColix (text.colix)) {
-if (text.image == null) {
-var xy =  Clazz.newFloatArray (3, 0);
+if (showText) g3d.setColix (text.bgcolix);
+J.render.TextRenderer.showBox (g3d, text.colix, Clazz.floatToInt (text.boxX), Clazz.floatToInt (text.boxY), text.z + 2, text.zSlab, Clazz.floatToInt (text.boxWidth), Clazz.floatToInt (text.boxHeight), text.fontScale, text.isLabelOrHover);
+if (!showText) return;
+}if (text.image == null) {
 for (var i = 0; i < text.lines.length; i++) {
 text.setXYA (xy, i);
 g3d.drawString (text.lines[i], text.font, Clazz.floatToInt (xy[0]), Clazz.floatToInt (xy[1]), text.z, text.zSlab, text.bgcolix);
@@ -17,8 +19,8 @@ g3d.drawString (text.lines[i], text.font, Clazz.floatToInt (xy[0]), Clazz.floatT
 } else {
 g3d.drawImage (text.image, Clazz.floatToInt (text.boxX), Clazz.floatToInt (text.boxY), text.z, text.zSlab, text.bgcolix, Clazz.floatToInt (text.boxWidth), Clazz.floatToInt (text.boxHeight));
 }J.render.TextRenderer.drawPointer (text, g3d);
-}return;
-}, "J.shape.Text,J.api.JmolRendererInterface,~N,~N,~B,~A");
+return;
+}, "J.shape.Text,J.viewer.Viewer,J.api.JmolRendererInterface,~N,~N,~B,~A,~A");
 c$.drawPointer = $_M(c$, "drawPointer", 
 function (text, g3d) {
 if ((text.pointer & 1) != 0) {

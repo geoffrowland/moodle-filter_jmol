@@ -27,12 +27,12 @@ $_M(c$, "render1",
 var x = atom.screenX;
 var y = atom.screenY;
 var z = atom.screenZ;
-var d = this.viewer.scaleToScreen (z, mad);
+var d = Clazz.floatToInt (this.viewer.scaleToScreen (z, mad));
 d -= (d & 1) ^ 1;
 var r = Clazz.doubleToInt (d / 2);
 if (r < 3) return;
 if (this.mar > 0) {
-this.width = this.viewer.scaleToScreen (z, this.mar);
+this.width = Clazz.floatToInt (this.viewer.scaleToScreen (z, this.mar));
 } else {
 this.drawLine (x - r - 1, y + 1, z, x - r - 1 + d, y + 1, z);
 this.drawLine (x + 1, y + 1 - r, z, x + 1, y + 1 - r + d, z);

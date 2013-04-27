@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.pymol");
-Clazz.load (null, "J.adapter.readers.pymol.ModelSettings", ["java.lang.Boolean", "$.Float", "J.atomdata.RadiusData", "J.constant.EnumVdw", "J.modelset.Atom", "J.util.BSUtil", "$.Escape"], function () {
+Clazz.load (null, "J.adapter.readers.pymol.ModelSettings", ["java.lang.Boolean", "$.Float", "J.adapter.readers.pymol.PyMOLReader", "J.atomdata.RadiusData", "J.constant.EnumVdw", "J.modelset.Atom", "J.util.BSUtil", "$.Escape", "$.P3", "$.SB"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.id = 0;
 this.bsAtoms = null;
@@ -43,7 +43,12 @@ $_M(c$, "createShape",
 function (m, bsCarb) {
 var sm = m.shapeManager;
 var modelIndex = this.getModelIndex (m);
+var s;
+var sID;
 var atoms;
+var sb;
+var min;
+var max;
 switch (this.id) {
 case 1073742032:
 sm.viewer.setMovie (this.info);
@@ -65,16 +70,55 @@ case 1:
 break;
 case 0:
 break;
+case 1073742016:
+var mep = this.info;
+sID = mep.get (mep.size () - 2).toString ();
+var mapID = mep.get (mep.size () - 1).toString ();
+min = J.adapter.readers.pymol.PyMOLReader.getFloatAt (J.adapter.readers.pymol.PyMOLReader.getList (mep, 3), 0);
+max = J.adapter.readers.pymol.PyMOLReader.getFloatAt (J.adapter.readers.pymol.PyMOLReader.getList (mep, 3), 2);
+sb =  new J.util.SB ();
+sb.append ("script('");
+sb.append ("set isosurfacekey true;isosurface ID ").append (J.util.Escape.eS (sID)).append (" map \"\" ").append (J.util.Escape.eS (mapID)).append (";color isosurface range " + min + " " + max + ";isosurface colorscheme rwb");
+sb.append ("');");
+s = sb.toString ();
+System.out.println ("shapeSettings: " + s);
+sm.viewer.evaluateExpression (s);
+return;
+case 1073742018:
+modelIndex = sm.viewer.getCurrentModelIndex ();
+var mesh = this.info;
+sID = mesh.get (mesh.size () - 2).toString ();
+sb =  new J.util.SB ();
+sb.append ("script('");
+sb.append ("isosurface ID ").append (J.util.Escape.eS (sID)).append (" model ").append (m.models[modelIndex].getModelNumberDotted ()).append (" color ").append (J.util.Escape.escapeColor (this.argb)).append (" \"\" ").append (J.util.Escape.eS (sID)).append (" mesh nofill frontonly");
+var within = J.adapter.readers.pymol.PyMOLReader.getFloatAt (J.adapter.readers.pymol.PyMOLReader.getList (J.adapter.readers.pymol.PyMOLReader.getList (mesh, 2), 0), 11);
+var list = J.adapter.readers.pymol.PyMOLReader.getList (J.adapter.readers.pymol.PyMOLReader.getList (J.adapter.readers.pymol.PyMOLReader.getList (mesh, 2), 0), 12);
+if (within > 0) {
+var pt =  new J.util.P3 ();
+sb.append (";isosurface slab within ").appendF (within).append (" [ ");
+for (var j = list.size () - 3; j >= 0; j -= 3) {
+J.adapter.readers.pymol.PyMOLReader.getPoint (list, j, pt);
+sb.append (J.util.Escape.eP (pt));
+}
+sb.append (" ]");
+}sb.append (";set meshScale ").appendI (Clazz.doubleToInt (this.size / 500));
+sb.append ("');");
+s = sb.toString ();
+System.out.println ("shapeSettings: " + s);
+sm.viewer.evaluateExpression (s);
+return;
 case 24:
 if (modelIndex < 0) return;
-sm.setShapePropertyBs (0, "colors", this.colors, this.bsAtoms);
-var s = (this.info)[0].toString ().$replace ('\'', '_').$replace ('"', '_');
+if (this.argb == 0) sm.setShapePropertyBs (0, "colors", this.colors, this.bsAtoms);
+s = (this.info)[0].toString ().$replace ('\'', '_').$replace ('"', '_');
 var lighting = (this.info)[1];
 var resolution = "";
 if (lighting == null) {
 lighting = "mesh nofill";
 resolution = " resolution 1.5";
-}s = "script('isosurface ID \"" + s + "\"" + " model " + m.models[modelIndex].getModelNumberDotted () + resolution + " select (" + J.util.Escape.eBS (this.bsAtoms) + ") only solvent " + (this.size / 1000) + " map property color";
+}s = "script('isosurface ID \"" + s + "\"" + " model " + m.models[modelIndex].getModelNumberDotted () + resolution + " select (" + J.util.Escape.eBS (this.bsAtoms) + ") only solvent " + (this.size / 1000);
+if (this.argb == 0) s += " map property color";
+ else s += " color " + J.util.Escape.escapeColor (this.argb);
 s += " frontOnly " + lighting;
 if (this.translucency > 0) s += " translucent " + this.translucency;
 s += "')";
@@ -83,7 +127,7 @@ sm.viewer.evaluateExpression (s);
 return;
 case 5:
 sm.loadShape (this.id);
-sm.setShapePropertyBs (this.id, "labels", this.info, this.bsAtoms);
+sm.setShapePropertyBs (this.id, "textLabels", this.info, this.bsAtoms);
 return;
 case 6:
 if (modelIndex < 0) return;
@@ -111,8 +155,8 @@ this.rd =  new J.atomdata.RadiusData (data, 0, J.atomdata.RadiusData.EnumType.AB
 atoms = sm.viewer.modelSet.atoms;
 var sum = 0.0;
 var sumsq = 0.0;
-var min = 3.4028235E38;
-var max = 0;
+min = 3.4028235E38;
+max = 0;
 var n = this.bsAtoms.cardinality ();
 for (var i = this.bsAtoms.nextSetBit (0); i >= 0; i = this.bsAtoms.nextSetBit (i + 1)) {
 var value = J.modelset.Atom.atomPropertyFloat (null, atoms[i], 1112541199);

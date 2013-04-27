@@ -419,8 +419,9 @@ value = this.meshData.vertexSets[i];
 } else if (this.params.colorByPhase) {
 value = this.getPhase (this.meshData.vertices[i]);
 } else {
-value = this.volumeData.lookupInterpolatedVoxelValue (this.meshData.vertices[i]);
-if (this.haveSurfaceAtoms) this.meshData.vertexSource[i] = this.getSurfaceAtomIndex ();
+var needSource = (this.haveSurfaceAtoms && this.meshData.vertexSource[i] < 0);
+value = this.volumeData.lookupInterpolatedVoxelValue (this.meshData.vertices[i], needSource);
+if (needSource) this.meshData.vertexSource[i] = this.getSurfaceAtomIndex ();
 }if (value < min) min = value;
 if (value > max && value != 3.4028235E38) max = value;
 this.meshData.vertexValues[i] = value;
@@ -527,7 +528,7 @@ var useVertexValue = (haveData || this.jvxlDataIs2dContour || this.vertexDataOnl
 for (var i = this.meshData.mergeVertexCount0; i < vertexCount; i++) {
 var v;
 if (useVertexValue) v = this.meshData.vertexValues[i];
- else v = this.volumeData.lookupInterpolatedVoxelValue (vertexes[i]);
+ else v = this.volumeData.lookupInterpolatedVoxelValue (vertexes[i], false);
 if (v < min) min = v;
 if (v > max && v != 3.4028235E38) max = v;
 }
@@ -619,9 +620,9 @@ this.xyzMax = J.util.P3.new3 (-3.4028235E38, -3.4028235E38, -3.4028235E38);
 }J.util.BoxInfo.addPoint (pt, this.xyzMin, this.xyzMax, margin);
 }, "J.util.P3,~N");
 $_M(c$, "getValueAtPoint", 
-function (pt) {
+function (pt, getSource) {
 return 0;
-}, "J.util.P3");
+}, "J.util.P3,~B");
 $_M(c$, "initializeMapping", 
 function () {
 });

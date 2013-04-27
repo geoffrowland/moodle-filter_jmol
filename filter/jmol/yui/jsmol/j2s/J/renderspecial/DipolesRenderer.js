@@ -71,8 +71,9 @@ for (var i = 0; i < 6; i++) this.viewer.transformPtScr (this.points[i], this.scr
 this.viewer.transformPt3f (this.points[1], this.cross0);
 this.viewer.transformPt3f (this.points[2], this.cross1);
 this.mad = dipole.mad;
-this.diameter = this.viewer.scaleToScreen (this.screens[3].z, this.mad);
-this.headWidthPixels = Clazz.doubleToInt (Math.floor (this.diameter * 2.0));
+var d = this.viewer.scaleToScreen (this.screens[3].z, this.mad);
+this.diameter = Clazz.floatToInt (d);
+this.headWidthPixels = Clazz.doubleToInt (Math.floor (d * 2.0));
 if (this.headWidthPixels < this.diameter + 5) this.headWidthPixels = this.diameter + 5;
 this.crossWidthPixels = this.headWidthPixels;
 return true;

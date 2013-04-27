@@ -277,7 +277,7 @@ var screen = (vibrationVectors != null && atom.hasVibration () ? this.viewer.tra
 atom.screenX = screen.x;
 atom.screenY = screen.y;
 atom.screenZ = screen.z;
-atom.screenDiameter = this.viewer.scaleToScreen (screen.z, Math.abs (atom.madAtom));
+atom.screenDiameter = Clazz.floatToShort (this.viewer.scaleToScreen (screen.z, Math.abs (atom.madAtom)));
 }
 if (this.viewer.getSlabEnabled ()) {
 var slabByMolecule = this.viewer.getBoolean (603979940);

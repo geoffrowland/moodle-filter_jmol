@@ -81,16 +81,16 @@ value = this.data[x][y];
 }return (this.isPlanarMapping ? value : value - this.ptTemp.z);
 }, "~N,~N,~N");
 Clazz.overrideMethod (c$, "getValueAtPoint", 
-function (pt) {
+function (pt, getSource) {
 if (this.params.func == null) return 0;
 this.values[0] = pt.x;
 this.values[1] = pt.y;
 this.values[2] = pt.z;
 return this.atomDataServer.evalFunctionFloat (this.func[0], this.func[1], this.values);
-}, "J.util.P3");
+}, "J.util.P3,~B");
 $_M(c$, "evaluateValue", 
 function (x, y, z) {
 this.volumeData.voxelPtToXYZ (x, y, z, this.ptTemp);
-return this.getValueAtPoint (this.ptTemp);
+return this.getValueAtPoint (this.ptTemp, false);
 }, "~N,~N,~N");
 });

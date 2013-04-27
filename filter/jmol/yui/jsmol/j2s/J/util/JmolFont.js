@@ -55,9 +55,7 @@ return font3d;
 }, "~N,~N,~N,~N,J.api.ApiPlatform,~O");
 c$.getFontFaceID = $_M(c$, "getFontFaceID", 
 function (fontface) {
-if ("Monospaced".equalsIgnoreCase (fontface)) return 2;
-if ("Serif".equalsIgnoreCase (fontface)) return 1;
-return 0;
+return ("Monospaced".equalsIgnoreCase (fontface) ? 2 : "Serif".equalsIgnoreCase (fontface) ? 1 : 0);
 }, "~S");
 c$.getFontStyleID = $_M(c$, "getFontStyleID", 
 function (fontstyle) {

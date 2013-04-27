@@ -830,7 +830,7 @@ Jmol = (function(document) {
   }
 
   Jmol._setJmolParams = function(params, Info, isHashtable) {      
-		var availableValues = "'progressbar','progresscolor','boxbgcolor','boxfgcolor','boxmessage',\
+		var availableValues = "'progressbar','progresscolor','boxbgcolor','boxfgcolor','allowjavascript','boxmessage',\
 									'messagecallback','pickcallback','animframecallback','appletreadycallback','atommovedcallback',\
 									'echocallback','evalcallback','hovercallback','language','loadstructcallback','measurecallback',\
 									'minimizationcallback','resizecallback','scriptcallback','statusform','statustext','statustextarea',\
@@ -839,7 +839,7 @@ Jmol = (function(document) {
 			if(availableValues.indexOf("'" + i.toLowerCase() + "'") >= 0){
         if (i == "language" && !Jmol.featureDetection.supportsLocalization())continue;
         if (isHashtable)
-          params.put(i, Info[i])
+          params.put(i, (Info[i] === true ? Boolean.TRUE: Info[i] === false ? Boolean.FALSE : Info[i]))
         else
 				  params[i] = Info[i];
       }

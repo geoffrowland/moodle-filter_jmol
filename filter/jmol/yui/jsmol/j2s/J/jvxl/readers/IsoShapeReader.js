@@ -120,10 +120,10 @@ if (this.allowNegative) this.setVoxelRange (2, -this.radius, this.radius, this.p
 Clazz.overrideMethod (c$, "getValue", 
 function (x, y, z, ptyz) {
 this.volumeData.voxelPtToXYZ (x, y, z, this.ptPsi);
-return this.getValueAtPoint (this.ptPsi);
+return this.getValueAtPoint (this.ptPsi, false);
 }, "~N,~N,~N,~N");
 Clazz.overrideMethod (c$, "getValueAtPoint", 
-function (pt) {
+function (pt, getSource) {
 this.ptTemp.setT (pt);
 this.ptTemp.sub (this.center);
 if (this.isEccentric) this.eccentricityMatrixInverse.transform (this.ptTemp);
@@ -138,7 +138,7 @@ return this.sphere_radiusAngstroms - Math.sqrt (this.ptTemp.x * this.ptTemp.x + 
 }var value = this.hydrogenAtomPsi (this.ptTemp);
 if (Math.abs (value) < 1.0E-7) value = 0;
 return (this.allowNegative || value >= 0 ? value : 0);
-}, "J.util.P3");
+}, "J.util.P3,~B");
 $_M(c$, "setHeader", 
 ($fz = function (line1) {
 this.jvxlFileHeaderBuffer =  new J.util.SB ();
@@ -315,13 +315,13 @@ var y = r * Math.sin (theta) * sinPhi;
 var z = r * cosPhi;
 this.ptPsi.set (x, y, z);
 this.ptPsi.add (this.center);
-value = this.getValueAtPoint (this.ptPsi);
+value = this.getValueAtPoint (this.ptPsi, false);
 } else {
 this.ptPsi.setT (this.planeU);
 this.ptPsi.scale (this.random.nextFloat () * this.planeRadius * 2 - this.planeRadius);
 this.ptPsi.scaleAdd2 (this.random.nextFloat () * this.planeRadius * 2 - this.planeRadius, this.planeV, this.ptPsi);
 this.ptPsi.add (this.planeCenter);
-value = this.getValueAtPoint (this.ptPsi);
+value = this.getValueAtPoint (this.ptPsi, false);
 if (value * value <= this.aoMax2 * this.random.nextFloat ()) continue;
 }rave += this.ptPsi.distance (this.center);
 this.addVC (this.ptPsi, value, 0);

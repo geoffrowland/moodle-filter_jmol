@@ -286,7 +286,7 @@
 		size != undefined && !isNaN(size) || (size = 60);
 		++c._cmdCount;
 		var t = "<span id=\"span_"+id+"\""+(title ? " title=\"" + title + "\"":"")+"><input name='" + id + "' id='" + id +
-						"' size='"+size+"' onkeypress='Jmol.controls._commandKeyPress(event,\""+id+"\",\"" + appId + "\")'><input " +
+						"' size='"+size+"' onkeypress='Jmol.controls._commandKeyPress(event,\""+id+"\",\"" + appId + "\")' /><input " +
 						" type='button' name='" + id + "Btn' id='" + id + "Btn' value = '"+label+"' onclick='Jmol.controls._commandKeyPress(13,\""+id+"\",\"" + appId + "\")' /></span>";
 		if (Jmol._debugAlert)
 			alert(t);
@@ -392,7 +392,7 @@
 			return;
 		}
 		var c = Jmol.controls;
-		separatorHtml != undefined && separatorHtml != null || (separatorHtml = "&nbsp; ");
+		separatorHtml != undefined && separatorHtml != null || (separatorHtml = "&#xa0; ");
 		var len = arrayOfRadioButtons.length;
 		++c._radioGroupCount;
 		groupName || (groupName = "jmolRadioGroup" + (c._radioGroupCount - 1));

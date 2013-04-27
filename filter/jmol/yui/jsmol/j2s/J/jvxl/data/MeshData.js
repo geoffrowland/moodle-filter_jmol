@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.jvxl.data");
-Clazz.load (["J.util.MeshSurface"], "J.jvxl.data.MeshData", ["java.lang.Float", "java.util.Arrays", "J.util.ArrayUtil", "$.BS", "$.V3"], function () {
+Clazz.load (["J.util.MeshSurface"], "J.jvxl.data.MeshData", ["java.lang.Float", "java.util.Arrays", "J.util.ArrayUtil", "$.BS", "$.Escape", "$.V3"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.setsSuccessful = false;
 this.vertexIncrement = 1;
@@ -22,7 +22,7 @@ function () {
 return (this.surfaceSet == null ? this.getSurfaceSetForLevel (0) : this.surfaceSet);
 });
 $_M(c$, "getSurfaceSetForLevel", 
-function (level) {
+($fz = function (level) {
 if (level == 0) {
 this.surfaceSet =  new Array (100);
 this.nSets = 0;
@@ -65,7 +65,7 @@ if (level == 0) {
 this.sortSurfaceSets ();
 this.setVertexSets (false);
 }return this.surfaceSet;
-}, "~N");
+}, $fz.isPrivate = true, $fz), "~N");
 $_M(c$, "sortSurfaceSets", 
 ($fz = function () {
 var sets =  new Array (this.nSets);
@@ -162,6 +162,7 @@ var factor = (isArea ? 2 : 6);
 for (var i = 0; i < n; i++) v[i] /= factor;
 
 if (justOne && thisSet != -2147483648) return Float.$valueOf (v[0]);
+System.out.println ("MeshData calcVolume " + J.util.Escape.e (v));
 return v;
 }, "~N,~B,~B");
 $_M(c$, "updateInvalidatedVertices", 

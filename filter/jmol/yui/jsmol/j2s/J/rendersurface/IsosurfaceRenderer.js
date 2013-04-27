@@ -98,7 +98,7 @@ case 2:
 this.g3d.setColor (colors[i]);
 break;
 }
-this.g3d.fillRect (x, y, 5, 5, dx, dy);
+this.g3d.fillRect (x, y, 5, -2147483648, dx, dy);
 }
 this.isosurface.keyXy[1] = Clazz.doubleToInt ((y + dy) / factor);
 }, $fz.isPrivate = true, $fz));
@@ -150,7 +150,7 @@ $_M(c$, "renderLonePair",
 ($fz = function (isRadical) {
 this.pt2f.setT (this.vertices[1]);
 this.viewer.transformPt3f (this.pt2f, this.pt2f);
-var r = this.viewer.scaleToScreen (Clazz.floatToInt (this.pt2f.z), 100);
+var r = Clazz.floatToInt (this.viewer.scaleToScreen (Clazz.floatToInt (this.pt2f.z), 100));
 if (r < 1) r = 1;
 if (!isRadical) {
 var v1 =  new J.util.V3 ();
@@ -221,7 +221,7 @@ var s = i + (this.imesh.isColorSolid ? "" : " " + this.imesh.vertexValues[i]);
 this.g3d.setColix (4);
 this.g3d.drawStringNoSlab (s, null, this.screens[i].x, this.screens[i].y, this.screens[i].z - 30, 0);
 }if (this.volumeRender) {
-diam = this.viewer.scaleToScreen (this.screens[i].z, ptSize);
+diam = Clazz.floatToInt (this.viewer.scaleToScreen (this.screens[i].z, ptSize));
 this.g3d.volumeRender4 (diam, this.screens[i].x, this.screens[i].y, this.screens[i].z);
 } else {
 this.g3d.fillSphereI (diam, this.screens[i]);
@@ -297,6 +297,7 @@ if (this.haveBsSlabGhost) colixA = colixB = colixC = J.util.C.copyColixTransluce
 }}if (diam == -2147483648) {
 if (this.imesh.diameter <= 0) {
 diam = (this.meshScale < 0 ? this.meshScale = this.viewer.getInt (553648151) : this.meshScale);
+if (this.g3d.isAntialiased ()) diam *= 2;
 } else {
 diam = Clazz.doubleToInt (this.viewer.getScreenDim () / 100);
 }if (diam < 1) diam = 1;

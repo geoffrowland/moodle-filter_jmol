@@ -1,6 +1,7 @@
 Clazz.declarePackage ("J.renderbio");
 Clazz.load (["J.renderbio.BioShapeRenderer", "J.util.P3", "$.V3"], "J.renderbio.RocketsRenderer", ["J.constant.EnumStructure"], function () {
 c$ = Clazz.decorateAsClass (function () {
+this.newRockets = false;
 this.renderArrowHeads = false;
 this.cordMidPoints = null;
 this.tPending = false;
@@ -10,6 +11,7 @@ this.endIndexPending = 0;
 this.screenA = null;
 this.screenB = null;
 this.screenC = null;
+this.vtemp = null;
 this.corners = null;
 this.screenCorners = null;
 this.pointTipOffset = null;
@@ -23,6 +25,7 @@ Clazz.prepareFields (c$, function () {
 this.screenA =  new J.util.P3 ();
 this.screenB =  new J.util.P3 ();
 this.screenC =  new J.util.P3 ();
+this.vtemp =  new J.util.V3 ();
 this.corners =  new Array (8);
 this.screenCorners =  new Array (8);
 {
@@ -43,7 +46,7 @@ var val = !this.viewer.getBoolean (603979900);
 if (this.renderArrowHeads != val) {
 bioShape.falsifyMesh ();
 this.renderArrowHeads = val;
-}this.calcRopeMidPoints (false);
+}this.calcRopeMidPoints (this.newRockets);
 this.calcScreenControlPoints (this.cordMidPoints);
 this.controlPoints = this.cordMidPoints;
 this.render1 ();
@@ -120,18 +123,26 @@ $_M(c$, "renderPendingRocketSegment",
 this.viewer.transformPt3f (pointStart, this.screenA);
 this.viewer.transformPt3f (pointEnd, this.screenB);
 var zMid = Clazz.doubleToInt (Math.floor ((this.screenA.z + this.screenB.z) / 2));
-var diameter = this.viewer.scaleToScreen (zMid, this.mad);
-if (tEnd && this.renderArrowHeads) {
-this.viewer.transformPt3f (pointBeforeEnd, this.screenC);
+var diameter = Clazz.floatToInt (this.viewer.scaleToScreen (zMid, this.mad));
+this.g3d.fillCylinderBits (2, diameter, this.screenA, this.screenB);
 if (this.g3d.setColix (this.colix)) {
-if (pointBeforeEnd.distance (pointEnd) <= 0.05) this.g3d.fillCylinderBits (2, diameter, this.screenB, this.screenC);
- else this.renderCone (i, pointBeforeEnd, pointEnd, this.screenC, this.screenB);
+if (tEnd && this.renderArrowHeads) {
+this.vtemp.sub2 (pointEnd, pointStart);
+this.vtemp.normalize ();
+this.screenA.scaleAdd2 (4.0, this.vtemp, pointEnd);
+this.viewer.transformPt3f (this.screenA, this.screenC);
+this.renderCone (i, pointEnd, this.screenA, this.screenB, this.screenC);
 }if (this.startIndexPending == this.endIndexPending) return;
 var t = this.screenB;
 this.screenB = this.screenC;
 this.screenC = t;
-}if (this.g3d.setColix (this.colix)) this.g3d.fillCylinderBits (2, diameter, this.screenA, this.screenB);
-}, $fz.isPrivate = true, $fz), "~N,J.util.P3,J.util.P3,J.util.P3,~B");
+}}, $fz.isPrivate = true, $fz), "~N,J.util.P3,J.util.P3,J.util.P3,~B");
+$_M(c$, "renderCone", 
+function (i, pointBegin, pointEnd, screenPtBegin, screenPtEnd) {
+var coneDiameter = (this.mad << 1) - (this.mad >> 1);
+coneDiameter = Clazz.floatToInt (this.viewer.scaleToScreen (Clazz.doubleToInt (Math.floor (screenPtBegin.z)), coneDiameter));
+this.g3d.fillConeSceen3f (2, coneDiameter, screenPtBegin, screenPtEnd);
+}, "~N,J.util.P3,J.util.P3,J.util.P3,J.util.P3");
 $_M(c$, "renderPendingSheet", 
 ($fz = function (pointStart, pointBeforeEnd, pointEnd, tEnd) {
 if (!this.g3d.setColix (this.colix)) return;
@@ -210,7 +221,6 @@ this.g3d.fillQuadrilateral (this.screenCorners[i0], this.screenCorners[i1], this
 }
 }, "J.util.P3,J.util.P3");
 Clazz.defineStatics (c$,
-"MIN_CONE_HEIGHT", 0.05,
 "boxFaces", [0, 1, 3, 2, 0, 2, 6, 4, 0, 4, 5, 1, 7, 5, 4, 6, 7, 6, 2, 3, 7, 3, 1, 5]);
 Clazz.defineStatics (c$,
 "arrowHeadFaces", [0, 1, 3, 2, 0, 4, 5, 2, 1, 4, 5, 3]);

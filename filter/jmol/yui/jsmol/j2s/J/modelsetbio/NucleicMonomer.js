@@ -133,7 +133,7 @@ var o5prime = this.getAtomFromOffsetIndex (19);
 var c3prime = this.getAtomFromOffsetIndex (22);
 var mar = (Clazz.doubleToInt (madBegin / 2));
 if (mar < 1900) mar = 1900;
-var radius = this.scaleToScreen (lead.screenZ, mar);
+var radius = Clazz.floatToInt (this.scaleToScreen (lead.screenZ, mar));
 if (radius < 4) radius = 4;
 if (this.isCursorOnTopOf (lead, x, y, radius, competitor) || this.isCursorOnTopOf (o5prime, x, y, radius, competitor) || this.isCursorOnTopOf (c3prime, x, y, radius, competitor)) closest[0] = lead;
 }, "~N,~N,~A,~N,~N");

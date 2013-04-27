@@ -165,9 +165,9 @@ if (this.params.thePlane != null) J.util.Measure.getPlaneProjection (this.points
 this.createOrbital ();
 }, $fz.isPrivate = true, $fz));
 Clazz.overrideMethod (c$, "getValueAtPoint", 
-function (pt) {
+function (pt, getSource) {
 return (this.q == null ? 0 : this.q.processPt (pt));
-}, "J.util.P3");
+}, "J.util.P3,~B");
 $_M(c$, "getRnd", 
 ($fz = function (f) {
 return this.random.nextFloat () * f;

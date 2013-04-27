@@ -777,7 +777,11 @@ if (Clazz.instanceOf (value, J.jvxl.data.VolumeData)) {
 this.volumeData = value;
 return this.newReader ("VolumeDataReader");
 }if (Clazz.instanceOf (value, java.util.Map)) {
-this.volumeData = (value).get ("volumeData");
+var map = value;
+if (map.containsKey ("__pymolSurfaceData__")) {
+this.readerData = map;
+return this.newReaderBr ("PyMOLMeshReader", null);
+}this.volumeData = map.get ("volumeData");
 return this.newReader ("VolumeDataReader");
 }var data = null;
 if (Clazz.instanceOf (value, String)) {

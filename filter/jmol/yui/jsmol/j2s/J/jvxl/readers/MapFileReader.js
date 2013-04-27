@@ -42,7 +42,7 @@ function (sg, br) {
 Clazz.superCall (this, J.jvxl.readers.MapFileReader, "init2", [sg, br]);
 this.isAngstroms = true;
 this.adjustment = sg.getParams ().center;
-if (this.adjustment.x == 3.4028235E38) this.adjustment =  new J.util.P3 ();
+if (this.adjustment == null || this.adjustment.x == 3.4028235E38) this.adjustment =  new J.util.P3 ();
 }, "J.jvxl.readers.SurfaceGenerator,java.io.BufferedReader");
 $_M(c$, "getVectorsAndOrigin", 
 function () {
@@ -87,9 +87,7 @@ J.util.Logger.info ("Use  isosurface OFFSET {x y z}  if you want to shift it.\n"
 $_M(c$, "setCutoffAutomatic", 
 function () {
 if (this.params.thePlane == null && this.params.cutoffAutomatic) {
-this.params.cutoff = (this.boundingBox == null ? 3.0 : 1.6);
-if (this.dmin != 3.4028235E38) {
-if (this.params.cutoff > this.dmax) this.params.cutoff = this.dmax / 4;
-}J.util.Logger.info ("DNS6Reader: setting cutoff to default value of " + this.params.cutoff + (this.boundingBox == null ? " (no BOUNDBOX parameter)\n" : "\n"));
+this.params.cutoff = -1.0;
+J.util.Logger.info ("MapReader: setting cutoff to default value of " + this.params.cutoff + (this.boundingBox == null ? " (no BOUNDBOX parameter)\n" : "\n"));
 }});
 });

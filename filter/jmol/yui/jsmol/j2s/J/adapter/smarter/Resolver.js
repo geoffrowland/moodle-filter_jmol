@@ -157,24 +157,24 @@ return null;
 c$.getXmlType = $_M(c$, "getXmlType", 
 ($fz = function (header) {
 if (header.indexOf ("http://www.molpro.net/") >= 0) {
-return J.adapter.smarter.Resolver.specialTags[18][0];
-}if (header.indexOf ("odyssey") >= 0) {
 return J.adapter.smarter.Resolver.specialTags[19][0];
-}if (header.indexOf ("C3XML") >= 0) {
-return J.adapter.smarter.Resolver.specialTags[17][0];
-}if (header.indexOf ("arguslab") >= 0) {
-return J.adapter.smarter.Resolver.specialTags[15][0];
-}if (header.indexOf ("jvxl") >= 0) {
-return J.adapter.smarter.Resolver.specialTags[16][0];
-}if (header.indexOf ("http://www.xml-cml.org/schema") >= 0 || header.indexOf ("cml:") >= 0) {
-return J.adapter.smarter.Resolver.specialTags[16][0];
-}if (header.indexOf ("XSD") >= 0) {
+}if (header.indexOf ("odyssey") >= 0) {
 return J.adapter.smarter.Resolver.specialTags[20][0];
-}if (header.indexOf (">vasp") >= 0) {
+}if (header.indexOf ("C3XML") >= 0) {
+return J.adapter.smarter.Resolver.specialTags[18][0];
+}if (header.indexOf ("arguslab") >= 0) {
+return J.adapter.smarter.Resolver.specialTags[16][0];
+}if (header.indexOf ("jvxl") >= 0) {
+return J.adapter.smarter.Resolver.specialTags[17][0];
+}if (header.indexOf ("http://www.xml-cml.org/schema") >= 0 || header.indexOf ("cml:") >= 0) {
+return J.adapter.smarter.Resolver.specialTags[17][0];
+}if (header.indexOf ("XSD") >= 0) {
 return J.adapter.smarter.Resolver.specialTags[21][0];
-}if (header.indexOf ("<GEOMETRY_INFO>") >= 0) {
+}if (header.indexOf (">vasp") >= 0) {
 return J.adapter.smarter.Resolver.specialTags[22][0];
-}return J.adapter.smarter.Resolver.specialTags[16][0] + "(unidentified)";
+}if (header.indexOf ("<GEOMETRY_INFO>") >= 0) {
+return J.adapter.smarter.Resolver.specialTags[23][0];
+}return J.adapter.smarter.Resolver.specialTags[17][0] + "(unidentified)";
 }, $fz.isPrivate = true, $fz), "~S");
 c$.getReaderFromType = $_M(c$, "getReaderFromType", 
 ($fz = function (type) {
@@ -194,9 +194,10 @@ return null;
 c$.checkSpecial = $_M(c$, "checkSpecial", 
 ($fz = function (nLines, lines, isEnd) {
 if (isEnd) {
-if (J.adapter.smarter.Resolver.checkGromacs (lines)) return J.adapter.smarter.Resolver.specialTags[13][0];
+if (J.adapter.smarter.Resolver.checkGromacs (lines)) return J.adapter.smarter.Resolver.specialTags[14][0];
 if (J.adapter.smarter.Resolver.checkCrystal (lines)) return J.adapter.smarter.Resolver.specialTags[12][0];
 if (J.adapter.smarter.Resolver.checkCastep (lines)) return J.adapter.smarter.Resolver.specialTags[10][0];
+if (J.adapter.smarter.Resolver.checkVaspposcar (lines)) return J.adapter.smarter.Resolver.specialTags[13][0];
 } else {
 if (nLines == 1 && lines[0].length > 0 && Character.isDigit (lines[0].charAt (0))) return J.adapter.smarter.Resolver.specialTags[0][0];
 if (J.adapter.smarter.Resolver.checkMopacGraphf (lines)) return J.adapter.smarter.Resolver.specialTags[1][0];
@@ -208,7 +209,7 @@ if (J.adapter.smarter.Resolver.checkFoldingXyz (lines)) return J.adapter.smarter
 if (J.adapter.smarter.Resolver.checkCube (lines)) return J.adapter.smarter.Resolver.specialTags[7][0];
 if (J.adapter.smarter.Resolver.checkWien2k (lines)) return J.adapter.smarter.Resolver.specialTags[9][0];
 if (J.adapter.smarter.Resolver.checkAims (lines)) return J.adapter.smarter.Resolver.specialTags[11][0];
-if (J.adapter.smarter.Resolver.checkGenNBO (lines)) return J.adapter.smarter.Resolver.specialTags[14][0];
+if (J.adapter.smarter.Resolver.checkGenNBO (lines)) return J.adapter.smarter.Resolver.specialTags[15][0];
 }return null;
 }, $fz.isPrivate = true, $fz), "~N,~A,~B");
 c$.checkAims = $_M(c$, "checkAims", 
@@ -240,6 +241,14 @@ c$.checkCastep = $_M(c$, "checkCastep",
 for (var i = 0; i < lines.length; i++) {
 if (lines[i].indexOf ("Frequencies in         cm-1") == 1 || lines[i].contains ("CASTEP") || lines[i].toUpperCase ().startsWith ("%BLOCK LATTICE_ABC") || lines[i].toUpperCase ().startsWith ("%BLOCK LATTICE_CART") || lines[i].toUpperCase ().startsWith ("%BLOCK POSITIONS_FRAC") || lines[i].toUpperCase ().startsWith ("%BLOCK POSITIONS_ABS") || lines[i].contains ("<-- E")) return true;
 }
+return false;
+}, $fz.isPrivate = true, $fz), "~A");
+c$.checkVaspposcar = $_M(c$, "checkVaspposcar", 
+($fz = function (lines) {
+var select = lines[8].trim ().toLowerCase ();
+if (select.contains ("direct") || select.contains ("cartesian") || select.contains ("selective")) return true;
+var normal = lines[7].trim ().toLowerCase ();
+if (normal.contains ("direct") || normal.contains ("cartesian")) return true;
 return false;
 }, $fz.isPrivate = true, $fz), "~A");
 c$.checkCrystal = $_M(c$, "checkCrystal", 
@@ -374,7 +383,7 @@ return false;
 }, $fz.isPrivate = true, $fz), "~A");
 Clazz.defineStatics (c$,
 "classBase", "J.adapter.readers.");
-c$.readerSets = c$.prototype.readerSets = ["cifpdb.", ";Cif;Pdb;", "molxyz.", ";Mol3D;Mol;Xyz;", "more.", ";BinaryDcd;Gromacs;Jcampdx;MdCrd;MdTop;Mol2;Pqr;P2n;TlsDataOnly;", "quantum.", ";Adf;Csf;Dgrid;GamessUK;GamessUS;Gaussian;GausianWfn;Jaguar;Molden;MopacGraphf;GenNBO;NWChem;Odyssey;Psi;Qchem;Spartan;SpartanSmol;WebMO;", "pymol.", ";PyMOL;", "simple.", ";Alchemy;Ampac;Cube;FoldingXyz;GhemicalMM;HyperChem;Jme;Mopac;MopacArchive;ZMatrix;", "xtal.", ";Aims;Castep;Crystal;Dmol;Espresso;Gulp;MagRes;Shelx;Siesta;VaspOutcar;Wien2k;"];
+c$.readerSets = c$.prototype.readerSets = ["cifpdb.", ";Cif;Pdb;", "molxyz.", ";Mol3D;Mol;Xyz;", "more.", ";BinaryDcd;Gromacs;Jcampdx;MdCrd;MdTop;Mol2;Pqr;P2n;TlsDataOnly;", "quantum.", ";Adf;Csf;Dgrid;GamessUK;GamessUS;Gaussian;GausianWfn;Jaguar;Molden;MopacGraphf;GenNBO;NWChem;Odyssey;Psi;Qchem;Spartan;SpartanSmol;WebMO;", "pymol.", ";PyMOL;", "simple.", ";Alchemy;Ampac;Cube;FoldingXyz;GhemicalMM;HyperChem;Jme;Mopac;MopacArchive;ZMatrix;", "xtal.", ";Aims;Castep;Crystal;Dmol;Espresso;Gulp;MagRes;Shelx;Siesta;VaspOutcar;VaspPoscar;Wien2k;Xcrysden;"];
 Clazz.defineStatics (c$,
 "CML_NAMESPACE_URI", "http://www.xml-cml.org/schema",
 "SPECIAL_JME", 0,
@@ -389,24 +398,25 @@ Clazz.defineStatics (c$,
 "SPECIAL_CASTEP", 10,
 "SPECIAL_AIMS", 11,
 "SPECIAL_CRYSTAL", 12,
-"SPECIAL_GROMACS", 13,
-"SPECIAL_GENNBO", 14,
-"SPECIAL_ARGUS_XML", 15,
-"SPECIAL_CML_XML", 16,
-"SPECIAL_CHEM3D_XML", 17,
-"SPECIAL_MOLPRO_XML", 18,
-"SPECIAL_ODYSSEY_XML", 19,
-"SPECIAL_XSD_XML", 20,
-"SPECIAL_VASP_XML", 21,
-"SPECIAL_QE_XML", 22,
-"SPECIAL_ARGUS_DOM", 23,
-"SPECIAL_CML_DOM", 24,
-"SPECIAL_CHEM3D_DOM", 25,
-"SPECIAL_MOLPRO_DOM", 26,
-"SPECIAL_ODYSSEY_DOM", 27,
-"SPECIAL_XSD_DOM", 28,
-"SPECIAL_VASP_DOM", 29,
-"specialTags", [["Jme"], ["MopacGraphf"], ["Mol3D"], ["Odyssey"], ["Mol"], ["Xyz"], ["FoldingXyz"], ["Cube"], ["Alchemy"], ["Wien2k"], ["Castep"], ["Aims"], ["Crystal"], ["Gromacs"], ["GenNBO"], ["XmlArgus"], ["XmlCml"], ["XmlChem3d"], ["XmlMolpro"], ["XmlOdyssey"], ["XmlXsd"], ["XmlVasp"], ["XmlQE"], ["XmlArgus(DOM)"], ["XmlCml(DOM)"], ["XmlChem3d(DOM)"], ["XmlMolpro(DOM)"], ["XmlOdyssey(DOM)"], ["XmlXsd(DOM)"], ["XmlVasp(DOM)"], ["MdCrd"]],
+"SPECIAL_VASPPOSCAR", 13,
+"SPECIAL_GROMACS", 14,
+"SPECIAL_GENNBO", 15,
+"SPECIAL_ARGUS_XML", 16,
+"SPECIAL_CML_XML", 17,
+"SPECIAL_CHEM3D_XML", 18,
+"SPECIAL_MOLPRO_XML", 19,
+"SPECIAL_ODYSSEY_XML", 20,
+"SPECIAL_XSD_XML", 21,
+"SPECIAL_VASP_XML", 22,
+"SPECIAL_QE_XML", 23,
+"SPECIAL_ARGUS_DOM", 24,
+"SPECIAL_CML_DOM", 25,
+"SPECIAL_CHEM3D_DOM", 26,
+"SPECIAL_MOLPRO_DOM", 27,
+"SPECIAL_ODYSSEY_DOM", 28,
+"SPECIAL_XSD_DOM", 29,
+"SPECIAL_VASP_DOM", 30,
+"specialTags", [["Jme"], ["MopacGraphf"], ["Mol3D"], ["Odyssey"], ["Mol"], ["Xyz"], ["FoldingXyz"], ["Cube"], ["Alchemy"], ["Wien2k"], ["Castep"], ["Aims"], ["Crystal"], ["VaspPoscar"], ["Gromacs"], ["GenNBO"], ["XmlArgus"], ["XmlCml"], ["XmlChem3d"], ["XmlMolpro"], ["XmlOdyssey"], ["XmlXsd"], ["XmlVasp"], ["XmlQE"], ["XmlArgus(DOM)"], ["XmlCml(DOM)"], ["XmlChem3d(DOM)"], ["XmlMolpro(DOM)"], ["XmlOdyssey(DOM)"], ["XmlXsd(DOM)"], ["XmlVasp(DOM)"], ["MdCrd"]],
 "LEADER_CHAR_MAX", 64,
 "sptContainsRecords", ["spt", "# Jmol state", "# Jmol script"],
 "cubeFileStartRecords", ["Cube", "JVXL", "#JVXL"],
@@ -454,6 +464,7 @@ Clazz.defineStatics (c$,
 "crystalContainsRecords", ["Crystal", "*                                CRYSTAL"],
 "espressoContainsRecords", ["Espresso", "Program PWSCF", "Program PHONON"],
 "siestaContainsRecords", ["Siesta", "MD.TypeOfRun", "SolutionMethod", "MeshCutoff", "WELCOME TO SIESTA"],
+"xcrysDenContainsRecords", ["Xcrysden", "PRIMVEC", "CONVVEC", "PRIMCOORD"],
 "mopacArchiveContainsRecords", ["MopacArchive", "SUMMARY OF PM"]);
-c$.headerContainsRecords = c$.prototype.headerContainsRecords = [J.adapter.smarter.Resolver.sptContainsRecords, J.adapter.smarter.Resolver.xmlContainsRecords, J.adapter.smarter.Resolver.gaussianContainsRecords, J.adapter.smarter.Resolver.ampacContainsRecords, J.adapter.smarter.Resolver.mopacContainsRecords, J.adapter.smarter.Resolver.qchemContainsRecords, J.adapter.smarter.Resolver.gamessUKContainsRecords, J.adapter.smarter.Resolver.gamessUSContainsRecords, J.adapter.smarter.Resolver.spartanBinaryContainsRecords, J.adapter.smarter.Resolver.spartanContainsRecords, J.adapter.smarter.Resolver.mol2Records, J.adapter.smarter.Resolver.adfContainsRecords, J.adapter.smarter.Resolver.psiContainsRecords, J.adapter.smarter.Resolver.nwchemContainsRecords, J.adapter.smarter.Resolver.uicrcifContainsRecords, J.adapter.smarter.Resolver.dgridContainsRecords, J.adapter.smarter.Resolver.crystalContainsRecords, J.adapter.smarter.Resolver.dmolContainsRecords, J.adapter.smarter.Resolver.gulpContainsRecords, J.adapter.smarter.Resolver.espressoContainsRecords, J.adapter.smarter.Resolver.siestaContainsRecords, J.adapter.smarter.Resolver.mopacArchiveContainsRecords];
+c$.headerContainsRecords = c$.prototype.headerContainsRecords = [J.adapter.smarter.Resolver.sptContainsRecords, J.adapter.smarter.Resolver.xmlContainsRecords, J.adapter.smarter.Resolver.gaussianContainsRecords, J.adapter.smarter.Resolver.ampacContainsRecords, J.adapter.smarter.Resolver.mopacContainsRecords, J.adapter.smarter.Resolver.qchemContainsRecords, J.adapter.smarter.Resolver.gamessUKContainsRecords, J.adapter.smarter.Resolver.gamessUSContainsRecords, J.adapter.smarter.Resolver.spartanBinaryContainsRecords, J.adapter.smarter.Resolver.spartanContainsRecords, J.adapter.smarter.Resolver.mol2Records, J.adapter.smarter.Resolver.adfContainsRecords, J.adapter.smarter.Resolver.psiContainsRecords, J.adapter.smarter.Resolver.nwchemContainsRecords, J.adapter.smarter.Resolver.uicrcifContainsRecords, J.adapter.smarter.Resolver.dgridContainsRecords, J.adapter.smarter.Resolver.crystalContainsRecords, J.adapter.smarter.Resolver.dmolContainsRecords, J.adapter.smarter.Resolver.gulpContainsRecords, J.adapter.smarter.Resolver.espressoContainsRecords, J.adapter.smarter.Resolver.siestaContainsRecords, J.adapter.smarter.Resolver.xcrysDenContainsRecords, J.adapter.smarter.Resolver.mopacArchiveContainsRecords];
 });

@@ -160,7 +160,7 @@ this.renderOne (atom.screenZ, isOK);
 }, $fz.isPrivate = true, $fz), "J.modelset.Atom,J.util.Quadric");
 $_M(c$, "renderOne", 
 ($fz = function (screenZ, isOK) {
-this.diameter = this.viewer.scaleToScreen (screenZ, this.wireframeOnly ? 1 : this.diameter0);
+this.diameter = Clazz.floatToInt (this.viewer.scaleToScreen (screenZ, this.wireframeOnly ? 1 : this.diameter0));
 if (!isOK || this.drawBall) {
 this.renderBall ();
 if (!isOK) return;
@@ -192,7 +192,7 @@ this.pt1.setT (J.renderspecial.EllipsoidsRenderer.unitAxisVectors[i]);
 this.matEllipsoidToScreen.transform (this.pt1);
 this.screens[i].set (Math.round (this.s0.x + this.pt1.x * this.perspectiveFactor), Math.round (this.s0.y + this.pt1.y * this.perspectiveFactor), Math.round (this.pt1.z + this.s0.z));
 }
-this.dx = 2 + this.viewer.scaleToScreen (this.s0.z, Math.round ((Float.isNaN (this.factoredLengths[2]) ? 1.0 : this.factoredLengths[2]) * 1000));
+this.dx = 2 + Clazz.floatToInt (this.viewer.scaleToScreen (this.s0.z, Math.round ((Float.isNaN (this.factoredLengths[2]) ? 1.0 : this.factoredLengths[2]) * 1000)));
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "renderBall", 
 ($fz = function () {

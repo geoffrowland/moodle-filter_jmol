@@ -64,7 +64,7 @@ this.setLogging ();
 J.i18n.GT.ignoreApplicationBundle ();
 this.viewerOptions.remove ("debug");
 this.viewerOptions.put ("fullName", this.fullName);
-this.mayScript = true;
+this.haveDocumentAccess = "true".equalsIgnoreCase ("" + this.getValue ("allowjavascript", "true"));
 J.appletjs.JmolAppletRegistry.checkIn (this.fullName, this);
 this.initWindows ();
 this.initApplication ();
@@ -395,7 +395,7 @@ if (u != null) {
 u.notifyCallback (a, b);
 this.output (f);
 this.b$["J.appletjs.Jmol"].sendJsTextareaStatus (f);
-}}if (!d || !this.b$["J.appletjs.Jmol"].mayScript) return;
+}}if (!d || !this.b$["J.appletjs.Jmol"].mayScript || c == null || !this.b$["J.appletjs.Jmol"].haveDocumentAccess && !c.startsWith ("Jmol.")) return;
 try {
 J.appletjs.Jmol.sendCallback (f, c, b);
 } catch (e) {
@@ -418,7 +418,7 @@ $_M(c$, "notifyScriptTermination",
 $_M(c$, "notifySync", 
 ($fz = function (a, b) {
 var c = this.b$["J.appletjs.Jmol"].b$.get (J.constant.EnumCallback.SYNC);
-if (!this.b$["J.appletjs.Jmol"].mayScript || c == null) return a;
+if (!this.b$["J.appletjs.Jmol"].mayScript || c == null || !this.b$["J.appletjs.Jmol"].haveDocumentAccess && !c.startsWith ("Jmol.")) return a;
 try {
 {
 return eval(syncCallback)(this.htmlName, info, appletName);
@@ -451,6 +451,7 @@ Clazz.overrideMethod (c$, "eval",
 function (a) {
 var b = a.indexOf ("\1");
 if (b >= 0) return this.sendScript (a.substring (b + 1), a.substring (0, b), false, false);
+if (!this.b$["J.appletjs.Jmol"].haveDocumentAccess) return "NO EVAL ALLOWED";
 if (this.b$["J.appletjs.Jmol"].b$.get (J.constant.EnumCallback.EVAL) != null) {
 this.notifyCallback (J.constant.EnumCallback.EVAL, [null, a]);
 return "";
@@ -473,7 +474,7 @@ return null;
 Clazz.overrideMethod (c$, "functionXY", 
 function (a, b, c) {
 var d =  Clazz.newFloatArray (Math.abs (b), Math.abs (c), 0);
-if (!this.b$["J.appletjs.Jmol"].mayScript || b == 0 || c == 0) return d;
+if (!this.b$["J.appletjs.Jmol"].mayScript || !this.b$["J.appletjs.Jmol"].haveDocumentAccess || b == 0 || c == 0) return d;
 try {
 if (b > 0 && c > 0) {
 for (var e = 0; e < b; e++) for (var f = 0; f < c; f++) {
@@ -508,7 +509,7 @@ return d;
 Clazz.overrideMethod (c$, "functionXYZ", 
 function (a, b, c, d) {
 var e =  Clazz.newFloatArray (Math.abs (b), Math.abs (c), Math.abs (d), 0);
-if (!this.b$["J.appletjs.Jmol"].mayScript || b == 0 || c == 0 || d == 0) return e;
+if (!this.b$["J.appletjs.Jmol"].mayScript || !this.b$["J.appletjs.Jmol"].haveDocumentAccess || b == 0 || c == 0 || d == 0) return e;
 try {
 {
 eval(functionName)(this.htmlName, nX, nY, nZ, fxyz);

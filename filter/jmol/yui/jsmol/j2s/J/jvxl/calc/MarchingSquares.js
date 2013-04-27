@@ -102,7 +102,7 @@ var value;
 if (haveData) {
 value = c.value;
 } else {
-value = this.volumeData.lookupInterpolatedVoxelValue (c);
+value = this.volumeData.lookupInterpolatedVoxelValue (c, false);
 c.setValue (value);
 }if (value < this.contourPlaneMinimumValue) this.contourPlaneMinimumValue = value;
 if (value > this.contourPlaneMaximumValue) this.contourPlaneMaximumValue = value;

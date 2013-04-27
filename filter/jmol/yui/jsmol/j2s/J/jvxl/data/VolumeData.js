@@ -237,10 +237,10 @@ this.inverseMatrix.transform (this.ptXyzTemp);
 pt3i.set (Math.round (this.ptXyzTemp.x), Math.round (this.ptXyzTemp.y), Math.round (this.ptXyzTemp.z));
 }, "~N,~N,~N,J.util.P3i");
 Clazz.overrideMethod (c$, "lookupInterpolatedVoxelValue", 
-function (point) {
+function (point, getSource) {
 if (this.mappingPlane != null) return this.distanceToMappingPlane (point);
 if (this.sr != null) {
-var v = this.sr.getValueAtPoint (point);
+var v = this.sr.getValueAtPoint (point, getSource);
 return (this.isSquared ? v * v : v);
 }this.ptXyzTemp.sub2 (point, this.volumetricOrigin);
 this.inverseMatrix.transform (this.ptXyzTemp);
@@ -254,7 +254,7 @@ var zUpper = this.indexUpper (this.ptXyzTemp.z, zLower, iMax);
 var v1 = J.jvxl.data.VolumeData.getFractional2DValue (this.mantissa (this.ptXyzTemp.x - xLower), this.mantissa (this.ptXyzTemp.y - yLower), this.getVoxelValue (xLower, yLower, zLower), this.getVoxelValue (xUpper, yLower, zLower), this.getVoxelValue (xLower, yUpper, zLower), this.getVoxelValue (xUpper, yUpper, zLower));
 var v2 = J.jvxl.data.VolumeData.getFractional2DValue (this.mantissa (this.ptXyzTemp.x - xLower), this.mantissa (this.ptXyzTemp.y - yLower), this.getVoxelValue (xLower, yLower, zUpper), this.getVoxelValue (xUpper, yLower, zUpper), this.getVoxelValue (xLower, yUpper, zUpper), this.getVoxelValue (xUpper, yUpper, zUpper));
 return v1 + this.mantissa (this.ptXyzTemp.z - zLower) * (v2 - v1);
-}, "J.util.P3");
+}, "J.util.P3,~B");
 $_M(c$, "mantissa", 
 ($fz = function (f) {
 return (this.isPeriodic ? f - Math.floor (f) : f);
@@ -369,7 +369,7 @@ pt.scaleAdd2 (fraction, this.edgeVector, pointA);
 if (this.sr == null || !this.doIterate || valueB == valueA || fraction < 0.01 || fraction > 0.99 || (this.edgeVector.length ()) < 0.01) return cutoff;
 var n = 0;
 this.ptTemp.setT (pt);
-var v = this.lookupInterpolatedVoxelValue (this.ptTemp);
+var v = this.lookupInterpolatedVoxelValue (this.ptTemp, false);
 var v0 = NaN;
 while (++n < 10) {
 var fnew = (v - valueA) / d;
@@ -381,7 +381,7 @@ pt.setT (this.ptTemp);
 v0 = v;
 if (Math.abs (diff) < 0.005) break;
 this.ptTemp.scaleAdd2 (diff, this.edgeVector, pt);
-v = this.lookupInterpolatedVoxelValue (this.ptTemp);
+v = this.lookupInterpolatedVoxelValue (this.ptTemp, false);
 }
 return v0;
 }, "~N,J.util.P3,J.util.P3,~N,~N,J.util.P3");

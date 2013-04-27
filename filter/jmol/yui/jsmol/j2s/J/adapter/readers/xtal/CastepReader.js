@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.xtal");
-Clazz.load (["J.adapter.smarter.AtomSetCollectionReader"], "J.adapter.readers.xtal.CastepReader", ["java.lang.Float", "J.adapter.smarter.Atom", "J.util.Eigen", "$.Escape", "$.JmolList", "$.Logger", "$.P3", "$.TextFormat", "$.V3"], function () {
+Clazz.load (["J.adapter.smarter.AtomSetCollectionReader"], "J.adapter.readers.xtal.CastepReader", ["java.lang.Double", "$.Float", "J.adapter.smarter.Atom", "J.util.Eigen", "$.Escape", "$.JmolList", "$.Logger", "$.P3", "$.TextFormat", "$.V3"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.tokens = null;
 this.isPhonon = false;
@@ -126,6 +126,8 @@ this.readOutputAtoms ();
 this.readOutputCharges ();
 } else if (this.doProcessLines && this.line.contains ("Born Effective Charges")) {
 this.readOutputBornChargeTensors ();
+} else if (this.line.contains ("Final energy")) {
+this.readEnergy ();
 }return true;
 }if (this.line.contains ("<-- E")) {
 this.readPhononTrajectories ();
@@ -144,7 +146,6 @@ return true;
 $_M(c$, "readOutputUnitCell", 
 ($fz = function () {
 this.applySymmetryAndSetTrajectory ();
-this.atomSetCollection.newAtomSet ();
 this.setFractionalCoordinates (true);
 this.abc = this.read3Vectors (false);
 this.setLatticeVectors ();
@@ -160,6 +161,17 @@ atom.atomName = this.tokens[1] + this.tokens[2];
 this.atomSetCollection.addAtomWithMappedName (atom);
 this.setAtomCoordXYZ (atom, this.parseFloatStr (this.tokens[3]), this.parseFloatStr (this.tokens[4]), this.parseFloatStr (this.tokens[5]));
 }
+}, $fz.isPrivate = true, $fz));
+$_M(c$, "readEnergy", 
+($fz = function () {
+this.tokens = this.getTokens ();
+var energy = Double.$valueOf (Double.parseDouble (this.tokens[4]));
+this.atomSetCollection.setAtomSetName ("Energy = " + energy + " eV");
+this.atomSetCollection.setAtomSetEnergy ("" + energy, energy.floatValue ());
+this.atomSetCollection.setAtomSetAuxiliaryInfo ("Energy", energy);
+this.applySymmetryAndSetTrajectory ();
+this.atomSetCollection.newAtomSet ();
+this.setLatticeVectors ();
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "readPhononTrajectories", 
 ($fz = function () {

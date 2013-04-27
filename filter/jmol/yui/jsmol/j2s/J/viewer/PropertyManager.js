@@ -306,13 +306,12 @@ return ht;
 Clazz.overrideMethod (c$, "getMoleculeInfo", 
 function (modelSet, atomExpression) {
 var bsAtoms = this.viewer.getAtomBitSet (atomExpression);
-if (modelSet.moleculeCount == 0) {
-modelSet.getMolecules ();
-}var V =  new J.util.JmolList ();
+var molecules = this.viewer.modelSet.getMolecules ();
+var V =  new J.util.JmolList ();
 var bsTemp =  new J.util.BS ();
-for (var i = 0; i < modelSet.moleculeCount; i++) {
+for (var i = 0; i < molecules.length; i++) {
 bsTemp = J.util.BSUtil.copy (bsAtoms);
-var m = modelSet.molecules[i];
+var m = molecules[i];
 bsTemp.and (m.atomList);
 if (bsTemp.length () > 0) {
 var info =  new java.util.Hashtable ();

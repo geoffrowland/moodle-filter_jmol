@@ -3173,12 +3173,12 @@ var nitrogen = this.getNitrogenAtom ();
 var marBegin = (Clazz.doubleToInt (madBegin / 2));
 if (marBegin < 1200) marBegin = 1200;
 if (nitrogen.screenZ == 0) return;
-var radiusBegin = this.scaleToScreen (nitrogen.screenZ, marBegin);
+var radiusBegin = Clazz.floatToInt (this.scaleToScreen (nitrogen.screenZ, marBegin));
 if (radiusBegin < 4) radiusBegin = 4;
 var ccarbon = this.getCarbonylCarbonAtom ();
 var marEnd = (Clazz.doubleToInt (madEnd / 2));
 if (marEnd < 1200) marEnd = 1200;
-var radiusEnd = this.scaleToScreen (nitrogen.screenZ, marEnd);
+var radiusEnd = Clazz.floatToInt (this.scaleToScreen (nitrogen.screenZ, marEnd));
 if (radiusEnd < 4) radiusEnd = 4;
 var alpha = this.getLeadAtom ();
 if (this.isCursorOnTopOf (alpha, x, y, Clazz.doubleToInt ((radiusBegin + radiusEnd) / 2), competitor) || this.isCursorOnTopOf (nitrogen, x, y, radiusBegin, competitor) || this.isCursorOnTopOf (ccarbon, x, y, radiusEnd, competitor)) closest[0] = alpha;
@@ -4497,7 +4497,7 @@ var anomericO = this.getLeadAtom ();
 var marBegin = (Clazz.doubleToInt (madBegin / 2));
 if (marBegin < 1200) marBegin = 1200;
 if (anomericO.screenZ == 0) return;
-var radiusBegin = this.scaleToScreen (anomericO.screenZ, marBegin);
+var radiusBegin = Clazz.floatToInt (this.scaleToScreen (anomericO.screenZ, marBegin));
 if (radiusBegin < 4) radiusBegin = 4;
 if (this.isCursorOnTopOf (anomericO, x, y, radiusBegin, competitor)) closest[0] = anomericO;
 }, "~N,~N,~A,~N,~N");
@@ -4767,7 +4767,7 @@ var o5prime = this.getAtomFromOffsetIndex (19);
 var c3prime = this.getAtomFromOffsetIndex (22);
 var mar = (Clazz.doubleToInt (madBegin / 2));
 if (mar < 1900) mar = 1900;
-var radius = this.scaleToScreen (lead.screenZ, mar);
+var radius = Clazz.floatToInt (this.scaleToScreen (lead.screenZ, mar));
 if (radius < 4) radius = 4;
 if (this.isCursorOnTopOf (lead, x, y, radius, competitor) || this.isCursorOnTopOf (o5prime, x, y, radius, competitor) || this.isCursorOnTopOf (c3prime, x, y, radius, competitor)) closest[0] = lead;
 }, "~N,~N,~A,~N,~N");
@@ -5697,6 +5697,7 @@ this.viewer.freeTempEnum (this.structureTypes);
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "initializePolymer", 
 ($fz = function (bioShape) {
+var bsDeleted = this.viewer.getDeletedAtoms ();
 if (this.viewer.isJmolDataFrameForModel (bioShape.modelIndex)) {
 this.controlPoints = bioShape.bioPolymer.getControlPoints (true, 0, false);
 } else {
@@ -5710,7 +5711,7 @@ this.bsVisible.clearAll ();
 var haveVisible = false;
 if (this.invalidateMesh) bioShape.falsifyMesh ();
 for (var i = this.monomerCount; --i >= 0; ) {
-if ((this.monomers[i].shapeVisibilityFlags & this.myVisibilityFlag) == 0 || this.modelSet.isAtomHidden (this.leadAtomIndices[i])) continue;
+if ((this.monomers[i].shapeVisibilityFlags & this.myVisibilityFlag) == 0 || this.modelSet.isAtomHidden (this.leadAtomIndices[i]) || bsDeleted != null && bsDeleted.get (this.leadAtomIndices[i])) continue;
 var lead = this.modelSet.atoms[this.leadAtomIndices[i]];
 if (!this.g3d.isInDisplayRange (lead.screenX, lead.screenY)) continue;
 this.bsVisible.set (i);
@@ -5806,9 +5807,9 @@ this.madEnd = this.madBeg;
 }} else {
 if (!thisTypeOnly || this.structureTypes[i] === this.structureTypes[this.iPrev]) this.madBeg = (((this.mads[this.iPrev] == 0 ? this.madMid : this.mads[this.iPrev]) + this.madMid) >> 1);
 if (!thisTypeOnly || this.structureTypes[i] === this.structureTypes[this.iNext]) this.madEnd = (((this.mads[this.iNext] == 0 ? this.madMid : this.mads[this.iNext]) + this.madMid) >> 1);
-}this.diameterBeg = this.viewer.scaleToScreen (this.controlPointScreens[i].z, this.madBeg);
-this.diameterMid = this.viewer.scaleToScreen (this.monomers[i].getLeadAtom ().screenZ, this.madMid);
-this.diameterEnd = this.viewer.scaleToScreen (this.controlPointScreens[this.iNext].z, this.madEnd);
+}this.diameterBeg = Clazz.floatToInt (this.viewer.scaleToScreen (this.controlPointScreens[i].z, this.madBeg));
+this.diameterMid = Clazz.floatToInt (this.viewer.scaleToScreen (this.monomers[i].getLeadAtom ().screenZ, this.madMid));
+this.diameterEnd = Clazz.floatToInt (this.viewer.scaleToScreen (this.controlPointScreens[this.iNext].z, this.madEnd));
 this.doCap0 = (i == this.iPrev || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iPrev]);
 this.doCap1 = (this.iNext == this.iNext2 || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iNext]);
 return ((this.aspectRatio > 0 && (this.exportType == 1 || this.checkDiameter (this.diameterBeg) || this.checkDiameter (this.diameterMid) || this.checkDiameter (this.diameterEnd))));
@@ -5902,12 +5903,6 @@ this.g3d.drawHermite7 (true, this.ribbonBorder, this.isNucleic ? 4 : 7, this.scr
 if (this.ribbonBorder && this.aspectRatio == 0) {
 this.g3d.fillCylinderXYZ (this.colix, this.colix, 3, (this.exportType == 1 ? 50 : 3), this.screenArrowTop.x, this.screenArrowTop.y, this.screenArrowTop.z, this.screenArrowBot.x, this.screenArrowBot.y, this.screenArrowBot.z);
 }}, "~N");
-$_M(c$, "renderCone", 
-function (i, pointBegin, pointEnd, screenPtBegin, screenPtEnd) {
-var coneDiameter = this.mad + (this.mad >> 2);
-coneDiameter = this.viewer.scaleToScreen (Clazz.doubleToInt (Math.floor (screenPtBegin.z)), coneDiameter);
-this.g3d.fillConeSceen3f (2, coneDiameter, screenPtBegin, screenPtEnd);
-}, "~N,J.util.P3,J.util.P3,J.util.P3,J.util.P3");
 $_M(c$, "createMesh", 
 ($fz = function (i, madBeg, madMid, madEnd, aspectRatio) {
 this.setNeighbors (i);
@@ -6076,6 +6071,7 @@ Clazz.defineStatics (c$,
 Clazz.declarePackage ("J.renderbio");
 Clazz.load (["J.renderbio.BioShapeRenderer", "J.util.P3", "$.V3"], "J.renderbio.RocketsRenderer", ["J.constant.EnumStructure"], function () {
 c$ = Clazz.decorateAsClass (function () {
+this.newRockets = false;
 this.renderArrowHeads = false;
 this.cordMidPoints = null;
 this.tPending = false;
@@ -6085,6 +6081,7 @@ this.endIndexPending = 0;
 this.screenA = null;
 this.screenB = null;
 this.screenC = null;
+this.vtemp = null;
 this.corners = null;
 this.screenCorners = null;
 this.pointTipOffset = null;
@@ -6098,6 +6095,7 @@ Clazz.prepareFields (c$, function () {
 this.screenA =  new J.util.P3 ();
 this.screenB =  new J.util.P3 ();
 this.screenC =  new J.util.P3 ();
+this.vtemp =  new J.util.V3 ();
 this.corners =  new Array (8);
 this.screenCorners =  new Array (8);
 {
@@ -6118,7 +6116,7 @@ var val = !this.viewer.getBoolean (603979900);
 if (this.renderArrowHeads != val) {
 bioShape.falsifyMesh ();
 this.renderArrowHeads = val;
-}this.calcRopeMidPoints (false);
+}this.calcRopeMidPoints (this.newRockets);
 this.calcScreenControlPoints (this.cordMidPoints);
 this.controlPoints = this.cordMidPoints;
 this.render1 ();
@@ -6195,18 +6193,26 @@ $_M(c$, "renderPendingRocketSegment",
 this.viewer.transformPt3f (pointStart, this.screenA);
 this.viewer.transformPt3f (pointEnd, this.screenB);
 var zMid = Clazz.doubleToInt (Math.floor ((this.screenA.z + this.screenB.z) / 2));
-var diameter = this.viewer.scaleToScreen (zMid, this.mad);
-if (tEnd && this.renderArrowHeads) {
-this.viewer.transformPt3f (pointBeforeEnd, this.screenC);
+var diameter = Clazz.floatToInt (this.viewer.scaleToScreen (zMid, this.mad));
+this.g3d.fillCylinderBits (2, diameter, this.screenA, this.screenB);
 if (this.g3d.setColix (this.colix)) {
-if (pointBeforeEnd.distance (pointEnd) <= 0.05) this.g3d.fillCylinderBits (2, diameter, this.screenB, this.screenC);
- else this.renderCone (i, pointBeforeEnd, pointEnd, this.screenC, this.screenB);
+if (tEnd && this.renderArrowHeads) {
+this.vtemp.sub2 (pointEnd, pointStart);
+this.vtemp.normalize ();
+this.screenA.scaleAdd2 (4.0, this.vtemp, pointEnd);
+this.viewer.transformPt3f (this.screenA, this.screenC);
+this.renderCone (i, pointEnd, this.screenA, this.screenB, this.screenC);
 }if (this.startIndexPending == this.endIndexPending) return;
 var t = this.screenB;
 this.screenB = this.screenC;
 this.screenC = t;
-}if (this.g3d.setColix (this.colix)) this.g3d.fillCylinderBits (2, diameter, this.screenA, this.screenB);
-}, $fz.isPrivate = true, $fz), "~N,J.util.P3,J.util.P3,J.util.P3,~B");
+}}, $fz.isPrivate = true, $fz), "~N,J.util.P3,J.util.P3,J.util.P3,~B");
+$_M(c$, "renderCone", 
+function (i, pointBegin, pointEnd, screenPtBegin, screenPtEnd) {
+var coneDiameter = (this.mad << 1) - (this.mad >> 1);
+coneDiameter = Clazz.floatToInt (this.viewer.scaleToScreen (Clazz.doubleToInt (Math.floor (screenPtBegin.z)), coneDiameter));
+this.g3d.fillConeSceen3f (2, coneDiameter, screenPtBegin, screenPtEnd);
+}, "~N,J.util.P3,J.util.P3,J.util.P3,J.util.P3");
 $_M(c$, "renderPendingSheet", 
 ($fz = function (pointStart, pointBeforeEnd, pointEnd, tEnd) {
 if (!this.g3d.setColix (this.colix)) return;
@@ -6285,7 +6291,6 @@ this.g3d.fillQuadrilateral (this.screenCorners[i0], this.screenCorners[i1], this
 }
 }, "J.util.P3,J.util.P3");
 Clazz.defineStatics (c$,
-"MIN_CONE_HEIGHT", 0.05,
 "boxFaces", [0, 1, 3, 2, 0, 2, 6, 4, 0, 4, 5, 1, 7, 5, 4, 6, 7, 6, 2, 3, 7, 3, 1, 5]);
 Clazz.defineStatics (c$,
 "arrowHeadFaces", [0, 1, 3, 2, 0, 4, 5, 2, 1, 4, 5, 3]);
@@ -6296,7 +6301,6 @@ Clazz.defineStatics (c$,
 Clazz.declarePackage ("J.renderbio");
 Clazz.load (["J.renderbio.RocketsRenderer", "J.util.P3", "$.P3i"], "J.renderbio.CartoonRenderer", ["J.util.C"], function () {
 c$ = Clazz.decorateAsClass (function () {
-this.newRockets = true;
 this.renderAsRockets = false;
 this.renderEdges = false;
 this.ladderOnly = false;
@@ -6324,6 +6328,7 @@ this.ring6Screens[i] =  new J.util.P3i ();
 }});
 Clazz.overrideMethod (c$, "renderBioShape", 
 function (bioShape) {
+this.newRockets = true;
 if (bioShape.wingVectors == null || this.isCarbohydrate) return;
 this.getScreenControlPoints ();
 if (this.isNucleic) {
@@ -6429,7 +6434,7 @@ pt = (this.ladderOnly ? 4 : 2);
 stepScreen = this.ring6Screens[pt];
 stepPt = this.ring6Points[pt];
 }this.mad = (thisMad > 1 ? Clazz.doubleToInt (thisMad / 2) : thisMad);
-this.g3d.fillCylinderScreen3I (3, this.viewer.scaleToScreen (backboneScreen.z, this.mad), backboneScreen, stepScreen, ptConnect, stepPt, this.mad / 2000);
+this.g3d.fillCylinderScreen3I (3, Clazz.floatToInt (this.viewer.scaleToScreen (backboneScreen.z, this.mad)), backboneScreen, stepScreen, ptConnect, stepPt, this.mad / 2000);
 if (this.ladderOnly) return;
 --this.ring6Screens[5].z;
 for (var i = 5; --i >= 0; ) {
@@ -6518,7 +6523,7 @@ this.mad = this.mads[i];
 if (this.mad < 0) {
 this.g3d.drawLine (colixA, colixB, xA, yA, zA, xB, yB, zB);
 } else {
-var width = (this.exportType == 1 ? this.mad : this.viewer.scaleToScreen (Clazz.doubleToInt ((zA + zB) / 2), this.mad));
+var width = Clazz.floatToInt (this.exportType == 1 ? this.mad : this.viewer.scaleToScreen (Clazz.doubleToInt ((zA + zB) / 2), this.mad));
 this.g3d.fillCylinderXYZ (colixA, colixB, 3, width, xA, yA, zA, xB, yB, zB);
 }}
 }, "J.shapebio.BioShape");

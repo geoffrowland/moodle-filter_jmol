@@ -165,6 +165,7 @@ return (this.desiredModelNumber > 0 || modelNumber >= this.lastModelNumber);
 $_M(c$, "appendLoadNote", 
 function (info) {
 this.loadNote.append (info).append ("\n");
+J.util.Logger.info (info);
 return info;
 }, "~S");
 $_M(c$, "initializeTrajectoryFile", 

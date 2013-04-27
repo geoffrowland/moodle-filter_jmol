@@ -35,18 +35,19 @@ var Info = {
 	width: 300,
 	height: 300,
 	debug: false,
-	color: "0xFF00FF",
+	color: "0xFFFFFF",
 	addSelectionOptions: true,
 	serverURL: "http://chemapps.stolaf.edu/jmol/jsmol/jsmol.php",
 	use: "HTML5",
 	j2sPath: "j2s",
 	readyFunction: jmol_isReady,
-	script: "set antialiasDisplay;load data/caffeine.mol;",
+	script: "set antialiasDisplay;load data/caffeine.mol",
 	//jarPath: "java",
 	//jarFile: (useSignedApplet ? "JmolAppletSigned.jar" : "JmolApplet.jar"),
 	//isSigned: useSignedApplet,
 	disableJ2SLoadMonitor: true,
-  disableInitialConsole: true
+  disableInitialConsole: true,
+  allowJavaScript: true
 	//defaultModel: "$dopamine",
 	//console: "none", // default will be jmolApplet0_infodiv
 }

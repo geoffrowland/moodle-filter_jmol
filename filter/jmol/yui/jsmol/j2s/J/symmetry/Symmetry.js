@@ -393,7 +393,7 @@ function (modelSet, iAtom0, iAtom1, minmax) {
 try {
 var bsDelete =  new J.util.BS ();
 var molecules = modelSet.getMolecules ();
-var moleculeCount = modelSet.moleculeCount;
+var moleculeCount = molecules.length;
 var atoms = modelSet.atoms;
 var isOneMolecule = (molecules[moleculeCount - 1].firstAtomIndex == modelSet.models[atoms[iAtom1].modelIndex].firstAtomIndex);
 var center =  new J.util.P3 ();

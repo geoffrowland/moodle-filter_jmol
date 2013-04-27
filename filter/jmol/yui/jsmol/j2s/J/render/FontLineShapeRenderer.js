@@ -42,7 +42,7 @@ diameter = (isMad ? madOrPixels : Clazz.doubleToInt (Math.floor (this.viewer.uns
 break;
 default:
 if (isMad) {
-diameter = this.viewer.scaleToScreen (z, madOrPixels);
+diameter = Clazz.floatToInt (this.viewer.scaleToScreen (z, madOrPixels));
 } else {
 if (this.g3d.isAntialiased ()) madOrPixels += madOrPixels;
 diameter = madOrPixels;

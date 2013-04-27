@@ -1,11 +1,11 @@
 Clazz.declarePackage ("J.adapter.readers.pymol");
-Clazz.load (["J.adapter.readers.cifpdb.PdbReader", "java.util.Hashtable", "J.util.BS", "$.JmolList", "$.P3"], "J.adapter.readers.pymol.PyMOLReader", ["java.lang.Boolean", "$.Character", "$.Float", "J.adapter.readers.pymol.ModelSettings", "$.PickleReader", "$.PyMOL", "$.PyMOLAtom", "J.adapter.smarter.Bond", "$.Structure", "J.atomdata.RadiusData", "J.constant.EnumStructure", "$.EnumVdw", "J.modelset.MeasurementData", "J.util.ArrayUtil", "$.BSUtil", "$.BoxInfo", "$.C", "$.ColorUtil", "$.Escape", "$.Logger", "$.Point3fi", "$.SB", "$.TextFormat"], function () {
+Clazz.load (["J.adapter.readers.cifpdb.PdbReader", "java.util.Hashtable", "J.util.BS", "$.JmolList", "$.P3"], "J.adapter.readers.pymol.PyMOLReader", ["java.lang.Boolean", "$.Character", "$.Double", "$.Float", "$.NullPointerException", "J.adapter.readers.pymol.ModelSettings", "$.PickleReader", "$.PyMOL", "$.PyMOLAtom", "J.adapter.smarter.Bond", "$.Structure", "J.atomdata.RadiusData", "J.constant.EnumStructure", "$.EnumVdw", "J.modelset.MeasurementData", "J.shape.Text", "J.util.ArrayUtil", "$.BSUtil", "$.BoxInfo", "$.C", "$.ColorUtil", "$.Escape", "$.Logger", "$.Point3fi", "$.SB", "$.TextFormat"], function () {
 c$ = Clazz.decorateAsClass (function () {
+this.usePymolRadii = true;
 this.allowSurface = true;
 this.doResize = false;
 this.settings = null;
 this.localSettings = null;
-this.settingCount = 0;
 this.atomCount0 = 0;
 this.$atomCount = 0;
 this.strucNo = 0;
@@ -40,7 +40,11 @@ this.cartoonTranslucency = 0;
 this.sphereTranslucency = 0;
 this.stickTranslucency = 0;
 this.cartoonLadderMode = false;
+this.cartoonRockets = false;
 this.solventAsSpheres = false;
+this.surfaceMode = 0;
+this.surfaceColor = 0;
+this.labelFontId = 0;
 this.movie = null;
 this.isMovie = false;
 this.pymol = null;
@@ -51,6 +55,7 @@ this.currentFrame = -1;
 this.pymolFrame = 0;
 this.allStates = false;
 this.totalAtomCount = 0;
+this.pymolVersion = 0;
 this.branchName = null;
 this.bsModelAtoms = null;
 this.branchID = 0;
@@ -58,6 +63,14 @@ this.nonBondedSize = 0;
 this.sphereScale = 0;
 this.selections = null;
 this.uniqueSettings = null;
+this.labelPosition = null;
+this.labelColor = 0;
+this.labelSize = 0;
+this.labelPosition0 = null;
+this.volumeData = null;
+this.mapObjects = null;
+this.branchNameID = null;
+this.branchIDs = null;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.pymol, "PyMOLReader", J.adapter.readers.cifpdb.PdbReader);
 Clazz.prepareFields (c$, function () {
@@ -81,6 +94,8 @@ this.lstStates =  new J.util.JmolList ();
 this.htNames =  new java.util.Hashtable ();
 this.lstTrajectories =  new J.util.JmolList ();
 this.bsModelAtoms = J.util.BS.newN (1000);
+this.labelPosition0 =  new J.util.P3 ();
+this.branchIDs =  new java.util.Hashtable ();
 });
 $_M(c$, "initializeReader", 
 function () {
@@ -103,6 +118,14 @@ this.process (map);
 }, "J.api.JmolDocument");
 $_M(c$, "process", 
 ($fz = function (map) {
+this.pymolVersion = (map.get ("version")).intValue ();
+this.appendLoadNote ("PyMOL version: " + this.pymolVersion);
+this.settings = J.adapter.readers.pymol.PyMOLReader.getMapList (map, "settings");
+var file = J.adapter.readers.pymol.PyMOLReader.getList (this.settings, 440);
+if (file != null) J.util.Logger.info ("PyMOL session file: " + file.get (2));
+this.setVersionSettings ();
+this.atomSetCollection.setAtomSetCollectionAuxiliaryInfo ("settings", this.settings);
+this.setUniqueSettings (J.adapter.readers.pymol.PyMOLReader.getMapList (map, "unique_settings"));
 this.logging = (this.viewer.getLogFile ().length > 0);
 var names = J.adapter.readers.pymol.PyMOLReader.getMapList (map, "names");
 for (var e, $e = map.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) {
@@ -111,8 +134,6 @@ J.util.Logger.info (name);
 if (name.equals ("names")) {
 for (var i = 1; i < names.size (); i++) J.util.Logger.info ("  " + J.adapter.readers.pymol.PyMOLReader.getString (J.adapter.readers.pymol.PyMOLReader.getList (names, i), 0));
 
-} else if (name.equals ("version")) {
-this.appendLoadNote ("PyMOL version: " + map.get ("version").toString ());
 }}
 if (this.logging) {
 if (this.logging) this.viewer.log ("$CLEAR$");
@@ -134,10 +155,6 @@ e.printStackTrace ();
 }
 }
 }this.addColors (J.adapter.readers.pymol.PyMOLReader.getMapList (map, "colors"));
-this.settings = J.adapter.readers.pymol.PyMOLReader.getMapList (map, "settings");
-this.settingCount = this.settings.size ();
-this.atomSetCollection.setAtomSetCollectionAuxiliaryInfo ("settings", this.settings);
-this.setUniqueSettings (J.adapter.readers.pymol.PyMOLReader.getMapList (map, "unique_settings"));
 this.allStates = this.getBooleanSetting (49);
 this.pymolFrame = Clazz.floatToInt (this.getFloatSetting (194));
 var mov = J.adapter.readers.pymol.PyMOLReader.getMapList (map, "movie");
@@ -163,26 +180,94 @@ if (Clazz.exceptionOf (e, Exception)) {
 throw e;
 }
 }
+var note;
 if (this.width > 0 && this.height > 0) {
-this.appendLoadNote ("PyMOL dimensions width=" + this.width + " height=" + this.height);
+note = "PyMOL dimensions width=" + this.width + " height=" + this.height;
 this.atomSetCollection.setAtomSetCollectionAuxiliaryInfo ("perferredWidthHeight", [this.width, this.height]);
 var d = this.viewer.resizeInnerPanel (this.width, this.height);
+if (d.width == -2147483648) throw  new NullPointerException ("canceled");
 this.width = d.width;
 this.height = d.height;
 } else {
-this.appendLoadNote ("PyMOL dimensions unknown");
-}}this.totalAtomCount = this.getTotalAtomCount (names);
+note = "PyMOL dimensions?";
+}this.appendLoadNote (note);
+}this.totalAtomCount = this.getTotalAtomCount (names);
 J.util.Logger.info ("PyMOL total atom count = " + this.totalAtomCount);
+J.adapter.readers.pymol.PyMOLReader.getPoint (J.adapter.readers.pymol.PyMOLReader.getList (this.settings, 471).get (2), 0, this.labelPosition0);
 this.selections =  new J.util.JmolList ();
 for (var i = 1; i < names.size (); i++) this.processBranch (J.adapter.readers.pymol.PyMOLReader.getList (names, i));
 
 this.processSelections ();
+this.proecssMeshes ();
 if (this.isMovie) {
 this.appendLoadNote ("PyMOL trajectories read: " + this.lstTrajectories.size ());
 this.atomSetCollection.finalizeTrajectoryAs (this.lstTrajectories, null);
 }this.setDefinitions ();
 this.setRendering (J.adapter.readers.pymol.PyMOLReader.getMapList (map, "view"));
 }, $fz.isPrivate = true, $fz), "java.util.Map");
+$_M(c$, "proecssMeshes", 
+($fz = function () {
+if (this.mapObjects == null) return;
+for (var i = this.mapObjects.size (); --i >= 0; ) {
+var obj = this.mapObjects.get (i);
+var objName = obj.get (obj.size () - 1).toString ();
+var isMep = objName.endsWith ("_e_pot");
+var mapName;
+var tok;
+if (isMep) {
+tok = 1073742016;
+var root = objName.substring (0, objName.length - 3);
+mapName = root + "map";
+var isosurfaceName = this.branchIDs.get (root + "chg");
+if (isosurfaceName == null) continue;
+obj.addLast (isosurfaceName);
+} else {
+tok = 1073742018;
+mapName = J.adapter.readers.pymol.PyMOLReader.getString (J.adapter.readers.pymol.PyMOLReader.getList (J.adapter.readers.pymol.PyMOLReader.getList (obj, 2), 0), 1);
+}var surface = this.volumeData.get (mapName);
+if (surface == null) continue;
+obj.addLast (mapName);
+this.appendLoadNote ("PyMOL object " + objName + " references map " + mapName);
+this.volumeData.put (objName, obj);
+this.volumeData.put ("__pymolSurfaceData__", obj);
+var ms =  new J.adapter.readers.pymol.ModelSettings (tok, null, obj);
+this.modelSettings.addLast (ms);
+if (isMep) {
+} else {
+ms.setSize (this.getFloatSetting (90));
+ms.argb = J.adapter.readers.pymol.PyMOL.getRGB (J.adapter.readers.pymol.PyMOLReader.getInt (J.adapter.readers.pymol.PyMOLReader.getList (obj, 0), 2));
+}}
+for (var i = this.atomSetCollection.getAtomSetCount (); --i >= 0; ) this.atomSetCollection.setAtomSetAuxiliaryInfoForSet ("jmolSurfaceInfo", this.volumeData, i);
+
+}, $fz.isPrivate = true, $fz));
+$_M(c$, "setVersionSettings", 
+($fz = function () {
+if (this.pymolVersion < 100) {
+this.addSetting (550, 2, Integer.$valueOf (0));
+this.addSetting (529, 2, Integer.$valueOf (2));
+this.addSetting (471, 4, [1, 1, 0]);
+if (this.pymolVersion < 99) {
+this.addSetting (448, 2, Integer.$valueOf (0));
+this.addSetting (431, 2, Integer.$valueOf (0));
+this.addSetting (361, 2, Integer.$valueOf (1));
+}}}, $fz.isPrivate = true, $fz));
+$_M(c$, "addSetting", 
+($fz = function (key, type, val) {
+var settingCount = this.settings.size ();
+if (settingCount <= key) for (var i = key + 1; --i >= settingCount; ) this.settings.addLast (null);
+
+if (type == 4) {
+var d = val;
+var list;
+val = list =  new J.util.JmolList ();
+for (var i = 0; i < 3; i++) list.addLast (Double.$valueOf (d[i]));
+
+}var setting =  new J.util.JmolList ();
+setting.addLast (Integer.$valueOf (key));
+setting.addLast (Integer.$valueOf (type));
+setting.addLast (val);
+this.settings.set (key, setting);
+}, $fz.isPrivate = true, $fz), "~N,~N,~O");
 $_M(c$, "setDefinitions", 
 ($fz = function () {
 this.modelSettings.addLast ( new J.adapter.readers.pymol.ModelSettings (1060866, null, this.htNames));
@@ -215,12 +300,12 @@ if (colors == null || colors.size () == 0) return;
 var pt =  new J.util.P3 ();
 for (var i = colors.size (); --i >= 0; ) {
 var c = J.adapter.readers.pymol.PyMOLReader.getList (colors, i);
-J.adapter.readers.pymol.PyMOL.addColor (c.get (1), J.util.ColorUtil.colorPtToInt (this.getPoint (J.adapter.readers.pymol.PyMOLReader.getList (c, 2), 0, pt)));
+J.adapter.readers.pymol.PyMOL.addColor (c.get (1), J.util.ColorUtil.colorPtToInt (J.adapter.readers.pymol.PyMOLReader.getPoint (J.adapter.readers.pymol.PyMOLReader.getList (c, 2), 0, pt)));
 }
 }, $fz.isPrivate = true, $fz), "J.util.JmolList");
 c$.getString = $_M(c$, "getString", 
 ($fz = function (list, i) {
-var s = list.get (i);
+var s = list.get (i).toString ();
 return (s.length == 0 ? " " : s);
 }, $fz.isPrivate = true, $fz), "J.util.JmolList,~N");
 c$.getInt = $_M(c$, "getInt", 
@@ -228,20 +313,20 @@ c$.getInt = $_M(c$, "getInt",
 return (list.get (i)).intValue ();
 }, $fz.isPrivate = true, $fz), "J.util.JmolList,~N");
 c$.getFloatAt = $_M(c$, "getFloatAt", 
-($fz = function (list, i) {
+function (list, i) {
 return (list == null ? 0 : (list.get (i)).floatValue ());
-}, $fz.isPrivate = true, $fz), "J.util.JmolList,~N");
-$_M(c$, "getPoint", 
-($fz = function (list, i, pt) {
+}, "J.util.JmolList,~N");
+c$.getPoint = $_M(c$, "getPoint", 
+function (list, i, pt) {
 pt.set (J.adapter.readers.pymol.PyMOLReader.getFloatAt (list, i++), J.adapter.readers.pymol.PyMOLReader.getFloatAt (list, i++), J.adapter.readers.pymol.PyMOLReader.getFloatAt (list, i));
 return pt;
-}, $fz.isPrivate = true, $fz), "J.util.JmolList,~N,J.util.P3");
+}, "J.util.JmolList,~N,J.util.P3");
 c$.getList = $_M(c$, "getList", 
-($fz = function (list, i) {
+function (list, i) {
 if (list == null || list.size () <= i) return null;
 var o = list.get (i);
 return (Clazz.instanceOf (o, J.util.JmolList) ? o : null);
-}, $fz.isPrivate = true, $fz), "J.util.JmolList,~N");
+}, "J.util.JmolList,~N");
 c$.getMapList = $_M(c$, "getMapList", 
 ($fz = function (map, key) {
 return map.get (key);
@@ -252,13 +337,21 @@ return (this.getFloatSetting (i) != 0);
 }, $fz.isPrivate = true, $fz), "~N");
 $_M(c$, "getFloatSetting", 
 ($fz = function (i) {
-if (i >= this.settingCount) return 0;
+var v = 0;
+try {
 var setting = null;
-if (this.localSettings != null) {
-setting = this.localSettings.get (Integer.$valueOf (i));
-}if (setting == null) setting = J.adapter.readers.pymol.PyMOLReader.getList (this.settings, i);
-var v = (setting.get (2)).floatValue ();
+if (this.localSettings != null) setting = this.localSettings.get (Integer.$valueOf (i));
+if (setting == null) setting = J.adapter.readers.pymol.PyMOLReader.getList (this.settings, i);
+if (this.settings == null) return 0;
+v = (setting.get (2)).floatValue ();
 J.util.Logger.info ("Pymol setting " + i + " = " + v);
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+J.util.Logger.info ("PyMOL " + this.pymolVersion + " does not have setting " + i);
+} else {
+throw e;
+}
+}
 return v;
 }, $fz.isPrivate = true, $fz), "~N");
 $_M(c$, "processBranch", 
@@ -267,26 +360,68 @@ var type = J.adapter.readers.pymol.PyMOLReader.getBranchType (branch);
 if (!this.checkBranch (branch)) return;
 J.util.Logger.info ("PyMOL model " + (this.nModels + 1) + " Branch " + this.branchName + (this.isHidden ? " (hidden)" : " (visible)"));
 var deepBranch = J.adapter.readers.pymol.PyMOLReader.getList (branch, 5);
-this.branchID = 0;
+this.branchNameID = this.branchName + "_" + (++this.branchID);
+this.branchIDs.put (this.branchName, this.branchNameID);
+var msg = "" + type;
 switch (type) {
 case -1:
 this.selections.addLast (branch);
-break;
+return;
 case 1:
 this.processBranchModels (deepBranch);
-break;
+return;
 case 4:
 this.processBranchMeasure (deepBranch);
-break;
-case 2:
+return;
 case 3:
+this.processMap (deepBranch, true);
+return;
+case 2:
+this.processMap (deepBranch, false);
+return;
+case 8:
+this.processGadget (deepBranch);
+return;
+case 11:
+msg = "ALIGNEMENT";
+break;
+case 9:
+msg = "CALCULATOR";
+break;
+case 5:
+msg = "CALLBACK";
+break;
 case 6:
-case 7:
+msg = "CGO";
+break;
 case 12:
-System.out.println ("Unprocessed branch type " + type);
+msg = "GROUP";
+break;
+case 10:
+msg = "SLICE";
+break;
+case 7:
+msg = "SURFACE";
 break;
 }
+J.util.Logger.error ("Unprocessed branch type " + msg);
 }, $fz.isPrivate = true, $fz), "J.util.JmolList");
+$_M(c$, "processGadget", 
+($fz = function (deepBranch) {
+if (this.branchName.endsWith ("_e_pot")) {
+this.processMap (deepBranch, true);
+}}, $fz.isPrivate = true, $fz), "J.util.JmolList");
+$_M(c$, "processMap", 
+($fz = function (deepBranch, isObject) {
+if (isObject) {
+if (this.isHidden) return;
+if (this.mapObjects == null) this.mapObjects =  new J.util.JmolList ();
+this.mapObjects.addLast (deepBranch);
+} else {
+if (this.volumeData == null) this.volumeData =  new java.util.Hashtable ();
+this.volumeData.put (this.branchName, deepBranch);
+}deepBranch.addLast (this.branchName);
+}, $fz.isPrivate = true, $fz), "J.util.JmolList,~B");
 $_M(c$, "processSelections", 
 ($fz = function () {
 for (var i = this.selections.size (); --i >= 0; ) {
@@ -333,7 +468,7 @@ var rad = this.getFloatSetting (107) / 1000;
 if (rad == 0) rad = 0.002;
 while (p < len) {
 var points =  new J.util.JmolList ();
-for (var i = 0; i < nCoord; i++, p += 3) points.addLast (this.getPoint (list, p,  new J.util.Point3fi ()));
+for (var i = 0; i < nCoord; i++, p += 3) points.addLast (J.adapter.readers.pymol.PyMOLReader.getPoint (list, p,  new J.util.Point3fi ()));
 
 var bs = J.util.BSUtil.newAndSetBit (0);
 var md =  new J.modelset.MeasurementData (this.viewer, points);
@@ -374,7 +509,7 @@ var states = J.adapter.readers.pymol.PyMOLReader.getList (deepBranch, 4);
 var bonds = this.processBonds (J.adapter.readers.pymol.PyMOLReader.getList (deepBranch, 6));
 this.pymolAtoms = J.adapter.readers.pymol.PyMOLReader.getBranchAtoms (deepBranch);
 var ns = states.size ();
-if (ns > 1) System.out.println (ns + " PyMOL states");
+if (ns > 1) J.util.Logger.info (ns + " PyMOL states");
 if (ns == 1) this.allStates = true;
 var bsState = null;
 var bsAtoms = J.util.BS.newN (this.atomCount0 + this.pymolAtoms.size ());
@@ -395,7 +530,7 @@ this.lstStates.addLast ( new J.util.BS ());
 var state = J.adapter.readers.pymol.PyMOLReader.getList (states, i);
 var idxToAtm = J.adapter.readers.pymol.PyMOLReader.getList (state, 3);
 if (idxToAtm == null) {
-System.out.println ("movie error: no idxToAtm");
+J.util.Logger.error ("movie error: no idxToAtm");
 continue;
 }for (var j = idxToAtm.size (); --j >= 0; ) bsState.set (J.adapter.readers.pymol.PyMOLReader.getInt (idxToAtm, j));
 
@@ -425,6 +560,7 @@ J.util.BoxInfo.addPointXYZ (x, y, z, this.xyzMin, this.xyzMax, 0);
 this.processStructures ();
 this.setBranchShapes ();
 } else {
+this.allStates = new Boolean (this.allStates | (ns > 1)).valueOf ();
 ns = 1;
 this.lstStates.clear ();
 for (var i = 0; i < ns; i++) {
@@ -434,7 +570,6 @@ var idxToAtm = J.adapter.readers.pymol.PyMOLReader.getList (state, 3);
 var n = idxToAtm.size ();
 var name = J.adapter.readers.pymol.PyMOLReader.getString (state, 5).trim ();
 if (n == 0) continue;
-this.branchID++;
 if (name.length == 0) {
 this.currentFrame = this.pymolFrame;
 if (this.lstStates.size () < ns) for (var j = this.lstStates.size (); j < ns; j++) this.lstStates.addLast ( new J.util.BS ());
@@ -456,14 +591,20 @@ J.util.Logger.info ("reading " + (this.$atomCount - this.atomCount0) + " atoms")
 this.dumpBranch ();
 }, $fz.isPrivate = true, $fz), "J.util.JmolList");
 $_M(c$, "setAtomReps", 
-($fz = function (iAtom) {
+($fz = function (iAtom, atomColor) {
 var atom = this.atomSetCollection.getAtom (iAtom);
 for (var i = 0; i < 12; i++) if (atom.bsReps.get (i)) this.reps[i].set (iAtom);
 
 if (this.reps[3].get (iAtom)) {
 if (atom.label.equals (" ")) this.reps[3].clear (iAtom);
- else this.labels.addLast (atom.label);
-}var isSphere = this.reps[1].get (iAtom);
+ else {
+var icolor = Clazz.floatToInt (this.getUniqueFloat (atom.uniqueID, 66, this.labelColor));
+if (icolor < 0) icolor = atomColor;
+var offset = this.getUniquePoint (atom.uniqueID, 471, null);
+if (offset == null) offset = this.labelPosition;
+ else offset.add (this.labelPosition);
+this.labels.addLast (this.newTextLabel (atom.label, offset, this.getColix (icolor, 0), Clazz.floatToInt (this.getUniqueFloat (atom.uniqueID, 328, this.labelFontId)), this.getUniqueFloat (atom.uniqueID, 453, this.labelSize)));
+}}var isSphere = this.reps[1].get (iAtom);
 if (!isSphere && !this.solventAsSpheres && this.reps[11].get (iAtom) && !atom.bonded) {
 this.reps[4].clear (iAtom);
 this.reps[11].clear (iAtom);
@@ -475,7 +616,8 @@ rad = atom.radius * mySphereSize;
 } else if (this.reps[11].get (iAtom) || this.reps[4].get (iAtom)) {
 var myNonBondedSize = this.getUniqueFloat (atom.uniqueID, 65, this.nonBondedSize);
 rad = -atom.radius * myNonBondedSize;
-}if (rad != 0) this.addSpacefill (iAtom, rad);
+}if (!this.usePymolRadii) atom.radius = NaN;
+if (rad != 0) this.addSpacefill (iAtom, rad);
 if (this.reps[5].get (iAtom)) {
 switch (atom.cartoonType) {
 case -1:
@@ -492,7 +634,58 @@ this.reps[5].clear (iAtom);
 this.reps[14].set (iAtom);
 break;
 }
-}}, $fz.isPrivate = true, $fz), "~N");
+}}, $fz.isPrivate = true, $fz), "~N,~N");
+$_M(c$, "newTextLabel", 
+($fz = function (label, labelOffset, colix, fontID, fontSize) {
+var face;
+var factor = 1;
+switch (fontID) {
+default:
+case 11:
+case 12:
+case 13:
+case 14:
+face = "SansSerif";
+break;
+case 0:
+case 1:
+face = "Monospaced";
+break;
+case 9:
+case 10:
+case 15:
+case 16:
+case 17:
+case 18:
+face = "Serif";
+break;
+}
+var style;
+switch (fontID) {
+default:
+style = "Plain";
+break;
+case 6:
+case 12:
+case 16:
+case 17:
+style = "Italic";
+break;
+case 7:
+case 10:
+case 13:
+style = "Bold";
+break;
+case 8:
+case 14:
+case 18:
+style = "BoldItalic";
+break;
+}
+var font = this.viewer.getFont3D (face, style, fontSize == 0 ? 12 : fontSize * factor);
+var t = J.shape.Text.newLabel (this.viewer.getGraphicsData (), font, label, colix, 0, 0, 0, 0, 0, 0, 0, labelOffset);
+return t;
+}, $fz.isPrivate = true, $fz), "~S,J.util.P3,~N,~N,~N");
 $_M(c$, "setBonds", 
 ($fz = function (bonds) {
 var n = bonds.size ();
@@ -519,7 +712,24 @@ this.cartoonTranslucency = this.getFloatSetting (279);
 this.stickTranslucency = this.getFloatSetting (198);
 this.sphereTranslucency = this.getFloatSetting (172);
 this.cartoonLadderMode = this.getBooleanSetting (448);
+this.cartoonRockets = this.getBooleanSetting (180);
 this.solventAsSpheres = this.getBooleanSetting (203);
+this.surfaceMode = Clazz.floatToInt (this.getFloatSetting (143));
+this.surfaceColor = Clazz.floatToInt (this.getFloatSetting (144));
+this.labelPosition =  new J.util.P3 ();
+try {
+var setting = this.localSettings.get (Integer.$valueOf (471));
+J.adapter.readers.pymol.PyMOLReader.getPoint (setting.get (2), 0, this.labelPosition);
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+} else {
+throw e;
+}
+}
+this.labelPosition.add (this.labelPosition0);
+this.labelColor = this.getFloatSetting (66);
+this.labelSize = this.getFloatSetting (453);
+this.labelFontId = Clazz.floatToInt (this.getFloatSetting (328));
 }, $fz.isPrivate = true, $fz), "J.util.JmolList");
 $_M(c$, "setUniqueSettings", 
 ($fz = function (list) {
@@ -533,7 +743,7 @@ for (var j = mySettings.size (); --j >= 0; ) {
 var setting = mySettings.get (j);
 var uid = id * 1000 + J.adapter.readers.pymol.PyMOLReader.getInt (setting, 0);
 this.uniqueSettings.put (Integer.$valueOf (uid), setting);
-System.out.println ("PyMOL unique setting " + id + " " + setting);
+J.util.Logger.info ("PyMOL unique setting " + id + " " + setting);
 }
 }
 }}, $fz.isPrivate = true, $fz), "J.util.JmolList");
@@ -545,6 +755,15 @@ var v = (setting.get (2)).floatValue ();
 J.util.Logger.info ("Pymol unique setting for " + id + ": " + key + " = " + v);
 return v;
 }, $fz.isPrivate = true, $fz), "~N,~N,~N");
+$_M(c$, "getUniquePoint", 
+($fz = function (id, key, pt) {
+var setting;
+if (id < 0 || (setting = this.uniqueSettings.get (Integer.$valueOf (id * 1000 + key))) == null) return pt;
+pt =  new J.util.P3 ();
+J.adapter.readers.pymol.PyMOLReader.getPoint (setting.get (2), 0, pt);
+J.util.Logger.info ("Pymol unique setting for " + id + ": " + key + " = " + pt);
+return pt;
+}, $fz.isPrivate = true, $fz), "~N,~N,J.util.P3");
 $_M(c$, "addName", 
 ($fz = function (name, bs) {
 this.htNames.put (J.adapter.readers.pymol.PyMOLReader.fixName (name), bs);
@@ -581,16 +800,16 @@ var name = J.adapter.readers.pymol.PyMOLReader.getString (a, 6);
 var group3 = J.adapter.readers.pymol.PyMOLReader.getString (a, 5);
 if (group3.length > 3) group3 = group3.substring (0, 3);
 if (group3.equals (" ")) group3 = "UNK";
-var isNucleic = (J.adapter.readers.pymol.PyMOLReader.nucleic.indexOf (group3) >= 0);
-if (isNucleic) this.bsNucleic.set (this.$atomCount);
 var sym = J.adapter.readers.pymol.PyMOLReader.getString (a, 7);
 if (sym.equals ("A")) sym = "C";
 var isHetero = (J.adapter.readers.pymol.PyMOLReader.getInt (a, 19) != 0);
 var atom = this.processAtom ( new J.adapter.readers.pymol.PyMOLAtom (), name, altLoc.charAt (0), group3, chainID.charAt (0), seqNo, insCode.charAt (0), isHetero, sym);
 if (!this.filterPDBAtom (atom, this.fileAtomIndex++)) return false;
+var isNucleic = (J.adapter.readers.pymol.PyMOLReader.nucleic.indexOf (group3) >= 0);
+if (isNucleic) this.bsNucleic.set (this.$atomCount);
 atom.label = J.adapter.readers.pymol.PyMOLReader.getString (a, 9);
 var ss = J.adapter.readers.pymol.PyMOLReader.getString (a, 10);
-if (seqNo >= -1000 && (!ss.equals (" ") || name.equals ("CA"))) {
+if (seqNo >= -1000 && (!ss.equals (" ") || name.equals ("CA") || isNucleic)) {
 if (this.ssMapAtom.get (ss) == null) this.ssMapAtom.put (ss,  new J.util.BS ());
 var bs = this.ssMapSeq.get (ss);
 if (bs == null) this.ssMapSeq.put (ss, bs =  new J.util.BS ());
@@ -605,16 +824,33 @@ atom.radius = J.adapter.readers.pymol.PyMOLReader.getFloatAt (a, 16);
 atom.partialCharge = J.adapter.readers.pymol.PyMOLReader.getFloatAt (a, 17);
 var formalCharge = J.adapter.readers.pymol.PyMOLReader.getInt (a, 18);
 atom.bsReps = this.getBsReps (J.adapter.readers.pymol.PyMOLReader.getList (a, 20));
+var isVisible = !atom.bsReps.isEmpty ();
 var serNo = J.adapter.readers.pymol.PyMOLReader.getInt (a, 22);
 atom.cartoonType = J.adapter.readers.pymol.PyMOLReader.getInt (a, 23);
 atom.flags = J.adapter.readers.pymol.PyMOLReader.getInt (a, 24);
 atom.bonded = J.adapter.readers.pymol.PyMOLReader.getInt (a, 25) != 0;
 if (a.size () > 40 && J.adapter.readers.pymol.PyMOLReader.getInt (a, 40) == 1) atom.uniqueID = J.adapter.readers.pymol.PyMOLReader.getInt (a, 32);
-if ((atom.flags & J.adapter.readers.pymol.PyMOL.FLAG_NOSURFACE) != 0) {
-this.bsNoSurface.set (this.$atomCount);
-}var translucency = this.getUniqueFloat (atom.uniqueID, 172, this.sphereTranslucency);
+var surfaceAtom = true;
+switch (this.surfaceMode) {
+case 0:
+surfaceAtom = ((atom.flags & J.adapter.readers.pymol.PyMOL.FLAG_NOSURFACE) == 0);
+break;
+case 1:
+break;
+case 2:
+surfaceAtom = !sym.equals ("H");
+break;
+case 3:
+surfaceAtom = isVisible;
+break;
+case 4:
+surfaceAtom = isVisible && !sym.equals ("H");
+break;
+}
+if (surfaceAtom) this.bsNoSurface.set (this.$atomCount);
+var translucency = this.getUniqueFloat (atom.uniqueID, 172, this.sphereTranslucency);
 var atomColor = J.adapter.readers.pymol.PyMOLReader.getInt (a, 21);
-this.atomColorList.addLast (this.getColix (atomColor, translucency));
+this.atomColorList.addLast (Integer.$valueOf (this.getColix (atomColor, translucency)));
 this.bsHidden.setBitTo (this.$atomCount, this.isHidden);
 this.bsModelAtoms.set (this.$atomCount);
 if (bsState != null) bsState.set (this.$atomCount);
@@ -629,13 +865,13 @@ var data =  Clazz.newFloatArray (7, 0);
 for (var i = 0; i < 6; i++) data[i] = J.adapter.readers.pymol.PyMOLReader.getFloatAt (a, i + 41);
 
 this.atomSetCollection.setAnisoBorU (atom, data, 12);
-}this.setAtomReps (this.$atomCount);
+}this.setAtomReps (this.$atomCount, atomColor);
 this.atomMap[apt] = this.$atomCount++;
 return true;
 }, $fz.isPrivate = true, $fz), "J.util.JmolList,~N,~N,J.util.JmolList,J.util.BS");
 $_M(c$, "getColix", 
 ($fz = function (colorIndex, translucency) {
-return Integer.$valueOf (J.util.C.getColixTranslucent3 (J.util.C.getColixO (Integer.$valueOf (J.adapter.readers.pymol.PyMOL.getRGB (colorIndex))), translucency > 0, translucency));
+return J.util.C.getColixTranslucent3 (J.util.C.getColixO (Integer.$valueOf (J.adapter.readers.pymol.PyMOL.getRGB (colorIndex))), translucency > 0, translucency);
 }, $fz.isPrivate = true, $fz), "~N,~N");
 $_M(c$, "getBsReps", 
 ($fz = function (list) {
@@ -847,7 +1083,8 @@ ss.setSize (f);
 this.modelSettings.addLast (ss);
 break;
 case 5:
-this.setCartoon ("H", 100, 2);
+if (this.cartoonRockets) this.setCartoon ("H", 181, 2);
+ else this.setCartoon ("H", 100, 2);
 this.setCartoon ("S", 96, 2);
 this.setCartoon ("L", 92, 2);
 this.setCartoon (" ", 92, 2);
@@ -856,7 +1093,11 @@ case 8:
 case 2:
 break;
 case 3:
-ss =  new J.adapter.readers.pymol.ModelSettings (5, bs, this.labels);
+var myLabels =  new J.util.JmolList ();
+for (var i = 0; i < this.labels.size (); i++) myLabels.addLast (this.labels.get (i));
+
+this.labels.clear ();
+ss =  new J.adapter.readers.pymol.ModelSettings (5, bs, myLabels);
 this.modelSettings.addLast (ss);
 break;
 case 14:
@@ -873,7 +1114,7 @@ break;
 case 10:
 break;
 default:
-if (shapeID < 13) System.out.println ("Unprocessed representation type " + shapeID);
+if (shapeID < 13) J.util.Logger.error ("Unprocessed representation type " + shapeID);
 }
 }, $fz.isPrivate = true, $fz), "~N");
 $_M(c$, "addSpacefill", 
@@ -906,18 +1147,20 @@ this.htSpacefill.clear ();
 $_M(c$, "setSurface", 
 ($fz = function () {
 if (!this.allowSurface || this.isStateScript || this.bsModelAtoms.isEmpty ()) return;
+if (this.isHidden) return;
 var bs = this.reps[2];
 J.util.BSUtil.andNot (bs, this.bsNoSurface);
 if (!bs.isEmpty ()) {
-var ss =  new J.adapter.readers.pymol.ModelSettings (24, bs, [this.branchName + "_" + this.branchID, this.getBooleanSetting (156) ? "FULLYLIT" : "FRONTLIT"]);
+var ss =  new J.adapter.readers.pymol.ModelSettings (24, bs, [this.branchNameID, this.getBooleanSetting (156) ? "FULLYLIT" : "FRONTLIT"]);
 ss.setSize (this.getFloatSetting (4));
 ss.translucency = this.getFloatSetting (138);
-ss.setColors (this.colixes, 0);
+if (this.surfaceColor < 0) ss.setColors (this.colixes, 0);
+ else ss.argb = J.adapter.readers.pymol.PyMOL.getRGB (this.surfaceColor);
 this.modelSettings.addLast (ss);
 }bs = this.reps[8];
 J.util.BSUtil.andNot (bs, this.bsNoSurface);
 if (!bs.isEmpty ()) {
-var ss =  new J.adapter.readers.pymol.ModelSettings (24, bs, [this.branchName + "_" + this.branchID, null]);
+var ss =  new J.adapter.readers.pymol.ModelSettings (24, bs, [this.branchNameID, null]);
 ss.setSize (this.getFloatSetting (4));
 ss.translucency = this.getFloatSetting (138);
 ss.setColors (this.colixes, 0);
@@ -1012,7 +1255,7 @@ this.modelSettings.addLast ( new J.adapter.readers.pymol.ModelSettings (4115, bs
 }}, $fz.isPrivate = true, $fz));
 $_M(c$, "setView", 
 ($fz = function (sb, view) {
-var ptCenter = this.getPoint (view, 19,  new J.util.P3 ());
+var ptCenter = J.adapter.readers.pymol.PyMOLReader.getPoint (view, 19,  new J.util.P3 ());
 sb.append (";center ").append (J.util.Escape.eP (ptCenter));
 var fov = this.getFloatSetting (152);
 var tan = Math.tan (fov / 2 * 3.141592653589793 / 180);
@@ -1030,9 +1273,9 @@ this.height = this.viewer.getScreenHeight ();
 if (aspectRatio < 1) szoom = "" + (100 / aspectRatio);
 var pymolCameraToCenter = pymolDistanceToCenter / w;
 var pymolCameraToSlab = J.adapter.readers.pymol.PyMOLReader.getFloatAt (view, 22) / w;
-var pymolCameratToDepth = J.adapter.readers.pymol.PyMOLReader.getFloatAt (view, 23) / w;
+var pymolCameraToDepth = J.adapter.readers.pymol.PyMOLReader.getFloatAt (view, 23) / w;
 var slab = 50 + Clazz.floatToInt ((pymolCameraToCenter - pymolCameraToSlab) * 100);
-var depth = 50 + Clazz.floatToInt ((pymolCameraToCenter - pymolCameratToDepth) * 100);
+var depth = 50 + Clazz.floatToInt ((pymolCameraToCenter - pymolCameraToDepth) * 100);
 sb.append (";set perspectiveDepth " + (!this.getBooleanSetting (23)));
 sb.append (";set cameraDepth " + jmolCameraDepth);
 sb.append (";set rotationRadius " + (w / 2));
@@ -1045,17 +1288,23 @@ var fog = this.getBooleanSetting (88);
 if (depthCue && fog) {
 var range = depth - slab;
 var fog_start = this.getFloatSetting (192);
-sb.append (";set zShade true; set zshadePower 1;set zslab " + (slab + fog_start * range) + "; set zdepth " + depth);
+sb.append (";set zShade true; set zshadePower 1;set zslab " + Math.min (100, slab + fog_start * range) + "; set zdepth " + Math.max (depth, depth));
 } else if (depthCue) {
 sb.append (";set zShade true; set zshadePower 1;set zslab " + ((slab + depth) / 2) + "; set zdepth " + depth);
 } else {
 sb.append (";set zShade false");
 }sb.append (";set traceAlpha " + this.getBooleanSetting (111));
-sb.append (";set cartoonRockets " + this.getBooleanSetting (180));
+sb.append (";set cartoonRockets " + this.cartoonRockets);
+if (this.cartoonRockets) sb.append (";set rocketBarrels " + this.cartoonRockets);
 sb.append (";set cartoonLadders " + this.haveNucleicLadder);
 sb.append (";set ribbonBorder " + this.getBooleanSetting (118));
 sb.append (";set cartoonFancy " + (!this.isMovie && !this.getBooleanSetting (118)));
-sb.append (";background " + J.adapter.readers.pymol.PyMOLReader.getList (this.settings, 6).get (2));
+var bg = J.adapter.readers.pymol.PyMOLReader.getList (this.settings, 6);
+var o = bg.get (2);
+if (bg.get (1).equals (Integer.$valueOf (5))) {
+var s = "000000" + Integer.toHexString ((o).intValue ());
+o = "[x" + s.substring (s.length - 6) + "]";
+}sb.append (";background " + o);
 if (this.isMovie) sb.append (";animation mode loop");
 sb.append (";");
 }, $fz.isPrivate = true, $fz), "J.util.SB,J.util.JmolList");
@@ -1071,16 +1320,21 @@ ss.createShape (modelSet, bsCarb);
 }this.viewer.setTrajectoryBs (J.util.BSUtil.newBitSet2 (baseModelIndex, modelSet.modelCount));
 }, "J.modelset.ModelSet,~N,~N");
 Clazz.defineStatics (c$,
-"nucleic", " A C G T U ADE THY CYT GUA URI DA DC DG DT DU ",
 "BRANCH_SELECTION", -1,
 "BRANCH_MOLECULE", 1,
-"BRANCH_MAPSURFACE", 2,
+"BRANCH_MAPDATA", 2,
 "BRANCH_MAPMESH", 3,
 "BRANCH_MEASURE", 4,
+"BRANCH_CALLBACK", 5,
 "BRANCH_CGO", 6,
 "BRANCH_SURFACE", 7,
+"BRANCH_GADGET", 8,
+"BRANCH_CALCULATOR", 9,
+"BRANCH_SLICE", 10,
+"BRANCH_ALIGNMENT", 11,
 "BRANCH_GROUP", 12,
 "MIN_RESNO", -1000,
+"nucleic", " A C G T U ADE THY CYT GUA URI DA DC DG DT DU ",
 "REP_JMOL_MIN", 13,
 "REP_JMOL_TRACE", 13,
 "REP_JMOL_PUTTY", 14,

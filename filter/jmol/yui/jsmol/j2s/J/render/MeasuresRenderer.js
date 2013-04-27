@@ -174,7 +174,7 @@ y <<= 1;
 }, $fz.isPrivate = true, $fz), "~N,J.modelset.MeasurementPending");
 Clazz.overrideMethod (c$, "drawLine", 
 function (x1, y1, z1, x2, y2, z2, mad) {
-var diameter = (mad >= 20 && this.exportType != 1 ? this.viewer.scaleToScreen (Clazz.doubleToInt ((z1 + z2) / 2), mad) : mad);
+var diameter = Clazz.floatToInt (mad >= 20 && this.exportType != 1 ? this.viewer.scaleToScreen (Clazz.doubleToInt ((z1 + z2) / 2), mad) : mad);
 return this.drawLine2 (x1, y1, z1, x2, y2, z2, diameter);
 }, "~N,~N,~N,~N,~N,~N,~N");
 });

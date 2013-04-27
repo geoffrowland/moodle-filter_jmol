@@ -70,7 +70,7 @@ for (var i = 0; i < n; i++) this.pt1f.add (this.vertices[i]);
 
 this.pt1f.scale (1 / n);
 this.viewer.transformPtScr (this.pt1f, this.pt1i);
-this.diameter = this.viewer.scaleToScreen (this.pt1i.z, Clazz.doubleToInt (Math.floor (this.width * 1000)));
+this.diameter = Clazz.floatToInt (this.viewer.scaleToScreen (this.pt1i.z, Clazz.doubleToInt (Math.floor (this.width * 1000))));
 if (this.diameter == 0) this.diameter = 1;
 }if ((this.dmesh.isVector) && this.dmesh.haveXyPoints) {
 var ptXY = 0;
@@ -92,7 +92,7 @@ case J.shapespecial.Draw.EnumDrawType.CIRCLE:
 this.viewer.transformPtScr (this.vertices[0], this.pt1i);
 if (this.diameter == 0 && this.width == 0) this.width = 1.0;
 if (this.dmesh.scale > 0) this.width *= this.dmesh.scale;
-if (this.width > 0) this.diameter = this.viewer.scaleToScreen (this.pt1i.z, Clazz.doubleToInt (Math.floor (this.width * 1000)));
+if (this.width > 0) this.diameter = Clazz.floatToInt (this.viewer.scaleToScreen (this.pt1i.z, Clazz.doubleToInt (Math.floor (this.width * 1000))));
 if (this.diameter > 0 && (this.mesh.drawTriangles || this.mesh.fillTriangles)) this.g3d.drawFilledCircle (this.colix, this.mesh.fillTriangles ? this.colix : 0, this.diameter, this.pt1i.x, this.pt1i.y, this.pt1i.z);
 break;
 case J.shapespecial.Draw.EnumDrawType.CURVE:

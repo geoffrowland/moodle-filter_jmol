@@ -258,6 +258,7 @@ this.setAtomSetCollectionAuxiliaryInfo ("noAutoBond", Boolean.TRUE);
 });
 $_M(c$, "freeze", 
 function (reverseModels) {
+if (this.atomSetCount == 1 && this.collectionName == null) this.collectionName = this.getAtomSetAuxiliaryInfoValue (0, "name");
 if (reverseModels) this.reverseAtomSets ();
 if (this.trajectoryStepCount > 1) this.finalizeTrajectory ();
 this.getList (true);
@@ -1129,7 +1130,8 @@ return index;
 }, "~N");
 $_M(c$, "setAtomSetCollectionAuxiliaryInfo", 
 function (key, value) {
-this.atomSetCollectionAuxiliaryInfo.put (key, value);
+if (value == null) this.atomSetCollectionAuxiliaryInfo.remove (key);
+ else this.atomSetCollectionAuxiliaryInfo.put (key, value);
 }, "~S,~O");
 $_M(c$, "setAtomSetCollectionPartialCharges", 
 function (auxKey) {

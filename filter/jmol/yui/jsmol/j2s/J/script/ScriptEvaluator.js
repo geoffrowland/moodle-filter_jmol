@@ -9814,10 +9814,13 @@ if (scaleAngstromsPerPixel >= 5) scaleAngstromsPerPixel = this.viewer.getZoomSet
 propertyValue = Float.$valueOf (scaleAngstromsPerPixel);
 break;
 }if (str.equals ("offset") || str.equals ("offsetexact")) {
+if (this.isPoint3f (2)) {
+propertyValue = this.getPoint3f (2, false);
+} else {
 var xOffset = this.intParameterRange (2, -127, 127);
 var yOffset = this.intParameterRange (3, -127, 127);
 propertyValue = Integer.$valueOf (J.shape.Object2d.getOffset (xOffset, yOffset));
-break;
+}break;
 }if (str.equals ("alignment")) {
 switch (this.getToken (2).tok) {
 case 1073741996:
@@ -12771,10 +12774,11 @@ sbCommand.append (" within " + d);
 this.addShapeProperty (propertyList, "propertyDistanceMax", Float.$valueOf (d));
 }}propertyValue = data;
 break;
+case 1095761933:
 case 1095766028:
 if (surfaceObjectSeen) this.error (22);
-modelIndex = this.modelNumberParameter (++i);
-sbCommand.append (" model " + modelIndex);
+modelIndex = (this.theTok == 1095761933 ? this.intParameter (++i) : this.modelNumberParameter (++i));
+sbCommand.append (" modelIndex " + modelIndex);
 if (modelIndex < 0) {
 propertyName = "fixed";
 propertyValue = Boolean.TRUE;
@@ -13495,7 +13499,7 @@ if (this.tokAt (i + 1) == 4) {
 sType = this.stringParameter (++i);
 if (!isInline) this.addShapeProperty (propertyList, "calculationType", sType);
 }var firstPass = (!surfaceObjectSeen && !planeSeen);
-propertyName = (firstPass ? "readFile" : "mapColor");
+propertyName = (firstPass && !isMapped ? "readFile" : "mapColor");
 if (isInline) {
 if (sType == null) this.error (22);
 if (isPmesh) sType = J.util.TextFormat.replaceAllCharacter (sType, "{,}|", ' ');

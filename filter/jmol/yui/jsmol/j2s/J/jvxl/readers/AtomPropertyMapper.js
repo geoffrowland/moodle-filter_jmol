@@ -80,7 +80,8 @@ function () {
 return this.iAtomSurface;
 });
 Clazz.overrideMethod (c$, "getValueAtPoint", 
-function (pt) {
+function (pt, getSource) {
+if (this.haveOneProperty && !getSource) return this.theProperty;
 var dmin = 3.4028235E38;
 var dminNearby = 3.4028235E38;
 var value = (this.doSmoothProperty ? 0 : NaN);
@@ -103,7 +104,7 @@ dmin = d2;
 value = NaN;
 }}} else if (d2 < dmin) {
 dmin = d2;
-this.iAtomSurface = iAtom;
+this.iAtomSurface = ia;
 if (!this.doSmoothProperty) value = p;
 }if (this.mepCalc != null) {
 value += this.mepCalc.valueFor (p, d2, this.calcType);
@@ -113,5 +114,5 @@ vdiv += d2;
 value += d2 * p;
 }}
 return (this.mepCalc != null ? value : this.doSmoothProperty ? (vdiv == 0 || dminNearby < dmin ? NaN : value / vdiv) : value);
-}, "J.util.P3");
+}, "J.util.P3,~B");
 });

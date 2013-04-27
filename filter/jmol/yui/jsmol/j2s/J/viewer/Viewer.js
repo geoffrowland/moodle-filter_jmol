@@ -3748,7 +3748,7 @@ return this.global.cartoonBaseEdges;
 case 603979819:
 return this.global.cartoonFancy;
 case 603979820:
-return this.global.cartoonLadder;
+return this.global.cartoonLadders;
 case 603979818:
 return this.global.cartoonRockets;
 case 603979822:
@@ -4458,7 +4458,7 @@ $_M(c$, "setBooleanPropertyTok",
 var doRepaint = true;
 switch (tok) {
 case 603979820:
-this.global.cartoonLadder = value;
+this.global.cartoonLadders = value;
 break;
 case 603979968:
 var b = this.global.twistedSheets;

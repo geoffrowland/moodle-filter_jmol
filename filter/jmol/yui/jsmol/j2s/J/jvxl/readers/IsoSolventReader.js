@@ -177,10 +177,19 @@ var bsSurfaces = this.meshData.getSurfaceSet ();
 var bsSources = null;
 var volumes = (this.isPocket ? null : this.meshData.calculateVolumeOrArea (-1, false, false));
 var minVolume = (1.5 * 3.141592653589793 * Math.pow (this.solventRadius, 3));
+var maxVolume = 0;
+var maxIsNegative = false;
+if (volumes != null && !this.isCavity) for (var i = 0; i < this.meshData.nSets; i++) {
+var v = volumes[i];
+if (Math.abs (v) > maxVolume) {
+maxVolume = Math.abs (v);
+maxIsNegative = (v < 0);
+}}
+var factor = (maxIsNegative ? -1 : 1);
 for (var i = 0; i < this.meshData.nSets; i++) {
 var bss = bsSurfaces[i];
 if (bss.intersects (this.bsSurfacePoints)) {
-if (volumes == null || Math.abs (volumes[i]) > minVolume) if (this.params.vertexSource != null) {
+if (volumes == null || volumes[i] * factor > minVolume) if (this.params.vertexSource != null) {
 var bs =  new J.util.BS ();
 if (bsSources == null) bsSources =  new Array (bsSurfaces.length);
 for (var j = bss.nextSetBit (0); j >= 0; j = bss.nextSetBit (j + 1)) {
@@ -543,7 +552,7 @@ J.util.Measure.getPlaneThroughPoint (this.p, this.vTemp, this.plane);
 return Math.sin (angleBAS) * rAS;
 }, "~N,~N");
 Clazz.overrideMethod (c$, "getValueAtPoint", 
-function (pt) {
+function (pt, getSource) {
 if (this.contactPair != null) return pt.distance (this.contactPair.myAtoms[1]) - this.contactPair.radii[1];
 var value = 3.4028235E38;
 for (var iAtom = 0; iAtom < this.firstNearbyAtom; iAtom++) {
@@ -551,7 +560,7 @@ var r = pt.distance (this.atomXyz[iAtom]) - this.atomRadius[iAtom] - this.solven
 if (r < value) value = r;
 }
 return (value == 3.4028235E38 ? NaN : value);
-}, "J.util.P3");
+}, "J.util.P3,~B");
 Clazz.overrideMethod (c$, "getPlane", 
 function (x) {
 if (this.yzCount == 0) {

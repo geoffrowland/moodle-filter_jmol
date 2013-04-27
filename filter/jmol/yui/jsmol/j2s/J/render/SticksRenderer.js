@@ -174,7 +174,7 @@ this.mad = this.bond.mad;
 if (this.multipleBondRadiusFactor > 0 && this.bondOrder > 1) this.mad *= this.multipleBondRadiusFactor;
 this.dx = this.xB - this.xA;
 this.dy = this.yB - this.yA;
-this.width = this.viewer.scaleToScreen (Clazz.doubleToInt ((this.zA + this.zB) / 2), this.mad);
+this.width = Clazz.floatToInt (this.viewer.scaleToScreen (Clazz.doubleToInt ((this.zA + this.zB) / 2), this.mad));
 if (this.renderWireframe && this.width > 0) this.width = 1;
 if (!this.isCartesianExport) {
 this.lineBond = (this.width <= 1);

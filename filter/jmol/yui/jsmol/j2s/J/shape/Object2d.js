@@ -34,6 +34,7 @@ this.visible = true;
 this.hidden = false;
 this.boxXY = null;
 this.scalePixelsPerMicron = 0;
+this.pymolOffset = null;
 Clazz.instantialize (this, arguments);
 }, J.shape, "Object2d");
 Clazz.prepareFields (c$, function () {
@@ -214,7 +215,7 @@ $_M(c$, "setWindow",
 function (width, height, scalePixelsPerMicron) {
 this.windowWidth = width;
 this.windowHeight = height;
-if (this.scalePixelsPerMicron < 0 && scalePixelsPerMicron != 0) this.scalePixelsPerMicron = scalePixelsPerMicron;
+if (this.pymolOffset == null && this.scalePixelsPerMicron < 0 && scalePixelsPerMicron != 0) this.scalePixelsPerMicron = scalePixelsPerMicron;
 }, "~N,~N,~N");
 $_M(c$, "checkObjectClicked", 
 function (x, y, bsVisible) {

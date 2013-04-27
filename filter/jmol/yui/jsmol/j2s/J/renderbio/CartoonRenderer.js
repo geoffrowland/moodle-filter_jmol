@@ -1,7 +1,6 @@
 Clazz.declarePackage ("J.renderbio");
 Clazz.load (["J.renderbio.RocketsRenderer", "J.util.P3", "$.P3i"], "J.renderbio.CartoonRenderer", ["J.util.C"], function () {
 c$ = Clazz.decorateAsClass (function () {
-this.newRockets = true;
 this.renderAsRockets = false;
 this.renderEdges = false;
 this.ladderOnly = false;
@@ -29,6 +28,7 @@ this.ring6Screens[i] =  new J.util.P3i ();
 }});
 Clazz.overrideMethod (c$, "renderBioShape", 
 function (bioShape) {
+this.newRockets = true;
 if (bioShape.wingVectors == null || this.isCarbohydrate) return;
 this.getScreenControlPoints ();
 if (this.isNucleic) {
@@ -134,7 +134,7 @@ pt = (this.ladderOnly ? 4 : 2);
 stepScreen = this.ring6Screens[pt];
 stepPt = this.ring6Points[pt];
 }this.mad = (thisMad > 1 ? Clazz.doubleToInt (thisMad / 2) : thisMad);
-this.g3d.fillCylinderScreen3I (3, this.viewer.scaleToScreen (backboneScreen.z, this.mad), backboneScreen, stepScreen, ptConnect, stepPt, this.mad / 2000);
+this.g3d.fillCylinderScreen3I (3, Clazz.floatToInt (this.viewer.scaleToScreen (backboneScreen.z, this.mad)), backboneScreen, stepScreen, ptConnect, stepPt, this.mad / 2000);
 if (this.ladderOnly) return;
 --this.ring6Screens[5].z;
 for (var i = 5; --i >= 0; ) {
