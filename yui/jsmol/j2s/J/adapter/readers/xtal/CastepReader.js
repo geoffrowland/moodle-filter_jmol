@@ -205,18 +205,17 @@ this.applySymmetryAndSetTrajectory ();
 this.discardLinesUntilContains ("<-- E");
 }
 }, $fz.isPrivate = true, $fz));
-$_M(c$, "finalizeReader", 
+Clazz.overrideMethod (c$, "finalizeReader", 
 function () {
 if (this.isPhonon || this.isOutput) {
 this.isTrajectory = false;
-Clazz.superCall (this, J.adapter.readers.xtal.CastepReader, "finalizeReader", []);
-return;
-}this.doApplySymmetry = true;
+} else {
+this.doApplySymmetry = true;
 this.setLatticeVectors ();
 var nAtoms = this.atomSetCollection.getAtomCount ();
 for (var i = 0; i < nAtoms; i++) this.setAtomCoord (this.atomSetCollection.getAtom (i));
 
-Clazz.superCall (this, J.adapter.readers.xtal.CastepReader, "finalizeReader", []);
+}this.finalizeReaderASCR ();
 });
 $_M(c$, "setLatticeVectors", 
 ($fz = function () {

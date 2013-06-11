@@ -99,17 +99,30 @@ return;
 if (this.actualID != null) value = this.actualID;
 this.setPropertySuper ("thisID", value, null);
 return;
+}if ("params" === propertyName) {
+if (this.thisMesh != null) {
+this.ensureMeshSource ();
+this.thisMesh.checkAllocColixes ();
+var data = value;
+var colixes = data[0];
+var atomMap = null;
+if (colixes != null) {
+for (var i = 0; i < colixes.length; i++) {
+var colix = colixes[i];
+var f = 0;
+if (f > 0.01) colix = J.util.C.getColixTranslucent3 (colix, true, f);
+colixes[i] = colix;
+}
+atomMap =  Clazz.newIntArray (bs.length (), 0);
+for (var pt = 0, i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1), pt++) atomMap[i] = pt;
+
+}this.thisMesh.setVertexColixesForAtoms (this.viewer, colixes, atomMap, bs);
+this.thisMesh.setVertexColorMap ();
+}return;
 }if ("atomcolor" === propertyName) {
 if (this.thisMesh != null) {
-if (this.thisMesh.vertexSource == null) {
-var colix = (!this.thisMesh.isColorSolid ? 0 : this.thisMesh.colix);
-this.setProperty ("init", null, null);
-this.setProperty ("map", Boolean.FALSE, null);
-this.setProperty ("property",  Clazz.newFloatArray (this.viewer.getAtomCount (), 0), null);
-if (colix != 0) {
-this.thisMesh.colorCommand = "color isosurface " + J.util.C.getHexCode (colix);
-this.setProperty ("color", Integer.$valueOf (J.util.C.getArgb (colix)), null);
-}}this.thisMesh.colorAtoms (J.util.C.getColixO (value), bs);
+this.ensureMeshSource ();
+this.thisMesh.colorVertices (J.util.C.getColixO (value), bs, true);
 }return;
 }if ("pointSize" === propertyName) {
 if (this.thisMesh != null) {
@@ -117,7 +130,7 @@ this.thisMesh.volumeRenderPointSize = (value).floatValue ();
 }return;
 }if ("vertexcolor" === propertyName) {
 if (this.thisMesh != null) {
-this.thisMesh.colorVertices (J.util.C.getColixO (value), bs);
+this.thisMesh.colorVertices (J.util.C.getColixO (value), bs, false);
 }return;
 }if ("colorPhase" === propertyName) {
 var colors = value;
@@ -131,13 +144,16 @@ this.thisMesh.isColorSolid = false;
 this.thisMesh.remapColors (this.viewer, null, this.translucentLevel);
 }return;
 }if ("color" === propertyName) {
+var color = J.util.C.getHexCode (J.util.C.getColixO (value));
 if (this.thisMesh != null) {
+this.thisMesh.jvxlData.baseColor = color;
 this.thisMesh.isColorSolid = true;
 this.thisMesh.polygonColixes = null;
 this.thisMesh.colorEncoder = null;
 this.thisMesh.vertexColorMap = null;
 } else if (!J.util.TextFormat.isWild (this.previousMeshID)) {
 for (var i = this.meshCount; --i >= 0; ) {
+this.isomeshes[i].jvxlData.baseColor = color;
 this.isomeshes[i].isColorSolid = true;
 this.isomeshes[i].polygonColixes = null;
 this.isomeshes[i].colorEncoder = null;
@@ -373,6 +389,29 @@ if (m.atomIndex >= firstAtomDeleted) m.atomIndex -= nAtomsDeleted;
 return;
 }this.setPropertySuper (propertyName, value, bs);
 }, "~S,~O,J.util.BS");
+$_M(c$, "ensureMeshSource", 
+($fz = function () {
+var haveColors = (this.thisMesh.vertexSource != null);
+if (haveColors) for (var i = this.thisMesh.vertexCount; --i >= 0; ) if (this.thisMesh.vertexSource[i] < 0) {
+haveColors = false;
+break;
+}
+if (!haveColors) {
+var source = this.thisMesh.vertexSource;
+var vertexColixes = this.thisMesh.vertexColixes;
+var colix = (this.thisMesh.isColorSolid ? this.thisMesh.colix : 0);
+this.setProperty ("init", null, null);
+this.setProperty ("map", Boolean.FALSE, null);
+this.setProperty ("property",  Clazz.newFloatArray (this.viewer.getAtomCount (), 0), null);
+if (colix != 0) {
+this.thisMesh.colorCommand = "color isosurface " + J.util.C.getHexCode (colix);
+this.setProperty ("color", Integer.$valueOf (J.util.C.getArgb (colix)), null);
+}if (source != null) {
+for (var i = this.thisMesh.vertexCount; --i >= 0; ) if (source[i] < 0) source[i] = this.thisMesh.vertexSource[i];
+
+this.thisMesh.vertexSource = source;
+this.thisMesh.vertexColixes = vertexColixes;
+}}}, $fz.isPrivate = true, $fz));
 $_M(c$, "slabPolygons", 
 function (slabInfo) {
 this.thisMesh.slabPolygons (slabInfo, false);

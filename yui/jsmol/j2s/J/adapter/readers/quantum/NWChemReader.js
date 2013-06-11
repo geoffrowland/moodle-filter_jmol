@@ -443,15 +443,15 @@ this.energyUnits = "a.u.";
 this.setMOData (false);
 return true;
 }, $fz.isPrivate = true, $fz));
-$_M(c$, "readLine", 
+Clazz.overrideMethod (c$, "readLine", 
 function () {
-Clazz.superCall (this, J.adapter.readers.quantum.NWChemReader, "readLine", []);
+this.RL ();
 if (!this.purging && this.line != null && this.line.startsWith ("--")) {
 this.purging = true;
 this.discardLinesUntilStartsWith ("*");
 this.readLine ();
 this.purging = false;
-Clazz.superCall (this, J.adapter.readers.quantum.NWChemReader, "readLine", []);
+this.RL ();
 }return this.line;
 });
 Clazz.defineStatics (c$,

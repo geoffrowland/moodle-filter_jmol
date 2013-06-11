@@ -1,6 +1,6 @@
-___JmolDate="$Date: 2013-06-06 15:59:04 -0500 (Thu, 06 Jun 2013) $"
+___JmolDate="$Date: 2013-06-09 22:47:10 -0400 (Sun, 09 Jun 2013) $"
 ___fullJmolProperties="src/org/jmol/viewer/Jmol.properties"
-___JmolVersion="13.1.16_a"
+___JmolVersion="13.1.17_dev_2013.06.08"
 // core.z.js
 //
 // BH 3/13/2013 12:49:23 PM setting Boolean.valueOf() "@" 
@@ -13271,8 +13271,9 @@ Clazz.defineStatics (c$,
 "testflag1", 603979960,
 "testflag2", 603979962,
 "testflag3", 603979964,
-"testflag4", 603979966,
-"tracealpha", 603979967,
+"testflag4", 603979965,
+"tracealpha", 603979966,
+"translucent", 603979967,
 "twistedsheets", 603979968,
 "usearcball", 603979969,
 "useminimizationthread", 603979970,
@@ -13501,7 +13502,6 @@ Clazz.defineStatics (c$,
 "torsion", 1073742174,
 "transform", 1073742176,
 "translation", 1073742178,
-"translucent", 1073742180,
 "triangles", 1073742182,
 "url", 1074790760,
 "user", 1073742186,
@@ -13549,7 +13549,7 @@ c$.tokenScript = c$.prototype.tokenScript = J.script.T.o (135271429, "script");
 c$.tokenSwitch = c$.prototype.tokenSwitch = J.script.T.o (102410, "switch");
 c$.tokenMap = c$.prototype.tokenMap =  new java.util.Hashtable ();
 {
-var arrayPairs = ["(", J.script.T.tokenLeftParen, ")", J.script.T.tokenRightParen, "and", J.script.T.tokenAnd, "&", null, "&&", null, "or", J.script.T.tokenOr, "|", null, "||", null, "?", J.script.T.tokenOpIf, ",", J.script.T.tokenComma, "+=", J.script.T.t (269484242), "-=", null, "*=", null, "/=", null, "\\=", null, "&=", null, "|=", null, "not", J.script.T.t (269484144), "!", null, "xor", J.script.T.t (269484113), "tog", J.script.T.t (269484114), "<", J.script.T.t (269484435), "<=", J.script.T.t (269484434), ">=", J.script.T.t (269484433), ">", J.script.T.t (269484432), "=", J.script.T.tokenEquals, "==", null, "!=", J.script.T.t (269484438), "<>", null, "within", J.script.T.t (135266324), ".", J.script.T.t (1048584), "[", J.script.T.t (269484096), "]", J.script.T.t (269484097), "{", J.script.T.t (1048586), "}", J.script.T.t (1048590), "$", J.script.T.t (1048583), "%", J.script.T.t (269484210), ":", J.script.T.tokenColon, ";", J.script.T.t (1048591), "++", J.script.T.t (269484226), "--", J.script.T.t (269484225), "**", J.script.T.t (269484227), "+", J.script.T.tokenPlus, "-", J.script.T.tokenMinus, "*", J.script.T.tokenTimes, "/", J.script.T.tokenDivide, "\\", J.script.T.t (269484211), "animation", J.script.T.t (4097), "anim", null, "assign", J.script.T.t (4098), "axes", J.script.T.t (1611272194), "backbone", J.script.T.t (1115297793), "background", J.script.T.t (1610616835), "bind", J.script.T.t (4100), "bondorder", J.script.T.t (4101), "boundbox", J.script.T.t (1679429641), "boundingBox", null, "break", J.script.T.t (102407), "calculate", J.script.T.t (4102), "cartoon", J.script.T.t (1113200642), "cartoons", null, "case", J.script.T.t (102411), "catch", J.script.T.t (102412), "cd", J.script.T.t (1069064), "center", J.script.T.t (12289), "centre", null, "centerat", J.script.T.t (4105), "cgo", J.script.T.t (135174), "color", J.script.T.t (1766856708), "colour", null, "compare", J.script.T.t (135270405), "configuration", J.script.T.t (1095766022), "conformation", null, "config", null, "connect", J.script.T.t (4106), "console", J.script.T.t (528395), "contact", J.script.T.t (135402505), "contacts", null, "continue", J.script.T.t (102408), "data", J.script.T.t (135270407), "default", J.script.T.t (102413), "define", J.script.T.t (1060866), "@", null, "delay", J.script.T.t (528397), "delete", J.script.T.t (12291), "density", J.script.T.t (1073741914), "depth", J.script.T.t (554176526), "dipole", J.script.T.t (135175), "dipoles", null, "display", J.script.T.t (1610625028), "dot", J.script.T.t (1276117505), "dots", J.script.T.t (1113198595), "draw", J.script.T.t (135176), "echo", J.script.T.t (537022465), "ellipsoid", J.script.T.t (1113198596), "ellipsoids", null, "else", J.script.T.t (364547), "elseif", J.script.T.t (102402), "end", J.script.T.t (1150985), "endif", J.script.T.t (364548), "exit", J.script.T.t (266255), "file", J.script.T.t (1229984263), "files", null, "font", J.script.T.t (4114), "for", J.script.T.t (135369224), "format", J.script.T.t (1288701960), "frame", J.script.T.t (4115), "frames", null, "frank", J.script.T.t (1611272202), "function", J.script.T.t (135368713), "functions", null, "geosurface", J.script.T.t (1113198597), "getProperty", J.script.T.t (135270410), "goto", J.script.T.t (20500), "halo", J.script.T.t (1113200646), "halos", null, "helix", J.script.T.t (137363468), "helixalpha", J.script.T.t (3145735), "helix310", J.script.T.t (3145736), "helixpi", J.script.T.t (3145738), "hbond", J.script.T.t (1612189718), "hbonds", null, "help", J.script.T.t (20482), "hide", J.script.T.t (12294), "history", J.script.T.t (1610616855), "hover", J.script.T.t (544771), "if", J.script.T.t (135369225), "in", J.script.T.t (1073741980), "initialize", J.script.T.t (266264), "invertSelected", J.script.T.t (4121), "isosurface", J.script.T.t (135180), "javascript", J.script.T.t (135287308), "label", J.script.T.t (1826248715), "labels", null, "lcaoCartoon", J.script.T.t (135182), "lcaoCartoons", null, "load", J.script.T.t (135271426), "log", J.script.T.t (36869), "loop", J.script.T.t (528410), "measure", J.script.T.t (1746538509), "measures", null, "monitor", null, "monitors", null, "meshribbon", J.script.T.t (1113200647), "meshribbons", null, "message", J.script.T.t (20485), "minimize", J.script.T.t (4126), "minimization", null, "mo", J.script.T.t (1183762), "model", J.script.T.t (1095766028), "models", null, "move", J.script.T.t (4128), "moveTo", J.script.T.t (4130), "navigate", J.script.T.t (4131), "navigation", null, "origin", J.script.T.t (1073742078), "out", J.script.T.t (1073742079), "parallel", J.script.T.t (102436), "pause", J.script.T.t (20487), "wait", null, "plot", J.script.T.t (4133), "plot3d", J.script.T.t (135190), "pmesh", J.script.T.t (135188), "polygon", J.script.T.t (1073742106), "polyhedra", J.script.T.t (135192), "print", J.script.T.t (36865), "process", J.script.T.t (102439), "prompt", J.script.T.t (135304707), "quaternion", J.script.T.t (135270417), "quaternions", null, "quit", J.script.T.t (266281), "ramachandran", J.script.T.t (1052714), "rama", null, "refresh", J.script.T.t (266284), "reset", J.script.T.t (4141), "unset", null, "restore", J.script.T.t (4142), "restrict", J.script.T.t (12295), "return", J.script.T.t (36866), "ribbon", J.script.T.t (1113200649), "ribbons", null, "rocket", J.script.T.t (1113200650), "rockets", null, "rotate", J.script.T.t (528432), "rotateSelected", J.script.T.t (4145), "save", J.script.T.t (4146), "script", J.script.T.tokenScript, "source", null, "select", J.script.T.t (135280132), "selectionHalos", J.script.T.t (1611141171), "selectionHalo", null, "showSelections", null, "set", J.script.T.tokenSetCmd, "sheet", J.script.T.t (3145760), "show", J.script.T.t (4148), "slab", J.script.T.t (554176565), "spacefill", J.script.T.t (1113200651), "cpk", null, "spin", J.script.T.t (1611141175), "ssbond", J.script.T.t (1611141176), "ssbonds", null, "star", J.script.T.t (1113200652), "stars", null, "step", J.script.T.t (266298), "steps", null, "stereo", J.script.T.t (528443), "strand", J.script.T.t (1650071565), "strands", null, "structure", J.script.T.t (1641025539), "_structure", null, "strucNo", J.script.T.t (1095761939), "struts", J.script.T.t (1708058), "strut", null, "subset", J.script.T.t (3158024), "switch", J.script.T.tokenSwitch, "synchronize", J.script.T.t (4156), "sync", null, "trace", J.script.T.t (1113200654), "translate", J.script.T.t (4160), "translateSelected", J.script.T.t (4162), "try", J.script.T.t (364558), "unbind", J.script.T.t (4164), "unitcell", J.script.T.t (1614417948), "var", J.script.T.t (36868), "vector", J.script.T.t (135198), "vectors", null, "vibration", J.script.T.t (4166), "while", J.script.T.t (102406), "wireframe", J.script.T.t (659488), "write", J.script.T.t (135270421), "zap", J.script.T.t (1060873), "zoom", J.script.T.t (4168), "zoomTo", J.script.T.t (4170), "atom", J.script.T.t (1141899265), "atoms", null, "axis", J.script.T.t (1073741854), "axisangle", J.script.T.t (135266307), "basepair", J.script.T.t (1073741864), "basepairs", null, "orientation", J.script.T.t (1073742077), "orientations", null, "pdbheader", J.script.T.t (1073742088), "polymer", J.script.T.t (1095761935), "polymers", null, "residue", J.script.T.t (1073742120), "residues", null, "rotation", J.script.T.t (1073742132), "row", J.script.T.t (1276117513), "sequence", J.script.T.t (1087373320), "shape", J.script.T.t (1087373323), "state", J.script.T.t (1073742158), "symbol", J.script.T.t (1087375373), "symmetry", J.script.T.t (1089470478), "spaceGroup", J.script.T.t (1073742152), "transform", J.script.T.t (1073742176), "translation", J.script.T.t (1073742178), "url", J.script.T.t (1074790760), "abs", J.script.T.t (135266826), "absolute", J.script.T.t (1073741826), "acos", J.script.T.t (135266819), "add", J.script.T.t (1276118017), "adpmax", J.script.T.t (1112539137), "adpmin", J.script.T.t (1112539138), "align", J.script.T.t (1073741832), "all", J.script.T.tokenAll, "altloc", J.script.T.t (1087373315), "altlocs", null, "amino", J.script.T.t (3145730), "angle", J.script.T.t (135266305), "array", J.script.T.t (135266306), "as", J.script.T.t (1073741848), "atomID", J.script.T.t (1095761922), "_atomID", null, "_a", null, "atomIndex", J.script.T.t (1095761923), "atomName", J.script.T.t (1087375362), "atomno", J.script.T.t (1095763969), "atomType", J.script.T.t (1087375361), "atomX", J.script.T.t (1112541185), "atomY", J.script.T.t (1112541186), "atomZ", J.script.T.t (1112541187), "average", J.script.T.t (96), "babel", J.script.T.t (1073741856), "babel21", J.script.T.t (1073741858), "back", J.script.T.t (1073741859), "backlit", J.script.T.t (1073741862), "balls", J.script.T.t (1073741860), "baseModel", J.script.T.t (3145776), "bin", J.script.T.t (1276118529), "bondCount", J.script.T.t (1095761924), "bottom", J.script.T.t (1073741871), "branch", J.script.T.t (1048580), "brillouin", J.script.T.t (1073741872), "bzone", null, "wignerSeitz", null, "cache", J.script.T.t (135270422), "carbohydrate", J.script.T.t (3145764), "cell", J.script.T.t (1095761925), "chain", J.script.T.t (1087373316), "chains", null, "clash", J.script.T.t (1073741881), "clear", J.script.T.t (1073741882), "clickable", J.script.T.t (3145766), "clipboard", J.script.T.t (1073741884), "connected", J.script.T.t (135266310), "constraint", J.script.T.t (1073741894), "contourLines", J.script.T.t (1073741898), "coord", J.script.T.t (1048582), "coordinates", null, "coords", null, "cos", J.script.T.t (135266821), "cross", J.script.T.t (135267329), "covalent", J.script.T.t (1112539139), "direction", J.script.T.t (1073741918), "displacement", J.script.T.t (1073741922), "displayed", J.script.T.t (3145768), "distance", J.script.T.t (1276118018), "div", J.script.T.t (1276117504), "DNA", J.script.T.t (3145732), "dotted", J.script.T.t (1073741926), "DSSP", J.script.T.t (1073741915), "element", J.script.T.t (1087375365), "elemno", J.script.T.t (1095763976), "_e", J.script.T.t (1095761927), "error", J.script.T.t (1073741936), "fill", J.script.T.t (1073741938), "find", J.script.T.t (1276118532), "fixedTemperature", J.script.T.t (1073741946), "forcefield", J.script.T.t (545259560), "formalCharge", J.script.T.t (1632634889), "charge", null, "eta", J.script.T.t (1112539140), "front", J.script.T.t (1073741954), "frontlit", J.script.T.t (1073741958), "frontOnly", J.script.T.t (1073741960), "fullylit", J.script.T.t (1073741964), "fx", J.script.T.t (1112541188), "fy", J.script.T.t (1112541189), "fz", J.script.T.t (1112541190), "fxyz", J.script.T.t (1146095627), "fux", J.script.T.t (1112541191), "fuy", J.script.T.t (1112541192), "fuz", J.script.T.t (1112541193), "fuxyz", J.script.T.t (1146095629), "group", J.script.T.t (1087373318), "groups", null, "group1", J.script.T.t (1087373319), "groupID", J.script.T.t (1095761930), "_groupID", null, "_g", null, "groupIndex", J.script.T.t (1095761931), "hidden", J.script.T.t (3145770), "highlight", J.script.T.t (536870920), "hkl", J.script.T.t (135267841), "hydrophobic", J.script.T.t (1114638346), "hydrophobicity", null, "hydro", null, "id", J.script.T.t (1074790550), "identify", J.script.T.t (1087373321), "ident", null, "image", J.script.T.t (1073741979), "info", J.script.T.t (1073741982), "inline", J.script.T.t (1073741983), "insertion", J.script.T.t (1087373322), "insertions", null, "intramolecular", J.script.T.t (1073741989), "intra", null, "intermolecular", J.script.T.t (1073741990), "inter", null, "ionic", J.script.T.t (1112541195), "ionicRadius", null, "isAromatic", J.script.T.t (1048585), "Jmol", J.script.T.t (1073741992), "join", J.script.T.t (1276117506), "keys", J.script.T.t (1141899281), "last", J.script.T.t (1073741993), "left", J.script.T.t (1073741996), "length", J.script.T.t (1141899267), "lines", J.script.T.t (1141899268), "list", J.script.T.t (1073742001), "mass", J.script.T.t (1112539141), "max", J.script.T.t (64), "mep", J.script.T.t (1073742016), "mesh", J.script.T.t (1073742018), "middle", J.script.T.t (1073742019), "min", J.script.T.t (32), "mlp", J.script.T.t (1073742022), "mode", J.script.T.t (1073742024), "modify", J.script.T.t (1073742025), "modifyOrCreate", J.script.T.t (1073742026), "molecule", J.script.T.t (1095761934), "molecules", null, "modelIndex", J.script.T.t (1095761933), "monomer", J.script.T.t (1073742030), "morph", J.script.T.t (1073742031), "movie", J.script.T.t (1073742032), "mul", J.script.T.t (1276117507), "nci", J.script.T.t (1073742036), "next", J.script.T.t (1073742037), "noDots", J.script.T.t (1073742042), "noFill", J.script.T.t (1073742046), "noMesh", J.script.T.t (1073742052), "none", J.script.T.t (1048587), "null", null, "inherit", null, "normal", J.script.T.t (1073742056), "noContourLines", J.script.T.t (1073742039), "notFrontOnly", J.script.T.t (1073742058), "noTriangles", J.script.T.t (1073742060), "now", J.script.T.t (135266318), "nucleic", J.script.T.t (3145742), "occupancy", J.script.T.t (1129318401), "off", J.script.T.tokenOff, "false", null, "on", J.script.T.tokenOn, "true", null, "omega", J.script.T.t (1112539142), "only", J.script.T.t (1073742072), "opaque", J.script.T.t (1073742074), "partialCharge", J.script.T.t (1112541196), "phi", J.script.T.t (1112539143), "plane", J.script.T.t (135266319), "planar", null, "play", J.script.T.t (1073742096), "playRev", J.script.T.t (1073742098), "point", J.script.T.t (135266320), "points", null, "pointGroup", J.script.T.t (1073742102), "polymerLength", J.script.T.t (1095761936), "previous", J.script.T.t (1073742108), "prev", null, "probe", J.script.T.t (1073742109), "property", J.script.T.t (1716520973), "properties", null, "protein", J.script.T.t (3145744), "psi", J.script.T.t (1112539144), "purine", J.script.T.t (3145746), "PyMOL", J.script.T.t (1073742110), "pyrimidine", J.script.T.t (3145748), "random", J.script.T.t (135267332), "range", J.script.T.t (1073742114), "rasmol", J.script.T.t (1073742116), "replace", J.script.T.t (1276118019), "resno", J.script.T.t (1095761937), "resume", J.script.T.t (266287), "rewind", J.script.T.t (1073742126), "reverse", J.script.T.t (1141899269), "right", J.script.T.t (1073742128), "RNA", J.script.T.t (3145750), "rubberband", J.script.T.t (1073742134), "saSurface", J.script.T.t (1073742136), "scale", J.script.T.t (1073742138), "scene", J.script.T.t (1073742139), "search", J.script.T.t (135267335), "smarts", null, "selected", J.script.T.t (1114638350), "shapely", J.script.T.t (1073742144), "sidechain", J.script.T.t (3145754), "sin", J.script.T.t (135266820), "site", J.script.T.t (1095761938), "size", J.script.T.t (1141899270), "smiles", J.script.T.t (135267336), "substructure", J.script.T.t (1238369286), "solid", J.script.T.t (1073742150), "sort", J.script.T.t (1276117010), "specialPosition", J.script.T.t (3145772), "sqrt", J.script.T.t (135266822), "split", J.script.T.t (1276117508), "starScale", J.script.T.t (570425403), "stddev", J.script.T.t (192), "straightness", J.script.T.t (1112539148), "structureId", J.script.T.t (1087373324), "supercell", J.script.T.t (1073742163), "sub", J.script.T.t (1276117509), "sum", J.script.T.t (128), "sum2", J.script.T.t (160), "surface", J.script.T.t (3145756), "surfaceDistance", J.script.T.t (1112539149), "symop", J.script.T.t (1297090050), "sx", J.script.T.t (1112539145), "sy", J.script.T.t (1112539146), "sz", J.script.T.t (1112539147), "sxyz", J.script.T.t (1146095628), "temperature", J.script.T.t (1112541199), "relativeTemperature", null, "theta", J.script.T.t (1112539150), "thisModel", J.script.T.t (3145758), "ticks", J.script.T.t (1073742164), "top", J.script.T.t (1074790748), "torsion", J.script.T.t (1073742174), "trajectory", J.script.T.t (536870926), "trajectories", null, "translucent", J.script.T.t (1073742180), "triangles", J.script.T.t (1073742182), "trim", J.script.T.t (1276117510), "type", J.script.T.t (1141899272), "ux", J.script.T.t (1112539151), "uy", J.script.T.t (1112539152), "uz", J.script.T.t (1112539153), "uxyz", J.script.T.t (1146093582), "user", J.script.T.t (1073742186), "valence", J.script.T.t (1095763988), "vanderWaals", J.script.T.t (1649412112), "vdw", null, "vdwRadius", null, "visible", J.script.T.t (3145774), "volume", J.script.T.t (1313866247), "vx", J.script.T.t (1112541202), "vy", J.script.T.t (1112541203), "vz", J.script.T.t (1112541204), "vxyz", J.script.T.t (1146095631), "xyz", J.script.T.t (1146095626), "w", J.script.T.t (1141899280), "x", J.script.T.t (1112541205), "y", J.script.T.t (1112541206), "z", J.script.T.t (1112541207), "addHydrogens", J.script.T.t (1073741828), "allConnected", J.script.T.t (1073741834), "angstroms", J.script.T.t (1073741836), "anisotropy", J.script.T.t (1073741838), "append", J.script.T.t (1073741839), "arc", J.script.T.t (1074790416), "area", J.script.T.t (1073741842), "aromatic", J.script.T.t (1076887572), "arrow", J.script.T.t (1073741846), "auto", J.script.T.t (1073741852), "barb", J.script.T.t (1073741861), "binary", J.script.T.t (1073741866), "blockData", J.script.T.t (1073741868), "cancel", J.script.T.t (1073741874), "cap", J.script.T.t (1074790451), "cavity", J.script.T.t (1073741876), "centroid", J.script.T.t (1073741877), "check", J.script.T.t (1073741878), "chemical", J.script.T.t (1073741879), "circle", J.script.T.t (1073741880), "collapsed", J.script.T.t (1073741886), "col", J.script.T.t (1276117512), "colorScheme", J.script.T.t (1073741888), "command", J.script.T.t (1073741890), "commands", J.script.T.t (1073741892), "contour", J.script.T.t (1073741896), "contours", J.script.T.t (1073741900), "corners", J.script.T.t (1073741902), "count", J.script.T.t (1276117011), "criterion", J.script.T.t (1073741905), "create", J.script.T.t (1073741904), "crossed", J.script.T.t (1073741906), "curve", J.script.T.t (1073741908), "cutoff", J.script.T.t (1073741910), "cylinder", J.script.T.t (1073741912), "diameter", J.script.T.t (1073741916), "discrete", J.script.T.t (1073741920), "distanceFactor", J.script.T.t (1073741924), "downsample", J.script.T.t (1073741928), "drawing", J.script.T.t (1073741929), "eccentricity", J.script.T.t (1073741930), "ed", J.script.T.t (1074790508), "edges", J.script.T.t (1073741934), "energy", J.script.T.t (1073741935), "exitJmol", J.script.T.t (266256), "faceCenterOffset", J.script.T.t (1073741937), "filter", J.script.T.t (1073741940), "first", J.script.T.t (1073741942), "fixed", J.script.T.t (1060869), "fix", null, "flat", J.script.T.t (1073741948), "fps", J.script.T.t (1074790526), "from", J.script.T.t (1073741952), "frontEdges", J.script.T.t (1073741956), "full", J.script.T.t (1073741961), "fullPlane", J.script.T.t (1073741962), "functionXY", J.script.T.t (1073741966), "functionXYZ", J.script.T.t (1073741968), "gridPoints", J.script.T.t (1073741970), "homo", J.script.T.t (1073741973), "ignore", J.script.T.t (1073741976), "InChI", J.script.T.t (1073741977), "InChIKey", J.script.T.t (1073741978), "increment", J.script.T.t (1073741981), "insideout", J.script.T.t (1073741984), "interior", J.script.T.t (1073741986), "intersection", J.script.T.t (135267842), "intersect", null, "internal", J.script.T.t (1073741988), "lattice", J.script.T.t (1073741994), "line", J.script.T.t (1073741998), "lineData", J.script.T.t (1073742000), "link", J.script.T.t (1073741999), "lobe", J.script.T.t (1073742002), "lonePair", J.script.T.t (1073742004), "lp", J.script.T.t (1073742006), "lumo", J.script.T.t (1073742008), "manifest", J.script.T.t (1073742010), "mapProperty", J.script.T.t (1052700), "map", null, "maxSet", J.script.T.t (1073742014), "menu", J.script.T.t (1073742015), "minSet", J.script.T.t (1073742020), "modelBased", J.script.T.t (1073742028), "molecular", J.script.T.t (1073742029), "mrc", J.script.T.t (1073742033), "msms", J.script.T.t (1073742034), "name", J.script.T.t (1073742035), "nmr", J.script.T.t (1073742038), "noCross", J.script.T.t (1073742040), "noDebug", J.script.T.t (1073742041), "noEdges", J.script.T.t (1073742044), "noHead", J.script.T.t (1073742048), "noLoad", J.script.T.t (1073742050), "noPlane", J.script.T.t (1073742054), "object", J.script.T.t (1073742064), "obj", J.script.T.t (1073742062), "offset", J.script.T.t (1073742066), "offsetSide", J.script.T.t (1073742068), "once", J.script.T.t (1073742070), "orbital", J.script.T.t (1073742076), "atomicOrbital", J.script.T.t (1073741850), "packed", J.script.T.t (1073742080), "palindrome", J.script.T.t (1073742082), "parameters", J.script.T.t (1073742083), "path", J.script.T.t (1073742084), "pdb", J.script.T.t (1074790662), "period", J.script.T.t (1073742090), "periodic", null, "perpendicular", J.script.T.t (1073742092), "perp", null, "phase", J.script.T.t (1073742094), "pocket", J.script.T.t (1073742100), "pointsPerAngstrom", J.script.T.t (1073742104), "radical", J.script.T.t (1073742112), "rad", J.script.T.t (1073742111), "reference", J.script.T.t (1073742118), "remove", J.script.T.t (1073742119), "resolution", J.script.T.t (1073742122), "reverseColor", J.script.T.t (1073742124), "rotate45", J.script.T.t (1073742130), "selection", J.script.T.t (1073742140), "sigma", J.script.T.t (1073742146), "sign", J.script.T.t (1073742147), "silent", J.script.T.t (1073742148), "sphere", J.script.T.t (1073742154), "squared", J.script.T.t (1073742156), "stop", J.script.T.t (1073742162), "title", J.script.T.t (1073742166), "titleFormat", J.script.T.t (1073742168), "to", J.script.T.t (1074790746), "value", J.script.T.t (1073742188), "variable", J.script.T.t (1073742190), "variables", J.script.T.t (1073742192), "vertices", J.script.T.t (1073742194), "width", J.script.T.t (1073742196), "backgroundModel", J.script.T.t (536870914), "celShading", J.script.T.t (603979821), "debug", J.script.T.t (536870916), "defaultLattice", J.script.T.t (536870918), "measurements", J.script.T.t (537006096), "measurement", null, "scale3D", J.script.T.t (1610612740), "toggleLabel", J.script.T.t (1610612741), "userColorScheme", J.script.T.t (536870930), "timeout", J.script.T.t (536875070), "timeouts", null, "appletProxy", J.script.T.t (545259522), "atomTypes", J.script.T.t (545259524), "axesColor", J.script.T.t (545259526), "axis1Color", J.script.T.t (545259528), "axis2Color", J.script.T.t (545259530), "axis3Color", J.script.T.t (545259532), "backgroundColor", J.script.T.t (545259534), "bondmode", J.script.T.t (1610612737), "boundBoxColor", J.script.T.t (545259536), "boundingBoxColor", null, "currentLocalPath", J.script.T.t (545259538), "dataSeparator", J.script.T.t (545259540), "defaultAngleLabel", J.script.T.t (545259542), "defaultColorScheme", J.script.T.t (545259545), "defaultColors", null, "defaultDirectory", J.script.T.t (545259546), "defaultDistanceLabel", J.script.T.t (545259547), "defaultDropScript", J.script.T.t (545259548), "defaultLabelPDB", J.script.T.t (545259543), "defaultLabelXYZ", J.script.T.t (545259544), "defaultLoadFilter", J.script.T.t (545259549), "defaultLoadScript", J.script.T.t (545259550), "defaults", J.script.T.t (545259552), "defaultTorsionLabel", J.script.T.t (545259554), "defaultVDW", J.script.T.t (545259555), "edsUrlCutoff", J.script.T.t (545259556), "edsUrlFormat", J.script.T.t (545259557), "energyUnits", J.script.T.t (545259558), "fileCacheDirectory", J.script.T.t (545259559), "fontsize", J.script.T.t (1610612738), "helpPath", J.script.T.t (545259561), "hoverLabel", J.script.T.t (545259562), "language", J.script.T.t (545259564), "loadFormat", J.script.T.t (545259565), "loadLigandFormat", J.script.T.t (545259566), "logFile", J.script.T.t (545259567), "measurementUnits", J.script.T.t (545259568), "nmrUrlFormat", J.script.T.t (545259569), "pathForAllFiles", J.script.T.t (545259570), "picking", J.script.T.t (545259572), "pickingStyle", J.script.T.t (545259574), "pickLabel", J.script.T.t (545259576), "propertyColorScheme", J.script.T.t (545259578), "quaternionFrame", J.script.T.t (545259580), "smilesUrlFormat", J.script.T.t (545259582), "smiles2dImageFormat", J.script.T.t (545259584), "unitCellColor", J.script.T.t (545259586), "axesScale", J.script.T.t (570425346), "axisScale", null, "bondTolerance", J.script.T.t (570425348), "cameraDepth", J.script.T.t (570425350), "defaultDrawArrowScale", J.script.T.t (570425352), "defaultTranslucent", J.script.T.t (570425354), "dipoleScale", J.script.T.t (570425356), "ellipsoidAxisDiameter", J.script.T.t (570425358), "gestureSwipeFactor", J.script.T.t (570425359), "hbondsAngleMinimum", J.script.T.t (570425360), "hbondsDistanceMaximum", J.script.T.t (570425361), "hoverDelay", J.script.T.t (570425362), "loadAtomDataTolerance", J.script.T.t (570425363), "minBondDistance", J.script.T.t (570425364), "minimizationCriterion", J.script.T.t (570425365), "mouseDragFactor", J.script.T.t (570425366), "mouseWheelFactor", J.script.T.t (570425367), "navFPS", J.script.T.t (570425370), "navigationDepth", J.script.T.t (570425371), "navigationSlab", J.script.T.t (570425372), "navigationSpeed", J.script.T.t (570425374), "navX", J.script.T.t (570425376), "navY", J.script.T.t (570425378), "navZ", J.script.T.t (570425380), "pointGroupDistanceTolerance", J.script.T.t (570425382), "pointGroupLinearTolerance", J.script.T.t (570425384), "radius", J.script.T.t (1666189314), "rotationRadius", J.script.T.t (570425388), "scaleAngstromsPerInch", J.script.T.t (570425390), "sheetSmoothing", J.script.T.t (570425392), "slabRange", J.script.T.t (570425393), "solventProbeRadius", J.script.T.t (570425394), "spinFPS", J.script.T.t (570425396), "spinX", J.script.T.t (570425398), "spinY", J.script.T.t (570425400), "spinZ", J.script.T.t (570425402), "stereoDegrees", J.script.T.t (570425404), "strutDefaultRadius", J.script.T.t (570425406), "strutLengthMaximum", J.script.T.t (570425408), "vectorScale", J.script.T.t (1649410065), "vectorSymmetry", J.script.T.t (603979973), "vibrationPeriod", J.script.T.t (570425412), "vibrationScale", J.script.T.t (570425414), "visualRange", J.script.T.t (570425416), "ambientPercent", J.script.T.t (553648130), "ambient", null, "animationFps", J.script.T.t (553648132), "axesMode", J.script.T.t (553648134), "bondRadiusMilliAngstroms", J.script.T.t (553648136), "delayMaximumMs", J.script.T.t (553648138), "diffusePercent", J.script.T.t (553648142), "diffuse", null, "dotDensity", J.script.T.t (553648143), "dotScale", J.script.T.t (553648144), "ellipsoidDotCount", J.script.T.t (553648145), "helixStep", J.script.T.t (553648146), "hermiteLevel", J.script.T.t (553648147), "historyLevel", J.script.T.t (553648148), "lighting", J.script.T.t (1073741995), "logLevel", J.script.T.t (553648150), "meshScale", J.script.T.t (553648151), "minimizationSteps", J.script.T.t (553648152), "minPixelSelRadius", J.script.T.t (553648153), "percentVdwAtom", J.script.T.t (553648154), "perspectiveModel", J.script.T.t (553648155), "phongExponent", J.script.T.t (553648156), "pickingSpinRate", J.script.T.t (553648158), "propertyAtomNumberField", J.script.T.t (553648159), "propertyAtomNumberColumnCount", J.script.T.t (553648160), "propertyDataColumnCount", J.script.T.t (553648162), "propertyDataField", J.script.T.t (553648164), "repaintWaitMs", J.script.T.t (553648165), "ribbonAspectRatio", J.script.T.t (553648166), "scriptReportingLevel", J.script.T.t (553648168), "showScript", J.script.T.t (536870922), "smallMoleculeMaxAtoms", J.script.T.t (553648170), "specular", J.script.T.t (536870924), "specularExponent", J.script.T.t (553648172), "specularPercent", J.script.T.t (553648174), "specPercent", null, "specularPower", J.script.T.t (553648176), "specpower", null, "strandCount", J.script.T.t (553648178), "strandCountForMeshRibbon", J.script.T.t (553648180), "strandCountForStrands", J.script.T.t (553648182), "strutSpacing", J.script.T.t (553648184), "zDepth", J.script.T.t (553648186), "zSlab", J.script.T.t (553648188), "zshadePower", J.script.T.t (553648190), "allowEmbeddedScripts", J.script.T.t (603979778), "allowGestures", J.script.T.t (603979780), "allowKeyStrokes", J.script.T.t (603979781), "allowModelKit", J.script.T.t (603979782), "allowMoveAtoms", J.script.T.t (603979783), "allowMultiTouch", J.script.T.t (603979784), "allowRotateSelected", J.script.T.t (603979785), "antialiasDisplay", J.script.T.t (603979786), "antialiasImages", J.script.T.t (603979788), "antialiasTranslucent", J.script.T.t (603979790), "appendNew", J.script.T.t (603979792), "applySymmetryToBonds", J.script.T.t (603979794), "atomPicking", J.script.T.t (603979796), "autobond", J.script.T.t (603979798), "autoFPS", J.script.T.t (603979800), "axesMolecular", J.script.T.t (603979804), "axesOrientationRasmol", J.script.T.t (603979806), "axesUnitCell", J.script.T.t (603979808), "axesWindow", J.script.T.t (603979810), "bondModeOr", J.script.T.t (603979812), "bondPicking", J.script.T.t (603979814), "bonds", J.script.T.t (1678770178), "bond", null, "cartoonBaseEdges", J.script.T.t (603979817), "cartoonsFancy", J.script.T.t (603979819), "cartoonFancy", null, "cartoonLadders", J.script.T.t (603979820), "cartoonRockets", J.script.T.t (603979818), "chainCaseSensitive", J.script.T.t (603979822), "colorRasmol", J.script.T.t (603979823), "debugScript", J.script.T.t (603979824), "defaultStructureDssp", J.script.T.t (603979825), "disablePopupMenu", J.script.T.t (603979826), "displayCellParameters", J.script.T.t (603979828), "dotsSelectedOnly", J.script.T.t (603979829), "dotSurface", J.script.T.t (603979830), "dragSelected", J.script.T.t (603979831), "drawHover", J.script.T.t (603979832), "drawPicking", J.script.T.t (603979833), "dsspCalculateHydrogenAlways", J.script.T.t (603979834), "dynamicMeasurements", J.script.T.t (603979835), "ellipsoidArcs", J.script.T.t (603979836), "ellipsoidAxes", J.script.T.t (603979837), "ellipsoidBall", J.script.T.t (603979838), "ellipsoidDots", J.script.T.t (603979839), "ellipsoidFill", J.script.T.t (603979840), "fileCaching", J.script.T.t (603979842), "fontCaching", J.script.T.t (603979844), "fontScaling", J.script.T.t (603979845), "forceAutoBond", J.script.T.t (603979846), "fractionalRelative", J.script.T.t (603979848), "greyscaleRendering", J.script.T.t (603979850), "hbondsBackbone", J.script.T.t (603979852), "hbondsRasmol", J.script.T.t (603979853), "hbondsSolid", J.script.T.t (603979854), "hetero", J.script.T.t (1613758470), "hideNameInPopup", J.script.T.t (603979858), "hideNavigationPoint", J.script.T.t (603979860), "hideNotSelected", J.script.T.t (603979862), "highResolution", J.script.T.t (603979864), "hydrogen", J.script.T.t (1613758476), "hydrogens", null, "imageState", J.script.T.t (603979868), "isKiosk", J.script.T.t (603979869), "isosurfaceKey", J.script.T.t (603979870), "isosurfacePropertySmoothing", J.script.T.t (603979871), "isosurfacePropertySmoothingPower", J.script.T.t (553648149), "justifyMeasurements", J.script.T.t (603979872), "languageTranslation", J.script.T.t (603979873), "legacyAutoBonding", J.script.T.t (603979874), "logCommands", J.script.T.t (603979875), "logGestures", J.script.T.t (603979876), "measureAllModels", J.script.T.t (603979877), "measurementLabels", J.script.T.t (603979878), "measurementNumbers", J.script.T.t (1610612739), "messageStyleChime", J.script.T.t (603979879), "minimizationRefresh", J.script.T.t (603979880), "minimizationSilent", J.script.T.t (603979881), "modelkitMode", J.script.T.t (603979882), "monitorEnergy", J.script.T.t (603979883), "multipleBondRadiusFactor", J.script.T.t (570425368), "multipleBondSpacing", J.script.T.t (570425369), "multiProcessor", J.script.T.t (603979884), "navigateSurface", J.script.T.t (603979885), "navigationMode", J.script.T.t (603979886), "navigationPeriodic", J.script.T.t (603979887), "partialDots", J.script.T.t (603979888), "pdbAddHydrogens", J.script.T.t (603979889), "pdbGetHeader", J.script.T.t (603979890), "pdbSequential", J.script.T.t (603979891), "perspectiveDepth", J.script.T.t (603979892), "preserveState", J.script.T.t (603979893), "rangeSelected", J.script.T.t (603979894), "redoMove", J.script.T.t (4139), "refreshing", J.script.T.t (603979896), "ribbonBorder", J.script.T.t (603979898), "rocketBarrels", J.script.T.t (603979900), "saveProteinStructureState", J.script.T.t (603979902), "scriptQueue", J.script.T.t (603979904), "selectAllModels", J.script.T.t (603979906), "selectHetero", J.script.T.t (603979908), "selectHydrogen", J.script.T.t (603979910), "showAxes", J.script.T.t (603979914), "showBoundBox", J.script.T.t (603979916), "showBoundingBox", null, "showFrank", J.script.T.t (603979918), "showHiddenSelectionHalos", J.script.T.t (603979920), "showHydrogens", J.script.T.t (603979922), "showKeyStrokes", J.script.T.t (603979924), "showMeasurements", J.script.T.t (603979926), "showMultipleBonds", J.script.T.t (603979928), "showNavigationPointAlways", J.script.T.t (603979930), "showTiming", J.script.T.t (603979934), "showUnitcell", J.script.T.t (603979936), "slabByAtom", J.script.T.t (603979938), "slabByMolecule", J.script.T.t (603979940), "slabEnabled", J.script.T.t (603979942), "smartAromatic", J.script.T.t (603979944), "solvent", J.script.T.t (1613758488), "solventProbe", J.script.T.t (603979948), "ssBondsBackbone", J.script.T.t (603979952), "statusReporting", J.script.T.t (603979954), "strutsMultiple", J.script.T.t (603979955), "syncMouse", J.script.T.t (603979956), "syncScript", J.script.T.t (603979958), "testFlag1", J.script.T.t (603979960), "testFlag2", J.script.T.t (603979962), "testFlag3", J.script.T.t (603979964), "testFlag4", J.script.T.t (603979966), "traceAlpha", J.script.T.t (603979967), "twistedSheets", J.script.T.t (603979968), "undo", J.script.T.t (536870928), "undoMove", J.script.T.t (4165), "useArcBall", J.script.T.t (603979969), "useMinimizationThread", J.script.T.t (603979970), "useNumberLocalization", J.script.T.t (603979972), "waitForMoveTo", J.script.T.t (603979974), "windowCentered", J.script.T.t (603979975), "wireframeRotation", J.script.T.t (603979976), "zeroBasedXyzRasmol", J.script.T.t (603979978), "zoomEnabled", J.script.T.t (603979980), "zoomHeight", J.script.T.t (603979982), "zoomLarge", J.script.T.t (603979983), "zShade", J.script.T.t (603979984)];
+var arrayPairs = ["(", J.script.T.tokenLeftParen, ")", J.script.T.tokenRightParen, "and", J.script.T.tokenAnd, "&", null, "&&", null, "or", J.script.T.tokenOr, "|", null, "||", null, "?", J.script.T.tokenOpIf, ",", J.script.T.tokenComma, "+=", J.script.T.t (269484242), "-=", null, "*=", null, "/=", null, "\\=", null, "&=", null, "|=", null, "not", J.script.T.t (269484144), "!", null, "xor", J.script.T.t (269484113), "tog", J.script.T.t (269484114), "<", J.script.T.t (269484435), "<=", J.script.T.t (269484434), ">=", J.script.T.t (269484433), ">", J.script.T.t (269484432), "=", J.script.T.tokenEquals, "==", null, "!=", J.script.T.t (269484438), "<>", null, "within", J.script.T.t (135266324), ".", J.script.T.t (1048584), "[", J.script.T.t (269484096), "]", J.script.T.t (269484097), "{", J.script.T.t (1048586), "}", J.script.T.t (1048590), "$", J.script.T.t (1048583), "%", J.script.T.t (269484210), ":", J.script.T.tokenColon, ";", J.script.T.t (1048591), "++", J.script.T.t (269484226), "--", J.script.T.t (269484225), "**", J.script.T.t (269484227), "+", J.script.T.tokenPlus, "-", J.script.T.tokenMinus, "*", J.script.T.tokenTimes, "/", J.script.T.tokenDivide, "\\", J.script.T.t (269484211), "animation", J.script.T.t (4097), "anim", null, "assign", J.script.T.t (4098), "axes", J.script.T.t (1611272194), "backbone", J.script.T.t (1115297793), "background", J.script.T.t (1610616835), "bind", J.script.T.t (4100), "bondorder", J.script.T.t (4101), "boundbox", J.script.T.t (1679429641), "boundingBox", null, "break", J.script.T.t (102407), "calculate", J.script.T.t (4102), "cartoon", J.script.T.t (1113200642), "cartoons", null, "case", J.script.T.t (102411), "catch", J.script.T.t (102412), "cd", J.script.T.t (1069064), "center", J.script.T.t (12289), "centre", null, "centerat", J.script.T.t (4105), "cgo", J.script.T.t (135174), "color", J.script.T.t (1766856708), "colour", null, "compare", J.script.T.t (135270405), "configuration", J.script.T.t (1095766022), "conformation", null, "config", null, "connect", J.script.T.t (4106), "console", J.script.T.t (528395), "contact", J.script.T.t (135402505), "contacts", null, "continue", J.script.T.t (102408), "data", J.script.T.t (135270407), "default", J.script.T.t (102413), "define", J.script.T.t (1060866), "@", null, "delay", J.script.T.t (528397), "delete", J.script.T.t (12291), "density", J.script.T.t (1073741914), "depth", J.script.T.t (554176526), "dipole", J.script.T.t (135175), "dipoles", null, "display", J.script.T.t (1610625028), "dot", J.script.T.t (1276117505), "dots", J.script.T.t (1113198595), "draw", J.script.T.t (135176), "echo", J.script.T.t (537022465), "ellipsoid", J.script.T.t (1113198596), "ellipsoids", null, "else", J.script.T.t (364547), "elseif", J.script.T.t (102402), "end", J.script.T.t (1150985), "endif", J.script.T.t (364548), "exit", J.script.T.t (266255), "file", J.script.T.t (1229984263), "files", null, "font", J.script.T.t (4114), "for", J.script.T.t (135369224), "format", J.script.T.t (1288701960), "frame", J.script.T.t (4115), "frames", null, "frank", J.script.T.t (1611272202), "function", J.script.T.t (135368713), "functions", null, "geosurface", J.script.T.t (1113198597), "getProperty", J.script.T.t (135270410), "goto", J.script.T.t (20500), "halo", J.script.T.t (1113200646), "halos", null, "helix", J.script.T.t (137363468), "helixalpha", J.script.T.t (3145735), "helix310", J.script.T.t (3145736), "helixpi", J.script.T.t (3145738), "hbond", J.script.T.t (1612189718), "hbonds", null, "help", J.script.T.t (20482), "hide", J.script.T.t (12294), "history", J.script.T.t (1610616855), "hover", J.script.T.t (544771), "if", J.script.T.t (135369225), "in", J.script.T.t (1073741980), "initialize", J.script.T.t (266264), "invertSelected", J.script.T.t (4121), "isosurface", J.script.T.t (135180), "javascript", J.script.T.t (135287308), "label", J.script.T.t (1826248715), "labels", null, "lcaoCartoon", J.script.T.t (135182), "lcaoCartoons", null, "load", J.script.T.t (135271426), "log", J.script.T.t (36869), "loop", J.script.T.t (528410), "measure", J.script.T.t (1746538509), "measures", null, "monitor", null, "monitors", null, "meshribbon", J.script.T.t (1113200647), "meshribbons", null, "message", J.script.T.t (20485), "minimize", J.script.T.t (4126), "minimization", null, "mo", J.script.T.t (1183762), "model", J.script.T.t (1095766028), "models", null, "move", J.script.T.t (4128), "moveTo", J.script.T.t (4130), "navigate", J.script.T.t (4131), "navigation", null, "origin", J.script.T.t (1073742078), "out", J.script.T.t (1073742079), "parallel", J.script.T.t (102436), "pause", J.script.T.t (20487), "wait", null, "plot", J.script.T.t (4133), "plot3d", J.script.T.t (135190), "pmesh", J.script.T.t (135188), "polygon", J.script.T.t (1073742106), "polyhedra", J.script.T.t (135192), "print", J.script.T.t (36865), "process", J.script.T.t (102439), "prompt", J.script.T.t (135304707), "quaternion", J.script.T.t (135270417), "quaternions", null, "quit", J.script.T.t (266281), "ramachandran", J.script.T.t (1052714), "rama", null, "refresh", J.script.T.t (266284), "reset", J.script.T.t (4141), "unset", null, "restore", J.script.T.t (4142), "restrict", J.script.T.t (12295), "return", J.script.T.t (36866), "ribbon", J.script.T.t (1113200649), "ribbons", null, "rocket", J.script.T.t (1113200650), "rockets", null, "rotate", J.script.T.t (528432), "rotateSelected", J.script.T.t (4145), "save", J.script.T.t (4146), "script", J.script.T.tokenScript, "source", null, "select", J.script.T.t (135280132), "selectionHalos", J.script.T.t (1611141171), "selectionHalo", null, "showSelections", null, "set", J.script.T.tokenSetCmd, "sheet", J.script.T.t (3145760), "show", J.script.T.t (4148), "slab", J.script.T.t (554176565), "spacefill", J.script.T.t (1113200651), "cpk", null, "spin", J.script.T.t (1611141175), "ssbond", J.script.T.t (1611141176), "ssbonds", null, "star", J.script.T.t (1113200652), "stars", null, "step", J.script.T.t (266298), "steps", null, "stereo", J.script.T.t (528443), "strand", J.script.T.t (1650071565), "strands", null, "structure", J.script.T.t (1641025539), "_structure", null, "strucNo", J.script.T.t (1095761939), "struts", J.script.T.t (1708058), "strut", null, "subset", J.script.T.t (3158024), "switch", J.script.T.tokenSwitch, "synchronize", J.script.T.t (4156), "sync", null, "trace", J.script.T.t (1113200654), "translate", J.script.T.t (4160), "translateSelected", J.script.T.t (4162), "try", J.script.T.t (364558), "unbind", J.script.T.t (4164), "unitcell", J.script.T.t (1614417948), "var", J.script.T.t (36868), "vector", J.script.T.t (135198), "vectors", null, "vibration", J.script.T.t (4166), "while", J.script.T.t (102406), "wireframe", J.script.T.t (659488), "write", J.script.T.t (135270421), "zap", J.script.T.t (1060873), "zoom", J.script.T.t (4168), "zoomTo", J.script.T.t (4170), "atom", J.script.T.t (1141899265), "atoms", null, "axis", J.script.T.t (1073741854), "axisangle", J.script.T.t (135266307), "basepair", J.script.T.t (1073741864), "basepairs", null, "orientation", J.script.T.t (1073742077), "orientations", null, "pdbheader", J.script.T.t (1073742088), "polymer", J.script.T.t (1095761935), "polymers", null, "residue", J.script.T.t (1073742120), "residues", null, "rotation", J.script.T.t (1073742132), "row", J.script.T.t (1276117513), "sequence", J.script.T.t (1087373320), "shape", J.script.T.t (1087373323), "state", J.script.T.t (1073742158), "symbol", J.script.T.t (1087375373), "symmetry", J.script.T.t (1089470478), "spaceGroup", J.script.T.t (1073742152), "transform", J.script.T.t (1073742176), "translation", J.script.T.t (1073742178), "url", J.script.T.t (1074790760), "abs", J.script.T.t (135266826), "absolute", J.script.T.t (1073741826), "acos", J.script.T.t (135266819), "add", J.script.T.t (1276118017), "adpmax", J.script.T.t (1112539137), "adpmin", J.script.T.t (1112539138), "align", J.script.T.t (1073741832), "all", J.script.T.tokenAll, "altloc", J.script.T.t (1087373315), "altlocs", null, "amino", J.script.T.t (3145730), "angle", J.script.T.t (135266305), "array", J.script.T.t (135266306), "as", J.script.T.t (1073741848), "atomID", J.script.T.t (1095761922), "_atomID", null, "_a", null, "atomIndex", J.script.T.t (1095761923), "atomName", J.script.T.t (1087375362), "atomno", J.script.T.t (1095763969), "atomType", J.script.T.t (1087375361), "atomX", J.script.T.t (1112541185), "atomY", J.script.T.t (1112541186), "atomZ", J.script.T.t (1112541187), "average", J.script.T.t (96), "babel", J.script.T.t (1073741856), "babel21", J.script.T.t (1073741858), "back", J.script.T.t (1073741859), "backlit", J.script.T.t (1073741862), "balls", J.script.T.t (1073741860), "baseModel", J.script.T.t (3145776), "bin", J.script.T.t (1276118529), "bondCount", J.script.T.t (1095761924), "bottom", J.script.T.t (1073741871), "branch", J.script.T.t (1048580), "brillouin", J.script.T.t (1073741872), "bzone", null, "wignerSeitz", null, "cache", J.script.T.t (135270422), "carbohydrate", J.script.T.t (3145764), "cell", J.script.T.t (1095761925), "chain", J.script.T.t (1087373316), "chains", null, "clash", J.script.T.t (1073741881), "clear", J.script.T.t (1073741882), "clickable", J.script.T.t (3145766), "clipboard", J.script.T.t (1073741884), "connected", J.script.T.t (135266310), "constraint", J.script.T.t (1073741894), "contourLines", J.script.T.t (1073741898), "coord", J.script.T.t (1048582), "coordinates", null, "coords", null, "cos", J.script.T.t (135266821), "cross", J.script.T.t (135267329), "covalent", J.script.T.t (1112539139), "direction", J.script.T.t (1073741918), "displacement", J.script.T.t (1073741922), "displayed", J.script.T.t (3145768), "distance", J.script.T.t (1276118018), "div", J.script.T.t (1276117504), "DNA", J.script.T.t (3145732), "dotted", J.script.T.t (1073741926), "DSSP", J.script.T.t (1073741915), "element", J.script.T.t (1087375365), "elemno", J.script.T.t (1095763976), "_e", J.script.T.t (1095761927), "error", J.script.T.t (1073741936), "fill", J.script.T.t (1073741938), "find", J.script.T.t (1276118532), "fixedTemperature", J.script.T.t (1073741946), "forcefield", J.script.T.t (545259560), "formalCharge", J.script.T.t (1632634889), "charge", null, "eta", J.script.T.t (1112539140), "front", J.script.T.t (1073741954), "frontlit", J.script.T.t (1073741958), "frontOnly", J.script.T.t (1073741960), "fullylit", J.script.T.t (1073741964), "fx", J.script.T.t (1112541188), "fy", J.script.T.t (1112541189), "fz", J.script.T.t (1112541190), "fxyz", J.script.T.t (1146095627), "fux", J.script.T.t (1112541191), "fuy", J.script.T.t (1112541192), "fuz", J.script.T.t (1112541193), "fuxyz", J.script.T.t (1146095629), "group", J.script.T.t (1087373318), "groups", null, "group1", J.script.T.t (1087373319), "groupID", J.script.T.t (1095761930), "_groupID", null, "_g", null, "groupIndex", J.script.T.t (1095761931), "hidden", J.script.T.t (3145770), "highlight", J.script.T.t (536870920), "hkl", J.script.T.t (135267841), "hydrophobic", J.script.T.t (1114638346), "hydrophobicity", null, "hydro", null, "id", J.script.T.t (1074790550), "identify", J.script.T.t (1087373321), "ident", null, "image", J.script.T.t (1073741979), "info", J.script.T.t (1073741982), "inline", J.script.T.t (1073741983), "insertion", J.script.T.t (1087373322), "insertions", null, "intramolecular", J.script.T.t (1073741989), "intra", null, "intermolecular", J.script.T.t (1073741990), "inter", null, "ionic", J.script.T.t (1112541195), "ionicRadius", null, "isAromatic", J.script.T.t (1048585), "Jmol", J.script.T.t (1073741992), "join", J.script.T.t (1276117506), "keys", J.script.T.t (1141899281), "last", J.script.T.t (1073741993), "left", J.script.T.t (1073741996), "length", J.script.T.t (1141899267), "lines", J.script.T.t (1141899268), "list", J.script.T.t (1073742001), "mass", J.script.T.t (1112539141), "max", J.script.T.t (64), "mep", J.script.T.t (1073742016), "mesh", J.script.T.t (1073742018), "middle", J.script.T.t (1073742019), "min", J.script.T.t (32), "mlp", J.script.T.t (1073742022), "mode", J.script.T.t (1073742024), "modify", J.script.T.t (1073742025), "modifyOrCreate", J.script.T.t (1073742026), "molecule", J.script.T.t (1095761934), "molecules", null, "modelIndex", J.script.T.t (1095761933), "monomer", J.script.T.t (1073742030), "morph", J.script.T.t (1073742031), "movie", J.script.T.t (1073742032), "mul", J.script.T.t (1276117507), "nci", J.script.T.t (1073742036), "next", J.script.T.t (1073742037), "noDots", J.script.T.t (1073742042), "noFill", J.script.T.t (1073742046), "noMesh", J.script.T.t (1073742052), "none", J.script.T.t (1048587), "null", null, "inherit", null, "normal", J.script.T.t (1073742056), "noContourLines", J.script.T.t (1073742039), "notFrontOnly", J.script.T.t (1073742058), "noTriangles", J.script.T.t (1073742060), "now", J.script.T.t (135266318), "nucleic", J.script.T.t (3145742), "occupancy", J.script.T.t (1129318401), "off", J.script.T.tokenOff, "false", null, "on", J.script.T.tokenOn, "true", null, "omega", J.script.T.t (1112539142), "only", J.script.T.t (1073742072), "opaque", J.script.T.t (1073742074), "partialCharge", J.script.T.t (1112541196), "phi", J.script.T.t (1112539143), "plane", J.script.T.t (135266319), "planar", null, "play", J.script.T.t (1073742096), "playRev", J.script.T.t (1073742098), "point", J.script.T.t (135266320), "points", null, "pointGroup", J.script.T.t (1073742102), "polymerLength", J.script.T.t (1095761936), "previous", J.script.T.t (1073742108), "prev", null, "probe", J.script.T.t (1073742109), "property", J.script.T.t (1716520973), "properties", null, "protein", J.script.T.t (3145744), "psi", J.script.T.t (1112539144), "purine", J.script.T.t (3145746), "PyMOL", J.script.T.t (1073742110), "pyrimidine", J.script.T.t (3145748), "random", J.script.T.t (135267332), "range", J.script.T.t (1073742114), "rasmol", J.script.T.t (1073742116), "replace", J.script.T.t (1276118019), "resno", J.script.T.t (1095761937), "resume", J.script.T.t (266287), "rewind", J.script.T.t (1073742126), "reverse", J.script.T.t (1141899269), "right", J.script.T.t (1073742128), "RNA", J.script.T.t (3145750), "rubberband", J.script.T.t (1073742134), "saSurface", J.script.T.t (1073742136), "scale", J.script.T.t (1073742138), "scene", J.script.T.t (1073742139), "search", J.script.T.t (135267335), "smarts", null, "selected", J.script.T.t (1114638350), "shapely", J.script.T.t (1073742144), "sidechain", J.script.T.t (3145754), "sin", J.script.T.t (135266820), "site", J.script.T.t (1095761938), "size", J.script.T.t (1141899270), "smiles", J.script.T.t (135267336), "substructure", J.script.T.t (1238369286), "solid", J.script.T.t (1073742150), "sort", J.script.T.t (1276117010), "specialPosition", J.script.T.t (3145772), "sqrt", J.script.T.t (135266822), "split", J.script.T.t (1276117508), "starScale", J.script.T.t (570425403), "stddev", J.script.T.t (192), "straightness", J.script.T.t (1112539148), "structureId", J.script.T.t (1087373324), "supercell", J.script.T.t (1073742163), "sub", J.script.T.t (1276117509), "sum", J.script.T.t (128), "sum2", J.script.T.t (160), "surface", J.script.T.t (3145756), "surfaceDistance", J.script.T.t (1112539149), "symop", J.script.T.t (1297090050), "sx", J.script.T.t (1112539145), "sy", J.script.T.t (1112539146), "sz", J.script.T.t (1112539147), "sxyz", J.script.T.t (1146095628), "temperature", J.script.T.t (1112541199), "relativeTemperature", null, "theta", J.script.T.t (1112539150), "thisModel", J.script.T.t (3145758), "ticks", J.script.T.t (1073742164), "top", J.script.T.t (1074790748), "torsion", J.script.T.t (1073742174), "trajectory", J.script.T.t (536870926), "trajectories", null, "translucent", J.script.T.t (603979967), "triangles", J.script.T.t (1073742182), "trim", J.script.T.t (1276117510), "type", J.script.T.t (1141899272), "ux", J.script.T.t (1112539151), "uy", J.script.T.t (1112539152), "uz", J.script.T.t (1112539153), "uxyz", J.script.T.t (1146093582), "user", J.script.T.t (1073742186), "valence", J.script.T.t (1095763988), "vanderWaals", J.script.T.t (1649412112), "vdw", null, "vdwRadius", null, "visible", J.script.T.t (3145774), "volume", J.script.T.t (1313866247), "vx", J.script.T.t (1112541202), "vy", J.script.T.t (1112541203), "vz", J.script.T.t (1112541204), "vxyz", J.script.T.t (1146095631), "xyz", J.script.T.t (1146095626), "w", J.script.T.t (1141899280), "x", J.script.T.t (1112541205), "y", J.script.T.t (1112541206), "z", J.script.T.t (1112541207), "addHydrogens", J.script.T.t (1073741828), "allConnected", J.script.T.t (1073741834), "angstroms", J.script.T.t (1073741836), "anisotropy", J.script.T.t (1073741838), "append", J.script.T.t (1073741839), "arc", J.script.T.t (1074790416), "area", J.script.T.t (1073741842), "aromatic", J.script.T.t (1076887572), "arrow", J.script.T.t (1073741846), "auto", J.script.T.t (1073741852), "barb", J.script.T.t (1073741861), "binary", J.script.T.t (1073741866), "blockData", J.script.T.t (1073741868), "cancel", J.script.T.t (1073741874), "cap", J.script.T.t (1074790451), "cavity", J.script.T.t (1073741876), "centroid", J.script.T.t (1073741877), "check", J.script.T.t (1073741878), "chemical", J.script.T.t (1073741879), "circle", J.script.T.t (1073741880), "collapsed", J.script.T.t (1073741886), "col", J.script.T.t (1276117512), "colorScheme", J.script.T.t (1073741888), "command", J.script.T.t (1073741890), "commands", J.script.T.t (1073741892), "contour", J.script.T.t (1073741896), "contours", J.script.T.t (1073741900), "corners", J.script.T.t (1073741902), "count", J.script.T.t (1276117011), "criterion", J.script.T.t (1073741905), "create", J.script.T.t (1073741904), "crossed", J.script.T.t (1073741906), "curve", J.script.T.t (1073741908), "cutoff", J.script.T.t (1073741910), "cylinder", J.script.T.t (1073741912), "diameter", J.script.T.t (1073741916), "discrete", J.script.T.t (1073741920), "distanceFactor", J.script.T.t (1073741924), "downsample", J.script.T.t (1073741928), "drawing", J.script.T.t (1073741929), "eccentricity", J.script.T.t (1073741930), "ed", J.script.T.t (1074790508), "edges", J.script.T.t (1073741934), "energy", J.script.T.t (1073741935), "exitJmol", J.script.T.t (266256), "faceCenterOffset", J.script.T.t (1073741937), "filter", J.script.T.t (1073741940), "first", J.script.T.t (1073741942), "fixed", J.script.T.t (1060869), "fix", null, "flat", J.script.T.t (1073741948), "fps", J.script.T.t (1074790526), "from", J.script.T.t (1073741952), "frontEdges", J.script.T.t (1073741956), "full", J.script.T.t (1073741961), "fullPlane", J.script.T.t (1073741962), "functionXY", J.script.T.t (1073741966), "functionXYZ", J.script.T.t (1073741968), "gridPoints", J.script.T.t (1073741970), "homo", J.script.T.t (1073741973), "ignore", J.script.T.t (1073741976), "InChI", J.script.T.t (1073741977), "InChIKey", J.script.T.t (1073741978), "increment", J.script.T.t (1073741981), "insideout", J.script.T.t (1073741984), "interior", J.script.T.t (1073741986), "intersection", J.script.T.t (135267842), "intersect", null, "internal", J.script.T.t (1073741988), "lattice", J.script.T.t (1073741994), "line", J.script.T.t (1073741998), "lineData", J.script.T.t (1073742000), "link", J.script.T.t (1073741999), "lobe", J.script.T.t (1073742002), "lonePair", J.script.T.t (1073742004), "lp", J.script.T.t (1073742006), "lumo", J.script.T.t (1073742008), "manifest", J.script.T.t (1073742010), "mapProperty", J.script.T.t (1052700), "map", null, "maxSet", J.script.T.t (1073742014), "menu", J.script.T.t (1073742015), "minSet", J.script.T.t (1073742020), "modelBased", J.script.T.t (1073742028), "molecular", J.script.T.t (1073742029), "mrc", J.script.T.t (1073742033), "msms", J.script.T.t (1073742034), "name", J.script.T.t (1073742035), "nmr", J.script.T.t (1073742038), "noCross", J.script.T.t (1073742040), "noDebug", J.script.T.t (1073742041), "noEdges", J.script.T.t (1073742044), "noHead", J.script.T.t (1073742048), "noLoad", J.script.T.t (1073742050), "noPlane", J.script.T.t (1073742054), "object", J.script.T.t (1073742064), "obj", J.script.T.t (1073742062), "offset", J.script.T.t (1073742066), "offsetSide", J.script.T.t (1073742068), "once", J.script.T.t (1073742070), "orbital", J.script.T.t (1073742076), "atomicOrbital", J.script.T.t (1073741850), "packed", J.script.T.t (1073742080), "palindrome", J.script.T.t (1073742082), "parameters", J.script.T.t (1073742083), "path", J.script.T.t (1073742084), "pdb", J.script.T.t (1074790662), "period", J.script.T.t (1073742090), "periodic", null, "perpendicular", J.script.T.t (1073742092), "perp", null, "phase", J.script.T.t (1073742094), "pocket", J.script.T.t (1073742100), "pointsPerAngstrom", J.script.T.t (1073742104), "radical", J.script.T.t (1073742112), "rad", J.script.T.t (1073742111), "reference", J.script.T.t (1073742118), "remove", J.script.T.t (1073742119), "resolution", J.script.T.t (1073742122), "reverseColor", J.script.T.t (1073742124), "rotate45", J.script.T.t (1073742130), "selection", J.script.T.t (1073742140), "sigma", J.script.T.t (1073742146), "sign", J.script.T.t (1073742147), "silent", J.script.T.t (1073742148), "sphere", J.script.T.t (1073742154), "squared", J.script.T.t (1073742156), "stop", J.script.T.t (1073742162), "title", J.script.T.t (1073742166), "titleFormat", J.script.T.t (1073742168), "to", J.script.T.t (1074790746), "value", J.script.T.t (1073742188), "variable", J.script.T.t (1073742190), "variables", J.script.T.t (1073742192), "vertices", J.script.T.t (1073742194), "width", J.script.T.t (1073742196), "backgroundModel", J.script.T.t (536870914), "celShading", J.script.T.t (603979821), "debug", J.script.T.t (536870916), "defaultLattice", J.script.T.t (536870918), "measurements", J.script.T.t (537006096), "measurement", null, "scale3D", J.script.T.t (1610612740), "toggleLabel", J.script.T.t (1610612741), "userColorScheme", J.script.T.t (536870930), "timeout", J.script.T.t (536875070), "timeouts", null, "appletProxy", J.script.T.t (545259522), "atomTypes", J.script.T.t (545259524), "axesColor", J.script.T.t (545259526), "axis1Color", J.script.T.t (545259528), "axis2Color", J.script.T.t (545259530), "axis3Color", J.script.T.t (545259532), "backgroundColor", J.script.T.t (545259534), "bondmode", J.script.T.t (1610612737), "boundBoxColor", J.script.T.t (545259536), "boundingBoxColor", null, "currentLocalPath", J.script.T.t (545259538), "dataSeparator", J.script.T.t (545259540), "defaultAngleLabel", J.script.T.t (545259542), "defaultColorScheme", J.script.T.t (545259545), "defaultColors", null, "defaultDirectory", J.script.T.t (545259546), "defaultDistanceLabel", J.script.T.t (545259547), "defaultDropScript", J.script.T.t (545259548), "defaultLabelPDB", J.script.T.t (545259543), "defaultLabelXYZ", J.script.T.t (545259544), "defaultLoadFilter", J.script.T.t (545259549), "defaultLoadScript", J.script.T.t (545259550), "defaults", J.script.T.t (545259552), "defaultTorsionLabel", J.script.T.t (545259554), "defaultVDW", J.script.T.t (545259555), "edsUrlCutoff", J.script.T.t (545259556), "edsUrlFormat", J.script.T.t (545259557), "energyUnits", J.script.T.t (545259558), "fileCacheDirectory", J.script.T.t (545259559), "fontsize", J.script.T.t (1610612738), "helpPath", J.script.T.t (545259561), "hoverLabel", J.script.T.t (545259562), "language", J.script.T.t (545259564), "loadFormat", J.script.T.t (545259565), "loadLigandFormat", J.script.T.t (545259566), "logFile", J.script.T.t (545259567), "measurementUnits", J.script.T.t (545259568), "nmrUrlFormat", J.script.T.t (545259569), "pathForAllFiles", J.script.T.t (545259570), "picking", J.script.T.t (545259572), "pickingStyle", J.script.T.t (545259574), "pickLabel", J.script.T.t (545259576), "propertyColorScheme", J.script.T.t (545259578), "quaternionFrame", J.script.T.t (545259580), "smilesUrlFormat", J.script.T.t (545259582), "smiles2dImageFormat", J.script.T.t (545259584), "unitCellColor", J.script.T.t (545259586), "axesScale", J.script.T.t (570425346), "axisScale", null, "bondTolerance", J.script.T.t (570425348), "cameraDepth", J.script.T.t (570425350), "defaultDrawArrowScale", J.script.T.t (570425352), "defaultTranslucent", J.script.T.t (570425354), "dipoleScale", J.script.T.t (570425356), "ellipsoidAxisDiameter", J.script.T.t (570425358), "gestureSwipeFactor", J.script.T.t (570425359), "hbondsAngleMinimum", J.script.T.t (570425360), "hbondsDistanceMaximum", J.script.T.t (570425361), "hoverDelay", J.script.T.t (570425362), "loadAtomDataTolerance", J.script.T.t (570425363), "minBondDistance", J.script.T.t (570425364), "minimizationCriterion", J.script.T.t (570425365), "mouseDragFactor", J.script.T.t (570425366), "mouseWheelFactor", J.script.T.t (570425367), "navFPS", J.script.T.t (570425370), "navigationDepth", J.script.T.t (570425371), "navigationSlab", J.script.T.t (570425372), "navigationSpeed", J.script.T.t (570425374), "navX", J.script.T.t (570425376), "navY", J.script.T.t (570425378), "navZ", J.script.T.t (570425380), "pointGroupDistanceTolerance", J.script.T.t (570425382), "pointGroupLinearTolerance", J.script.T.t (570425384), "radius", J.script.T.t (1666189314), "rotationRadius", J.script.T.t (570425388), "scaleAngstromsPerInch", J.script.T.t (570425390), "sheetSmoothing", J.script.T.t (570425392), "slabRange", J.script.T.t (570425393), "solventProbeRadius", J.script.T.t (570425394), "spinFPS", J.script.T.t (570425396), "spinX", J.script.T.t (570425398), "spinY", J.script.T.t (570425400), "spinZ", J.script.T.t (570425402), "stereoDegrees", J.script.T.t (570425404), "strutDefaultRadius", J.script.T.t (570425406), "strutLengthMaximum", J.script.T.t (570425408), "vectorScale", J.script.T.t (1649410065), "vectorSymmetry", J.script.T.t (603979973), "vibrationPeriod", J.script.T.t (570425412), "vibrationScale", J.script.T.t (570425414), "visualRange", J.script.T.t (570425416), "ambientPercent", J.script.T.t (553648130), "ambient", null, "animationFps", J.script.T.t (553648132), "axesMode", J.script.T.t (553648134), "bondRadiusMilliAngstroms", J.script.T.t (553648136), "delayMaximumMs", J.script.T.t (553648138), "diffusePercent", J.script.T.t (553648142), "diffuse", null, "dotDensity", J.script.T.t (553648143), "dotScale", J.script.T.t (553648144), "ellipsoidDotCount", J.script.T.t (553648145), "helixStep", J.script.T.t (553648146), "hermiteLevel", J.script.T.t (553648147), "historyLevel", J.script.T.t (553648148), "lighting", J.script.T.t (1073741995), "logLevel", J.script.T.t (553648150), "meshScale", J.script.T.t (553648151), "minimizationSteps", J.script.T.t (553648152), "minPixelSelRadius", J.script.T.t (553648153), "percentVdwAtom", J.script.T.t (553648154), "perspectiveModel", J.script.T.t (553648155), "phongExponent", J.script.T.t (553648156), "pickingSpinRate", J.script.T.t (553648158), "propertyAtomNumberField", J.script.T.t (553648159), "propertyAtomNumberColumnCount", J.script.T.t (553648160), "propertyDataColumnCount", J.script.T.t (553648162), "propertyDataField", J.script.T.t (553648164), "repaintWaitMs", J.script.T.t (553648165), "ribbonAspectRatio", J.script.T.t (553648166), "scriptReportingLevel", J.script.T.t (553648168), "showScript", J.script.T.t (536870922), "smallMoleculeMaxAtoms", J.script.T.t (553648170), "specular", J.script.T.t (536870924), "specularExponent", J.script.T.t (553648172), "specularPercent", J.script.T.t (553648174), "specPercent", null, "specularPower", J.script.T.t (553648176), "specpower", null, "strandCount", J.script.T.t (553648178), "strandCountForMeshRibbon", J.script.T.t (553648180), "strandCountForStrands", J.script.T.t (553648182), "strutSpacing", J.script.T.t (553648184), "zDepth", J.script.T.t (553648186), "zSlab", J.script.T.t (553648188), "zshadePower", J.script.T.t (553648190), "allowEmbeddedScripts", J.script.T.t (603979778), "allowGestures", J.script.T.t (603979780), "allowKeyStrokes", J.script.T.t (603979781), "allowModelKit", J.script.T.t (603979782), "allowMoveAtoms", J.script.T.t (603979783), "allowMultiTouch", J.script.T.t (603979784), "allowRotateSelected", J.script.T.t (603979785), "antialiasDisplay", J.script.T.t (603979786), "antialiasImages", J.script.T.t (603979788), "antialiasTranslucent", J.script.T.t (603979790), "appendNew", J.script.T.t (603979792), "applySymmetryToBonds", J.script.T.t (603979794), "atomPicking", J.script.T.t (603979796), "autobond", J.script.T.t (603979798), "autoFPS", J.script.T.t (603979800), "axesMolecular", J.script.T.t (603979804), "axesOrientationRasmol", J.script.T.t (603979806), "axesUnitCell", J.script.T.t (603979808), "axesWindow", J.script.T.t (603979810), "bondModeOr", J.script.T.t (603979812), "bondPicking", J.script.T.t (603979814), "bonds", J.script.T.t (1678770178), "bond", null, "cartoonBaseEdges", J.script.T.t (603979817), "cartoonsFancy", J.script.T.t (603979819), "cartoonFancy", null, "cartoonLadders", J.script.T.t (603979820), "cartoonRockets", J.script.T.t (603979818), "chainCaseSensitive", J.script.T.t (603979822), "colorRasmol", J.script.T.t (603979823), "debugScript", J.script.T.t (603979824), "defaultStructureDssp", J.script.T.t (603979825), "disablePopupMenu", J.script.T.t (603979826), "displayCellParameters", J.script.T.t (603979828), "dotsSelectedOnly", J.script.T.t (603979829), "dotSurface", J.script.T.t (603979830), "dragSelected", J.script.T.t (603979831), "drawHover", J.script.T.t (603979832), "drawPicking", J.script.T.t (603979833), "dsspCalculateHydrogenAlways", J.script.T.t (603979834), "dynamicMeasurements", J.script.T.t (603979835), "ellipsoidArcs", J.script.T.t (603979836), "ellipsoidAxes", J.script.T.t (603979837), "ellipsoidBall", J.script.T.t (603979838), "ellipsoidDots", J.script.T.t (603979839), "ellipsoidFill", J.script.T.t (603979840), "fileCaching", J.script.T.t (603979842), "fontCaching", J.script.T.t (603979844), "fontScaling", J.script.T.t (603979845), "forceAutoBond", J.script.T.t (603979846), "fractionalRelative", J.script.T.t (603979848), "greyscaleRendering", J.script.T.t (603979850), "hbondsBackbone", J.script.T.t (603979852), "hbondsRasmol", J.script.T.t (603979853), "hbondsSolid", J.script.T.t (603979854), "hetero", J.script.T.t (1613758470), "hideNameInPopup", J.script.T.t (603979858), "hideNavigationPoint", J.script.T.t (603979860), "hideNotSelected", J.script.T.t (603979862), "highResolution", J.script.T.t (603979864), "hydrogen", J.script.T.t (1613758476), "hydrogens", null, "imageState", J.script.T.t (603979868), "isKiosk", J.script.T.t (603979869), "isosurfaceKey", J.script.T.t (603979870), "isosurfacePropertySmoothing", J.script.T.t (603979871), "isosurfacePropertySmoothingPower", J.script.T.t (553648149), "justifyMeasurements", J.script.T.t (603979872), "languageTranslation", J.script.T.t (603979873), "legacyAutoBonding", J.script.T.t (603979874), "logCommands", J.script.T.t (603979875), "logGestures", J.script.T.t (603979876), "measureAllModels", J.script.T.t (603979877), "measurementLabels", J.script.T.t (603979878), "measurementNumbers", J.script.T.t (1610612739), "messageStyleChime", J.script.T.t (603979879), "minimizationRefresh", J.script.T.t (603979880), "minimizationSilent", J.script.T.t (603979881), "modelkitMode", J.script.T.t (603979882), "monitorEnergy", J.script.T.t (603979883), "multipleBondRadiusFactor", J.script.T.t (570425368), "multipleBondSpacing", J.script.T.t (570425369), "multiProcessor", J.script.T.t (603979884), "navigateSurface", J.script.T.t (603979885), "navigationMode", J.script.T.t (603979886), "navigationPeriodic", J.script.T.t (603979887), "partialDots", J.script.T.t (603979888), "pdbAddHydrogens", J.script.T.t (603979889), "pdbGetHeader", J.script.T.t (603979890), "pdbSequential", J.script.T.t (603979891), "perspectiveDepth", J.script.T.t (603979892), "preserveState", J.script.T.t (603979893), "rangeSelected", J.script.T.t (603979894), "redoMove", J.script.T.t (4139), "refreshing", J.script.T.t (603979896), "ribbonBorder", J.script.T.t (603979898), "rocketBarrels", J.script.T.t (603979900), "saveProteinStructureState", J.script.T.t (603979902), "scriptQueue", J.script.T.t (603979904), "selectAllModels", J.script.T.t (603979906), "selectHetero", J.script.T.t (603979908), "selectHydrogen", J.script.T.t (603979910), "showAxes", J.script.T.t (603979914), "showBoundBox", J.script.T.t (603979916), "showBoundingBox", null, "showFrank", J.script.T.t (603979918), "showHiddenSelectionHalos", J.script.T.t (603979920), "showHydrogens", J.script.T.t (603979922), "showKeyStrokes", J.script.T.t (603979924), "showMeasurements", J.script.T.t (603979926), "showMultipleBonds", J.script.T.t (603979928), "showNavigationPointAlways", J.script.T.t (603979930), "showTiming", J.script.T.t (603979934), "showUnitcell", J.script.T.t (603979936), "slabByAtom", J.script.T.t (603979938), "slabByMolecule", J.script.T.t (603979940), "slabEnabled", J.script.T.t (603979942), "smartAromatic", J.script.T.t (603979944), "solvent", J.script.T.t (1613758488), "solventProbe", J.script.T.t (603979948), "ssBondsBackbone", J.script.T.t (603979952), "statusReporting", J.script.T.t (603979954), "strutsMultiple", J.script.T.t (603979955), "syncMouse", J.script.T.t (603979956), "syncScript", J.script.T.t (603979958), "testFlag1", J.script.T.t (603979960), "testFlag2", J.script.T.t (603979962), "testFlag3", J.script.T.t (603979964), "testFlag4", J.script.T.t (603979965), "traceAlpha", J.script.T.t (603979966), "twistedSheets", J.script.T.t (603979968), "undo", J.script.T.t (536870928), "undoMove", J.script.T.t (4165), "useArcBall", J.script.T.t (603979969), "useMinimizationThread", J.script.T.t (603979970), "useNumberLocalization", J.script.T.t (603979972), "waitForMoveTo", J.script.T.t (603979974), "windowCentered", J.script.T.t (603979975), "wireframeRotation", J.script.T.t (603979976), "zeroBasedXyzRasmol", J.script.T.t (603979978), "zoomEnabled", J.script.T.t (603979980), "zoomHeight", J.script.T.t (603979982), "zoomLarge", J.script.T.t (603979983), "zShade", J.script.T.t (603979984)];
 var tokenLast = null;
 var stringThis;
 var tokenThis;
@@ -20826,6 +20826,7 @@ return this.viewerOptions;
 });
 $_M(c$, "setOptions", 
 ($fz = function (info) {
+//alert("viewer setoptions " + arguments.callee.caller.caller.caller.caller + " " + info)
 this.viewerOptions = info;
 if (J.util.Logger.debugging) {
 J.util.Logger.debug ("Viewer constructor " + this);
@@ -20866,9 +20867,12 @@ this.isJS = this.isWebGL || (platform.indexOf (".awtjs2d.") >= 0);
 o = J.api.Interface.getInterface (platform);
 }this.apiPlatform = o;
 this.display = info.get ("display");
+//alert("viewer display="+this.display)
 this.isSingleThreaded = this.apiPlatform.isSingleThreaded ();
 this.$noGraphicsAllowed = this.checkOption2 ("noGraphics", "-n");
-this.haveDisplay = (this.display != null && !this.$noGraphicsAllowed && !this.isHeadless () && !this.checkOption2 ("isDataOnly", "\0"));
+this.haveDisplay = (this.isWebGL || this.display != null && !this.$noGraphicsAllowed && !this.isHeadless () && !this.checkOption2 ("isDataOnly", "\0"));
+
+
 this.$noGraphicsAllowed = new Boolean (this.$noGraphicsAllowed & (this.display == null)).valueOf ();
 if (this.haveDisplay) {
 this.mustRender = true;
@@ -23495,7 +23499,7 @@ $_M(c$, "getImage",
 if (this.isWebGL)return null;
 }var image = null;
 try {
-this.gdata.beginRendering (this.transformManager.getStereoRotationMatrix (isDouble), isImageWrite);
+this.beginRendering (isDouble, isImageWrite);
 this.render ();
 this.gdata.endRendering ();
 image = this.gdata.getScreenImage (isImageWrite);
@@ -23509,6 +23513,10 @@ throw er;
 }
 }
 return image;
+}, $fz.isPrivate = true, $fz), "~B,~B");
+$_M(c$, "beginRendering", 
+($fz = function (isDouble, isImageWrite) {
+this.gdata.beginRendering (this.transformManager.getStereoRotationMatrix (isDouble), this.global.translucent, isImageWrite);
 }, $fz.isPrivate = true, $fz), "~B,~B");
 $_M(c$, "isAntialiased", 
 function () {
@@ -23546,11 +23554,11 @@ if (this.isWebGL)return null
 var mergeImages = (graphic == null && this.isStereoDouble ());
 var imageBuffer;
 if (this.transformManager.stereoMode.isBiColor ()) {
-this.gdata.beginRendering (this.transformManager.getStereoRotationMatrix (true), isImageWrite);
+this.beginRendering (true, isImageWrite);
 this.render ();
 this.gdata.endRendering ();
 this.gdata.snapshotAnaglyphChannelBytes ();
-this.gdata.beginRendering (this.transformManager.getStereoRotationMatrix (false), isImageWrite);
+this.beginRendering (false, isImageWrite);
 this.render ();
 this.gdata.endRendering ();
 this.gdata.applyAnaglygh (this.transformManager.stereoMode, this.transformManager.stereoColors);
@@ -23742,7 +23750,15 @@ return J.util.TextFormat.formatStringS (s, "FILE", f);
 case ':':
 format = this.global.pubChemFormat;
 var fl = f.toLowerCase ();
-var fi = J.util.Parser.parseInt (f);
+var fi = -2147483648;
+try {
+fi = Integer.parseInt (f);
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+} else {
+throw e;
+}
+}
 if (fi != -2147483648) {
 f = "cid/" + fi;
 } else {
@@ -24451,8 +24467,10 @@ case 603979952:
 return this.global.ssbondsBackbone;
 case 603979955:
 return this.global.strutsMultiple;
-case 603979967:
+case 603979966:
 return this.global.traceAlpha;
+case 603979967:
+return this.global.translucent;
 case 603979968:
 return this.global.twistedSheets;
 case 603979973:
@@ -25049,7 +25067,7 @@ return;
 }var tok = J.script.T.getTokFromName (key);
 switch (J.script.T.getParamType (tok)) {
 case 545259520:
-this.setStringPropertyTok (key, tok, "" + value);
+this.setStringPropertyTok (key, tok, "");
 break;
 case 553648128:
 this.setIntPropertyTok (key, tok, value ? 1 : 0);
@@ -25065,6 +25083,9 @@ $_M(c$, "setBooleanPropertyTok",
 ($fz = function (key, tok, value) {
 var doRepaint = true;
 switch (tok) {
+case 603979967:
+this.global.translucent = value;
+break;
 case 603979820:
 this.global.cartoonLadders = value;
 break;
@@ -25344,7 +25365,7 @@ return;
 case 603979864:
 this.global.highResolutionFlag = value;
 break;
-case 603979967:
+case 603979966:
 this.global.traceAlpha = value;
 break;
 case 603979983:
@@ -25400,7 +25421,7 @@ break;
 case 603979964:
 this.global.testFlag3 = value;
 break;
-case 603979966:
+case 603979965:
 this.jmolTest ();
 this.global.testFlag4 = value;
 break;
@@ -30202,6 +30223,7 @@ return atom.anisoBorU;
 $_M(c$, "setEllipsoids", 
 function () {
 if (!this.haveAnisou) return;
+this.getSymmetry ();
 var iAtomFirst = this.getLastAtomSetAtomIndex ();
 for (var i = iAtomFirst; i < this.atomCount; i++) this.atoms[i].setEllipsoid (this.symmetry.getEllipsoid (this.atoms[i].anisoBorU));
 
@@ -32451,6 +32473,10 @@ if (this.trajectorySteps == null) this.htParams.put ("trajectorySteps", this.tra
 });
 $_M(c$, "finalizeReader", 
 function () {
+this.finalizeReaderASCR ();
+});
+$_M(c$, "finalizeReaderASCR", 
+function () {
 this.applySymmetryAndSetTrajectory ();
 this.setLoadNote ();
 if (this.doCentralize) this.atomSetCollection.centralize ();
@@ -32847,6 +32873,10 @@ this.addSiteScript ("site_list = \"" + sites + "\".split(\",\")");
 }, "java.util.Map");
 $_M(c$, "applySymmetryAndSetTrajectory", 
 function () {
+this.applySymTrajASCR ();
+});
+$_M(c$, "applySymTrajASCR", 
+function () {
 if (this.iHaveUnitCell && this.doCheckUnitCell) {
 this.atomSetCollection.setCoordinatesAreFractional (this.iHaveFractionalCoordinates);
 this.atomSetCollection.setNotionalUnitCell (this.notionalUnitCell, this.matUnitCellOrientation, this.unitCellOffset);
@@ -33047,6 +33077,10 @@ this.siteScript += script;
 this.atomSetCollection.setAtomSetCollectionAuxiliaryInfo ("sitescript", this.siteScript);
 }, "~S");
 $_M(c$, "readLine", 
+function () {
+return this.RL ();
+});
+$_M(c$, "RL", 
 function () {
 this.prevline = this.line;
 this.line = this.reader.readLine ();
@@ -45170,6 +45204,7 @@ Clazz.declarePackage ("J.util");
 Clazz.load (["J.api.JmolGraphicsInterface"], "J.util.GData", ["J.util.ArrayUtil", "$.C", "$.JmolFont", "$.Shader"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.apiPlatform = null;
+this.translucentCoverOnly = false;
 this.windowWidth = 0;
 this.windowHeight = 0;
 this.displayMinX = 0;
@@ -45207,6 +45242,14 @@ Clazz.instantialize (this, arguments);
 }, J.util, "GData", null, J.api.JmolGraphicsInterface);
 Clazz.prepareFields (c$, function () {
 this.changeableColixMap =  Clazz.newShortArray (16, 0);
+});
+$_M(c$, "setTranslucentCoverOnly", 
+function (TF) {
+this.translucentCoverOnly = TF;
+}, "~B");
+$_M(c$, "getTranslucentCoverOnly", 
+function () {
+return this.translucentCoverOnly;
 });
 Clazz.makeConstructor (c$, 
 function () {
@@ -45497,8 +45540,8 @@ this.displayMaxY = this.height - this.displayMinY;
 this.bufferSize = this.width * this.height;
 }, "~B");
 $_M(c$, "beginRendering", 
-function (stereoRotationMatrix, isImageWrite) {
-}, "J.util.Matrix3f,~B");
+function (stereoRotationMatrix, translucentMode, isImageWrite) {
+}, "J.util.Matrix3f,~B,~B");
 $_M(c$, "endRendering", 
 function () {
 });
@@ -48046,6 +48089,7 @@ $_M(c$, "setCommonDefaults",
 this.viewer.setBooleanProperty ("perspectiveDepth", true);
 this.viewer.setFloatProperty ("bondTolerance", 0.45);
 this.viewer.setFloatProperty ("minBondDistance", 0.4);
+this.viewer.setBooleanProperty ("translucent", true);
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "setJmolDefaults", 
 function () {
@@ -48532,6 +48576,7 @@ this.ribbonBorder = false;
 this.rocketBarrels = false;
 this.sheetSmoothing = 1;
 this.traceAlpha = true;
+this.translucent = true;
 this.twistedSheets = false;
 this.allowGestures = false;
 this.allowModelkit = true;
@@ -48939,6 +48984,7 @@ this.setB ("testFlag2", this.testFlag2);
 this.setB ("testFlag3", this.testFlag3);
 this.setB ("testFlag4", this.testFlag4);
 this.setB ("traceAlpha", this.traceAlpha);
+this.setB ("translucent", this.translucent);
 this.setB ("twistedSheets", this.twistedSheets);
 this.setB ("useArcBall", this.useArcBall);
 this.setB ("useMinimizationThread", this.useMinimizationThread);
@@ -56808,7 +56854,6 @@ this.anaglyphChannelBytes = null;
 this.twoPass = false;
 this.addAllPixels = false;
 this.$haveTranslucentObjects = false;
-this.translucentCoverOnly = false;
 this.pbuf = null;
 this.pbufT = null;
 this.zbuf = null;
@@ -56863,10 +56908,6 @@ Clazz.overrideMethod (c$, "getGData",
 function () {
 return this;
 });
-Clazz.overrideMethod (c$, "setTranslucentCoverOnly", 
-function (TF) {
-this.translucentCoverOnly = TF;
-}, "~B");
 $_M(c$, "setZMargin", 
 function (dz) {
 this.zMargin = dz;
@@ -56902,7 +56943,7 @@ if (isAlphaTranslucent) this.$haveTranslucentObjects = true;
 return (!this.twoPass || this.twoPass && (this.$isPass2 == isAlphaTranslucent));
 }, "~B");
 Clazz.overrideMethod (c$, "beginRendering", 
-function (rotationMatrix, isImageWrite) {
+function (rotationMatrix, translucentMode, isImageWrite) {
 if (this.$currentlyRendering) this.endRendering ();
 if (this.windowWidth != this.newWindowWidth || this.windowHeight != this.newWindowHeight || this.newAntialiasing != this.isFullSceneAntialiasingEnabled) {
 this.windowWidth = this.newWindowWidth;
@@ -56919,6 +56960,7 @@ this.twoPass = true;
 this.$isPass2 = false;
 this.colixCurrent = 0;
 this.$haveTranslucentObjects = false;
+this.translucentCoverOnly = !translucentMode;
 this.addAllPixels = true;
 if (this.pbuf == null) {
 this.platform.allocateBuffers (this.windowWidth, this.windowHeight, this.antialiasThisFrame, isImageWrite);
@@ -56927,7 +56969,7 @@ this.zbuf = this.platform.zBuffer;
 }this.setWidthHeight (this.antialiasThisFrame);
 this.platform.clearBuffer ();
 if (this.backgroundImage != null) this.plotImage (-2147483648, 0, -2147483648, this.backgroundImage, null, 0, 0, 0);
-}, "J.util.Matrix3f,~B");
+}, "J.util.Matrix3f,~B,~B");
 Clazz.overrideMethod (c$, "setBackgroundTransparent", 
 function (TF) {
 if (this.platform != null) this.platform.setBackgroundTransparent (TF);
@@ -60098,11 +60140,11 @@ break;
 zPixel = Clazz.doubleToInt (this.zroot[iRoot]);
 if (zPixel == 0) zPixel = this.z;
 mode = 2;
+this.z0 = zPixel;
 if (checkOctant) {
 this.ptTemp.set (xCurrent - this.x, yCurrent - this.y, zPixel - this.z);
 this.mat.transform (this.ptTemp);
 var thisOctant = J.util.Quadric.getOctant (this.ptTemp);
-this.z0 = zPixel;
 if (thisOctant == this.selectedOctant) {
 iShade = this.getPlaneShade (xCurrent, yCurrent, this.zroot);
 zPixel = Clazz.doubleToInt (this.zroot[0]);
@@ -60111,8 +60153,8 @@ mode = 3;
 if (isCore) {
 this.z0 = zPixel = this.slab;
 mode = 0;
-}if (zPixel < this.slab || zPixel > this.depth || this.zbuf[offset] <= this.z0) continue;
-}} else {
+}}if (zPixel < this.slab || zPixel > this.depth || this.zbuf[offset] <= this.z0) continue;
+} else {
 var zOffset = Clazz.doubleToInt (Math.sqrt (s2 - j2));
 zPixel = this.z + (this.z < this.slab ? zOffset : -zOffset);
 var isCore = (this.z < this.slab ? zPixel >= this.slab : zPixel < this.slab);
@@ -60887,7 +60929,7 @@ return g3dExport.finalizeOutput ();
 //// J\shape\AtomShape.js 
 // 
 Clazz.declarePackage ("J.shape");
-Clazz.load (["J.shape.Shape"], "J.shape.AtomShape", ["J.atomdata.RadiusData", "J.constant.EnumPalette", "J.util.ArrayUtil", "$.BS", "$.BSUtil", "$.C"], function () {
+Clazz.load (["J.shape.Shape"], "J.shape.AtomShape", ["J.atomdata.RadiusData", "J.constant.EnumPalette", "$.EnumVdw", "J.util.ArrayUtil", "$.BS", "$.BSUtil", "$.C"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.mad = -1;
 this.mads = null;
@@ -60898,6 +60940,7 @@ this.atoms = null;
 this.isActive = false;
 this.monomerCount = 0;
 this.bsSizeDefault = null;
+this.rd = null;
 Clazz.instantialize (this, arguments);
 }, J.shape, "AtomShape", J.shape.Shape);
 $_M(c$, "getMonomers", 
@@ -60922,7 +60965,12 @@ this.setSize2 (size, bsSelected);
 }, "~N,J.util.BS");
 $_M(c$, "setSize2", 
 function (size, bsSelected) {
-this.setSizeRD (size == 0 ? null :  new J.atomdata.RadiusData (null, size, J.atomdata.RadiusData.EnumType.SCREEN, null), bsSelected);
+if (size == 0) {
+this.setSizeRD (null, bsSelected);
+return;
+}if (this.rd == null) this.rd =  new J.atomdata.RadiusData (null, size, J.atomdata.RadiusData.EnumType.SCREEN, null);
+ else this.rd.value = size;
+this.setSizeRD (this.rd, bsSelected);
 }, "~N,J.util.BS");
 Clazz.overrideMethod (c$, "setSizeRD", 
 function (rd, bsSelected) {
@@ -60933,13 +60981,16 @@ var isVisible = (rd != null && rd.value != 0);
 var isAll = (bsSelected == null);
 var i0 = (isAll ? this.atomCount - 1 : bsSelected.nextSetBit (0));
 if (this.mads == null && i0 >= 0) this.mads =  Clazz.newShortArray (this.atomCount, 0);
-for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsSelected.nextSetBit (i + 1))) {
+for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsSelected.nextSetBit (i + 1))) this.setSizeRD2 (i, rd, isVisible);
+
+}, "J.atomdata.RadiusData,J.util.BS");
+$_M(c$, "setSizeRD2", 
+function (i, rd, isVisible) {
 var atom = this.atoms[i];
 this.mads[i] = atom.calculateMad (this.viewer, rd);
 this.bsSizeSet.setBitTo (i, isVisible);
 atom.setShapeVisibility (this.myVisibilityFlag, isVisible);
-}
-}, "J.atomdata.RadiusData,J.util.BS");
+}, "~N,J.atomdata.RadiusData,~B");
 $_M(c$, "setPropAS", 
 function (propertyName, value, bs) {
 if ("color" === propertyName) {
@@ -60950,17 +61001,26 @@ if (this.bsColixSet == null) this.bsColixSet =  new J.util.BS ();
 for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) this.setColixAndPalette (colix, pid, i);
 
 return;
-}if ("colors" === propertyName) {
+}if ("params" === propertyName) {
 this.isActive = true;
 var data = value;
 var colixes = data[0];
-var translucency = (data[1]).floatValue ();
+var atrans = data[1];
+var sizes = data[2];
+var rd =  new J.atomdata.RadiusData (null, 0, J.atomdata.RadiusData.EnumType.FACTOR, J.constant.EnumVdw.AUTO);
 if (this.bsColixSet == null) this.bsColixSet =  new J.util.BS ();
-for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
-if (i >= colixes.length) continue;
-var colix = colixes[i];
-if (translucency > 0.01) colix = J.util.C.getColixTranslucent3 (colix, true, translucency);
+if (this.bsSizeSet == null) this.bsSizeSet =  new J.util.BS ();
+var i0 = bs.nextSetBit (0);
+if (this.mads == null && i0 >= 0) this.mads =  Clazz.newShortArray (this.atomCount, 0);
+for (var i = i0, pt = 0; i >= 0; i = bs.nextSetBit (i + 1), pt++) {
+var colix = (colixes == null ? 0 : colixes[pt]);
+if (colix == 0) colix = 0;
+var f = (atrans == null ? 0 : atrans[pt]);
+if (f > 0.01) colix = J.util.C.getColixTranslucent3 (colix, true, f);
 this.setColixAndPalette (colix, J.constant.EnumPalette.UNKNOWN.id, i);
+if (sizes == null) continue;
+var isVisible = ((rd.value = sizes[pt]) > 0);
+this.setSizeRD2 (i, rd, isVisible);
 }
 return;
 }if ("translucency" === propertyName) {
@@ -63297,11 +63357,15 @@ throw e;
 }
 }}
 }, $fz.isPrivate = true, $fz), "~N");
-$_M(c$, "finalizeReader", 
+Clazz.overrideMethod (c$, "finalizeReader", 
+function () {
+this.finalizeReaderMR ();
+});
+$_M(c$, "finalizeReaderMR", 
 function () {
 if (this.is2D) this.set2D ();
 this.isTrajectory = false;
-Clazz.superCall (this, J.adapter.readers.molxyz.MolReader, "finalizeReader", []);
+this.finalizeReaderASCR ();
 });
 $_M(c$, "processMolSdHeader", 
 function () {
@@ -63509,10 +63573,10 @@ this.skipAtomSet (modelAtomCount);
 }this.discardLinesUntilNonBlank ();
 return false;
 });
-$_M(c$, "finalizeReader", 
+Clazz.overrideMethod (c$, "finalizeReader", 
 function () {
 this.isTrajectory = false;
-Clazz.superCall (this, J.adapter.readers.molxyz.XyzReader, "finalizeReader", []);
+this.finalizeReaderASCR ();
 });
 $_M(c$, "skipAtomSet", 
 ($fz = function (modelAtomCount) {
@@ -65469,7 +65533,7 @@ this.currentMesh.color = this.color;
 }this.setTokenProperty (1766856708, false, false);
 return;
 }if ("translucency" === propertyName) {
-this.setTokenProperty (1073742180, ((value).equals ("translucent")), false);
+this.setTokenProperty (603979967, ((value).equals ("translucent")), false);
 return;
 }if ("hidden" === propertyName) {
 value = Integer.$valueOf ((value).booleanValue () ? 1048588 : 1048589);
@@ -65564,7 +65628,7 @@ return;
 case 1766856708:
 m.colix = this.colix;
 return;
-case 1073742180:
+case 603979967:
 m.setTranslucent (bProp, this.translucentLevel);
 if (bProp && m.bsSlabGhost != null) m.resetSlab ();
 return;
@@ -66990,6 +67054,10 @@ function (TF) {
 Clazz.overrideMethod (c$, "renderAllStrings", 
 function (jmolRenderer) {
 }, "~O");
+Clazz.overrideMethod (c$, "getTranslucentCoverOnly", 
+function () {
+return this.g3d.getTranslucentCoverOnly ();
+});
 });
 // 
 //// J\exportjs\Exporter.js 

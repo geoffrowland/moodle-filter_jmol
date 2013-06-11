@@ -115,7 +115,8 @@ this.pt2f.scale (0.5);
 this.viewer.transformPt3f (this.pt2f, this.pt2f);
 var r = this.viewer.scaleToScreen (Clazz.floatToInt (this.pt2f.z), Math.round (points[0].distance (points[1]) * 500));
 mySlabValue = Math.round (this.pt2f.z + r * (1 - meshSlabValue / 50));
-}}this.g3d.setTranslucentCoverOnly (this.imesh.frontOnly);
+}}var tcover = this.g3d.getTranslucentCoverOnly ();
+this.g3d.setTranslucentCoverOnly (this.imesh.frontOnly || !this.viewer.getBoolean (603979967));
 this.thePlane = this.imesh.jvxlData.jvxlPlane;
 this.vertexValues = this.imesh.vertexValues;
 var isOK;
@@ -125,7 +126,7 @@ isOK = this.renderMesh (this.imesh);
 this.g3d.setSlab (slabValue);
 } else {
 isOK = this.renderMesh (this.imesh);
-}this.g3d.setTranslucentCoverOnly (false);
+}this.g3d.setTranslucentCoverOnly (tcover);
 return isOK;
 }, $fz.isPrivate = true, $fz), "~N,~N");
 Clazz.overrideMethod (c$, "render2", 

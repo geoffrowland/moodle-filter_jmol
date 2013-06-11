@@ -76,9 +76,9 @@ return false;
 }if (this.line.indexOf ("5D shell") >= 0) this.moData.put ("calculationType", this.calculationType = this.line);
 return true;
 });
-$_M(c$, "finalizeReader", 
+Clazz.overrideMethod (c$, "finalizeReader", 
 function () {
-Clazz.superCall (this, J.adapter.readers.quantum.SpartanSmolReader, "finalizeReader", []);
+this.finalizeReaderASCR ();
 if (this.atomCount > 0 && this.spartanArchive != null && this.atomSetCollection.getBondCount () == 0 && this.bondData != null) this.spartanArchive.addBonds (this.bondData, 0);
 if (this.moData != null) {
 var n = this.atomSetCollection.getAtomSetCollectionAuxiliaryInfo ("HOMO_N");

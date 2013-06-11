@@ -114,7 +114,6 @@ case 1141899265:
 this.id = 0;
 break;
 case 0:
-color = "colorballs";
 break;
 case 10:
 case 9:
@@ -131,6 +130,22 @@ if (!this.visible) return;
 break;
 }
 switch (this.id) {
+case 1113200654:
+this.id = 10;
+if (this.info != null) sm.setShapePropertyBs (this.id, "putty", this.info, this.bsAtoms);
+break;
+case 16:
+case 0:
+case 7:
+case 20:
+case 11:
+case 9:
+case 10:
+case 24:
+if (Clazz.instanceOf (this.info, Array)) {
+sm.loadShape (this.id);
+sm.setShapePropertyBs (this.id, "params", this.info, this.bsAtoms);
+}break;
 case 6:
 if (modelIndex < 0) return;
 sm.loadShape (this.id);
@@ -211,9 +226,6 @@ break;
 case 23:
 var cgo = this.info;
 sm.viewer.setCGO (cgo);
-break;
-case 10:
-if (this.info != null) sm.setShapePropertyBs (this.id, "putty", this.info, this.bsAtoms);
 break;
 }
 if (sb != null) {

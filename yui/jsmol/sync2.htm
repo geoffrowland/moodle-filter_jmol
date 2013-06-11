@@ -1,9 +1,22 @@
 <html>
 <head>
 <script type="text/javascript" src="JSmol.min.js"></script>
-<script type="text/javascript" src=Jmol.js></script>
+<script type="text/javascript" src=Jmol2.js></script>
 <script type="text/javascript">
 
+// demonstrating applet synchronization as well as using "legacy" Jmol.js calls. 
+// Jmol.info could be moved into Jmol2.js for sites that have many pages.
+
+Jmol.Info = {
+      
+      jarPath: "..",
+      jarFile: "JmolApplet0.jar",
+      j2sPath: "j2s",
+      use: "HTML5", // could be JAVA or HTML5
+			disableJ2SLoadMonitor: false,
+			disableInitialConsole: true
+      
+}
 //Jmol.debugCode = true
 
 function doLoad() {

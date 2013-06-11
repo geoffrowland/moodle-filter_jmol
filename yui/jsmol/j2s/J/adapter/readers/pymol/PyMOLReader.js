@@ -44,7 +44,7 @@ Clazz.prepareFields (c$, function () {
 this.bsStructureDefined =  new J.util.BS ();
 this.xyzMin = J.util.P3.new3 (1e6, 1e6, 1e6);
 this.xyzMax = J.util.P3.new3 (-1000000.0, -1000000.0, -1000000.0);
-this.reps =  new Array (14);
+this.reps =  new Array (23);
 });
 $_M(c$, "initializeReader", 
 function () {
@@ -71,6 +71,11 @@ this.process (map);
 Clazz.overrideMethod (c$, "setAdditionalAtomParameters", 
 function (atom) {
 }, "J.adapter.smarter.Atom");
+Clazz.overrideMethod (c$, "finalizeReader", 
+function () {
+this.finalizeReaderPDB ();
+this.atomSetCollection.setEllipsoids ();
+});
 Clazz.overrideMethod (c$, "finalizeModelSet", 
 function (baseModelIndex, baseAtomIndex) {
 this.pymolScene.setReaderObjects (this.mepList, this.doCache, baseModelIndex, baseAtomIndex);
@@ -466,7 +471,7 @@ var bonds = this.getBondList (this.listAt (pymolObject, 6));
 var pymolAtoms = this.listAt (pymolObject, 7);
 this.atomMap =  Clazz.newIntArray (nAtoms, 0);
 var bsAtoms = this.pymolScene.setAtomMap (this.atomMap, this.atomCount0);
-for (var i = 0; i < 14; i++) this.reps[i] = J.util.BS.newN (1000);
+for (var i = 0; i < 23; i++) this.reps[i] = J.util.BS.newN (1000);
 
 var coords = this.listAt (state, 2);
 var labelPositions = this.listAt (state, 8);
@@ -559,9 +564,9 @@ var uniqueID = (a.size () > 40 && J.adapter.readers.pymol.PyMOLReader.intAt (a, 
 atom.vectorX = uniqueID;
 atom.vectorY = cartoonType;
 if (a.size () > 46) {
-var data = J.adapter.readers.pymol.PyMOLScene.floatsAt (a, 41,  Clazz.newFloatArray (7, 0), 6);
+var data = J.adapter.readers.pymol.PyMOLScene.floatsAt (a, 41,  Clazz.newFloatArray (8, 0), 6);
 this.atomSetCollection.setAnisoBorU (atom, data, 12);
-}this.pymolScene.setAtomColor (uniqueID, atomColor);
+}this.pymolScene.setAtomColor (atomColor);
 this.processAtom2 (atom, serNo, x, y, z, formalCharge);
 if (!bonded) this.pymolScene.bsNonbonded.set (this.$atomCount);
 if (!label.equals (" ")) {
@@ -570,7 +575,7 @@ var labelOffset = this.listAt (labelPositions, apt);
 this.pymolScene.addLabel (this.$atomCount, uniqueID, atomColor, labelOffset, label);
 }if (this.isHidden) this.pymolScene.bsHidden.set (this.$atomCount);
 if (isNucleic) this.pymolScene.bsNucleic.set (this.$atomCount);
-for (var i = 0; i < 12; i++) if (bsReps.get (i)) this.reps[i].set (this.$atomCount);
+for (var i = 0; i < 21; i++) if (bsReps.get (i)) this.reps[i].set (this.$atomCount);
 
 if (atom.elementSymbol.equals ("H")) this.pymolScene.bsHydrogen.set (this.$atomCount);
 if ((flags & J.adapter.readers.pymol.PyMOL.FLAG_NOSURFACE) != 0) this.pymolScene.bsNoSurface.set (this.$atomCount);
@@ -737,8 +742,10 @@ return map.get (key);
 c$.getBsReps = $_M(c$, "getBsReps", 
 ($fz = function (list) {
 var bsReps =  new J.util.BS ();
-for (var i = 0; i < 12; i++) if (J.adapter.readers.pymol.PyMOLReader.intAt (list, i) == 1) bsReps.set (i);
-
+var n = Math.min (list.size (), 21);
+for (var i = 0; i < n; i++) {
+if (J.adapter.readers.pymol.PyMOLReader.intAt (list, i) == 1) bsReps.set (i);
+}
 return bsReps;
 }, $fz.isPrivate = true, $fz), "J.util.JmolList");
 $_M(c$, "floatAt", 

@@ -48,8 +48,9 @@
 	}
 	
 	c._getIdForControl = function(appletOrId, script) {
+  //alert(appletOrId + " " + typeof appletOrId + " " + script + appletOrId._canScript)
 		return (typeof appletOrId == "string" ? appletOrId 
-		  : !script || appletOrId._canScript(script) ? appletOrId._id
+		  : !script || !appletOrId._canScript || appletOrId._canScript(script) ? appletOrId._id
 			: null);
 	}
 		

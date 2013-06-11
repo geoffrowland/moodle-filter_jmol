@@ -82,6 +82,7 @@ $_M(c$, "setCommonDefaults",
 this.viewer.setBooleanProperty ("perspectiveDepth", true);
 this.viewer.setFloatProperty ("bondTolerance", 0.45);
 this.viewer.setFloatProperty ("minBondDistance", 0.4);
+this.viewer.setBooleanProperty ("translucent", true);
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "setJmolDefaults", 
 function () {
@@ -568,6 +569,7 @@ this.ribbonBorder = false;
 this.rocketBarrels = false;
 this.sheetSmoothing = 1;
 this.traceAlpha = true;
+this.translucent = true;
 this.twistedSheets = false;
 this.allowGestures = false;
 this.allowModelkit = true;
@@ -975,6 +977,7 @@ this.setB ("testFlag2", this.testFlag2);
 this.setB ("testFlag3", this.testFlag3);
 this.setB ("testFlag4", this.testFlag4);
 this.setB ("traceAlpha", this.traceAlpha);
+this.setB ("translucent", this.translucent);
 this.setB ("twistedSheets", this.twistedSheets);
 this.setB ("useArcBall", this.useArcBall);
 this.setB ("useMinimizationThread", this.useMinimizationThread);

@@ -118,11 +118,11 @@ this.appendLoadNote ("Multipole Analysis");
 return true;
 }return true;
 });
-$_M(c$, "finalizeReader", 
+Clazz.overrideMethod (c$, "finalizeReader", 
 function () {
 if (this.vInputCoords != null) this.processInputCoords ();
 if (this.energy != null) this.setEnergy ();
-Clazz.superCall (this, J.adapter.readers.xtal.CrystalReader, "finalizeReader", []);
+this.finalizeReaderASCR ();
 });
 $_M(c$, "setDirect", 
 ($fz = function () {

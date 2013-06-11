@@ -106,7 +106,7 @@ if (this.cartoonsFancy && val >= 16) val = 4;
 if (this.hermiteLevel == 0) val = 0;
 if (val != this.aspectRatio && val != 0 && val1 != 0) this.invalidateMesh = true;
 this.aspectRatio = val;
-TF = this.viewer.getBoolean (603979967);
+TF = this.viewer.getBoolean (603979966);
 if (TF != this.isTraceAlpha) this.invalidateMesh = true;
 this.isTraceAlpha = TF;
 this.invalidateSheets = false;

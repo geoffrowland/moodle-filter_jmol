@@ -176,6 +176,10 @@ if (this.trajectorySteps == null) this.htParams.put ("trajectorySteps", this.tra
 });
 $_M(c$, "finalizeReader", 
 function () {
+this.finalizeReaderASCR ();
+});
+$_M(c$, "finalizeReaderASCR", 
+function () {
 this.applySymmetryAndSetTrajectory ();
 this.setLoadNote ();
 if (this.doCentralize) this.atomSetCollection.centralize ();
@@ -572,6 +576,10 @@ this.addSiteScript ("site_list = \"" + sites + "\".split(\",\")");
 }, "java.util.Map");
 $_M(c$, "applySymmetryAndSetTrajectory", 
 function () {
+this.applySymTrajASCR ();
+});
+$_M(c$, "applySymTrajASCR", 
+function () {
 if (this.iHaveUnitCell && this.doCheckUnitCell) {
 this.atomSetCollection.setCoordinatesAreFractional (this.iHaveFractionalCoordinates);
 this.atomSetCollection.setNotionalUnitCell (this.notionalUnitCell, this.matUnitCellOrientation, this.unitCellOffset);
@@ -772,6 +780,10 @@ this.siteScript += script;
 this.atomSetCollection.setAtomSetCollectionAuxiliaryInfo ("sitescript", this.siteScript);
 }, "~S");
 $_M(c$, "readLine", 
+function () {
+return this.RL ();
+});
+$_M(c$, "RL", 
 function () {
 this.prevline = this.line;
 this.line = this.reader.readLine ();

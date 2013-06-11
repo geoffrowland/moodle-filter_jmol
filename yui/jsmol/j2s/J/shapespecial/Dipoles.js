@@ -112,7 +112,7 @@ this.setColixDipole (this.colix, 1023, bs);
 this.setProperty (1766856708, false, 0, 0);
 }return;
 }if ("translucency" === propertyName) {
-this.setProperty (1073742180, this.isBond, (value.equals ("translucent") ? 1 : 0), 0);
+this.setProperty (603979967, this.isBond, (value.equals ("translucent") ? 1 : 0), 0);
 return;
 }if ("clear" === propertyName) {
 this.currentDipole = null;
@@ -215,7 +215,7 @@ return;
 case 1766856708:
 dipole.colix = this.colix;
 return;
-case 1073742180:
+case 603979967:
 dipole.setTranslucent (iValue == 1, this.translucentLevel);
 return;
 }

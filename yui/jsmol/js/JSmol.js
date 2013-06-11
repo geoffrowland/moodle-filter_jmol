@@ -231,6 +231,8 @@
       if (!applet._is2D)
 				applet._GLmol.applet = applet;
 			applet._jsSetScreenDimensions();
+      
+      
 			if(applet.aaScale && applet.aaScale != 1)
 				applet._applet.viewer.actionManager.setMouseDragFactor(applet.aaScale)
 			Jmol.__nextExecution();

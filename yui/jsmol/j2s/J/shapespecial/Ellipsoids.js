@@ -125,6 +125,11 @@ this.colixes = this.colixset[this.iSelect];
 this.paletteIDs = this.paletteIDset[this.iSelect];
 this.mads = this.madset[this.iSelect];
 return;
+}if ("params" === propertyName) {
+var data = value;
+data[2] = null;
+this.iSelect = 0;
+this.setSize (50, bs);
 }this.setPropAS (propertyName, value, bs);
 if (this.colixset != null) {
 if ("color" === propertyName || "translucency" === propertyName || "deleteModelAtoms" === propertyName) {

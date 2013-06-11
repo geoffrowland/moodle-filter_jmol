@@ -181,7 +181,11 @@ return true;
 }
 return true;
 });
-$_M(c$, "finalizeReader", 
+Clazz.overrideMethod (c$, "finalizeReader", 
+function () {
+this.finalizeReaderPDB ();
+});
+$_M(c$, "finalizeReaderPDB", 
 function () {
 this.checkNotPDB ();
 this.atomSetCollection.connectAll (this.maxSerial, this.isConnectStateBug);
@@ -208,7 +212,7 @@ for (var i = n; --i >= 0; ) this.setTlsGroups (0, i, symmetry);
 }if (this.sbTlsErrors != null) {
 this.atomSetCollection.setAtomSetCollectionAuxiliaryInfo ("tlsErrors", this.sbTlsErrors.toString ());
 this.appendLoadNote (this.sbTlsErrors.toString ());
-}Clazz.superCall (this, J.adapter.readers.cifpdb.PdbReader, "finalizeReader", []);
+}this.finalizeReaderASCR ();
 if (this.vCompnds != null) this.atomSetCollection.setAtomSetCollectionAuxiliaryInfo ("compoundSource", this.vCompnds);
 if (this.htSites != null) {
 this.addSites (this.htSites);
@@ -1036,7 +1040,6 @@ anisou[4] = this.dataT[4] - L[1][1] * xz + L[1][2] * xy - L[2][0] * yy + L[0][1]
 anisou[5] = this.dataT[5] - L[0][0] * yz - L[1][2] * xx + L[2][0] * xy + L[0][1] * xz - S[1][1] * x + S[2][2] * x + S[0][1] * y - S[0][2] * z;
 anisou[6] = 12;
 anisou[7] = bresidual;
-if (Float.isNaN (bresidual)) System.out.println ("hmm");
 if (this.tlsU == null) this.tlsU =  new java.util.Hashtable ();
 this.tlsU.put (atom, anisou);
 atom.ellipsoid = [null, null, symmetry.getEllipsoid (this.dataT)];
@@ -5253,6 +5256,28 @@ this.paletteIDs[i] = J.constant.EnumPalette.UNKNOWN.id;
 this.bsColixSet.set (i);
 }}
 }, "~A,J.util.BS");
+$_M(c$, "setParams", 
+function (data, atomMap, bsSelected) {
+if (this.monomerCount == 0) return;
+var c = data[0];
+var atrans = data[1];
+this.isActive = true;
+if (this.bsColixSet == null) this.bsColixSet =  new J.util.BS ();
+var n = atomMap.length;
+for (var i = this.monomerCount; --i >= 0; ) {
+var atomIndex = this.leadAtomIndices[i];
+if (bsSelected.get (atomIndex) && i < this.colixes.length && atomIndex < n) {
+var pt = atomMap[atomIndex];
+var colix = (c == null ? 0 : c[pt]);
+if (colix == 0) colix = 0;
+var f = (atrans == null ? 0 : atrans[pt]);
+if (f > 0.01) colix = J.util.C.getColixTranslucent3 (colix, true, f);
+this.colixes[i] = this.shape.getColixI (colix, J.constant.EnumPalette.UNKNOWN.id, atomIndex);
+if (this.colixesBack != null && i < this.colixesBack.length) this.colixesBack[i] = 0;
+this.paletteIDs[i] = J.constant.EnumPalette.UNKNOWN.id;
+this.bsColixSet.set (i);
+}}
+}, "~A,~A,J.util.BS");
 $_M(c$, "setColixBack", 
 function (colix, bsSelected) {
 for (var i = this.monomerCount; --i >= 0; ) {
@@ -5366,17 +5391,13 @@ var bioShape = this.bioShapes[i];
 if (bioShape.monomerCount > 0) bioShape.setColixBS (colix, pid, bsSelected);
 }
 return;
-}if ("colors" === propertyName) {
-var data = value;
-var colixes = data[0];
-var translucency = (data[1]).floatValue ();
-var isTranslucent = (translucency > 0);
-for (var i = this.bioShapes.length; --i >= 0; ) {
-var bioShape = this.bioShapes[i];
-if (bioShape.monomerCount > 0) {
-bioShape.setColixes (colixes, bsSelected);
-if (isTranslucent) bioShape.setTranslucent (isTranslucent, bsSelected, translucency);
-}}
+}if ("params" === propertyName) {
+var n = bsSelected.length ();
+var atomMap =  Clazz.newIntArray (n, 0);
+for (var pt = 0, i = bsSelected.nextSetBit (0); i >= 0; i = bsSelected.nextSetBit (i + 1), pt++) atomMap[i] = pt;
+
+for (var i = this.bioShapes.length; --i >= 0; ) this.bioShapes[i].setParams (value, atomMap, bsSelected);
+
 return;
 }if ("colorPhase" === propertyName) {
 var twoColors = value;
@@ -5756,7 +5777,7 @@ if (this.cartoonsFancy && val >= 16) val = 4;
 if (this.hermiteLevel == 0) val = 0;
 if (val != this.aspectRatio && val != 0 && val1 != 0) this.invalidateMesh = true;
 this.aspectRatio = val;
-TF = this.viewer.getBoolean (603979967);
+TF = this.viewer.getBoolean (603979966);
 if (TF != this.isTraceAlpha) this.invalidateMesh = true;
 this.isTraceAlpha = TF;
 this.invalidateSheets = false;
@@ -6450,7 +6471,7 @@ $_M(c$, "renderNucleic",
 function () {
 this.renderEdges = this.viewer.getBoolean (603979817);
 this.ladderOnly = this.viewer.getBoolean (603979820);
-var isTraceAlpha = this.viewer.getBoolean (603979967);
+var isTraceAlpha = this.viewer.getBoolean (603979966);
 for (var i = this.bsVisible.nextSetBit (0); i >= 0; i = this.bsVisible.nextSetBit (i + 1)) {
 if (isTraceAlpha) {
 this.ptConnectScr.set (Clazz.doubleToInt ((this.controlPointScreens[i].x + this.controlPointScreens[i + 1].x) / 2), Clazz.doubleToInt ((this.controlPointScreens[i].y + this.controlPointScreens[i + 1].y) / 2), Clazz.doubleToInt ((this.controlPointScreens[i].z + this.controlPointScreens[i + 1].z) / 2));

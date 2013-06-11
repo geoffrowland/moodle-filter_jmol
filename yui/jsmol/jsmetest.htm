@@ -29,7 +29,7 @@ var JmolInfo = {
 	jarFile: "JmolAppletSigned.jar",
   j2sPath: "../jsmol/j2s",
 	isSigned: true,
-  defaultModel: "$morphine",
+  defaultModel: ":morphine",
 	console: "none",
 	script: ""
 }
@@ -44,7 +44,8 @@ var JMEInfo = {
   //,"jme" : startingStructure   
 }
 
-Jmol.setGrabberOptions([["$", "NCI"]])
+Jmol.setGrabberOptions([[":", "PubChem"]])
+//Jmol.setGrabberOptions([["$", "NCI"]])
         
 </script>
 </head>

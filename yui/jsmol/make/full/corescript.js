@@ -477,8 +477,12 @@ this.theToken = null;
 this.coordinatesAreFractional = false;
 this.fractionalPoint = null;
 this.$data = null;
+this.colorArgb = null;
 Clazz.instantialize (this, arguments);
 }, J.script, "ScriptEvaluator", null, J.api.JmolScriptEvaluator);
+Clazz.prepareFields (c$, function () {
+this.colorArgb = [-2147483648];
+});
 Clazz.overrideMethod (c$, "getAllowJSThreads", 
 function () {
 return this.allowJSThreads;
@@ -5953,7 +5957,7 @@ var distances =  Clazz.newFloatArray (2, 0);
 var atomSets =  new Array (2);
 atomSets[0] = atomSets[1] = this.viewer.getSelectionSet (false);
 var radius = NaN;
-var color = -2147483648;
+this.colorArgb[0] = -2147483648;
 var distanceCount = 0;
 var bondOrder = 131071;
 var bo;
@@ -5961,7 +5965,6 @@ var operation = 1073742026;
 var isDelete = false;
 var haveType = false;
 var haveOperation = false;
-var translucency = null;
 var translucentLevel = 3.4028235E38;
 var isColorOrRadius = false;
 var nAtomSets = 0;
@@ -6017,16 +6020,11 @@ case 1087373318:
 addGroup = true;
 break;
 case 1766856708:
-var tok = this.tokAt (i + 1);
-if (tok != 1073742180 && tok != 1073742074) ptColor = i + 1;
-continue;
-case 1073742180:
+case 603979967:
 case 1073742074:
-if (translucency != null) this.error (22);
 isColorOrRadius = true;
-translucency = this.parameterAsString (i);
-if (this.theTok == 1073742180 && this.isFloatParameter (i + 1)) translucentLevel = this.getTranslucentLevel (++i);
-ptColor = i + 1;
+translucentLevel = this.getColorTrans (i);
+i = this.iToken;
 break;
 case 1074790662:
 var isAuto = (this.tokAt (2) == 1073741852);
@@ -6045,22 +6043,20 @@ if (this.theTok == 1073741852 && !(bondOrder == 131071 || bondOrder == 2048 || b
 break;
 case 1708058:
 if (!isColorOrRadius) {
-color = 0xFFFFFF;
-translucency = "translucent";
+this.colorArgb[0] = 0xFFFFFF;
 translucentLevel = 0.5;
 radius = this.viewer.getFloat (570425406);
 isColorOrRadius = true;
 }if (!haveOperation) operation = 1073742026;
 haveOperation = true;
 case 1073741824:
-case 1076887572:
-case 1612189718:
-if (i > 0) {
-if (ptColor == i) break;
 if (this.isColorParam (i)) {
 ptColor = -i;
 break;
-}}var cmd = this.parameterAsString (i);
+}case 1076887572:
+case 1612189718:
+if (i > 0) {
+}var cmd = this.parameterAsString (i);
 if ((bo = J.script.ScriptEvaluator.getBondOrderFromString (cmd)) == 131071) {
 this.error (22);
 }if (haveType) this.error (18);
@@ -6101,9 +6097,9 @@ break;
 }
 if (i > 0) {
 if (ptColor == -i || ptColor == i && this.isColorParam (i)) {
-color = this.getArgbParam (i);
-i = this.iToken;
 isColorOrRadius = true;
+this.colorArgb[0] = this.getArgbParam (i);
+i = this.iToken;
 } else if (ptColor == i) {
 this.error (22);
 }}}
@@ -6112,7 +6108,7 @@ if (distanceCount < 2) {
 if (distanceCount == 0) distances[0] = 1.0E8;
 distances[1] = distances[0];
 distances[0] = 0.1;
-}if (translucency != null || !Float.isNaN (radius) || color != -2147483648) {
+}if (isColorOrRadius) {
 if (!haveType) bondOrder = 65535;
 if (!haveOperation) operation = 1073742025;
 }var nNew = 0;
@@ -6139,12 +6135,8 @@ return;
 }if (isColorOrRadius) {
 this.viewer.selectBonds (bsBonds);
 if (!Float.isNaN (radius)) this.setShapeSizeBs (1, Math.round (radius * 2000), null);
-if (color != -2147483648) this.setShapePropertyBs (1, "color", Integer.$valueOf (color), bsBonds);
-if (translucency != null) {
-if (translucentLevel == 3.4028235E38) translucentLevel = this.viewer.getFloat (570425354);
-this.setShapeProperty (1, "translucentLevel", Float.$valueOf (translucentLevel));
-this.setShapePropertyBs (1, "translucency", translucency, bsBonds);
-}this.viewer.selectBonds (null);
+this.finalizeObject (1, this.colorArgb[0], translucentLevel, 0, false, null, 0, bsBonds);
+this.viewer.selectBonds (null);
 }if (!(this.tQuiet || this.scriptLevel > this.scriptReportingLevel)) this.scriptStatusOrBuffer (J.i18n.GT._ ("{0} new bonds; {1} modified", [Integer.$valueOf (nNew), Integer.$valueOf (nModified)]));
 }, $fz.isPrivate = true, $fz), "~N");
 $_M(c$, "getTranslucentLevel", 
@@ -6305,7 +6297,7 @@ case 1112539148:
 case 1641025539:
 case 1112539149:
 case 1112541199:
-case 1073742180:
+case 603979967:
 case 1073742186:
 case 1649412112:
 this.theTok = 1141899265;
@@ -6317,7 +6309,7 @@ var strColor = this.stringParameter (i++);
 if (this.isArrayParameter (i)) {
 strColor = strColor += "=" + J.script.SV.sValue (J.script.SV.getVariableAS (this.stringParameterSet (i))).$replace ('\n', ' ');
 i = this.iToken + 1;
-}var isTranslucent = (this.tokAt (i) == 1073742180);
+}var isTranslucent = (this.tokAt (i) == 603979967);
 if (!this.chk) this.viewer.setPropertyColorScheme (strColor, isTranslucent, true);
 if (isTranslucent) ++i;
 if (this.tokAt (i) == 1073742114 || this.tokAt (i) == 1073741826) {
@@ -6455,12 +6447,11 @@ prefix = "vertex";
 } else {
 bs = this.atomExpressionAt (index);
 prefix = "atom";
-}translucentLevel = 1.4E-45;
-this.getToken (index = this.iToken + 1);
+}this.getToken (index = this.iToken + 1);
 break;
 }
 }if (!this.chk && shapeType == 27 && !this.mo (true)) return;
-var isTranslucent = (this.theTok == 1073742180);
+var isTranslucent = (this.theTok == 603979967);
 if (isTranslucent || this.theTok == 1073742074) {
 if (translucentLevel == 1.4E-45) this.error (22);
 translucency = this.parameterAsString (index++);
@@ -6474,7 +6465,7 @@ var argb = this.getArgbParamOrNone (index, false);
 colorvalue = (argb == 0 ? null : Integer.$valueOf (argb));
 if (translucency == null && this.tokAt (index = this.iToken + 1) != 0) {
 this.getToken (index);
-isTranslucent = (this.theTok == 1073742180);
+isTranslucent = (this.theTok == 603979967);
 if (isTranslucent || this.theTok == 1073742074) {
 translucency = this.parameterAsString (index);
 if (isTranslucent && this.isFloatParameter (index + 1)) translucentLevel = this.getTranslucentLevel (++index);
@@ -8777,6 +8768,7 @@ $_M(c$, "ellipsoid",
 ($fz = function () {
 var mad = 0;
 var i = 1;
+var translucentLevel = 3.4028235E38;
 switch (this.getToken (1).tok) {
 case 1048589:
 mad = 50;
@@ -8801,7 +8793,7 @@ i = this.iToken;
 while (++i < this.slen) {
 var key = this.parameterAsString (i);
 var value = null;
-switch (this.tokAt (i)) {
+switch (this.getToken (i).tok) {
 case 1048583:
 key = "points";
 var data =  new Array (3);
@@ -8830,22 +8822,11 @@ value = this.centerParameter (++i);
 i = this.iToken;
 break;
 case 1766856708:
-var translucentLevel = NaN;
-if (this.tokAt (i) == 1766856708) i++;
-if ((this.theTok = this.tokAt (i)) == 1073742180) {
-value = "translucent";
-if (this.isFloatParameter (++i)) translucentLevel = this.getTranslucentLevel (i++);
- else translucentLevel = this.viewer.getFloat (570425354);
-} else if (this.theTok == 1073742074) {
-value = "opaque";
-i++;
-}if (this.isColorParam (i)) {
-this.setShapeProperty (20, "color", Integer.$valueOf (this.getArgbParam (i)));
+case 603979967:
+case 1073742074:
+translucentLevel = this.getColorTrans (i);
 i = this.iToken;
-}if (value == null) continue;
-if (!Float.isNaN (translucentLevel)) this.setShapeProperty (20, "translucentLevel", Float.$valueOf (translucentLevel));
-key = "translucency";
-break;
+continue;
 case 12291:
 value = Boolean.TRUE;
 this.checkLength (3);
@@ -8867,6 +8848,7 @@ break;
 if (value == null) this.error (22);
 this.setShapeProperty (20, key.toLowerCase (), value);
 }
+this.finalizeObject (20, this.colorArgb[0], translucentLevel, 0, false, null, 0, null);
 this.setShapeProperty (20, "thisID", null);
 return;
 default:
@@ -11715,11 +11697,10 @@ var iptDisplayProperty = 0;
 var thisId = this.initIsosurface (23);
 var idSeen = (thisId != null);
 var isWild = (idSeen && this.getShapeProperty (23, "ID") == null);
-var isTranslucent = false;
 var isInitialized = false;
 var data = null;
 var translucentLevel = 3.4028235E38;
-var colorArgb = -2147483648;
+this.colorArgb[0] = -2147483648;
 var intScale = 0;
 for (var i = this.iToken; i < this.slen; ++i) {
 var propertyName = null;
@@ -11745,23 +11726,11 @@ continue;
 this.error (34);
 break;
 case 1766856708:
-case 1073742180:
+case 603979967:
 case 1073742074:
-if (this.theTok != 1766856708) --i;
-if (this.tokAt (i + 1) == 1073742180) {
-i++;
-isTranslucent = true;
-if (this.isFloatParameter (i + 1)) translucentLevel = this.getTranslucentLevel (++i);
-} else if (this.tokAt (i + 1) == 1073742074) {
-i++;
-isTranslucent = true;
-translucentLevel = 0;
-}if (this.isColorParam (i + 1)) {
-colorArgb = this.getArgbParam (++i);
+translucentLevel = this.getColorTrans (i);
 i = this.iToken;
-} else if (!isTranslucent) {
-this.error (22);
-}idSeen = true;
+idSeen = true;
 continue;
 case 1074790550:
 thisId = this.setShapeId (23, ++i, idSeen);
@@ -11787,19 +11756,43 @@ isInitialized = true;
 intScale = 0;
 }if (propertyName != null) this.setShapeProperty (23, propertyName, propertyValue);
 }
-this.finalizeObject (23, colorArgb, isTranslucent ? translucentLevel : 3.4028235E38, intScale, data != null, data, iptDisplayProperty);
+this.finalizeObject (23, this.colorArgb[0], translucentLevel, intScale, data != null, data, iptDisplayProperty, null);
 }, $fz.isPrivate = true, $fz));
+$_M(c$, "getColorTrans", 
+($fz = function (i) {
+var translucentLevel = 3.4028235E38;
+if (this.theTok != 1766856708) --i;
+switch (this.tokAt (i + 1)) {
+case 603979967:
+i++;
+translucentLevel = (this.isFloatParameter (i + 1) ? this.getTranslucentLevel (++i) : this.viewer.getFloat (570425354));
+break;
+case 1073742074:
+i++;
+translucentLevel = 0;
+break;
+}
+if (this.isColorParam (i + 1)) {
+this.colorArgb[0] = this.getArgbParam (++i);
+i = this.iToken;
+} else if (translucentLevel == 3.4028235E38) {
+this.error (22);
+} else {
+this.colorArgb[0] = -2147483648;
+}i = this.iToken;
+return translucentLevel;
+}, $fz.isPrivate = true, $fz), "~N");
 $_M(c$, "finalizeObject", 
-($fz = function (shapeID, colorArgb, translucentLevel, intScale, havePoints, data, iptDisplayProperty) {
-if (havePoints) {
+($fz = function (shapeID, colorArgb, translucentLevel, intScale, doSet, data, iptDisplayProperty, bs) {
+if (doSet) {
 this.setShapeProperty (shapeID, "set", data);
-}if (colorArgb != -2147483648) this.setShapeProperty (shapeID, "color", Integer.$valueOf (colorArgb));
-if (translucentLevel != 3.4028235E38) this.setShapeTranslucency (shapeID, "", "translucent", translucentLevel, null);
+}if (colorArgb != -2147483648) this.setShapePropertyBs (shapeID, "color", Integer.$valueOf (colorArgb), bs);
+if (translucentLevel != 3.4028235E38) this.setShapeTranslucency (shapeID, "", "translucent", translucentLevel, bs);
 if (intScale != 0) {
 this.setShapeProperty (shapeID, "scale", Integer.$valueOf (intScale));
 }if (iptDisplayProperty > 0) {
 if (!this.setMeshDisplayProperty (shapeID, iptDisplayProperty, 0)) this.error (22);
-}}, $fz.isPrivate = true, $fz), "~N,~N,~N,~N,~B,~O,~N");
+}}, $fz.isPrivate = true, $fz), "~N,~N,~N,~N,~B,~O,~N,J.util.BS");
 $_M(c$, "draw", 
 ($fz = function () {
 this.sm.loadShape (22);
@@ -11819,13 +11812,12 @@ return;
 var havePoints = false;
 var isInitialized = false;
 var isSavedState = false;
-var isTranslucent = false;
 var isIntersect = false;
 var isFrame = false;
 var plane;
 var tokIntersect = 0;
 var translucentLevel = 3.4028235E38;
-var colorArgb = -2147483648;
+this.colorArgb[0] = -2147483648;
 var intScale = 0;
 var swidth = "";
 var iptDisplayProperty = 0;
@@ -12171,23 +12163,11 @@ propertyName = "identifier";
 havePoints = true;
 break;
 case 1766856708:
-case 1073742180:
+case 603979967:
 case 1073742074:
-if (this.theTok != 1766856708) --i;
-if (this.tokAt (i + 1) == 1073742180) {
-i++;
-isTranslucent = true;
-if (this.isFloatParameter (i + 1)) translucentLevel = this.getTranslucentLevel (++i);
-} else if (this.tokAt (i + 1) == 1073742074) {
-i++;
-isTranslucent = true;
-translucentLevel = 0;
-}if (this.isColorParam (i + 1)) {
-colorArgb = this.getArgbParam (++i);
+idSeen = true;
+translucentLevel = this.getColorTrans (i);
 i = this.iToken;
-} else if (!isTranslucent) {
-this.error (22);
-}idSeen = true;
 continue;
 default:
 if (!this.setMeshDisplayProperty (22, 0, this.theTok)) {
@@ -12208,7 +12188,7 @@ intScale = 0;
 }if (havePoints && isWild) this.error (22);
 if (propertyName != null) this.setShapeProperty (22, propertyName, propertyValue);
 }
-this.finalizeObject (22, colorArgb, isTranslucent ? translucentLevel : 3.4028235E38, intScale, havePoints, connections, iptDisplayProperty);
+this.finalizeObject (22, this.colorArgb[0], translucentLevel, intScale, havePoints, connections, iptDisplayProperty, null);
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "polyhedra", 
 ($fz = function () {
@@ -12223,9 +12203,8 @@ this.sm.loadShape (21);
 this.setShapeProperty (21, "init", null);
 var setPropertyName = "centers";
 var decimalPropertyName = "radius_";
-var isTranslucent = false;
 var translucentLevel = 3.4028235E38;
-var color = -2147483648;
+this.colorArgb[0] = -2147483648;
 for (var i = 1; i < this.slen; ++i) {
 var propertyName = null;
 var propertyValue = null;
@@ -12296,22 +12275,10 @@ decimalPropertyName = "distanceFactor";
 isDesignParameter = true;
 continue;
 case 1766856708:
-case 1073742180:
+case 603979967:
 case 1073742074:
-isTranslucent = false;
-if (this.theTok != 1766856708) --i;
-if (this.tokAt (i + 1) == 1073742180) {
-i++;
-isTranslucent = true;
-if (this.isFloatParameter (i + 1)) translucentLevel = this.getTranslucentLevel (++i);
-} else if (this.tokAt (i + 1) == 1073742074) {
-i++;
-isTranslucent = true;
-translucentLevel = 0;
-}if (this.isColorParam (i + 1)) {
-color = this.getArgbParam (i);
+translucentLevel = this.getColorTrans (i);
 i = this.iToken;
-} else if (!isTranslucent) this.error (22);
 continue;
 case 1073741886:
 case 1073741948:
@@ -12332,7 +12299,7 @@ lighting = this.theTok;
 continue;
 default:
 if (this.isColorParam (i)) {
-color = this.getArgbParam (i);
+this.colorArgb[0] = this.getArgbParam (i);
 i = this.iToken;
 continue;
 }this.error (22);
@@ -12342,8 +12309,8 @@ if (onOffDelete) return;
 }
 if (!needsGenerating && !typeSeen && !edgeParameterSeen && lighting == 0) this.error (19);
 if (needsGenerating) this.setShapeProperty (21, "generate", null);
-if (color != -2147483648) this.setShapeProperty (21, "colorThis", Integer.$valueOf (color));
-if (isTranslucent) this.setShapeTranslucency (21, "", "translucentThis", translucentLevel, null);
+if (this.colorArgb[0] != -2147483648) this.setShapeProperty (21, "colorThis", Integer.$valueOf (this.colorArgb[0]));
+if (translucentLevel != 3.4028235E38) this.setShapeTranslucency (21, "", "translucentThis", translucentLevel, null);
 if (lighting != 0) this.setShapeProperty (21, "token", Integer.$valueOf (lighting));
 this.setShapeProperty (21, "init", null);
 }, $fz.isPrivate = true, $fz));
@@ -12409,7 +12376,7 @@ i++;
 break;
 }
 if (tok == 0) break;
-case 1073742180:
+case 603979967:
 case 1073742074:
 okNoAtoms = true;
 if (colorpt == 0) colorpt = i;
@@ -12638,7 +12605,7 @@ if (translucency != null) this.setShapeProperty (26, "settranslucency", transluc
 i = this.iToken;
 idSeen = true;
 continue;
-case 1073742180:
+case 603979967:
 case 1073742074:
 this.setMeshDisplayProperty (26, i, this.theTok);
 i = this.iToken;
@@ -12720,7 +12687,7 @@ var d2;
 var bs = null;
 var slabColix = null;
 var slabMeshType = null;
-if (tok == 1073742180) {
+if (tok == 603979967) {
 var slabTranslucency = (this.isFloatParameter (++i + 1) ? this.floatParameter (++i) : 0.5);
 if (this.isColorParam (i + 1)) {
 slabColix = Short.$valueOf (J.util.C.getColixTranslucent3 (J.util.C.getColix (this.getArgbParam (i + 1)), slabTranslucency != 0, slabTranslucency));
@@ -13446,7 +13413,7 @@ this.addShapeProperty (propertyList, "meshcolor", Integer.$valueOf (color));
 sbCommand.append (" ").append (J.util.Escape.escapeColor (color));
 i = this.iToken;
 continue;
-}if ((this.theTok = this.tokAt (i + 1)) == 1073742180 || this.theTok == 1073742074) {
+}if ((this.theTok = this.tokAt (i + 1)) == 603979967 || this.theTok == 1073742074) {
 sbCommand.append (" color");
 translucency = this.setColorOptions (sbCommand, i + 1, 24, -2);
 i = this.iToken;
@@ -13693,7 +13660,7 @@ isWild = (this.getShapeProperty (iShape, "ID") == null);
 i = this.iToken;
 break;
 case 1073741888:
-if (this.tokAt (i + 1) == 1073742180) {
+if (this.tokAt (i + 1) == 603979967) {
 isColorSchemeTranslucent = true;
 i++;
 }colorScheme = this.parameterAsString (++i).toLowerCase ();
@@ -14326,7 +14293,7 @@ $_M(c$, "setColorOptions",
 ($fz = function (sb, index, iShape, nAllowed) {
 this.getToken (index);
 var translucency = "opaque";
-if (this.theTok == 1073742180) {
+if (this.theTok == 603979967) {
 translucency = "translucent";
 if (nAllowed < 0) {
 var value = (this.isFloatParameter (index + 1) ? this.floatParameter (++index) : 3.4028235E38);
@@ -14400,7 +14367,7 @@ case 1766856708:
 if (allowCOLOR) this.iToken++;
  else break;
 case 1073742074:
-case 1073742180:
+case 603979967:
 if (!checkOnly) this.colorShape (shape, this.iToken, false);
 return true;
 case 0:

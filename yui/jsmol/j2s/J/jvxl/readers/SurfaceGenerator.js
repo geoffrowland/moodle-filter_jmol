@@ -713,6 +713,9 @@ this.params.state = 3;
 }if (this.params.colorBySign || this.params.isBicolorMap) {
 this.params.state = 3;
 this.surfaceReader.applyColorScale ();
+}if (this.jvxlData.vertexColorMap != null) {
+this.jvxlData.vertexColorMap = null;
+this.surfaceReader.hasColorData = false;
 }this.surfaceReader.jvxlUpdateInfo ();
 this.setMarchingSquares (this.surfaceReader.marchingSquares);
 this.surfaceReader.discardTempData (false);

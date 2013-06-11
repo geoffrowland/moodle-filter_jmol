@@ -37,15 +37,20 @@ this.uniqueSettings = null;
 this.uniqueList = null;
 this.bsUniqueBonds = null;
 this.bgRgb = 0;
+this.dotColor = 0;
 this.surfaceMode = 0;
 this.surfaceColor = 0;
+this.cartoonColor = 0;
+this.ribbonColor = 0;
 this.sphereColor = 0;
 this.labelFontId = 0;
 this.labelColor = 0;
 this.cartoonTranslucency = 0;
+this.ribbonTranslucency = 0;
 this.labelSize = 0;
 this.meshWidth = 0;
 this.nonbondedSize = 0;
+this.nonbondedTranslucency = 0;
 this.sphereScale = 0;
 this.sphereTranslucency = 0;
 this.stickTranslucency = 0;
@@ -59,7 +64,7 @@ this.objectName = null;
 this.objectNameID = null;
 this.objectJmolName = null;
 this.objectType = 0;
-this.objectAtoms = null;
+this.bsAtoms = null;
 this.objectHidden = false;
 this.reader = null;
 this.uniqueIDs = null;
@@ -110,29 +115,29 @@ this.bsLineBonds =  new J.util.BS ();
 this.bsStickBonds =  new J.util.BS ();
 });
 $_M(c$, "clearReaderData", 
-($fz = function (isAll) {
+($fz = function () {
 this.reader = null;
 this.colixes = null;
 this.atomColorList = null;
 this.objectSettings = null;
 this.stateSettings = null;
-if (!isAll) return;
+if (this.haveScenes) return;
+this.settings = null;
 this.groups = null;
 this.labels = null;
-this.htSpacefill = null;
 this.ssMapAtom = null;
+this.htSpacefill = null;
 this.htAtomMap = null;
 this.htMeasures = null;
 this.htObjectGroups = null;
 this.htObjectAtoms = null;
 this.htObjectSettings = null;
 this.htStateSettings = null;
-this.objectInfo = null;
-this.settings = null;
-this.occludedObjects = null;
 this.htHiddenObjects = null;
+this.objectInfo = null;
+this.occludedObjects = null;
 this.bsHidden = this.bsNucleic = this.bsNonbonded = this.bsLabeled = this.bsHydrogen = this.bsNoSurface = this.bsCartoon = null;
-}, $fz.isPrivate = true, $fz), "~B");
+}, $fz.isPrivate = true, $fz));
 $_M(c$, "setUniqueBond", 
 function (index, uniqueID) {
 if (uniqueID < 0) return;
@@ -155,6 +160,7 @@ this.uniqueSettings = uniqueSettings;
 this.pymolVersion = pymolVersion;
 this.haveScenes = haveScenes;
 this.setVersionSettings ();
+settings.trimToSize ();
 this.bgRgb = J.adapter.readers.pymol.PyMOLScene.colorSetting (J.adapter.readers.pymol.PyMOLScene.listAt (settings, 6));
 J.adapter.readers.pymol.PyMOLScene.pointAt (J.adapter.readers.pymol.PyMOLScene.listAt (settings, 471).get (2), 0, this.labelPosition0);
 }, "J.api.PymolAtomReader,J.viewer.Viewer,J.util.JmolList,java.util.Map,~N,~B");
@@ -190,10 +196,15 @@ objectSettings.put (setting.get (0), setting);
 $_M(c$, "getObjectSettings", 
 ($fz = function () {
 this.transparency = this.floatSetting (138);
+this.dotColor = Clazz.floatToInt (this.floatSetting (210));
 this.nonbondedSize = this.floatSetting (65);
+this.nonbondedTranslucency = this.floatSetting (524);
 this.sphereScale = this.floatSetting (155);
+this.cartoonColor = Clazz.floatToInt (this.floatSetting (236));
+this.ribbonColor = Clazz.floatToInt (this.floatSetting (235));
 this.sphereColor = Clazz.floatToInt (this.floatSetting (173));
 this.cartoonTranslucency = this.floatSetting (279);
+this.ribbonTranslucency = this.floatSetting (666);
 this.stickTranslucency = this.floatSetting (198);
 this.sphereTranslucency = this.floatSetting (172);
 this.cartoonLadderMode = this.booleanSetting (448);
@@ -237,7 +248,7 @@ this.objectName = name;
 this.objectType = this.getObjectType (name);
 this.objectJmolName = J.adapter.readers.pymol.PyMOLScene.getJmolName (name);
 this.objectNameID = (istate == 0 && this.objectType != 0 ? this.getObjectID (name) : this.objectJmolName + "_" + istate);
-this.objectAtoms = this.htObjectAtoms.get (name);
+this.bsAtoms = this.htObjectAtoms.get (name);
 this.objectSettings = this.htObjectSettings.get (name);
 this.stateSettings = this.htStateSettings.get (name + "_" + istate);
 var groupName = this.htObjectGroups.get (name);
@@ -390,8 +401,8 @@ this.addJmolObject (12295, null, null).argb = this.thisState - 1;
 for (var m = 0; m < this.moleculeNames.size (); m++) {
 this.setSceneObject (this.moleculeNames.get (m), this.thisState);
 if (this.objectHidden) continue;
-var molReps =  new Array (14);
-for (var i = 0; i < 14; i++) molReps[i] =  new J.util.BS ();
+var molReps =  new Array (23);
+for (var i = 0; i < 23; i++) molReps[i] =  new J.util.BS ();
 
 for (var i = reps.length; --i >= 0; ) {
 var repMap = reps[i];
@@ -431,7 +442,7 @@ this.baseModelIndex = baseModelIndex;
 this.baseAtomIndex = baseAtomIndex;
 this.mepList = mepList;
 this.doCache = doCache;
-this.clearReaderData (!this.haveScenes);
+this.clearReaderData ();
 this.finalizeObjects ();
 if (!this.haveScenes) {
 this.uniqueSettings = null;
@@ -544,7 +555,7 @@ for (var e, $e = this.htCarveSets.entrySet ().iterator (); $e.hasNext () && ((e 
 }, "java.util.Map");
 $_M(c$, "setGroupVisibilities", 
 ($fz = function () {
-if (this.groups != null) {
+if (this.groups == null) return;
 var list = this.groups.values ();
 var bsAll =  new J.util.BS ();
 for (var g, $g = list.iterator (); $g.hasNext () && ((g = $g.next ()) || true);) {
@@ -553,7 +564,7 @@ if (g.parent == null) this.setGroupVisible (g, true);
  else if (g.list.isEmpty ()) g.addGroupAtoms ( new J.util.BS ());
 }
 this.defineAtoms ("all", bsAll);
-}}, $fz.isPrivate = true, $fz));
+}, $fz.isPrivate = true, $fz));
 $_M(c$, "defineAtoms", 
 ($fz = function (name, bs) {
 this.htDefinedAtoms.put (J.adapter.readers.pymol.PyMOLScene.getJmolName (name), bs);
@@ -565,21 +576,21 @@ return "__" + J.adapter.readers.pymol.PyMOLScene.fixName (name);
 $_M(c$, "createShapeObjects", 
 function (reps, allowSurface, atomCount0, atomCount) {
 if (atomCount >= 0) {
-this.objectAtoms = J.util.BSUtil.newBitSet2 (atomCount0, atomCount);
+this.bsAtoms = J.util.BSUtil.newBitSet2 (atomCount0, atomCount);
 var jo;
-jo = this.addJmolObject (1141899265, this.objectAtoms, null);
+jo = this.addJmolObject (1141899265, this.bsAtoms, null);
 this.colixes = J.util.ArrayUtil.ensureLengthShort (this.colixes, atomCount);
 for (var i = atomCount; --i >= atomCount0; ) this.colixes[i] = this.atomColorList.get (i).intValue ();
 
 jo.setColors (this.colixes, 0);
 jo.setSize (0);
-jo = this.addJmolObject (1, this.objectAtoms, null);
+jo = this.addJmolObject (1, this.bsAtoms, null);
 jo.setSize (0);
 }this.createShapeObject (7, reps[7]);
 this.createShapeObject (0, reps[0]);
 this.fixReps (reps);
 this.createSpacefillObjects ();
-for (var i = 0; i < 14; i++) switch (i) {
+for (var i = 0; i < 23; i++) switch (i) {
 case 7:
 case 0:
 continue;
@@ -603,7 +614,7 @@ this.createShapeObject (i, reps[i]);
 continue;
 }
 
-this.objectAtoms = null;
+this.bsAtoms = null;
 }, "~A,~B,~N,~N");
 $_M(c$, "addLabel", 
 function (atomIndex, uniqueID, atomColor, labelOffset, label) {
@@ -620,12 +631,12 @@ J.adapter.readers.pymol.PyMOLScene.setLabelPosition (offset, labelPos);
 } else {
 for (var i = 0; i < 7; i++) labelPos[i] = J.adapter.readers.pymol.PyMOLScene.floatAt (labelOffset, i);
 
-}this.labels.put (Integer.$valueOf (atomIndex), this.newTextLabel (label, labelPos, icolor, Clazz.floatToInt (this.getUniqueFloatDef (uniqueID, 328, this.labelFontId)), this.getUniqueFloatDef (uniqueID, 453, this.labelSize)));
+}this.labels.put (Integer.$valueOf (atomIndex), this.newTextLabel (label, labelPos, icolor, this.labelFontId, this.labelSize));
 }, "~N,~N,~N,J.util.JmolList,~S");
 $_M(c$, "getUniqueFloatDef", 
 function (id, key, defaultValue) {
 var setting;
-if (id < 0 || (setting = this.uniqueSettings.get (Integer.$valueOf ((id << 10) + key))) == null) return defaultValue;
+if (id <= 0 || (setting = this.uniqueSettings.get (Integer.$valueOf ((id << 10) + key))) == null) return defaultValue;
 var v = (setting.get (2)).floatValue ();
 if (J.util.Logger.debugging) J.util.Logger.info ("Pymol unique setting for " + id + ": [" + key + "] = " + v);
 return v;
@@ -633,7 +644,7 @@ return v;
 $_M(c$, "getUniquePoint", 
 function (id, key, pt) {
 var setting;
-if (id < 0 || (setting = this.uniqueSettings.get (Integer.$valueOf ((id << 10) + key))) == null) return pt;
+if (id <= 0 || (setting = this.uniqueSettings.get (Integer.$valueOf ((id << 10) + key))) == null) return pt;
 pt =  new J.util.P3 ();
 J.adapter.readers.pymol.PyMOLScene.pointAt (setting.get (2), 0, pt);
 J.util.Logger.info ("Pymol unique setting for " + id + ": " + key + " = " + pt);
@@ -763,7 +774,7 @@ $_M(c$, "getViewScript",
 function (view) {
 var sb =  new J.util.SB ();
 var pymolView = this.getPymolView (view, true);
-sb.append (";set zshadePower 1;set traceAlpha " + (this.globalSetting (111) != 0));
+sb.append (";set translucent " + (this.globalSetting (213) != 2) + ";set zshadePower 1;set traceAlpha " + (this.globalSetting (111) != 0));
 var rockets = this.cartoonRockets;
 sb.append (";set cartoonRockets " + rockets);
 if (rockets) sb.append (";set rocketBarrels " + rockets);
@@ -787,10 +798,9 @@ function (c) {
 return (c.size () < 6 || J.adapter.readers.pymol.PyMOLScene.intAt (c, 4) == 0 ? J.adapter.readers.pymol.PyMOLScene.colorSetting (c) : J.adapter.readers.pymol.PyMOLScene.getColorPt (c.get (5)));
 }, "J.util.JmolList");
 $_M(c$, "setAtomColor", 
-function (uniqueID, atomColor) {
-var translucency = this.getUniqueFloatDef (uniqueID, 172, this.sphereTranslucency);
-this.atomColorList.addLast (Integer.$valueOf (this.getColix (atomColor, translucency)));
-}, "~N,~N");
+function (atomColor) {
+this.atomColorList.addLast (Integer.$valueOf (this.getColix (atomColor, 0)));
+}, "~N");
 $_M(c$, "setFrameObject", 
 function (type, info) {
 if (info != null) {
@@ -911,13 +921,13 @@ $_M(c$, "fixReps",
 ($fz = function (reps) {
 this.htSpacefill.clear ();
 this.bsCartoon.clearAll ();
-for (var iAtom = this.objectAtoms.nextSetBit (0); iAtom >= 0; iAtom = this.objectAtoms.nextSetBit (iAtom + 1)) {
+for (var iAtom = this.bsAtoms.nextSetBit (0); iAtom >= 0; iAtom = this.bsAtoms.nextSetBit (iAtom + 1)) {
 var rad = 0;
 var uniqueID = (this.reader == null ? this.uniqueIDs[iAtom] : this.reader.getUniqueID (iAtom));
 if (reps[1].get (iAtom)) {
-rad = (this.reader == null ? this.radii[iAtom] : this.reader.getVDW (iAtom)) * this.getUniqueFloat (uniqueID, 155);
+rad = (this.reader == null ? this.radii[iAtom] : this.reader.getVDW (iAtom)) * this.getUniqueFloatDef (uniqueID, 155, this.sphereScale);
 } else if (reps[4].get (iAtom)) {
-rad = this.getUniqueFloat (uniqueID, 65);
+rad = this.nonbondedSize;
 }if (rad != 0) {
 var r = Float.$valueOf (rad);
 var bsr = this.htSpacefill.get (r);
@@ -928,13 +938,13 @@ if (reps[5].get (iAtom)) {
 switch (cartoonType) {
 case 1:
 case 4:
-reps[12].set (iAtom);
+reps[21].set (iAtom);
 case -1:
 reps[5].clear (iAtom);
 this.bsCartoon.clear (iAtom);
 break;
 case 7:
-reps[13].set (iAtom);
+reps[22].set (iAtom);
 reps[5].clear (iAtom);
 this.bsCartoon.clear (iAtom);
 break;
@@ -945,14 +955,14 @@ this.bsCartoon.set (iAtom);
 reps[5].and (this.bsCartoon);
 this.cleanSingletons (reps[5]);
 this.cleanSingletons (reps[6]);
-this.cleanSingletons (reps[12]);
-this.cleanSingletons (reps[13]);
+this.cleanSingletons (reps[21]);
+this.cleanSingletons (reps[22]);
 this.bsCartoon.and (reps[5]);
 }, $fz.isPrivate = true, $fz), "~A");
 $_M(c$, "cleanSingletons", 
 ($fz = function (bs) {
 if (bs.isEmpty ()) return;
-bs.and (this.objectAtoms);
+bs.and (this.bsAtoms);
 var bsr =  new J.util.BS ();
 var n = bs.length ();
 var pass = 0;
@@ -977,38 +987,26 @@ bsr.andNot (bsnot);
 }, $fz.isPrivate = true, $fz), "J.util.BS");
 $_M(c$, "createShapeObject", 
 ($fz = function (shapeID, bs) {
-var f;
 if (bs.isEmpty ()) return;
 var jo = null;
 switch (shapeID) {
 case 11:
 bs.and (this.bsNonbonded);
 if (bs.isEmpty ()) return;
-jo = this.addJmolObject (7, bs, null);
-jo.rd =  new J.atomdata.RadiusData (null, this.nonbondedSize / 2, J.atomdata.RadiusData.EnumType.FACTOR, J.constant.EnumVdw.AUTO);
+this.setUniqueObjects (7, bs, 0, 0, 524, this.nonbondedTranslucency, 0, this.nonbondedSize, 0.5);
 break;
 case 4:
 case 1:
-jo = this.addJmolObject (0, bs, null);
-f = this.sphereColor;
-if (f != -1) jo.argb = J.adapter.readers.pymol.PyMOL.getRGB (Clazz.floatToInt (f));
-jo.translucency = this.sphereTranslucency;
+this.setUniqueObjects (0, bs, 173, this.sphereColor, 172, this.sphereTranslucency, 155, this.sphereScale, 1);
+break;
+case 19:
+var ellipsoidTranslucency = this.floatSetting (571);
+var ellipsoidColor = Clazz.floatToInt (this.floatSetting (570));
+var ellipsoidScale = this.floatSetting (569);
+this.setUniqueObjects (20, bs, 570, ellipsoidColor, 571, ellipsoidTranslucency, 569, ellipsoidScale, 50);
 break;
 case 9:
-jo = this.addJmolObject (16, bs, null);
-f = this.sphereScale;
-jo.rd =  new J.atomdata.RadiusData (null, f, J.atomdata.RadiusData.EnumType.FACTOR, J.constant.EnumVdw.AUTO);
-break;
-case 5:
-this.createCartoonObject ("H", (this.cartoonRockets ? 181 : 100));
-this.createCartoonObject ("S", 96);
-this.createCartoonObject ("L", 92);
-this.createCartoonObject (" ", 92);
-break;
-case 8:
-jo = this.addJmolObject (135180, bs, null);
-jo.setSize (this.floatSetting (4));
-jo.translucency = this.transparency;
+this.setUniqueObjects (16, bs, 210, this.dotColor, 0, 0, 155, this.sphereScale, 1);
 break;
 case 2:
 var withinDistance = this.floatSetting (344);
@@ -1016,20 +1014,18 @@ jo = this.addJmolObject (135180, bs, [this.booleanSetting (156) ? "FULLYLIT" : "
 jo.setSize (this.floatSetting (4) * (this.solventAccessible ? -1 : 1));
 jo.translucency = this.transparency;
 if (this.surfaceColor >= 0) jo.argb = J.adapter.readers.pymol.PyMOL.getRGB (this.surfaceColor);
+this.setUniqueObjects (24, bs, 144, this.surfaceColor, 138, this.transparency, 0, 0, 0);
+break;
+case 8:
+jo = this.addJmolObject (135180, bs, null);
+jo.setSize (this.floatSetting (4));
+jo.translucency = this.transparency;
+this.setUniqueObjects (24, bs, 144, this.surfaceColor, 138, this.transparency, 0, 0, 0);
 break;
 case 3:
 bs.and (this.bsLabeled);
 if (bs.isEmpty ()) return;
 jo = this.addJmolObject (5, bs, this.labels);
-break;
-case 13:
-this.createPuttyObject (bs);
-break;
-case 12:
-this.createTraceObject (bs);
-break;
-case 6:
-this.createRibbonObject (bs);
 break;
 case 7:
 jo = this.addJmolObject (659488, bs, null);
@@ -1044,10 +1040,42 @@ jo.translucency = this.stickTranslucency;
 var col = Clazz.floatToInt (this.floatSetting (376));
 if (col >= 0) jo.argb = J.adapter.readers.pymol.PyMOL.getRGB (col);
 break;
+case 5:
+this.createCartoonObject ("H", (this.cartoonRockets ? 181 : 100));
+this.createCartoonObject ("S", 96);
+this.createCartoonObject ("L", 92);
+this.createCartoonObject (" ", 92);
+break;
+case 22:
+this.createPuttyObject (bs);
+break;
+case 21:
+this.createTraceObject (bs);
+break;
+case 6:
+this.createRibbonObject (bs);
+break;
 default:
 J.util.Logger.error ("Unprocessed representation type " + shapeID);
 }
 }, $fz.isPrivate = true, $fz), "~N,J.util.BS");
+$_M(c$, "setUniqueObjects", 
+($fz = function (shape, bs, setColor, color, setTrans, trans, setSize, size, f) {
+var n = bs.cardinality ();
+var colixes = (setColor == 0 ? null :  Clazz.newShortArray (n, 0));
+var atrans = (setTrans == 0 ? null :  Clazz.newFloatArray (n, 0));
+var sizes =  Clazz.newFloatArray (n, 0);
+for (var pt = 0, i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1), pt++) {
+var id = (this.reader == null ? this.uniqueIDs[i] : this.reader.getUniqueID (i));
+if (colixes != null) {
+var c = Clazz.floatToInt (this.getUniqueFloatDef (id, setColor, color));
+if (c > 0) colixes[pt] = this.getColix (c, 0);
+}if (atrans != null) {
+atrans[pt] = this.getUniqueFloatDef (id, setTrans, trans);
+}sizes[pt] = this.getUniqueFloatDef (id, setSize, size) * f;
+}
+return this.addJmolObject (shape, bs, [colixes, atrans, sizes]);
+}, $fz.isPrivate = true, $fz), "~N,J.util.BS,~N,~N,~N,~N,~N,~N,~N");
 $_M(c$, "createSpacefillObjects", 
 ($fz = function () {
 for (var e, $e = this.htSpacefill.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) {
@@ -1059,12 +1087,12 @@ this.htSpacefill.clear ();
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "createTraceObject", 
 ($fz = function (bs) {
-var jo;
 this.checkNucleicObject (bs, true);
 if (bs.isEmpty ()) return;
-jo = this.addJmolObject (10, bs, null);
+var r = this.floatSetting (103);
+var jo = this.setUniqueObjects (10, bs, 236, this.cartoonColor, 0, 0, 0, 0, 0);
+jo.setSize (r * 2);
 jo.translucency = this.cartoonTranslucency;
-jo.setSize (this.floatSetting (103) * 2);
 }, $fz.isPrivate = true, $fz), "J.util.BS");
 $_M(c$, "checkNucleicObject", 
 ($fz = function (bs, isTrace) {
@@ -1081,7 +1109,7 @@ bs.andNot (bsNuc);
 $_M(c$, "createPuttyObject", 
 ($fz = function (bs) {
 var info = [this.floatSetting (378), this.floatSetting (377), this.floatSetting (382), this.floatSetting (379), this.floatSetting (380), this.floatSetting (381), this.floatSetting (581)];
-this.addJmolObject (10, bs, info).translucency = this.cartoonTranslucency;
+this.addJmolObject (1113200654, bs, info).translucency = this.cartoonTranslucency;
 }, $fz.isPrivate = true, $fz), "J.util.BS");
 $_M(c$, "createRibbonObject", 
 ($fz = function (bs) {
@@ -1089,7 +1117,9 @@ var isTrace = (this.floatSetting (19) > 1);
 var r = this.floatSetting (20) * 2;
 var rayScale = this.floatSetting (327);
 if (r == 0) r = this.floatSetting (106) * (isTrace ? 1 : (rayScale <= 1 ? 0.5 : rayScale)) * 0.1;
-this.addJmolObject ((isTrace ? 10 : 9), bs, null).setSize (r);
+var jo = this.setUniqueObjects ((isTrace ? 10 : 9), bs, 235, this.ribbonColor, 0, 0, 0, 0, 0);
+jo.setSize (r);
+jo.translucency = this.ribbonTranslucency;
 }, $fz.isPrivate = true, $fz), "J.util.BS");
 $_M(c$, "createCartoonObject", 
 ($fz = function (key, sizeID) {
@@ -1100,9 +1130,9 @@ if (bs.isEmpty ()) return;
 if (key.equals (" ")) {
 this.checkNucleicObject (bs, false);
 if (bs.isEmpty ()) return;
-}var jo = this.addJmolObject (11, bs, null);
-jo.translucency = this.cartoonTranslucency;
+}var jo = this.setUniqueObjects (11, bs, 236, this.cartoonColor, 0, 0, 0, 0, 0);
 jo.setSize (this.floatSetting (sizeID) * 2);
+jo.translucency = this.cartoonTranslucency;
 }, $fz.isPrivate = true, $fz), "~S,~N");
 $_M(c$, "addObject", 
 ($fz = function (obj) {
@@ -1128,24 +1158,6 @@ for (var gg, $gg = g.list.values ().iterator (); $gg.hasNext () && ((gg = $gg.ne
 this.setGroupVisible (gg, vis);
 }
 }, $fz.isPrivate = true, $fz), "J.adapter.readers.pymol.PyMOLGroup,~B");
-$_M(c$, "getUniqueFloat", 
-($fz = function (uniqueID, i) {
-var f;
-switch (i) {
-case 172:
-f = this.sphereTranslucency;
-break;
-case 155:
-f = this.sphereScale;
-break;
-case 65:
-f = this.nonbondedSize;
-break;
-default:
-return 0;
-}
-return this.getUniqueFloatDef (uniqueID, i, f);
-}, $fz.isPrivate = true, $fz), "~N,~N");
 $_M(c$, "getSSMapAtom", 
 function (ssType) {
 var bs = this.ssMapAtom.get (ssType);
@@ -1206,9 +1218,11 @@ $_M(c$, "addMesh",
 function (tok, obj, objName, isMep) {
 var jo = this.addJmolObject (tok, null, obj);
 this.setSceneObject (objName, -1);
+var meshColor = Clazz.floatToInt (this.floatSetting (146));
+if (meshColor < 0) meshColor = J.adapter.readers.pymol.PyMOLScene.intAt (J.adapter.readers.pymol.PyMOLScene.listAt (obj, 0), 2);
 if (!isMep) {
 jo.setSize (this.meshWidth);
-jo.argb = J.adapter.readers.pymol.PyMOL.getRGB (J.adapter.readers.pymol.PyMOLScene.intAt (J.adapter.readers.pymol.PyMOLScene.listAt (obj, 0), 2));
+jo.argb = J.adapter.readers.pymol.PyMOL.getRGB (meshColor);
 }jo.translucency = this.transparency;
 }, "~N,J.util.JmolList,~S,~B");
 $_M(c$, "addIsosurface", 

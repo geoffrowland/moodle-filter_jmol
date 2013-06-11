@@ -54,12 +54,12 @@ while ((pt1 = this.line.indexOf ('(')) >= 0 && (pt2 = this.line.indexOf ('(', pt
 
 this.line = this.line.trim ();
 }, $fz.isPrivate = true, $fz));
-$_M(c$, "finalizeReader", 
+Clazz.overrideMethod (c$, "finalizeReader", 
 function () {
 var firstLine = 0;
 for (var i = firstLine; i < this.lineBuffer.size (); i++) if ((this.tokens = this.lineBuffer.get (i)).length > 0) this.getAtom ();
 
-Clazz.superCall (this, J.adapter.readers.simple.ZMatrixReader, "finalizeReader", []);
+this.finalizeReaderASCR ();
 });
 $_M(c$, "getSymbolic", 
 ($fz = function () {

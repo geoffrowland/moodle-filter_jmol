@@ -66,7 +66,8 @@ data.appendSB (sb);
 if (jvxlData.vContours != null && jvxlData.vContours.length > 0) {
 J.jvxl.data.JvxlCoder.jvxlEncodeContourData (jvxlData.vContours, data);
 }if (jvxlData.vertexColorMap != null) {
-J.io.XmlUtil.openTag (data, "jvxlVertexColorData");
+if (jvxlData.baseColor == null) J.io.XmlUtil.openTag (data, "jvxlVertexColorData");
+ else J.io.XmlUtil.openTagAttr (data, "jvxlVertexColorData", ["baseColor", jvxlData.baseColor]);
 for (var entry, $entry = jvxlData.vertexColorMap.entrySet ().iterator (); $entry.hasNext () && ((entry = $entry.next ()) || true);) J.jvxl.data.JvxlCoder.appendEncodedBitSetTag (data, "jvxlColorMap", entry.getValue (), -1, ["color", entry.getKey ()]);
 
 jvxlData.vertexColorMap = null;

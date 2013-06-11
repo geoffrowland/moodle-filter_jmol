@@ -57,7 +57,7 @@ $_M(c$, "renderNucleic",
 function () {
 this.renderEdges = this.viewer.getBoolean (603979817);
 this.ladderOnly = this.viewer.getBoolean (603979820);
-var isTraceAlpha = this.viewer.getBoolean (603979967);
+var isTraceAlpha = this.viewer.getBoolean (603979966);
 for (var i = this.bsVisible.nextSetBit (0); i >= 0; i = this.bsVisible.nextSetBit (i + 1)) {
 if (isTraceAlpha) {
 this.ptConnectScr.set (Clazz.doubleToInt ((this.controlPointScreens[i].x + this.controlPointScreens[i + 1].x) / 2), Clazz.doubleToInt ((this.controlPointScreens[i].y + this.controlPointScreens[i + 1].y) / 2), Clazz.doubleToInt ((this.controlPointScreens[i].z + this.controlPointScreens[i + 1].z) / 2));

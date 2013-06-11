@@ -24,10 +24,10 @@ this.skipAtomSet (modelAtomCount);
 }this.discardLinesUntilNonBlank ();
 return false;
 });
-$_M(c$, "finalizeReader", 
+Clazz.overrideMethod (c$, "finalizeReader", 
 function () {
 this.isTrajectory = false;
-Clazz.superCall (this, J.adapter.readers.molxyz.XyzReader, "finalizeReader", []);
+this.finalizeReaderASCR ();
 });
 $_M(c$, "skipAtomSet", 
 ($fz = function (modelAtomCount) {

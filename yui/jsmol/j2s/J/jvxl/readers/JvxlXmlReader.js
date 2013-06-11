@@ -67,10 +67,13 @@ if (this.xr.isNext ("jvxlExcludedPlaneData")) this.jvxlData.jvxlExcluded[2] = J.
 }if (this.excludedTriangleCount > 0) this.jvxlData.jvxlExcluded[3] = J.jvxl.data.JvxlCoder.jvxlDecodeBitSet (this.xr.getXmlData ("jvxlExcludedTriangleData", null, false, false));
 if (this.invalidatedVertexCount > 0) this.jvxlData.jvxlExcluded[1] = J.jvxl.data.JvxlCoder.jvxlDecodeBitSet (this.xr.getXmlData ("jvxlInvalidatedVertexData", null, false, false));
 if (this.haveContourData) this.jvxlDecodeContourData (this.jvxlData, this.xr.getXmlData ("jvxlContourData", null, false, false));
-if (this.jvxlData.nVertexColors > 0) {
+if (this.jvxlDataIsColorMapped && this.jvxlData.nVertexColors > 0) {
 this.jvxlData.vertexColorMap =  new java.util.Hashtable ();
+var vdata = this.xr.getXmlData ("jvxlVertexColorData", null, true, false);
+var baseColor = J.io.XmlReader.getXmlAttrib (vdata, "baseColor");
+this.jvxlData.baseColor = (baseColor.length > 0 ? baseColor : null);
 for (var i = 0; i < this.jvxlData.nVertexColors; i++) {
-var s = this.xr.getXmlData ("jvxlColorMap", null, true, false);
+var s = this.xr.getXmlData ("jvxlColorMap", vdata, true, false);
 var color = J.io.XmlReader.getXmlAttrib (s, "color");
 var bs = J.jvxl.data.JvxlCoder.jvxlDecodeBitSet (this.xr.getXmlData ("jvxlColorMap", s, false, false));
 this.jvxlData.vertexColorMap.put (color, bs);
@@ -381,6 +384,7 @@ this.fractionPtr = 0;
 }, $fz.isPrivate = true, $fz), "~N,~N,~N");
 Clazz.overrideMethod (c$, "readColorData", 
 function () {
+if (!this.jvxlDataIsColorMapped) return "";
 var vertexCount = this.jvxlData.vertexCount = this.meshData.vertexCount;
 var colixes = this.meshData.vertexColixes;
 var vertexValues = this.meshData.vertexValues;

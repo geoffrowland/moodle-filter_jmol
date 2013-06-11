@@ -178,7 +178,11 @@ return true;
 }
 return true;
 });
-$_M(c$, "finalizeReader", 
+Clazz.overrideMethod (c$, "finalizeReader", 
+function () {
+this.finalizeReaderPDB ();
+});
+$_M(c$, "finalizeReaderPDB", 
 function () {
 this.checkNotPDB ();
 this.atomSetCollection.connectAll (this.maxSerial, this.isConnectStateBug);
@@ -205,7 +209,7 @@ for (var i = n; --i >= 0; ) this.setTlsGroups (0, i, symmetry);
 }if (this.sbTlsErrors != null) {
 this.atomSetCollection.setAtomSetCollectionAuxiliaryInfo ("tlsErrors", this.sbTlsErrors.toString ());
 this.appendLoadNote (this.sbTlsErrors.toString ());
-}Clazz.superCall (this, J.adapter.readers.cifpdb.PdbReader, "finalizeReader", []);
+}this.finalizeReaderASCR ();
 if (this.vCompnds != null) this.atomSetCollection.setAtomSetCollectionAuxiliaryInfo ("compoundSource", this.vCompnds);
 if (this.htSites != null) {
 this.addSites (this.htSites);
@@ -1033,7 +1037,6 @@ anisou[4] = this.dataT[4] - L[1][1] * xz + L[1][2] * xy - L[2][0] * yy + L[0][1]
 anisou[5] = this.dataT[5] - L[0][0] * yz - L[1][2] * xx + L[2][0] * xy + L[0][1] * xz - S[1][1] * x + S[2][2] * x + S[0][1] * y - S[0][2] * z;
 anisou[6] = 12;
 anisou[7] = bresidual;
-if (Float.isNaN (bresidual)) System.out.println ("hmm");
 if (this.tlsU == null) this.tlsU =  new java.util.Hashtable ();
 this.tlsU.put (atom, anisou);
 atom.ellipsoid = [null, null, symmetry.getEllipsoid (this.dataT)];

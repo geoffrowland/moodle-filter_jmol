@@ -775,6 +775,7 @@ return atom.anisoBorU;
 $_M(c$, "setEllipsoids", 
 function () {
 if (!this.haveAnisou) return;
+this.getSymmetry ();
 var iAtomFirst = this.getLastAtomSetAtomIndex ();
 for (var i = iAtomFirst; i < this.atomCount; i++) this.atoms[i].setEllipsoid (this.symmetry.getEllipsoid (this.atoms[i].anisoBorU));
 

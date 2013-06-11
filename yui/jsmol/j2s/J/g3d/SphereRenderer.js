@@ -364,11 +364,11 @@ break;
 zPixel = Clazz.doubleToInt (this.zroot[iRoot]);
 if (zPixel == 0) zPixel = this.z;
 mode = 2;
+this.z0 = zPixel;
 if (checkOctant) {
 this.ptTemp.set (xCurrent - this.x, yCurrent - this.y, zPixel - this.z);
 this.mat.transform (this.ptTemp);
 var thisOctant = J.util.Quadric.getOctant (this.ptTemp);
-this.z0 = zPixel;
 if (thisOctant == this.selectedOctant) {
 iShade = this.getPlaneShade (xCurrent, yCurrent, this.zroot);
 zPixel = Clazz.doubleToInt (this.zroot[0]);
@@ -377,8 +377,8 @@ mode = 3;
 if (isCore) {
 this.z0 = zPixel = this.slab;
 mode = 0;
-}if (zPixel < this.slab || zPixel > this.depth || this.zbuf[offset] <= this.z0) continue;
-}} else {
+}}if (zPixel < this.slab || zPixel > this.depth || this.zbuf[offset] <= this.z0) continue;
+} else {
 var zOffset = Clazz.doubleToInt (Math.sqrt (s2 - j2));
 zPixel = this.z + (this.z < this.slab ? zOffset : -zOffset);
 var isCore = (this.z < this.slab ? zPixel >= this.slab : zPixel < this.slab);

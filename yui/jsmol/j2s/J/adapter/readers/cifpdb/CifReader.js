@@ -137,7 +137,7 @@ this.processNonpolyData ();
 this.processAssemblyGen ();
 }}return true;
 }, $fz.isPrivate = true, $fz));
-$_M(c$, "finalizeReader", 
+Clazz.overrideMethod (c$, "finalizeReader", 
 function () {
 if (this.atomSetCollection.getStructureCount () > 0) this.atomSetCollection.bsStructuredModels.setBits (0, this.atomSetCollection.getAtomSetCount ());
 if (this.vBiomolecules != null && this.vBiomolecules.size () == 1 && this.atomSetCollection.getAtomCount () > 0) {
@@ -145,7 +145,7 @@ this.atomSetCollection.setAtomSetAuxiliaryInfo ("biomolecules", this.vBiomolecul
 this.setBiomolecules ();
 if (this.vBiomts != null && this.vBiomts.size () > 1) {
 this.atomSetCollection.applySymmetryBio (this.vBiomts, this.notionalUnitCell, this.applySymmetryToBonds, this.filter);
-}}Clazz.superCall (this, J.adapter.readers.cifpdb.CifReader, "finalizeReader", []);
+}}this.finalizeReaderASCR ();
 var header = this.tokenizer.getFileHeader ();
 if (header.length > 0) this.atomSetCollection.setAtomSetCollectionAuxiliaryInfo ("fileHeader", header);
 });
@@ -176,11 +176,11 @@ if (nAtoms < this.atomSetCollection.getAtomCount ()) this.atomSetCollection.bsAt
 biomolecule.put ("atomCount", Integer.$valueOf (nAtoms * ops.length));
 }
 }, $fz.isPrivate = true, $fz));
-$_M(c$, "applySymmetryAndSetTrajectory", 
+Clazz.overrideMethod (c$, "applySymmetryAndSetTrajectory", 
 function () {
 this.atomSetCollection.setCheckSpecial (!this.isPDB);
 var doCheck = this.doCheckUnitCell && !this.isPDB;
-Clazz.superCall (this, J.adapter.readers.cifpdb.CifReader, "applySymmetryAndSetTrajectory", []);
+this.applySymTrajASCR ();
 if (doCheck && (this.bondTypes.size () > 0 || this.isMolecular)) this.setBondingAndMolecules ();
 });
 $_M(c$, "processDataParameter", 

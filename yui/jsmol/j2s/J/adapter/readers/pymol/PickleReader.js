@@ -216,7 +216,6 @@ var o = this.peek ();
 if (Clazz.instanceOf (o, String)) {
 if (doCheck && this.markCount >= 6 || this.markCount == 3 && this.inMovie) return;
 this.memo.put (Integer.$valueOf (i), o);
-System.out.println ("caching string " + o + " at " + this.binaryDoc.getPosition ());
 }}, $fz.isPrivate = true, $fz), "~N,~B");
 $_M(c$, "getMemo", 
 ($fz = function (i) {

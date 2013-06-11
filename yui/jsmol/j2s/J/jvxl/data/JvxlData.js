@@ -77,6 +77,7 @@ this.slabInfo = null;
 this.allowVolumeRender = false;
 this.voxelVolume = 0;
 this.mapLattice = null;
+this.baseColor = null;
 Clazz.instantialize (this, arguments);
 }, J.jvxl.data, "JvxlData");
 Clazz.prepareFields (c$, function () {

@@ -203,6 +203,7 @@ return this.viewerOptions;
 });
 $_M(c$, "setOptions", 
 ($fz = function (info) {
+//alert("viewer setoptions " + arguments.callee.caller.caller.caller.caller + " " + info)
 this.viewerOptions = info;
 if (J.util.Logger.debugging) {
 J.util.Logger.debug ("Viewer constructor " + this);
@@ -243,9 +244,12 @@ this.isJS = this.isWebGL || (platform.indexOf (".awtjs2d.") >= 0);
 o = J.api.Interface.getInterface (platform);
 }this.apiPlatform = o;
 this.display = info.get ("display");
+//alert("viewer display="+this.display)
 this.isSingleThreaded = this.apiPlatform.isSingleThreaded ();
 this.$noGraphicsAllowed = this.checkOption2 ("noGraphics", "-n");
-this.haveDisplay = (this.display != null && !this.$noGraphicsAllowed && !this.isHeadless () && !this.checkOption2 ("isDataOnly", "\0"));
+this.haveDisplay = (this.isWebGL || this.display != null && !this.$noGraphicsAllowed && !this.isHeadless () && !this.checkOption2 ("isDataOnly", "\0"));
+
+
 this.$noGraphicsAllowed = new Boolean (this.$noGraphicsAllowed & (this.display == null)).valueOf ();
 if (this.haveDisplay) {
 this.mustRender = true;
@@ -2872,7 +2876,7 @@ $_M(c$, "getImage",
 if (this.isWebGL)return null;
 }var image = null;
 try {
-this.gdata.beginRendering (this.transformManager.getStereoRotationMatrix (isDouble), isImageWrite);
+this.beginRendering (isDouble, isImageWrite);
 this.render ();
 this.gdata.endRendering ();
 image = this.gdata.getScreenImage (isImageWrite);
@@ -2886,6 +2890,10 @@ throw er;
 }
 }
 return image;
+}, $fz.isPrivate = true, $fz), "~B,~B");
+$_M(c$, "beginRendering", 
+($fz = function (isDouble, isImageWrite) {
+this.gdata.beginRendering (this.transformManager.getStereoRotationMatrix (isDouble), this.global.translucent, isImageWrite);
 }, $fz.isPrivate = true, $fz), "~B,~B");
 $_M(c$, "isAntialiased", 
 function () {
@@ -2923,11 +2931,11 @@ if (this.isWebGL)return null
 var mergeImages = (graphic == null && this.isStereoDouble ());
 var imageBuffer;
 if (this.transformManager.stereoMode.isBiColor ()) {
-this.gdata.beginRendering (this.transformManager.getStereoRotationMatrix (true), isImageWrite);
+this.beginRendering (true, isImageWrite);
 this.render ();
 this.gdata.endRendering ();
 this.gdata.snapshotAnaglyphChannelBytes ();
-this.gdata.beginRendering (this.transformManager.getStereoRotationMatrix (false), isImageWrite);
+this.beginRendering (false, isImageWrite);
 this.render ();
 this.gdata.endRendering ();
 this.gdata.applyAnaglygh (this.transformManager.stereoMode, this.transformManager.stereoColors);
@@ -3119,7 +3127,15 @@ return J.util.TextFormat.formatStringS (s, "FILE", f);
 case ':':
 format = this.global.pubChemFormat;
 var fl = f.toLowerCase ();
-var fi = J.util.Parser.parseInt (f);
+var fi = -2147483648;
+try {
+fi = Integer.parseInt (f);
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+} else {
+throw e;
+}
+}
 if (fi != -2147483648) {
 f = "cid/" + fi;
 } else {
@@ -3828,8 +3844,10 @@ case 603979952:
 return this.global.ssbondsBackbone;
 case 603979955:
 return this.global.strutsMultiple;
-case 603979967:
+case 603979966:
 return this.global.traceAlpha;
+case 603979967:
+return this.global.translucent;
 case 603979968:
 return this.global.twistedSheets;
 case 603979973:
@@ -4426,7 +4444,7 @@ return;
 }var tok = J.script.T.getTokFromName (key);
 switch (J.script.T.getParamType (tok)) {
 case 545259520:
-this.setStringPropertyTok (key, tok, "" + value);
+this.setStringPropertyTok (key, tok, "");
 break;
 case 553648128:
 this.setIntPropertyTok (key, tok, value ? 1 : 0);
@@ -4442,6 +4460,9 @@ $_M(c$, "setBooleanPropertyTok",
 ($fz = function (key, tok, value) {
 var doRepaint = true;
 switch (tok) {
+case 603979967:
+this.global.translucent = value;
+break;
 case 603979820:
 this.global.cartoonLadders = value;
 break;
@@ -4721,7 +4742,7 @@ return;
 case 603979864:
 this.global.highResolutionFlag = value;
 break;
-case 603979967:
+case 603979966:
 this.global.traceAlpha = value;
 break;
 case 603979983:
@@ -4777,7 +4798,7 @@ break;
 case 603979964:
 this.global.testFlag3 = value;
 break;
-case 603979966:
+case 603979965:
 this.jmolTest ();
 this.global.testFlag4 = value;
 break;

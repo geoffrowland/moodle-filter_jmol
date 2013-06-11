@@ -17,18 +17,25 @@ J.adapter.readers.pymol.PyMOL.moreColors.put (id, Integer.$valueOf (value));
 c$.getDefaultSetting = $_M(c$, "getDefaultSetting", 
 function (i, pymolVersion) {
 switch (i) {
-case 376:
-return -1;
 case 453:
 return 14;
+case 236:
+case 570:
+case 235:
+case 526:
+case 376:
 case 530:
 case 531:
 case 532:
 return -1;
 case 327:
+case 569:
 return 1;
 default:
 J.util.Logger.info ("PyMOL " + pymolVersion + " does not have setting " + i);
+case 571:
+case 666:
+case 524:
 return 0;
 }
 }, "~N,~N");
@@ -46,7 +53,7 @@ Clazz.defineStatics (c$,
 "OBJECT_SLICE", 10,
 "OBJECT_ALIGNMENT", 11,
 "OBJECT_GROUP", 12);
-c$.REP_LIST = c$.prototype.REP_LIST = ["sticks", "spheres", "surface", "labels", "nb_spheres", "cartoon", "ribbon", "lines", "mesh", "dots", "dashes", "nonbonded"];
+c$.REP_LIST = c$.prototype.REP_LIST = ["sticks", "spheres", "surface", "labels", "nb_spheres", "cartoon", "ribbon", "lines", "mesh", "dots", "dashes", "nonbonded", "cell", "cgo", "callback", "extent", "slice", "angles", "dihedrals", "ellipsoid", "volume"];
 Clazz.defineStatics (c$,
 "REP_STICKS", 0,
 "REP_SPHERES", 1,
@@ -60,10 +67,6 @@ Clazz.defineStatics (c$,
 "REP_DOTS", 9,
 "REP_DASHES", 10,
 "REP_NONBONDED", 11,
-"REP_MAX", 12,
-"REP_JMOL_TRACE", 12,
-"REP_JMOL_PUTTY", 13,
-"REP_JMOL_MAX", 14,
 "REP_CELL", 12,
 "REP_CGO", 13,
 "REP_CALLBACK", 14,
@@ -71,6 +74,12 @@ Clazz.defineStatics (c$,
 "REP_SLICE", 16,
 "REP_ANGLES", 17,
 "REP_DIHEDRALS", 18,
+"REP_ELLIPSOID", 19,
+"REP_VOLUME", 20,
+"REP_MAX", 21,
+"REP_JMOL_TRACE", 21,
+"REP_JMOL_PUTTY", 22,
+"REP_JMOL_MAX", 23,
 "FLAG_exfoliate", 0x01000000,
 "FLAG_ignore", 0x02000000,
 "FLAG_no_smooth", 0x04000000,
