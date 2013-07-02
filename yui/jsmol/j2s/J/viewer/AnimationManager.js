@@ -196,6 +196,7 @@ if (framePointer2 < 0) framePointer2 = frameCount;
 if (framePointer >= frameCount) framePointer = frameCount - 1;
 if (framePointer2 >= frameCount) framePointer2 = frameCount - 1;
 this.firstFrameIndex = framePointer;
+this.currentMorphModel = this.firstFrameIndex;
 this.lastFrameIndex = framePointer2;
 this.frameStep = (framePointer2 < framePointer ? -1 : 1);
 this.rewindAnimation ();
@@ -291,6 +292,8 @@ if (this.isMovie) {
 var iModel = this.modelIndexForFrame (i);
 this.currentAnimationFrame = i;
 i = iModel;
+} else {
+this.currentAnimationFrame = i;
 }this.setModel (i, true);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {

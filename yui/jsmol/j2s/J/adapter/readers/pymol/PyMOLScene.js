@@ -305,7 +305,7 @@ this.finalizeObjects ();
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 System.out.println ("PyMOLScene exception " + e);
-if (!this.viewer.isApplet ()) e.printStackTrace ();
+if (!this.viewer.isJS ()) e.printStackTrace ();
 } else {
 throw e;
 }
@@ -459,7 +459,7 @@ obj.finalizeObject (this, this.viewer.modelSet, this.mepList, this.doCache);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 System.out.println (e);
-if (!this.viewer.isApplet ()) e.printStackTrace ();
+if (!this.viewer.isJS ()) e.printStackTrace ();
 } else {
 throw e;
 }

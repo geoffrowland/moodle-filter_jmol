@@ -1245,7 +1245,7 @@ var isClip = (fileName == null);
 if (!isClip) {
 if (doCheck) fileName = this.getOutputFileNameFromDialog (fileName, quality);
 if (fileName == null) return null;
-if (!this.viewer.isJS && J.viewer.FileManager.isLocal (fileName)) localName = fileName;
+if (!this.viewer.$isJS && J.viewer.FileManager.isLocal (fileName)) localName = fileName;
 if (fullPath != null) fullPath[0] = fileName;
 }var saveWidth = this.viewer.dimScreen.width;
 var saveHeight = this.viewer.dimScreen.height;
@@ -1263,7 +1263,7 @@ if (type.equals ("ZIP") || type.equals ("ZIPALL")) {
 if (scripts != null && type.equals ("ZIP")) type = "ZIPALL";
 ret = J.io.JmolBinary.createZipSet (this.viewer.fileManager, this.viewer, localName, text, scripts, type.equals ("ZIPALL"));
 } else if (type.equals ("SCENE")) {
-ret = (this.viewer.isJS ? "ERROR: Not Available" : this.createSceneSet (fileName, text, width, height));
+ret = (this.viewer.$isJS ? "ERROR: Not Available" : this.createSceneSet (fileName, text, width, height));
 } else {
 if (!type.equals ("OutputStream")) ret = this.viewer.statusManager.createImage (fileName, type, text, bytes, quality);
 if (ret == null) {

@@ -25,6 +25,7 @@ Clazz.implementOf(Number,java.io.Serializable);
 Number.equals=Clazz.innerFunctions.equals;
 Number.getName=Clazz.innerFunctions.getName;
 
+
 Number.serialVersionUID=Number.prototype.serialVersionUID=-8742448824652078965;
 
 $_M(Number,"shortValue",
@@ -69,7 +70,7 @@ Integer.prototype.valueOf=function(){return 0;};
 Integer.toString=Integer.prototype.toString=function(){
 if(arguments.length!=0){
 return""+arguments[0];
-}else if(this===Integer){
+} else if(this===Integer){
 return"class java.lang.Integer";
 }
 return""+this.valueOf();
@@ -215,6 +216,13 @@ return c._numberToString(16) + (b = b._numberToString(16)).substring(b.length - 
 return d._numberToString(16);};
 Integer.toOctalString=Integer.prototype.toOctalString=function(d){if(d.valueOf)d=d.valueOf();return d._numberToString(8);};
 Integer.toBinaryString=Integer.prototype.toBinaryString=function(d){if(d.valueOf)d=d.valueOf();return d._numberToString(2);};
+
+Number.toString = Number.prototype.toString=function(a){
+if (arguments.length == 0)return ""+a
+return Integer.toHexString(a);
+};
+
+
 
 Integer.decode=$_M(Integer,"decode",
 function(nm){

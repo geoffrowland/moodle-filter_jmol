@@ -2222,6 +2222,35 @@ models.addLast (modelinfo);
 info.put ("models", models);
 return info;
 }, "J.util.BS");
+$_M(c$, "getDihedralMap", 
+function (alist) {
+var list =  new J.util.JmolList ();
+var n = alist.length;
+var ai = null;
+var aj = null;
+var ak = null;
+var al = null;
+for (var i = n - 1; --i >= 0; ) for (var j = n; --j > i; ) {
+ai = this.atoms[alist[i]];
+aj = this.atoms[alist[j]];
+if (ai.isBonded (aj)) {
+for (var k = n; --k >= 0; ) if (k != i && k != j && (ak = this.atoms[alist[k]]).isBonded (ai)) for (var l = n; --l >= 0; ) if (l != i && l != j && l != k && (al = this.atoms[alist[l]]).isBonded (aj)) {
+var a =  Clazz.newIntArray (4, 0);
+a[0] = ak.index;
+a[1] = ai.index;
+a[2] = aj.index;
+a[3] = al.index;
+list.addLast (a);
+}
+
+}}
+
+n = list.size ();
+var ilist = J.util.ArrayUtil.newInt2 (n);
+for (var i = n; --i >= 0; ) ilist[n - i - 1] = list.get (i);
+
+return ilist;
+}, "~A");
 Clazz.pu$h ();
 c$ = Clazz.decorateAsClass (function () {
 this.modelIndex = 0;

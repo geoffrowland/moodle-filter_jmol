@@ -37,7 +37,7 @@ var m = this.minimizer;
 if (!this.setArrays (m.atoms, m.bsAtoms, m.bonds, m.rawBondCount, false, false)) return false;
 this.setModelFields ();
 this.fixTypes ();
-this.calc =  new J.minimize.forcefield.CalculationsMMFF (this, J.minimize.forcefield.ForceFieldMMFF.ffParams, this.minAtoms, this.minBonds, this.minAngles, this.minTorsions, this.minimizer.constraints);
+this.calc =  new J.minimize.forcefield.CalculationsMMFF (this, J.minimize.forcefield.ForceFieldMMFF.ffParams, this.minAtoms, this.minBonds, this.minAngles, this.minTorsions, this.minPositions, this.minimizer.constraints);
 this.calc.setLoggingEnabled (true);
 return this.calc.setupCalculations ();
 }, "J.util.BS,~N");

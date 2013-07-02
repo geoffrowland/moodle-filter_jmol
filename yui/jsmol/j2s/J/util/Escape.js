@@ -68,28 +68,34 @@ return Clazz.isAP(x);
 }}, "~O");
 c$.isAF = $_M(c$, "isAF", 
 function (x) {
-return Clazz.instanceOf (x, Array);
-}, "~O");
+{
+return Clazz.isAF(x);
+}}, "~O");
 c$.isAFloat = $_M(c$, "isAFloat", 
 function (x) {
-return Clazz.instanceOf (x, Array);
-}, "~O");
+{
+return Clazz.isAFloat(x);
+}}, "~O");
 c$.isAV = $_M(c$, "isAV", 
 function (x) {
-return Clazz.instanceOf (x, Array);
-}, "~O");
+{
+return Clazz.instanceOf(x[0], J.script.SV);
+}}, "~O");
 c$.isAD = $_M(c$, "isAD", 
 function (x) {
-return Clazz.instanceOf (x, Array);
-}, "~O");
+{
+return Clazz.isAF(x);
+}}, "~O");
 c$.isAB = $_M(c$, "isAB", 
 function (x) {
-return Clazz.instanceOf (x, Array);
-}, "~O");
+{
+return Clazz.isAI(x);
+}}, "~O");
 c$.isAI = $_M(c$, "isAI", 
 function (x) {
-return Clazz.instanceOf (x, Array);
-}, "~O");
+{
+return Clazz.isAI(x);
+}}, "~O");
 c$.isAII = $_M(c$, "isAII", 
 function (x) {
 {
@@ -406,7 +412,9 @@ return "\"" + infoType + "\": " + info;
 }, $fz.isPrivate = true, $fz), "~S,~S");
 c$.fixString = $_M(c$, "fixString", 
 ($fz = function (s) {
-if (s == null || s.indexOf ("{\"") == 0) return s;
+{
+if (typeof s == "undefined") return "null"
+}if (s == null || s.indexOf ("{\"") == 0) return s;
 s = J.util.TextFormat.simpleReplace (s, "\"", "''");
 s = J.util.TextFormat.simpleReplace (s, "\n", " | ");
 return "\"" + s + "\"";

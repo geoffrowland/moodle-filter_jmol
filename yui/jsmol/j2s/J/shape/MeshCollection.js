@@ -233,6 +233,7 @@ return;
 case 603979967:
 m.setTranslucent (bProp, this.translucentLevel);
 if (bProp && m.bsSlabGhost != null) m.resetSlab ();
+if (m.bsTransPolygons != null) m.resetTransPolygons ();
 return;
 default:
 m.setTokenProperty (tokProp, bProp);

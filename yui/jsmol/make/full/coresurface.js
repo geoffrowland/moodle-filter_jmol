@@ -7355,7 +7355,7 @@ if (this.imesh.connections != null && !this.viewer.getModelSet ().atoms[this.ime
 this.hasColorRange = false;
 if (this.renderMeshSlab (mySlabValue, slabValue)) {
 if (!this.isExport) this.renderInfo ();
-if (this.isExport && this.haveBsSlabGhost) {
+if (this.isExport && this.isGhostPass) {
 this.exportPass = 1;
 this.renderMeshSlab (mySlabValue, slabValue);
 this.exportPass = 2;
@@ -7510,7 +7510,7 @@ Clazz.overrideMethod (c$, "renderPoints",
 function () {
 try {
 if (this.volumeRender) this.g3d.volumeRender (true);
-var slabPoints = ((this.volumeRender || this.imesh.polygonCount == 0) && this.haveBsSlabDisplay);
+var slabPoints = ((this.volumeRender || this.imesh.polygonCount == 0) && this.selectedPolyOnly);
 var incr = this.imesh.vertexIncrement;
 var diam;
 if (this.imesh.diameter <= 0) {
@@ -7524,7 +7524,7 @@ var cX = (this.showNumbers ? Clazz.doubleToInt (this.viewer.getScreenWidth () / 
 var cY = (this.showNumbers ? Clazz.doubleToInt (this.viewer.getScreenHeight () / 2) : 0);
 if (this.showNumbers) this.g3d.setFontFid (this.g3d.getFontFidFS ("Monospaced", 24));
 for (var i = (!this.imesh.hasGridPoints || this.imesh.firstRealVertex < 0 ? 0 : this.imesh.firstRealVertex); i < this.vertexCount; i += incr) {
-if (this.vertexValues != null && Float.isNaN (this.vertexValues[i]) || this.frontOnly && this.transformedVectors[this.normixes[i]].z < 0 || this.imesh.jvxlData.thisSet >= 0 && this.imesh.vertexSets[i] != this.imesh.jvxlData.thisSet || !this.imesh.isColorSolid && this.imesh.vertexColixes != null && !this.setColix (this.imesh.vertexColixes[i]) || this.haveBsDisplay && !this.imesh.bsDisplay.get (i) || slabPoints && !this.bsSlab.get (i)) continue;
+if (this.vertexValues != null && Float.isNaN (this.vertexValues[i]) || this.frontOnly && this.transformedVectors[this.normixes[i]].z < 0 || this.imesh.jvxlData.thisSet >= 0 && this.imesh.vertexSets[i] != this.imesh.jvxlData.thisSet || !this.imesh.isColorSolid && this.imesh.vertexColixes != null && !this.setColix (this.imesh.vertexColixes[i]) || this.haveBsDisplay && !this.imesh.bsDisplay.get (i) || slabPoints && !this.bsPolygons.get (i)) continue;
 this.hasColorRange = true;
 if (this.showNumbers && this.screens[i].z > 10 && Math.abs (this.screens[i].x - cX) < 150 && Math.abs (this.screens[i].y - cY) < 150) {
 var s = i + (this.imesh.isColorSolid ? "" : " " + this.imesh.vertexValues[i]);
@@ -7555,18 +7555,18 @@ if (this.volumeRender) this.g3d.volumeRender (false);
 Clazz.overrideMethod (c$, "renderTriangles", 
 function (fill, iShowTriangles, isExport) {
 var polygonIndexes = this.imesh.polygonIndexes;
-this.colix = (this.haveBsSlabGhost ? this.imesh.slabColix : !fill && this.imesh.meshColix != 0 ? this.imesh.meshColix : this.imesh.colix);
+this.colix = (this.isGhostPass ? this.imesh.slabColix : !fill && this.imesh.meshColix != 0 ? this.imesh.meshColix : this.imesh.colix);
 var vertexColixes = (!fill && this.imesh.meshColix != 0 ? null : this.imesh.vertexColixes);
 this.g3d.setColix (this.colix);
 var diam = -2147483648;
 var generateSet = isExport;
 if (generateSet) {
 if (this.frontOnly && fill) this.frontOnly = false;
-this.bsPolygons.clearAll ();
+this.bsPolygonsToExport.clearAll ();
 }if (this.exportType == 1) {
 this.frontOnly = false;
-}var colorSolid = (this.haveBsSlabGhost && (!this.isBicolorMap) || vertexColixes == null || this.imesh.isColorSolid);
-var noColor = (this.haveBsSlabGhost && !this.isBicolorMap || vertexColixes == null || !fill && this.imesh.meshColix != 0);
+}var colorSolid = (this.isGhostPass && (!this.isBicolorMap) || vertexColixes == null || this.imesh.isColorSolid);
+var noColor = (this.isGhostPass && !this.isBicolorMap || vertexColixes == null || !fill && this.imesh.meshColix != 0);
 var isPlane = (this.imesh.jvxlData.jvxlPlane != null);
 var colix = this.colix;
 if (isPlane && !colorSolid && !fill && this.imesh.fillTriangles) {
@@ -7578,7 +7578,7 @@ var contourColixes = this.imesh.jvxlData.contourColixes;
 this.hasColorRange = !colorSolid && !this.isBicolorMap;
 for (var i = this.imesh.polygonCount; --i >= 0; ) {
 var polygon = polygonIndexes[i];
-if (polygon == null || this.haveBsSlabDisplay && !this.bsSlab.get (i)) continue;
+if (polygon == null || this.selectedPolyOnly && !this.bsPolygons.get (i)) continue;
 var iA = polygon[0];
 var iB = polygon[1];
 var iC = polygon[2];
@@ -7604,7 +7604,7 @@ colixB = vertexColixes[iB];
 colixC = vertexColixes[iC];
 if (this.isBicolorMap) {
 if (colixA != colixB || colixB != colixC) continue;
-if (this.haveBsSlabGhost) colixA = colixB = colixC = J.util.C.copyColixTranslucency (this.imesh.slabColix, colixA);
+if (this.isGhostPass) colixA = colixB = colixC = J.util.C.copyColixTranslucency (this.imesh.slabColix, colixA);
 }}if (diam == -2147483648) {
 if (this.imesh.diameter <= 0) {
 diam = (this.meshScale < 0 ? this.meshScale = this.viewer.getInt (553648151) : this.meshScale);
@@ -7614,7 +7614,7 @@ diam = Clazz.doubleToInt (this.viewer.getScreenDim () / 100);
 }if (diam < 1) diam = 1;
 }if (fill) {
 if (generateSet) {
-this.bsPolygons.set (i);
+this.bsPolygonsToExport.set (i);
 continue;
 }if (iB == iC) {
 this.setColix (colixA);

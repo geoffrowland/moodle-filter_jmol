@@ -1,7 +1,7 @@
 Clazz.declarePackage ("J.script");
 Clazz.load (null, "J.script.ScriptMathProcessor", ["java.lang.Float", "java.util.Arrays", "$.Date", "$.Hashtable", "java.util.regex.Pattern", "J.atomdata.RadiusData", "J.constant.EnumVdw", "J.modelset.Bond", "$.MeasurementData", "J.script.SV", "$.ScriptEvaluator", "$.T", "J.util.ArrayUtil", "$.AxisAngle4f", "$.BS", "$.BSUtil", "$.ColorEncoder", "$.ColorUtil", "$.Escape", "$.JmolList", "$.JmolMolecule", "$.Logger", "$.Matrix3f", "$.Matrix4f", "$.Measure", "$.P3", "$.P4", "$.Parser", "$.Point3fi", "$.Quaternion", "$.SB", "$.TextFormat", "$.V3"], function () {
 c$ = Clazz.decorateAsClass (function () {
-this.isSyntaxCheck = false;
+this.chk = false;
 this.wasSyntaxCheck = false;
 this.logMessages = false;
 this.eval = null;
@@ -37,7 +37,7 @@ function (eval, isArrayItem, asVector, asBitSet) {
 this.eval = eval;
 this.viewer = eval.viewer;
 this.logMessages = eval.logMessages;
-this.isSyntaxCheck = this.wasSyntaxCheck = eval.chk;
+this.chk = this.wasSyntaxCheck = eval.chk;
 this.isArrayItem = isArrayItem;
 this.asVector = asVector || isArrayItem;
 this.asBitSet = asBitSet;
@@ -284,7 +284,7 @@ case 269484225:
 case 269484226:
 this.incrementX = (op.tok == 269484226 ? 1 : -1);
 if (this.ptid == this.ptx) {
-if (this.isSyntaxCheck) return true;
+if (this.chk) return true;
 var x = this.xStack[this.xPt];
 this.xStack[this.xPt] = J.script.SV.newVariable (4, "").setv (x, false);
 return x.increment (this.incrementX);
@@ -390,7 +390,7 @@ if (!this.wasSyntaxCheck && this.xStack[this.xPt].tok != 10 && this.xStack[this.
 var tf = this.getX ().asBoolean ();
 this.addXVar (J.script.SV.getBoolean (tf));
 if (tf == (op.tok == 269484112)) {
-this.isSyntaxCheck = true;
+this.chk = true;
 op = (op.tok == 269484112 ? J.script.T.tokenOrTRUE : J.script.T.tokenAndFALSE);
 }}this.wasX = false;
 break;
@@ -463,7 +463,7 @@ var args =  new Array (nParam);
 for (var i = nParam; --i >= 0; ) args[i] = this.getX ();
 
 this.xPt--;
-if (this.isSyntaxCheck) return (op.tok == 269484241 ? true : this.addXBool (true));
+if (this.chk) return (op.tok == 269484241 ? true : this.addXBool (true));
 switch (tok) {
 case 135266826:
 case 135266819:
@@ -498,11 +498,11 @@ case 135267329:
 return this.evaluateCross (args);
 case 135270407:
 return this.evaluateData (args);
-case 135266305:
 case 1276118018:
 case 1276117505:
+if (op.tok == 269484241) return this.evaluateDot (args, tok, op.intValue);
+case 135266305:
 case 1746538509:
-if ((tok == 1276118018 || tok == 1276117505) && op.tok == 269484241) return this.evaluateDot (args, tok);
 return this.evaluateMeasure (args, op.tok);
 case 1229984263:
 case 135271426:
@@ -569,7 +569,8 @@ var stddev;
 var sOpt = J.script.SV.sValue (args[args.length - 1]);
 var isStdDev = sOpt.equalsIgnoreCase ("stddev");
 var isIsomer = sOpt.equalsIgnoreCase ("ISOMER");
-var isSmiles = (!isIsomer && args.length > (isStdDev ? 3 : 2));
+var isBonds = sOpt.equalsIgnoreCase ("BONDS");
+var isSmiles = (isBonds || !isIsomer && args.length > (isStdDev ? 3 : 2));
 var bs1 = (args[0].tok == 10 ? args[0].value : null);
 var bs2 = (args[1].tok == 10 ? args[1].value : null);
 var smiles1 = (bs1 == null ? J.script.SV.sValue (args[0]) : "");
@@ -580,6 +581,29 @@ var ptsA;
 var ptsB;
 if (isSmiles) {
 if (bs1 == null || bs2 == null) return false;
+}if (isBonds) {
+if (args.length != 4) return false;
+smiles1 = J.script.SV.sValue (args[2]);
+var mapSet = J.util.ArrayUtil.newInt2 (2);
+this.eval.getSmilesCorrelation (bs1, bs2, smiles1, null, null, null, null, true, false, mapSet, null);
+var bondMap1 = this.viewer.getDihedralMap (mapSet[0]);
+var bondMap2 = (bondMap1 == null ? null : this.viewer.getDihedralMap (mapSet[1]));
+if (bondMap2 == null || bondMap2.length != bondMap1.length) return this.addXStr ("");
+var angles =  Clazz.newFloatArray (bondMap1.length, 3, 0);
+var atoms = this.viewer.modelSet.atoms;
+J.script.ScriptMathProcessor.getTorsions (atoms, bondMap2, angles, 0);
+J.script.ScriptMathProcessor.getTorsions (atoms, bondMap1, angles, 1);
+var data =  Clazz.newFloatArray (bondMap1.length * 6, 0);
+for (var i = 0, pt = 0; i < bondMap1.length; i++) {
+var map = bondMap1[i];
+data[pt++] = map[0];
+data[pt++] = map[1];
+data[pt++] = map[2];
+data[pt++] = map[3];
+data[pt++] = angles[i][0];
+data[pt++] = angles[i][1];
+}
+return this.addXAF (data);
 }if (isIsomer) {
 if (args.length != 3) return false;
 if (bs1 == null && bs2 == null) return this.addXStr (this.viewer.getSmilesMatcher ().getRelationship (smiles1, smiles2).toUpperCase ());
@@ -610,7 +634,7 @@ check = ((ret).nextSetBit (0) >= 0);
 }if (check) return this.addXStr ("DIASTERIOMERS");
 }return this.addXStr ("CONSTITUTIONAL ISOMERS");
 }if (bs1 == null || bs2 == null) return this.addXStr ("IDENTICAL");
-stddev = this.eval.getSmilesCorrelation (bs1, bs2, smiles1, null, null, null, null, false, false);
+stddev = this.eval.getSmilesCorrelation (bs1, bs2, smiles1, null, null, null, null, false, false, null, null);
 return this.addXStr (stddev < 0.2 ? "IDENTICAL" : "IDENTICAL or CONFORMATIONAL ISOMERS (RMSD=" + stddev + ")");
 } else if (isSmiles) {
 ptsA =  new J.util.JmolList ();
@@ -621,7 +645,7 @@ isSmiles = (sOpt.equalsIgnoreCase ("SMILES"));
 var isSearch = (isMap || sOpt.equalsIgnoreCase ("SMARTS"));
 if (isSmiles || isSearch) sOpt = (args.length > 3 ? J.script.SV.sValue (args[3]) : null);
 if (sOpt == null) return false;
-stddev = this.eval.getSmilesCorrelation (bs1, bs2, sOpt, ptsA, ptsB, m, null, !isSmiles, isMap);
+stddev = this.eval.getSmilesCorrelation (bs1, bs2, sOpt, ptsA, ptsB, m, null, !isSmiles, isMap, null, null);
 if (isMap) {
 var nAtoms = ptsA.size ();
 if (nAtoms == 0) return this.addXStr ("");
@@ -640,6 +664,17 @@ ptsB = this.eval.getPointVector (args[1], 0);
 if (ptsA != null && ptsB != null) stddev = J.util.Measure.getTransformMatrix4 (ptsA, ptsB, m, null);
 }return (isStdDev || Float.isNaN (stddev) ? this.addXFloat (stddev) : this.addXM4 (m));
 }, $fz.isPrivate = true, $fz), "~A");
+c$.getTorsions = $_M(c$, "getTorsions", 
+($fz = function (atoms, bondMap, diff, pt) {
+for (var i = bondMap.length; --i >= 0; ) {
+var map = bondMap[i];
+var v = J.util.Measure.computeTorsion (atoms[map[0]], atoms[map[1]], atoms[map[2]], atoms[map[3]], true);
+if (pt == 1) {
+if (v - diff[i][0] > 180) v -= 360;
+ else if (v - diff[i][0] <= -180) v += 360;
+}diff[i][pt] = v;
+}
+}, $fz.isPrivate = true, $fz), "~A,~A,~A,~N");
 $_M(c$, "evaluateSort", 
 ($fz = function (args, tok) {
 if (args.length > 1) return false;
@@ -805,27 +840,51 @@ return this.addXAS (data);
 }return false;
 }, $fz.isPrivate = true, $fz), "~A");
 $_M(c$, "evaluateDot", 
-($fz = function (args, tok) {
+($fz = function (args, tok, intValue) {
 if (args.length != 1) return false;
 var x1 = this.getX ();
 var x2 = args[0];
-var pt2 = this.ptValue (x2, true);
+var pt2 = (x2.tok == 7 ? null : this.ptValue (x2, false));
 var plane2 = this.planeValue (x2);
-if (x1.tok == 10 && tok != 1276117505) return this.addXObj (this.eval.getBitsetProperty (J.script.SV.bsSelectVar (x1), 1276118018, pt2, plane2, x1.value, null, false, x1.index, false));
+if (tok == 1276118018) {
+var minMax = intValue & 480;
+switch (x1.tok) {
+case 10:
+switch (x2.tok) {
+case 10:
+var bs = J.script.SV.bsSelectVar (x1);
+if (minMax == 32 || minMax == 64) {
+var bs2 = J.script.SV.bsSelectVar (x2);
+var data =  Clazz.newFloatArray (bs.cardinality (), 0);
+var atoms = this.viewer.modelSet.atoms;
+for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
+pt2 = atoms[i];
+data[i] = (this.eval.getBitsetProperty (bs2, intValue, pt2, plane2, x1.value, null, false, x1.index, false)).floatValue ();
+}
+return this.addXAF (data);
+}return this.addXObj (this.eval.getBitsetProperty (bs, intValue, pt2, plane2, x1.value, null, false, x1.index, false));
+}
+}
+}return this.addXFloat (this.getDistance (x1, x2, tok));
+}, $fz.isPrivate = true, $fz), "~A,~N,~N");
+$_M(c$, "getDistance", 
+($fz = function (x1, x2, tok) {
 var pt1 = this.ptValue (x1, true);
 var plane1 = this.planeValue (x1);
+var pt2 = this.ptValue (x2, true);
+var plane2 = this.planeValue (x2);
 if (tok == 1276117505) {
-if (plane1 != null && plane2 != null) return this.addXFloat (plane1.x * plane2.x + plane1.y * plane2.y + plane1.z * plane2.z + plane1.w * plane2.w);
+if (plane1 != null && plane2 != null) return plane1.x * plane2.x + plane1.y * plane2.y + plane1.z * plane2.z + plane1.w * plane2.w;
 if (plane1 != null) pt1 = J.util.P3.new3 (plane1.x, plane1.y, plane1.z);
 if (plane2 != null) pt2 = J.util.P3.new3 (plane2.x, plane2.y, plane2.z);
-return this.addXFloat (pt1.x * pt2.x + pt1.y * pt2.y + pt1.z * pt2.z);
-}if (plane1 == null) return this.addXFloat (plane2 == null ? pt2.distance (pt1) : J.util.Measure.distanceToPlane (plane2, pt1));
-return this.addXFloat (J.util.Measure.distanceToPlane (plane1, pt2));
-}, $fz.isPrivate = true, $fz), "~A,~N");
+return pt1.x * pt2.x + pt1.y * pt2.y + pt1.z * pt2.z;
+}if (plane1 == null) return (plane2 == null ? pt2.distance (pt1) : J.util.Measure.distanceToPlane (plane2, pt1));
+return J.util.Measure.distanceToPlane (plane1, pt2);
+}, $fz.isPrivate = true, $fz), "J.script.SV,J.script.SV,~N");
 $_M(c$, "ptValue", 
 function (x, allowFloat) {
 var pt;
-if (this.isSyntaxCheck) return  new J.util.P3 ();
+if (this.chk) return  new J.util.P3 ();
 switch (x.tok) {
 case 8:
 return x.value;
@@ -846,7 +905,7 @@ return J.util.P3.new3 (f, f, f);
 }, "J.script.SV,~B");
 $_M(c$, "planeValue", 
 ($fz = function (x) {
-if (this.isSyntaxCheck) return  new J.util.P4 ();
+if (this.chk) return  new J.util.P4 ();
 switch (x.tok) {
 case 9:
 return x.value;
@@ -961,7 +1020,8 @@ var isMF = sFind.equalsIgnoreCase ("MF");
 if (isSmiles || isSearch || x1.tok == 10) {
 var iPt = (isSmiles || isSearch ? 2 : 1);
 var bs2 = (iPt < args.length && args[iPt].tok == 10 ? args[iPt++].value : null);
-var isAll = (args[args.length - 1].tok == 1048589);
+var asBonds = ("bonds".equalsIgnoreCase (J.script.SV.sValue (args[args.length - 1])));
+var isAll = (asBonds || args[args.length - 1].tok == 1048589);
 var ret = null;
 switch (x1.tok) {
 case 4:
@@ -978,8 +1038,12 @@ if (isMF) return this.addXStr (J.util.JmolMolecule.getMolecularFormula (this.vie
 if (isSequence) return this.addXStr (this.viewer.getSmiles (-1, -1, x1.value, true, isAll, isAll, false));
 if (isSmiles || isSearch) sFind = flags;
 var bsMatch3D = bs2;
+if (asBonds) {
+var map = this.viewer.getSmilesMatcher ().getCorrelationMaps (sFind, this.viewer.modelSet.atoms, this.viewer.getAtomCount (), x1.value, !isSmiles, true);
+ret = (map.length > 0 ? this.viewer.getDihedralMap (map[0]) :  Clazz.newIntArray (0, 0));
+} else {
 ret = this.eval.getSmilesMatches (sFind, null, x1.value, bsMatch3D, !isSmiles, !isAll);
-break;
+}break;
 }
 if (ret == null) this.eval.error (22);
 return this.addXObj (ret);
@@ -1644,7 +1708,7 @@ var rd = null;
 switch (tok) {
 case 1048580:
 if (i != 3 || !(Clazz.instanceOf (args[1].value, J.util.BS)) || !(Clazz.instanceOf (args[2].value, J.util.BS))) return false;
-return this.addXBs (this.viewer.getBranchBitSet ((args[2].value).nextSetBit (0), (args[1].value).nextSetBit (0)));
+return this.addXBs (this.viewer.getBranchBitSet ((args[2].value).nextSetBit (0), (args[1].value).nextSetBit (0), true));
 case 135267336:
 case 1238369286:
 case 135267335:
@@ -1771,7 +1835,7 @@ return false;
 }
 if (i == args.length || !(Clazz.instanceOf (args[i].value, J.util.BS))) return false;
 var bsA = J.util.BSUtil.copy (J.script.SV.bsSelectVar (args[i++]));
-if (this.isSyntaxCheck) return this.addXBs ( new J.util.BS ());
+if (this.chk) return this.addXBs ( new J.util.BS ());
 var bsB = (i < args.length ? J.util.BSUtil.copy (J.script.SV.bsSelectVar (args[i])) : null);
 var rd =  new J.atomdata.RadiusData (null, (distance > 10 ? distance / 100 : distance), (distance > 10 ? J.atomdata.RadiusData.EnumType.FACTOR : J.atomdata.RadiusData.EnumType.OFFSET), J.constant.EnumVdw.AUTO);
 bsB = this.eval.setContactBitSets (bsA, bsB, true, NaN, rd, false);
@@ -1903,12 +1967,12 @@ return true;
 if (x2 === J.script.T.tokenArraySelector) return false;
 if (x2.tok == 7 || x2.tok == 11 || x2.tok == 12) x2 = J.script.SV.selectItemVar (x2);
 if (op.tok == 269484225 || op.tok == 269484226) {
-if (!this.isSyntaxCheck && !x2.increment (this.incrementX)) return false;
+if (!this.chk && !x2.increment (this.incrementX)) return false;
 this.wasX = true;
 this.putX (x2);
 return true;
 }if (op.tok == 269484144) {
-if (this.isSyntaxCheck) return this.addXBool (true);
+if (this.chk) return this.addXBool (true);
 switch (x2.tok) {
 case 9:
 return this.addXPt4 ((J.util.Quaternion.newP4 (x2.value)).inv ().toPoint4f ());
@@ -1974,9 +2038,9 @@ default:
 }
 break;
 case 1679429641:
-return (this.isSyntaxCheck ? this.addXStr ("x") : this.getBoundBox (x2));
+return (this.chk ? this.addXStr ("x") : this.getBoundBox (x2));
 }
-if (this.isSyntaxCheck) return this.addXStr (J.script.SV.sValue (x2));
+if (this.chk) return this.addXStr (J.script.SV.sValue (x2));
 if (x2.tok == 4) {
 var v = J.script.SV.unescapePointOrBitsetAsVariable (J.script.SV.sValue (x2));
 if (!(Clazz.instanceOf (v, J.script.SV))) return false;
@@ -1984,8 +2048,8 @@ x2 = v;
 }if (op.tok == x2.tok) x2 = this.getX ();
 return this.getPointOrBitsetOperation (op, x2);
 }var x1 = this.getX ();
-if (this.isSyntaxCheck) {
-if (op === J.script.T.tokenAndFALSE || op === J.script.T.tokenOrTRUE) this.isSyntaxCheck = false;
+if (this.chk) {
+if (op === J.script.T.tokenAndFALSE || op === J.script.T.tokenOrTRUE) this.chk = false;
 return this.addXVar (J.script.SV.newScriptVariableToken (x1));
 }switch (op.tok) {
 case 269484160:
@@ -2414,7 +2478,7 @@ return "?";
 $_M(c$, "getAllProperties", 
 ($fz = function (x2, abbr) {
 if (x2.tok != 10) return false;
-if (this.isSyntaxCheck) return this.addXStr ("");
+if (this.chk) return this.addXStr ("");
 var bs = J.script.SV.bsSelectVar (x2);
 var tokens;
 var n = bs.cardinality ();
@@ -2442,7 +2506,7 @@ return J.util.Matrix4f.newMV (matRotate, vTranslate == null ?  new J.util.V3 () 
 $_M(c$, "getBoundBox", 
 ($fz = function (x2) {
 if (x2.tok != 10) return false;
-if (this.isSyntaxCheck) return this.addXStr ("");
+if (this.chk) return this.addXStr ("");
 var b = this.viewer.getBoxInfo (J.script.SV.bsSelectVar (x2), 1);
 var pts = b.getBoundBoxPoints (true);
 var list =  new J.util.JmolList ();

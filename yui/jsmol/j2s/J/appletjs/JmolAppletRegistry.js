@@ -3,7 +3,9 @@ Clazz.load (["java.util.Hashtable"], "J.appletjs.JmolAppletRegistry", ["J.util.L
 c$ = Clazz.declareType (J.appletjs, "JmolAppletRegistry");
 c$.checkIn = $_M(c$, "checkIn", 
 function (name, applet) {
-J.appletjs.JmolAppletRegistry.cleanRegistry ();
+{
+if (Jmol._htRegistry) {J.appletjs.JmolAppletRegistry.htRegistry = Jmol._htRegistry} else {Jmol._htRegistry = J.appletjs.JmolAppletRegistry.htRegistry};
+}J.appletjs.JmolAppletRegistry.cleanRegistry ();
 if (name != null) {
 J.util.Logger.info ("AppletRegistry.checkIn(" + name + ")");
 J.appletjs.JmolAppletRegistry.htRegistry.put (name, applet);

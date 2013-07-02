@@ -28,7 +28,7 @@ return this.pointGroup.getInfo (modelIndex, asDraw, asInfo, type, index, scale);
 }, "~N,~B,~B,~S,~N,~N");
 $_M(c$, "setSpaceGroup", 
 function (doNormalize) {
-if (this.spaceGroup == null) this.spaceGroup = ( new J.symmetry.SpaceGroup (null)).set (doNormalize);
+if (this.spaceGroup == null) this.spaceGroup = (J.symmetry.SpaceGroup.getNull ()).set (doNormalize);
 }, "~B");
 $_M(c$, "addSpaceGroupOperation", 
 function (xyz, opId) {

@@ -253,7 +253,7 @@ function (ptsA, ptsB, m, centerA) {
 var cptsA = J.util.Measure.getCenterAndPoints (ptsA);
 var cptsB = J.util.Measure.getCenterAndPoints (ptsB);
 var retStddev =  Clazz.newFloatArray (2, 0);
-var q = J.util.Measure.calculateQuaternionRotation ([cptsA, cptsB], retStddev, false);
+var q = J.util.Measure.calculateQuaternionRotation ([cptsA, cptsB], retStddev, true);
 var v = J.util.V3.newV (cptsB[0]);
 v.sub (cptsA[0]);
 m.setMV (q.getMatrix (), v);

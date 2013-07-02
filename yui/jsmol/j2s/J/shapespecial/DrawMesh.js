@@ -76,4 +76,17 @@ this.axes = J.util.ArrayUtil.deleteElements (this.axes, modelIndex, 1);
 var bs = J.util.BSUtil.newAndSetBit (modelIndex);
 J.util.BSUtil.deleteBits (this.modelFlags, bs);
 }, "~N");
+$_M(c$, "isRenderScalable", 
+function () {
+switch (this.drawType) {
+case J.shapespecial.Draw.EnumDrawType.ARROW:
+return (this.connections != null);
+case J.shapespecial.Draw.EnumDrawType.ARC:
+case J.shapespecial.Draw.EnumDrawType.CIRCLE:
+case J.shapespecial.Draw.EnumDrawType.CIRCULARPLANE:
+return true;
+default:
+return this.haveXyPoints;
+}
+});
 });

@@ -237,7 +237,7 @@ return sc;
 c$.getContextTrace = $_M(c$, "getContextTrace", 
 function (sc, sb, isTop) {
 if (sb == null) sb =  new J.util.SB ();
-sb.append (J.script.ScriptEvaluator.setErrorLineMessage (sc.functionName, sc.scriptFileName, sc.lineNumbers[sc.pc], sc.pc, J.script.ScriptEvaluator.statementAsString (sc.statement, (isTop ? sc.iToken : 9999), false)));
+sb.append (J.script.ScriptEvaluator.getErrorLineMessage (sc.functionName, sc.scriptFileName, sc.lineNumbers[sc.pc], sc.pc, J.script.ScriptEvaluator.statementAsString (sc.statement, (isTop ? sc.iToken : 9999), false)));
 if (sc.parentContext != null) J.script.ScriptEvaluator.getContextTrace (sc.parentContext, sb, false);
 return sb;
 }, "J.script.ScriptContext,J.util.SB,~B");
@@ -291,7 +291,7 @@ return this.executionStopped || !this.isJS && this.currentThread !== Thread.curr
 });
 Clazz.overrideMethod (c$, "getNextStatement", 
 function () {
-return (this.pc < this.aatoken.length ? J.script.ScriptEvaluator.setErrorLineMessage (this.functionName, this.scriptFileName, this.getLinenumber (null), this.pc, J.script.ScriptEvaluator.statementAsString (this.aatoken[this.pc], -9999, this.logMessages)) : "");
+return (this.pc < this.aatoken.length ? J.script.ScriptEvaluator.getErrorLineMessage (this.functionName, this.scriptFileName, this.getLinenumber (null), this.pc, J.script.ScriptEvaluator.statementAsString (this.aatoken[this.pc], -9999, this.logMessages)) : "");
 });
 $_M(c$, "getCommand", 
 ($fz = function (pc, allThisLine, addSemi) {
@@ -392,7 +392,7 @@ if (Clazz.exceptionOf (ex, Exception)) {
 this.viewer.setStringProperty ("_errormessage", "" + ex);
 if (e.thisContext == null) {
 J.util.Logger.error ("Error evaluating context " + ex);
-if (!this.viewer.isApplet ()) ex.printStackTrace ();
+if (!this.viewer.isJS ()) ex.printStackTrace ();
 }return false;
 } else {
 throw ex;
@@ -672,7 +672,7 @@ case 192:
 case 128:
 case 160:
 case 96:
-allowMathFunc = (isUserFunction || tok2 == 480 || tok2 == 224);
+allowMathFunc = (isUserFunction || token.intValue == 1276118018 || tok2 == 480 || tok2 == 224);
 token.intValue |= tok2;
 this.getToken (this.iToken + 2);
 }
@@ -1758,8 +1758,7 @@ s = v;
 if (isExpression && !forceString) {
 fixed[j] = J.script.T.o (10, this.getAtomBitSet (s));
 } else {
-if (!isExpression) {
-}tok = (isSetAt ? J.script.T.getTokFromName (s) : isClauseDefine || forceString || s.length == 0 || s.indexOf (".") >= 0 || s.indexOf (" ") >= 0 || s.indexOf ("=") >= 0 || s.indexOf (";") >= 0 || s.indexOf ("[") >= 0 || s.indexOf ("{") >= 0 ? 4 : 1073741824);
+tok = (isSetAt ? J.script.T.getTokFromName (s) : isClauseDefine || forceString || s.length == 0 || s.indexOf (".") >= 0 || s.indexOf (" ") >= 0 || s.indexOf ("=") >= 0 || s.indexOf (";") >= 0 || s.indexOf ("[") >= 0 || s.indexOf ("{") >= 0 ? 4 : 1073741824);
 fixed[j] = J.script.T.o (tok, v);
 }}} else if (Clazz.instanceOf (v, J.util.BS)) {
 fixed[j] = J.script.SV.newVariable (10, v);
@@ -1833,11 +1832,12 @@ this.thisContext.scriptLevel = -1;
 this.contextVariables =  new java.util.Hashtable ();
 if (token.contextVariables != null) for (var key, $key = token.contextVariables.keySet ().iterator (); $key.hasNext () && ((key = $key.next ()) || true);) J.script.ScriptCompiler.addContextVariable (this.contextVariables, key);
 
-}if (this.debugScript || this.isCmdLine_c_or_C_Option) J.util.Logger.info ("-->>-------------".substring (0, Math.max (17, this.scriptLevel + 5)) + this.scriptLevel + " " + this.scriptFileName + " " + token + " " + this.thisContext);
+}if (this.debugScript || this.isCmdLine_c_or_C_Option) J.util.Logger.info ("-->>-------------".substring (0, Math.max (17, this.scriptLevel + 5)) + this.scriptLevel + " " + this.scriptFileName + " " + token + " " + this.thisContext.id);
 }, $fz.isPrivate = true, $fz), "J.script.ContextToken");
 Clazz.overrideMethod (c$, "getScriptContext", 
 function () {
 var context =  new J.script.ScriptContext ();
+if (this.debugScript) J.util.Logger.info ("creating context " + context.id);
 context.scriptLevel = this.scriptLevel;
 context.parentContext = this.thisContext;
 context.contextPath = this.contextPath;
@@ -1875,11 +1875,12 @@ if (this.thisContext.scriptLevel > 0) this.scriptLevel = this.thisContext.script
 var scTemp = (isFlowCommand ? this.getScriptContext () : null);
 this.restoreScriptContext (this.thisContext, true, isFlowCommand, statementOnly);
 if (scTemp != null) this.restoreScriptContext (scTemp, true, false, true);
-if (this.debugScript || this.isCmdLine_c_or_C_Option) J.util.Logger.info ("--<<-------------".substring (0, Math.max (17, this.scriptLevel + 5)) + this.scriptLevel + " " + this.scriptFileName + " " + (this.thisContext == null ? "" : "" + this.thisContext.token) + " " + this.thisContext);
+if (this.debugScript || this.isCmdLine_c_or_C_Option) J.util.Logger.info ("--<<-------------".substring (0, Math.max (17, this.scriptLevel + 5)) + this.scriptLevel + " " + this.scriptFileName + " " + (this.thisContext == null ? "" : "" + this.thisContext.id));
 }, "~B,~B");
 $_M(c$, "restoreScriptContext", 
 ($fz = function (context, isPopContext, isFlowCommand, statementOnly) {
 if (context == null) return;
+if (this.debugScript || this.isCmdLine_c_or_C_Option) J.util.Logger.info ("--<<-------------".substring (0, Math.max (17, this.scriptLevel + 5)) + this.scriptLevel + " " + this.scriptFileName + " isPop " + isPopContext + " " + context.id);
 if (!isFlowCommand) {
 this.st = context.statement;
 this.slen = context.statementLength;
@@ -1921,7 +1922,7 @@ if (context.contextVariables != null) {
 sb.append (this.getScriptID (context));
 sb.append (J.viewer.StateManager.getVariableList (context.contextVariables, 80, true, false));
 }} else {
-sb.append (J.script.ScriptEvaluator.setErrorLineMessage (context.functionName, context.scriptFileName, this.getLinenumber (context), context.pc, J.script.ScriptEvaluator.statementAsString (context.statement, -9999, this.logMessages)));
+sb.append (J.script.ScriptEvaluator.getErrorLineMessage (context.functionName, context.scriptFileName, this.getLinenumber (context), context.pc, J.script.ScriptEvaluator.statementAsString (context.statement, -9999, this.logMessages)));
 }context = context.parentContext;
 }
 if (withVariables) {
@@ -1929,7 +1930,7 @@ if (this.contextVariables != null) {
 sb.append (this.getScriptID (null));
 sb.append (J.viewer.StateManager.getVariableList (this.contextVariables, 80, true, false));
 }} else {
-sb.append (J.script.ScriptEvaluator.setErrorLineMessage (this.functionName, this.scriptFileName, this.getLinenumber (null), this.pc, J.script.ScriptEvaluator.statementAsString (this.st, -9999, this.logMessages)));
+sb.append (J.script.ScriptEvaluator.getErrorLineMessage (this.functionName, this.scriptFileName, this.getLinenumber (null), this.pc, J.script.ScriptEvaluator.statementAsString (this.st, -9999, this.logMessages)));
 }return sb.toString ();
 }, $fz.isPrivate = true, $fz), "~B");
 $_M(c$, "getLinenumber", 
@@ -1940,7 +1941,7 @@ $_M(c$, "getScriptID",
 ($fz = function (context) {
 var fuName = (context == null ? this.functionName : "function " + context.functionName);
 var fiName = (context == null ? this.scriptFileName : context.scriptFileName);
-return "\n# " + fuName + " (file " + fiName + ")\n";
+return "\n# " + fuName + " (file " + fiName + (context == null ? "" : " context " + context.id) + ")\n";
 }, $fz.isPrivate = true, $fz), "J.script.ScriptContext");
 Clazz.overrideMethod (c$, "setException", 
 function (sx, msg, untranslated) {
@@ -2224,7 +2225,7 @@ if (msg.indexOf ("{2}") >= 0) msg = J.util.TextFormat.simpleReplace (msg, "{2}",
 }if (doTranslate) J.i18n.GT.setDoTranslate (true);
 return msg;
 }, "~N,~S,~S,~S,~B");
-c$.setErrorLineMessage = $_M(c$, "setErrorLineMessage", 
+c$.getErrorLineMessage = $_M(c$, "getErrorLineMessage", 
 function (functionName, filename, lineCurrent, pcCurrent, lineInfo) {
 var err = "\n----";
 if (filename != null || functionName != null) err += "line " + lineCurrent + " command " + (pcCurrent + 1) + " of " + (functionName == null ? filename : functionName.equals ("try") ? "try" : "function " + functionName) + ":";
@@ -2588,10 +2589,6 @@ rpn.addXVar (J.script.SV.newScriptVariableToken (instruction));
 break;
 case 1114638350:
 rpn.addXBs (J.util.BSUtil.copy (this.viewer.getSelectionSet (false)));
-break;
-case 3158024:
-var bsSubset = this.viewer.getSelectionSubset ();
-rpn.addXBs (bsSubset == null ? this.viewer.getModelUndeletedAtomsBitSet (-1) : J.util.BSUtil.copy (bsSubset));
 break;
 case 3145770:
 rpn.addXBs (J.util.BSUtil.copy (this.viewer.getHiddenSet ()));
@@ -3218,6 +3215,7 @@ var v = null;
 var fparams = null;
 var n = 0;
 var s = null;
+this.iToken = i;
 switch (this.tokAt (i)) {
 case 4:
 s = J.script.SV.sValue (this.st[i]);
@@ -3962,6 +3960,7 @@ this.doDelay (-1);
 }lastTime = System.currentTimeMillis ();
 }if (!this.chk && !this.checkContinue ()) break;
 if (this.lineNumbers[this.pc] > this.lineEnd) break;
+if (this.debugScript && !this.chk) J.util.Logger.info ("Command " + this.pc);
 this.theToken = (this.aatoken[this.pc].length == 0 ? null : this.aatoken[this.pc][0]);
 if (!this.historyDisabled && !this.chk && this.scriptLevel <= this.commandHistoryLevelMax && !this.tQuiet) {
 var cmdLine = this.getCommand (this.pc, true, true);
@@ -5266,9 +5265,8 @@ var vAtomSets = null;
 var vQuatSets = null;
 this.iToken = 0;
 var nSeconds = (this.isFloatParameter (1) ? this.floatParameter (++this.iToken) : NaN);
-var bsFrom = (this.tokAt (++this.iToken) == 3158024 ? null : this.atomExpressionAt (this.iToken));
-var bsTo = (this.tokAt (++this.iToken) == 3158024 ? null : this.atomExpressionAt (this.iToken));
-if (bsFrom == null || bsTo == null) this.error (22);
+var bsFrom = this.atomExpressionAt (++this.iToken);
+var bsTo = this.atomExpressionAt (++this.iToken);
 var bsSubset = null;
 var isSmiles = false;
 var strSmiles = null;
@@ -5382,6 +5380,8 @@ var bss = vAtomSets.get (i);
 if (isFrames) vAtomSets2.addLast (bss = [J.util.BSUtil.copy (bss[0]), bss[1]]);
 bss[0].and (bsFrom);
 }
+var center = null;
+var translation = null;
 if (isAtoms) {
 centerAndPoints = this.viewer.getCenterAndPoints (vAtomSets2, true);
 q = J.util.Measure.calculateQuaternionRotation (centerAndPoints, retStddev, true);
@@ -5408,24 +5408,31 @@ q = J.util.Quaternion.sphereMean (data1, retStddev, 0.0001);
 this.showString ("RMSD = " + retStddev[0] + " degrees");
 } else {
 var m4 =  new J.util.Matrix4f ();
-var stddev = this.getSmilesCorrelation (bsFrom, bsTo, strSmiles, null, null, m4, null, !isSmiles, false);
+center =  new J.util.P3 ();
+var stddev = this.getSmilesCorrelation (bsFrom, bsTo, strSmiles, null, null, m4, null, !isSmiles, false, null, center);
 if (Float.isNaN (stddev)) this.error (22);
-var translation =  new J.util.V3 ();
+if (doTranslate) {
+translation =  new J.util.V3 ();
 m4.get (translation);
+}if (doRotate) {
 var m3 =  new J.util.Matrix3f ();
 m4.getRotationScale (m3);
 q = J.util.Quaternion.newM (m3);
-}if (centerAndPoints == null) centerAndPoints = this.viewer.getCenterAndPoints (vAtomSets2, true);
-var pt1 =  new J.util.P3 ();
+}this.showString ("RMSD = " + stddev + " Angstroms");
+}if (centerAndPoints != null) center = centerAndPoints[0][0];
+if (center == null) {
+centerAndPoints = this.viewer.getCenterAndPoints (vAtomSets2, true);
+center = centerAndPoints[0][0];
+}var pt1 =  new J.util.P3 ();
 var endDegrees = NaN;
-var translation = null;
 if (doTranslate) {
+if (translation == null) {
 translation = J.util.V3.newV (centerAndPoints[1][0]);
-translation.sub (centerAndPoints[0][0]);
-endDegrees = 0;
+translation.sub (center);
+}endDegrees = 0;
 }if (doRotate) {
 if (q == null) this.evalError ("option not implemented", null);
-pt1.setT (centerAndPoints[0][0]);
+pt1.setT (center);
 pt1.add (q.getNormal ());
 endDegrees = q.getTheta ();
 }if (Float.isNaN (endDegrees) || Float.isNaN (pt1.x)) continue;
@@ -5433,26 +5440,27 @@ var ptsB = null;
 if (doRotate && doTranslate && nSeconds != 0) {
 var ptsA = this.viewer.getAtomPointVector (bsFrom);
 var m4 = J.script.ScriptMathProcessor.getMatrix4f (q.getMatrix (), translation);
-ptsB = J.util.Measure.transformPoints (ptsA, m4, centerAndPoints[0][0]);
+ptsB = J.util.Measure.transformPoints (ptsA, m4, center);
 }if (!this.useThreads ()) doAnimate = false;
-this.viewer.rotateAboutPointsInternal (this, centerAndPoints[0][0], pt1, endDegrees / nSeconds, endDegrees, doAnimate, bsFrom, translation, ptsB);
-if (doAnimate && this.isJS) throw  new J.script.ScriptInterruption (this, "compare", 1);
+if (this.viewer.rotateAboutPointsInternal (this, center, pt1, endDegrees / nSeconds, endDegrees, doAnimate, bsFrom, translation, ptsB, null) && doAnimate && this.isJS) throw  new J.script.ScriptInterruption (this, "compare", 1);
 }
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "getSmilesCorrelation", 
-function (bsA, bsB, smiles, ptsA, ptsB, m, vReturn, isSmarts, asMap) {
-var tolerance = 0.1;
+function (bsA, bsB, smiles, ptsA, ptsB, m4, vReturn, isSmarts, asMap, mapSet, center) {
+var tolerance = (mapSet == null ? 0.1 : 3.4028235E38);
 try {
 if (ptsA == null) {
 ptsA =  new J.util.JmolList ();
 ptsB =  new J.util.JmolList ();
-}if (m == null) m =  new J.util.Matrix4f ();
+}var m =  new J.util.Matrix4f ();
+var c =  new J.util.P3 ();
 var atoms = this.viewer.modelSet.atoms;
 var atomCount = this.viewer.getAtomCount ();
 var maps = this.viewer.getSmilesMatcher ().getCorrelationMaps (smiles, atoms, atomCount, bsA, isSmarts, true);
 if (maps == null) this.evalError (this.viewer.getSmilesMatcher ().getLastException (), null);
 if (maps.length == 0) return NaN;
-for (var i = 0; i < maps[0].length; i++) ptsA.addLast (atoms[maps[0][i]]);
+var mapA = maps[0];
+for (var i = 0; i < mapA.length; i++) ptsA.addLast (atoms[mapA[i]]);
 
 maps = this.viewer.getSmilesMatcher ().getCorrelationMaps (smiles, atoms, atomCount, bsB, isSmarts, false);
 if (maps == null) this.evalError (this.viewer.getSmilesMatcher ().getLastException (), null);
@@ -5468,7 +5476,7 @@ for (var i = 0; i < maps.length; i++) {
 ptsB.clear ();
 for (var j = 0; j < maps[i].length; j++) ptsB.addLast (atoms[maps[i][j]]);
 
-var stddev = J.util.Measure.getTransformMatrix4 (ptsA, ptsB, m, null);
+var stddev = J.util.Measure.getTransformMatrix4 (ptsA, ptsB, m, c);
 J.util.Logger.info ("getSmilesCorrelation stddev=" + stddev);
 if (vReturn != null) {
 if (stddev < tolerance) {
@@ -5478,8 +5486,14 @@ for (var j = 0; j < maps[i].length; j++) bs.set (maps[i][j]);
 vReturn.addLast (bs);
 }}if (stddev < lowestStdDev) {
 mapB = maps[i];
+if (m4 != null) m4.setM (m);
+if (center != null) center.setT (c);
 lowestStdDev = stddev;
 }}
+if (mapSet != null) {
+mapSet[0] = mapA;
+mapSet[1] = mapB;
+}ptsB.clear ();
 for (var i = 0; i < mapB.length; i++) ptsB.addLast (atoms[mapB[i]]);
 
 return lowestStdDev;
@@ -5491,7 +5505,7 @@ return 0;
 throw e;
 }
 }
-}, "J.util.BS,J.util.BS,~S,J.util.JmolList,J.util.JmolList,J.util.Matrix4f,J.util.JmolList,~B,~B");
+}, "J.util.BS,J.util.BS,~S,J.util.JmolList,J.util.JmolList,J.util.Matrix4f,J.util.JmolList,~B,~B,~A,J.util.P3");
 $_M(c$, "getSmilesMatches", 
 function (pattern, smiles, bsSelected, bsMatch3D, isSmarts, asOneBitset) {
 if (this.chk) {
@@ -5514,7 +5528,7 @@ if (!asAtoms && !isSmarts) return Integer.$valueOf (-1);
 return "?";
 }} else {
 var vReturn =  new J.util.JmolList ();
-var stddev = this.getSmilesCorrelation (bsMatch3D, bsSelected, pattern, null, null, null, vReturn, isSmarts, false);
+var stddev = this.getSmilesCorrelation (bsMatch3D, bsSelected, pattern, null, null, null, vReturn, isSmarts, false, null, null);
 if (Float.isNaN (stddev)) {
 if (asOneBitset) return  new J.util.BS ();
 return [];
@@ -7476,6 +7490,7 @@ var nPoints = 0;
 var endDegrees = 3.4028235E38;
 var isMolecular = false;
 var haveRotation = false;
+var dihedralList = null;
 var ptsA = null;
 var points =  new Array (2);
 var rotAxis = J.util.V3.new3 (0, 1, 0);
@@ -7578,17 +7593,22 @@ endDegrees = p4.w;
 q = J.util.Quaternion.newVA (rotAxis, endDegrees);
 break;
 case 1048580:
-haveRotation = true;
-var iAtom1 = this.atomExpressionAt (++i).nextSetBit (0);
-var iAtom2 = this.atomExpressionAt (++this.iToken).nextSetBit (0);
-if (iAtom1 < 0 || iAtom2 < 0) return;
-bsAtoms = this.viewer.getBranchBitSet (iAtom2, iAtom1);
 isSelected = true;
 isMolecular = true;
+haveRotation = true;
+if (this.isArrayParameter (++i)) {
+dihedralList = this.floatParameterSet (i, 6, 2147483647);
+i = this.iToken;
+isSpin = true;
+} else {
+var iAtom1 = this.atomExpressionAt (i).nextSetBit (0);
+var iAtom2 = this.atomExpressionAt (++this.iToken).nextSetBit (0);
+if (iAtom1 < 0 || iAtom2 < 0) return;
+bsAtoms = this.viewer.getBranchBitSet (iAtom2, iAtom1, true);
 points[0] = this.viewer.getAtomPoint3f (iAtom1);
 points[1] = this.viewer.getAtomPoint3f (iAtom2);
 nPoints = 2;
-break;
+}break;
 case 4160:
 translation = J.util.V3.newV (this.centerParameter (++i));
 isMolecular = isSelected = true;
@@ -7682,7 +7702,7 @@ if (rotAxis == null) return;
 }if (invPlane != null) {
 this.viewer.invertAtomCoordPlane (invPlane, bsAtoms);
 if (rotAxis == null) return;
-}if (nPoints < 2) {
+}if (nPoints < 2 && dihedralList == null) {
 if (!isMolecular) {
 if (isSpin && bsAtoms == null && !this.useThreads ()) return;
 if (this.viewer.rotateAxisAngleAtCenter (this, points[0], rotAxis, rate, endDegrees, isSpin, bsAtoms) && this.isJS && isSpin && bsAtoms == null) throw  new J.script.ScriptInterruption (this, "rotate", 1);
@@ -7708,7 +7728,7 @@ ptsB = J.util.Measure.transformPoints (ptsA, m4, points[0]);
 this.viewer.setAtomCoords (bsAtoms, 1146095626, ptsB);
 } else {
 if (!this.useThreads ()) return;
-if (this.viewer.rotateAboutPointsInternal (this, points[0], points[1], rate, endDegrees, isSpin, bsAtoms, translation, ptsB) && this.isJS && isSpin) throw  new J.script.ScriptInterruption (this, "rotate", 1);
+if (this.viewer.rotateAboutPointsInternal (this, points[0], points[1], rate, endDegrees, isSpin, bsAtoms, translation, ptsB, dihedralList) && this.isJS && isSpin) throw  new J.script.ScriptInterruption (this, "rotate", 1);
 }}, $fz.isPrivate = true, $fz), "~B,~B");
 $_M(c$, "getQuaternionParameter", 
 ($fz = function (i) {

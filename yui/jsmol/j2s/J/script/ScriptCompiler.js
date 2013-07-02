@@ -1808,7 +1808,7 @@ $_M(c$, "handleError",
 this.errorType = this.errorMessage;
 this.errorLine = this.script.substring (this.ichCurrentCommand, this.ichEnd <= this.ichCurrentCommand ? this.ichToken : this.ichEnd);
 var lineInfo = (this.ichToken < this.ichEnd ? this.errorLine.substring (0, this.ichToken - this.ichCurrentCommand) + " >>>> " + this.errorLine.substring (this.ichToken - this.ichCurrentCommand) : this.errorLine) + " <<<<";
-this.errorMessage = J.i18n.GT._ ("script compiler ERROR: ") + this.errorMessage + J.script.ScriptEvaluator.setErrorLineMessage (null, this.filename, this.lineCurrent, this.iCommand, lineInfo);
+this.errorMessage = J.i18n.GT._ ("script compiler ERROR: ") + this.errorMessage + J.script.ScriptEvaluator.getErrorLineMessage (null, this.filename, this.lineCurrent, this.iCommand, lineInfo);
 if (!this.isSilent) {
 this.ichToken = Math.max (this.ichEnd, this.ichToken);
 while (!this.lookingAtEndOfLine () && !this.lookingAtTerminator ()) this.ichToken++;

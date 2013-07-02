@@ -195,9 +195,9 @@ this.vertices[0] = J.util.P3.newP (this.pt0);
 this.vertices[2] = J.util.P3.newP (this.pt2);
 for (var i = 0; i < 4; i++) this.viewer.transformPtScr (this.vertices[i], this.screens[i]);
 
-var f = 1;
+var f = 4 * this.getArrowScale ();
 var endoffset = 0.2;
-var offsetside = 10 * this.width;
+var offsetside = (this.width == 0 ? 0.1 : this.width);
 this.pt0.set (this.screens[0].x, this.screens[0].y, this.screens[0].z);
 this.pt1.set (this.screens[1].x, this.screens[1].y, this.screens[1].z);
 this.pt2.set (this.screens[3].x, this.screens[3].y, this.screens[3].z);
@@ -259,9 +259,7 @@ this.renderArrowHead (this.pt0, this.pt1, 0, true, false, false);
 $_M(c$, "renderArrowHead", 
 ($fz = function (pt1, pt2, factor2, isTransformed, withShaft, isBarb) {
 if (this.dmesh.noHead) return;
-var fScale = this.dmesh.drawArrowScale;
-if (fScale == 0) fScale = this.viewer.getFloat (570425352) * (this.dmesh.connections == null ? 1 : 0.5);
-if (fScale <= 0) fScale = 0.5;
+var fScale = this.getArrowScale ();
 if (isTransformed) fScale *= 40;
 if (factor2 > 0) fScale *= factor2;
 this.pt0f.setT (pt1);
@@ -295,6 +293,13 @@ this.diameter = Clazz.doubleToInt (headDiameter / 5);
 if (headDiameter > 2) this.g3d.fillConeScreen (2, headDiameter, this.$pt1i, this.pt2i, isBarb);
 if (withShaft) this.g3d.fillCylinderScreen3I (4, this.diameter, this.pt0i, this.$pt1i, null, null, this.mad / 2000);
 }, $fz.isPrivate = true, $fz), "J.util.P3,J.util.P3,~N,~B,~B,~B");
+$_M(c$, "getArrowScale", 
+($fz = function () {
+var fScale = this.dmesh.scale;
+if (fScale == 0) fScale = this.viewer.getFloat (570425352) * (this.dmesh.connections == null ? 1 : 0.5);
+if (fScale <= 0) fScale = 0.5;
+return fScale;
+}, $fz.isPrivate = true, $fz));
 $_M(c$, "renderHandles", 
 ($fz = function () {
 var diameter = Math.round (10 * this.imageFontScaling);

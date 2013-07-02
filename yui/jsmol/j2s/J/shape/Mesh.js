@@ -77,9 +77,9 @@ this.altVertices = null;
 this.bsDisplay = null;
 this.bsSlabDisplay = null;
 this.bsSlabGhost = null;
+this.bsTransPolygons = null;
 this.cappingObject = null;
 this.colix = 23;
-this.useColix = true;
 this.colorDensity = false;
 this.connections = null;
 this.diameter = 0;
@@ -93,9 +93,10 @@ this.isTwoSided = false;
 this.lattice = null;
 this.mat4 = null;
 this.normixes = null;
-this.scale3d = 0;
 this.polygonIndexes = null;
+this.polygonTranslucencies = null;
 this.scale = 1;
+this.scale3d = 0;
 this.showContourLines = false;
 this.showPoints = false;
 this.showTriangles = false;
@@ -104,6 +105,7 @@ this.slabOptions = null;
 this.spanningVectors = null;
 this.title = null;
 this.unitCell = null;
+this.useColix = true;
 this.vertexCount0 = this.polygonCount0 = this.vertexCount = this.polygonCount = 0;
 this.vertices = null;
 this.volumeRenderPointSize = 0.15;
@@ -286,19 +288,6 @@ function () {
 var bs =  new J.util.BS ();
 if (this.polygonCount == 0 && this.bsSlabDisplay != null) J.util.BSUtil.copy2 (this.bsSlabDisplay, bs);
  else for (var i = this.polygonCount; --i >= 0; ) if (this.bsSlabDisplay == null || this.bsSlabDisplay.get (i)) {
-var vertexIndexes = this.polygonIndexes[i];
-if (vertexIndexes == null) continue;
-bs.set (vertexIndexes[0]);
-bs.set (vertexIndexes[1]);
-bs.set (vertexIndexes[2]);
-}
-return bs;
-});
-$_M(c$, "getVisibleGhostBitSet", 
-function () {
-var bs =  new J.util.BS ();
-if (this.polygonCount == 0 && this.bsSlabGhost != null) J.util.BSUtil.copy2 (this.bsSlabGhost, bs);
- else for (var i = this.polygonCount; --i >= 0; ) if (this.bsSlabGhost == null || this.bsSlabGhost.get (i)) {
 var vertexIndexes = this.polygonIndexes[i];
 if (vertexIndexes == null) continue;
 bs.set (vertexIndexes[0]);

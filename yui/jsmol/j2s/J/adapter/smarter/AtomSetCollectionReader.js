@@ -122,7 +122,7 @@ this.processBinaryDocument (this.doc);
 }this.finalizeReader ();
 } catch (e) {
 J.util.Logger.info ("Reader error: " + e);
-if (!this.viewer.isApplet ()) e.printStackTrace ();
+if (!this.viewer.isJS ()) e.printStackTrace ();
 this.setError (e);
 }
 if (this.reader != null) this.reader.close ();
@@ -228,6 +228,7 @@ else
 s = e.toString();
 }if (this.line == null) this.atomSetCollection.errorMessage = "Error reading file at end of file \n" + s;
  else this.atomSetCollection.errorMessage = "Error reading file at line " + this.ptLine + ":\n" + this.line + "\n" + s;
+if (!this.viewer.isJS ()) e.printStackTrace ();
 }, $fz.isPrivate = true, $fz), "Throwable");
 $_M(c$, "initialize", 
 ($fz = function () {

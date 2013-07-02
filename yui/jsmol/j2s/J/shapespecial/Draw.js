@@ -267,27 +267,28 @@ this.meshes = this.dmeshes = J.util.ArrayUtil.deleteElements (this.meshes, i, 1)
 }, "~N");
 $_M(c$, "initDraw", 
 ($fz = function () {
+this.boundBox = null;
+this.bsAllModels = null;
 this.colix = 5;
 this.color = 0xFFFFFFFF;
-this.newScale = 0;
-this.isFixed = this.isReversed = this.isRotated45 = this.isCrossed = this.noHead = this.isBarb = false;
+this.diameter = 0;
+this.explicitID = false;
+this.indicatedModelIndex = -1;
+this.intersectID = null;
 this.isCurve = this.isArc = this.isArrow = this.isPlane = this.isCircle = this.isCylinder = this.isLine = false;
-this.isVertices = this.isPerpendicular = this.isVector = false;
+this.isFixed = this.isReversed = this.isRotated45 = this.isCrossed = this.noHead = this.isBarb = false;
+this.isPerpendicular = this.isVertices = this.isVector = false;
 this.isValid = true;
 this.length = 3.4028235E38;
-this.diameter = 0;
-this.width = 0;
-this.indicatedModelIndex = -1;
+this.lineData = null;
+this.newScale = 0;
+this.nidentifiers = this.nbitsets = 0;
 this.offset = null;
 this.plane = null;
 this.polygon = null;
-this.nidentifiers = this.nbitsets = 0;
-this.vData =  new J.util.JmolList ();
-this.bsAllModels = null;
-this.intersectID = null;
 this.slabData = null;
-this.boundBox = null;
-this.explicitID = false;
+this.vData =  new J.util.JmolList ();
+this.width = 0;
 this.setPropertySuper ("thisID", "+PREVIOUS_MESH+", null);
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "resetObjects", 
@@ -432,7 +433,7 @@ return true;
 }, $fz.isPrivate = true, $fz), "~A");
 Clazz.overrideMethod (c$, "clean", 
 function () {
-for (var i = this.meshCount; --i >= 0; ) if (this.meshes[i] == null || this.meshes[i].vertexCount == 0 && this.meshes[i].connections == null) this.deleteMeshI (i);
+for (var i = this.meshCount; --i >= 0; ) if (this.meshes[i] == null || this.meshes[i].vertexCount == 0 && this.meshes[i].connections == null && this.meshes[i].lineData == null) this.deleteMeshI (i);
 
 });
 $_M(c$, "setIntersectData", 
@@ -708,10 +709,10 @@ return;
 $_M(c$, "scale", 
 function (mesh, newScale) {
 var dmesh = mesh;
-if (newScale == 0 || dmesh.vertexCount == 0 || dmesh.scale == newScale) return;
+if (newScale == 0 || dmesh.vertexCount == 0 && dmesh.connections == null || dmesh.scale == newScale) return;
 var f = newScale / dmesh.scale;
 dmesh.scale = newScale;
-if (dmesh.haveXyPoints || dmesh.drawType === J.shapespecial.Draw.EnumDrawType.ARC || dmesh.drawType === J.shapespecial.Draw.EnumDrawType.CIRCLE || dmesh.drawType === J.shapespecial.Draw.EnumDrawType.CIRCULARPLANE) return;
+if (dmesh.isRenderScalable ()) return;
 var diff =  new J.util.V3 ();
 var iptlast = -1;
 var ipt = 0;
@@ -826,7 +827,7 @@ x <<= 1;
 y <<= 1;
 }var pt =  new J.util.P3 ();
 var ptVertex = vertexes[iVertex];
-var coord = J.util.P3.newP (mesh.vertices[ptVertex]);
+var coord = J.util.P3.newP (mesh.altVertices == null ? mesh.vertices[ptVertex] : mesh.altVertices[ptVertex]);
 var newcoord =  new J.util.P3 ();
 var move =  new J.util.V3 ();
 this.viewer.transformPt3f (coord, pt);
@@ -865,7 +866,8 @@ for (var iModel = mCount; --iModel >= 0; ) {
 if (m.modelFlags != null && !m.modelFlags.get (iModel) || m.polygonIndexes == null || !m.isTriangleSet && (iModel >= m.polygonIndexes.length || m.polygonIndexes[iModel] == null)) continue;
 for (var iVertex = (m.isTriangleSet ? 3 : m.polygonIndexes[iModel].length); --iVertex >= 0; ) {
 try {
-var pt = m.vertices[m.polygonIndexes[iModel][iVertex]];
+var iv = m.polygonIndexes[iModel][iVertex];
+var pt = (m.altVertices == null ? m.vertices[iv] : m.altVertices[iv]);
 var d2 = this.coordinateInRange (x, y, pt, dmin2, this.ptXY);
 if (d2 >= 0) {
 this.pickedMesh = m;
@@ -909,7 +911,7 @@ if (dmesh.isFixed) str.append (" fixed");
 if (iModel < 0) iModel = 0;
 if (dmesh.noHead) str.append (" noHead");
  else if (dmesh.isBarb) str.append (" barb");
-if (dmesh.scale != 1 && (dmesh.haveXyPoints || dmesh.drawType === J.shapespecial.Draw.EnumDrawType.CIRCLE || dmesh.drawType === J.shapespecial.Draw.EnumDrawType.ARC)) str.append (" scale ").appendF (dmesh.scale);
+if (dmesh.scale != 1 && (dmesh.haveXyPoints || dmesh.connections != null || dmesh.drawType === J.shapespecial.Draw.EnumDrawType.CIRCLE || dmesh.drawType === J.shapespecial.Draw.EnumDrawType.ARC)) str.append (" scale ").appendF (dmesh.scale);
 if (dmesh.width != 0) str.append (" diameter ").appendF ((dmesh.drawType === J.shapespecial.Draw.EnumDrawType.CYLINDER ? Math.abs (dmesh.width) : dmesh.drawType === J.shapespecial.Draw.EnumDrawType.CIRCULARPLANE ? Math.abs (dmesh.width * dmesh.scale) : dmesh.width));
  else if (dmesh.diameter > 0) str.append (" diameter ").appendI (dmesh.diameter);
 if (dmesh.lineData != null) {
@@ -917,9 +919,11 @@ str.append ("  lineData [");
 var n = dmesh.lineData.size ();
 for (var j = 0; j < n; ) {
 var pts = dmesh.lineData.get (j);
-str.append (J.util.Escape.eP (pts[0]));
-str.append (" ");
-str.append (J.util.Escape.eP (pts[1]));
+var s = J.util.Escape.eP (pts[0]);
+str.append (s.substring (1, s.length - 1));
+str.append (",");
+s = J.util.Escape.eP (pts[1]);
+str.append (s.substring (1, s.length - 1));
 if (++j < n) str.append (", ");
 }
 str.append ("]");

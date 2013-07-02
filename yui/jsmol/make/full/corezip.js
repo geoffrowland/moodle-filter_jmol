@@ -406,7 +406,7 @@ if (fileRoot.indexOf (".") >= 0) fileRoot = fileRoot.substring (0, fileRoot.inde
 }var newFileNames =  new J.util.JmolList ();
 for (var iFile = 0; iFile < nFiles; iFile++) {
 var name = fileNames.get (iFile);
-var isLocal = !viewer.isJS && J.viewer.FileManager.isLocal (name);
+var isLocal = !viewer.$isJS && J.viewer.FileManager.isLocal (name);
 var newName = name;
 if (isLocal || includeRemoteFiles) {
 var ptSlash = name.lastIndexOf ("/");

@@ -1,30 +1,16 @@
-LoadClazz = function() {
+// j2sjmol.js 
 
-if (!window["j2s.clazzloaded"])
-window["j2s.clazzloaded"] = false;
+ // NOTES by Bob Hanson: 
 
-if (window["j2s.clazzloaded"])return;
-
-window["j2s.clazzloaded"] = true;
-
-// BH this just allows me to monitor exactly what is being delegated
-// I run xxxShowParams from the developer console in the browser.
-bhtest = false;
-xxxbhparams = {};
-xxxShowParams = function() {
-  var s = "";
-  for (var i in xxxbhparams) {
-    s += ("#P " + xxxbhparams[i] + "\t" + i + "\n");
-  }
-  xxxbhparams= {};
-  alert(s)
-}
-
-
-window["j2s.object.native"] = true;
-
- // Clazz changes:
-
+ // 1. an array with null elements cannot be typed and must be avoided.
+ // 2. instances of Java "instance of" involving arrays must be found and convered to calls to Clazz.isA...
+ // 3. new int[n][] must not be used. Use instead ArrayUtil.newInt2(n);
+ // 4. new int[] { 1, 2, 3 } has problems because it creates simply [ ] and not IntArray32
+  
+ // J2S class changes:
+ 
+ // BH 6/15/2013 8:02:07 AM corrections to Class.isAS to return true if first element is null
+ // BH 6/14/2013 4:41:09 PM corrections to Clazz.isAI and related methods to include check for null object
  // BH 3/17/2013 11:54:28 AM adds stackTrace for ERROR 
 
  // BH 3/13/2013 6:58:26 PM adds Clazz.clone(me) for BS clone 
@@ -33,13 +19,11 @@ window["j2s.object.native"] = true;
  // BH 3/2/2013 9:10:45 AM optimizing defineMethod using "look no further" "@" parameter designation (see "\\@" below -- removed 3/23/13)
  // BH 2/27/2013 optimizing getParamsType for common cases () and (Number)
  // BH 2/27/2013 optimizing SAEM delegation for hashCode and equals -- disallows overloading of equals(Object)
- // BH 1/25/2013 1:55:31 AM moved package.js from j2s/java to j2s/core 
- 
- // Java class changes:
  
  // BH 2/23/2013 found String.replaceAll does not work -- solution was to never call it.
- // BH 1/17/2013 4:37:17 PM String.compareTo() added
  // BH 2/9/2013 9:18:03 PM Int32Array/Float64Array fixed for MSIE9
+ // BH 1/25/2013 1:55:31 AM moved package.js from j2s/java to j2s/core 
+ // BH 1/17/2013 4:37:17 PM String.compareTo() added
  // BH 1/17/2013 4:52:22 PM Int32Array and Float64Array may not have .prototype.sort method
  // BH 1/16/2013 6:20:34 PM Float64Array not available in Safari 5.1
  // BH 1/14/2013 11:28:58 PM  Going to all doubles in JavaScript (Float64Array, not Float32Array)
@@ -74,6 +58,34 @@ window["j2s.object.native"] = true;
  // BH added Clazz.exceptionOf = updated
  // BH added String.getBytes() at end
  
+
+LoadClazz = function() {
+
+if (!window["j2s.clazzloaded"])
+window["j2s.clazzloaded"] = false;
+
+if (window["j2s.clazzloaded"])return;
+
+window["j2s.clazzloaded"] = true;
+
+// BH this just allows me to monitor exactly what is being delegated
+// I run xxxShowParams from the developer console in the browser.
+bhtest = false;
+xxxbhparams = {};
+xxxShowParams = function() {
+  var s = "";
+  for (var i in xxxbhparams) {
+    s += ("#P " + xxxbhparams[i] + "\t" + i + "\n");
+  }
+  xxxbhparams= {};
+  alert(s)
+}
+
+
+window["j2s.object.native"] = true;
+
+ // Clazz changes:
+
  /* http://j2s.sf.net/ *//******************************************************************************
  * Copyright (c) 2007 java2script.org and others.
  * All rights reserved. This program and the accompanying materials
@@ -2550,39 +2562,39 @@ $_Ab=Clazz.newBooleanArray;
 
 
 Clazz.isAS = function(a) { // just checking first parameter
-  return (typeof a == "object" && a.constructor && a.constructor.toString().indexOf(" Array") >= 0 && typeof a[0] == "string");
+  return (a && typeof a == "object" && a.constructor && a.constructor.toString().indexOf(" Array") >= 0 && (typeof a[0] == "string" || typeof a[0] == "undefined"));
 }
 
-Clazz.isASS = function(a) { // assumes non-null a[0]
-  return (typeof a == "object" && Clazz.isAS(a[0]));
+Clazz.isASS = function(a) {
+  return (a && typeof a == "object" && Clazz.isAS(a[0]));
 }
 
 Clazz.isAP = function(a) {
-  return (Clazz.getClassName(a[0]) == "J.util.Point3f");
+  return (a && Clazz.getClassName(a[0]) == "J.util.Point3f");
 }
 
 Clazz.isAI = function(a) {
-  return (typeof a == "object" && (Clazz.haveInt32 ? a.constructor && a.constructor.toString().indexOf("Int32Array") >= 0 : a.int32Fake ? true : false));
+  return (a && typeof a == "object" && (Clazz.haveInt32 ? a.constructor && a.constructor.toString().indexOf("Int32Array") >= 0 : a.int32Fake ? true : false));
 }
 
 Clazz.isAII = function(a) { // assumes non-null a[0]
-  return (typeof a == "object" && Clazz.isAI(a[0]));
+  return (a && typeof a == "object" && Clazz.isAI(a[0]));
 }
 
 Clazz.isAF = function(a) {
-  return (typeof a == "object" && (Clazz.haveFloat64 ? a.constructor && a.constructor.toString().indexOf("Float64Array") >= 0 : a.float64Fake ? true : false));
+  return (a && typeof a == "object" && (Clazz.haveFloat64 ? a.constructor && a.constructor.toString().indexOf("Float64Array") >= 0 : a.float64Fake ? true : false));
 }
 
 Clazz.isAFF = function(a) { // assumes non-null a[0]
-  return (typeof a == "object" && Clazz.isAF(a[0]));
+  return (a && typeof a == "object" && Clazz.isAF(a[0]));
 }
 
 Clazz.isAFFF = function(a) { // assumes non-null a[0]
-  return (typeof a == "object" && Clazz.isAFF(a[0]));
+  return (a && typeof a == "object" && Clazz.isAFF(a[0]));
 }
 
 Clazz.isAFloat = function(a) { // just checking first parameter
-  return (typeof a == "object" && a.constructor && a.constructor.toString().indexOf(" Array") >= 0 && Clazz.instanceOf(a[0], Float));
+  return (a && typeof a == "object" && a.constructor && a.constructor.toString().indexOf(" Array") >= 0 && Clazz.instanceOf(a[0], Float));
 }
 
 

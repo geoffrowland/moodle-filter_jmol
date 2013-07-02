@@ -9,6 +9,7 @@ this.vertexValues = null;
 this.vertexSource = null;
 this.polygonCount = 0;
 this.polygonIndexes = null;
+this.polygonTranslucencies = null;
 this.isTriangleSet = false;
 this.haveQuads = false;
 this.colix = 0;
@@ -37,6 +38,7 @@ this.polygonCount0 = 0;
 this.vertexCount0 = 0;
 this.bsSlabDisplay = null;
 this.bsSlabGhost = null;
+this.bsTransPolygons = null;
 this.slabMeshType = 0;
 this.slabColix = 0;
 this.bsDisplay = null;
@@ -169,6 +171,9 @@ this.iB = vertexIndexes[1];
 this.iC = vertexIndexes[2];
 return this.vertexValues == null || !(Float.isNaN (this.vertexValues[this.iA]) || Float.isNaN (this.vertexValues[this.iB]) || Float.isNaN (this.vertexValues[this.iC]));
 }, "~N");
+$_M(c$, "setTranslucentVertices", 
+function (bsVertices) {
+}, "J.util.BS");
 $_M(c$, "setSlab", 
 function (bsDisplay, bsGhost, type, color, translucency) {
 this.bsSlabDisplay = bsDisplay;
@@ -192,6 +197,19 @@ c$.getSlabWithinRange = $_M(c$, "getSlabWithinRange",
 function (min, max) {
 return [Integer.$valueOf (1073742114), [Float.$valueOf (min), Float.$valueOf (max)], Boolean.FALSE, null];
 }, "~N,~N");
+$_M(c$, "resetTransPolygons", 
+function () {
+var isTranslucent = J.util.C.isColixTranslucent (this.colix);
+var translucentLevel = J.util.C.getColixTranslucencyFractional (this.colix);
+for (var i = 0; i < this.polygonCount; i++) if (this.bsTransPolygons.get (i)) {
+if (!this.setABC (i)) continue;
+this.vertexColixes[this.iA] = J.util.C.getColixTranslucent3 (this.vertexColixes[this.iA], isTranslucent, translucentLevel);
+this.vertexColixes[this.iB] = J.util.C.getColixTranslucent3 (this.vertexColixes[this.iB], isTranslucent, translucentLevel);
+this.vertexColixes[this.iC] = J.util.C.getColixTranslucent3 (this.vertexColixes[this.iC], isTranslucent, translucentLevel);
+}
+this.bsTransPolygons = null;
+this.polygonTranslucencies = null;
+});
 $_M(c$, "resetSlab", 
 function () {
 this.slabPolygons (J.util.MeshSurface.getSlabObject (1048587, null, false, null), false);

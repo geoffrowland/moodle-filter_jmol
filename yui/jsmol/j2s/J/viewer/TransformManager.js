@@ -255,7 +255,7 @@ var pt2 = J.util.P3.new3 (-yDelta, xDelta, 0);
 pt2.add (ptScreen);
 this.unTransformPoint (pt2, pt2);
 this.viewer.setInMotion (false);
-this.rotateAboutPointsInternal (null, pt2, pt1, 10 * speed, NaN, false, true, null, true, null, null);
+this.rotateAboutPointsInternal (null, pt2, pt1, 10 * speed, NaN, false, true, null, true, null, null, null);
 }, "~N,~N,~N");
 $_M(c$, "rotateArcBall", 
 function (x, y, factor) {
@@ -356,7 +356,7 @@ this.fixedRotationAxis.setVA (rotAxis, degreesPerSecond * 0.017453292);
 this.isSpinInternal = false;
 this.isSpinFixed = true;
 this.isSpinSelected = (bsAtoms != null);
-this.setSpin (eval, true, endDegrees, null, bsAtoms, false);
+this.setSpin (eval, true, endDegrees, null, null, bsAtoms, false);
 return false;
 }var radians = endDegrees * 0.017453292;
 this.fixedRotationAxis.setVA (rotAxis, endDegrees);
@@ -370,13 +370,13 @@ this.axisangleT.angle = angleRadians;
 this.rotateAxisAngle2 (this.axisangleT, bsAtoms);
 }, "~N,J.util.BS");
 $_M(c$, "rotateAboutPointsInternal", 
-function (eval, point1, point2, degreesPerSecond, endDegrees, isClockwise, isSpin, bsAtoms, isGesture, translation, finalPoints) {
+function (eval, point1, point2, degreesPerSecond, endDegrees, isClockwise, isSpin, bsAtoms, isGesture, translation, finalPoints, dihedralList) {
 this.setSpinOff ();
 this.setNavOn (false);
 if (this.viewer.isHeadless ()) {
 if (isSpin && endDegrees == 3.4028235E38) return false;
 isSpin = false;
-}if ((translation == null || translation.length () < 0.001) && (!isSpin || endDegrees == 0 || Float.isNaN (degreesPerSecond) || degreesPerSecond == 0) && (isSpin || endDegrees == 0)) return false;
+}if (dihedralList == null && (translation == null || translation.length () < 0.001) && (!isSpin || endDegrees == 0 || Float.isNaN (degreesPerSecond) || degreesPerSecond == 0) && (isSpin || endDegrees == 0)) return false;
 var axis = J.util.V3.newV (point2);
 axis.sub (point1);
 if (isClockwise) axis.scale (-1.0);
@@ -388,6 +388,7 @@ this.internalTranslation = null;
 this.internalTranslation = J.util.V3.newV (translation);
 }var isSelected = (bsAtoms != null);
 if (isSpin) {
+if (dihedralList == null) {
 var nFrames = Clazz.doubleToInt (Math.abs (endDegrees) / Math.abs (degreesPerSecond) * this.spinFps + 0.5);
 if (Float.isNaN (endDegrees)) {
 this.rotationRate = degreesPerSecond;
@@ -398,13 +399,15 @@ if (translation != null) this.internalTranslation.scale (1 / (nFrames));
 this.isSpinInternal = true;
 this.isSpinFixed = false;
 this.isSpinSelected = isSelected;
-this.setSpin (eval, true, endDegrees, finalPoints, bsAtoms, isGesture);
-return false;
+} else {
+endDegrees = degreesPerSecond;
+}this.setSpin (eval, true, endDegrees, finalPoints, dihedralList, bsAtoms, isGesture);
+return (dihedralList != null || bsAtoms != null);
 }var radians = endDegrees * 0.017453292;
 this.internalRotationAxis.setVA (axis, radians);
 this.rotateAxisAngleRadiansInternal (radians, bsAtoms);
-return true;
-}, "J.api.JmolScriptEvaluator,J.util.P3,J.util.P3,~N,~N,~B,~B,J.util.BS,~B,J.util.V3,J.util.JmolList");
+return false;
+}, "J.api.JmolScriptEvaluator,J.util.P3,J.util.P3,~N,~N,~B,~B,J.util.BS,~B,J.util.V3,J.util.JmolList,~A");
 $_M(c$, "rotateAxisAngleRadiansInternal", 
 function (radians, bsAtoms) {
 this.internalRotationAngle = radians;
@@ -1295,34 +1298,35 @@ return this.navOn;
 });
 $_M(c$, "setSpinOn", 
 function () {
-this.setSpin (null, true, 3.4028235E38, null, null, false);
+this.setSpin (null, true, 3.4028235E38, null, null, null, false);
 });
 $_M(c$, "setSpinOff", 
 function () {
-this.setSpin (null, false, 3.4028235E38, null, null, false);
+this.setSpin (null, false, 3.4028235E38, null, null, null, false);
 });
 $_M(c$, "setSpin", 
-($fz = function (eval, spinOn, endDegrees, endPositions, bsAtoms, isGesture) {
+($fz = function (eval, spinOn, endDegrees, endPositions, dihedralList, bsAtoms, isGesture) {
 if (this.navOn && spinOn) this.setNavOn (false);
+if (this.spinOn == spinOn) return;
 this.spinOn = spinOn;
 this.viewer.getGlobalSettings ().setB ("_spinning", spinOn);
 if (spinOn) {
 if (this.spinThread == null) {
-this.spinThread =  new J.thread.SpinThread (this, this.viewer, endDegrees, endPositions, bsAtoms, false, isGesture);
-this.spinThread.setEval (eval);
-if (bsAtoms == null) {
+this.spinThread =  new J.thread.SpinThread (this, this.viewer, endDegrees, endPositions, dihedralList, bsAtoms, false, isGesture);
+if (bsAtoms == null && dihedralList == null) {
 this.spinThread.start ();
 } else {
+this.spinThread.setEval (eval);
 this.spinThread.run ();
 }}} else if (this.spinThread != null) {
 this.spinThread.reset ();
 this.spinThread = null;
-}}, $fz.isPrivate = true, $fz), "J.api.JmolScriptEvaluator,~B,~N,J.util.JmolList,J.util.BS,~B");
+}}, $fz.isPrivate = true, $fz), "J.api.JmolScriptEvaluator,~B,~N,J.util.JmolList,~A,J.util.BS,~B");
 $_M(c$, "setNavOn", 
 function (navOn) {
 if (Float.isNaN (this.navFps)) return;
 var wasOn = this.navOn;
-if (navOn && this.spinOn) this.setSpin (null, false, 0, null, null, false);
+if (navOn && this.spinOn) this.setSpin (null, false, 0, null, null, null, false);
 this.navOn = navOn;
 this.viewer.getGlobalSettings ().setB ("_navigating", navOn);
 if (!navOn) this.navInterrupt ();
@@ -1330,7 +1334,7 @@ if (navOn) {
 if (this.navX == 0 && this.navY == 0 && this.navZ == 0) this.navZ = 1;
 if (this.navFps == 0) this.navFps = 10;
 if (this.spinThread == null) {
-this.spinThread =  new J.thread.SpinThread (this, this.viewer, 0, null, null, true, false);
+this.spinThread =  new J.thread.SpinThread (this, this.viewer, 0, null, null, null, true, false);
 this.spinThread.start ();
 }} else if (wasOn) {
 if (this.spinThread != null) {

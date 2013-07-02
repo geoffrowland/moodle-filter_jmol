@@ -28,6 +28,9 @@ Presumes prior loading of JSmol.min.js
 
 You can change the parameters below to override what your pages already use:
 
+
+*/
+
 Jmol.Info = {
       
       jarPath: "java",
@@ -39,9 +42,6 @@ Jmol.Info = {
       
 }
 
-*/
-
-
 
 ////////////////////////////////////////////////////////////////
 // Legacy Scripting infrastruture
@@ -49,7 +49,11 @@ Jmol.Info = {
 
 
 function jmolSetParameter(key,value) {
-  (Info || Jmol.Info)[key] = value;
+  (self.Info || Jmol.Info)[key] = value;
+}
+
+function jmolSetXHTML(id) {
+  Jmol.setXHTML(id);
 }
 
 function jmolSetTranslation(TF) {
@@ -88,7 +92,7 @@ function jmolSetDocument(doc) {
 }
 
 function jmolSetAppletColor(boxbgcolor, boxfgcolor, progresscolor) {
-  (Info || Jmol.Info).color = boxbgcolor ? boxbgcolor : "black";
+  (self.Info || Jmol.Info).color = boxbgcolor ? boxbgcolor : "black";
 }
 
 function jmolSetAppletWindow(w) {
@@ -366,7 +370,10 @@ function _jmolApplet(size, inlineModel, script, nameSuffix) {
     jmolSetTarget(nameSuffix);
     ++_jmol.appletCount;
     script || (script = "select *");
-    self.Info || (Info = Jmol.Info);
+    self.Info || (self.Info = Jmol.Info);
+    var Info = {}
+    for (var i in self.Info)
+      Info[i] = self.Info[i]
     if (_jmol.initialized) {
       Info.jarPath || (Info.jarPath = _jmol.codebase);
       Info.jarFile || (Info.jarFile = _jmol.archivePath);

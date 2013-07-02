@@ -585,8 +585,8 @@ var ret = this.getFileAsBytes (fullPathName, null, true);
 if (!J.util.Escape.isAB (ret)) {
 fullPathName = "" + ret;
 break;
-}image = (this.viewer.isJS ? ret : apiPlatform.createImage (ret));
-} else if (this.viewer.isJS) {
+}image = (this.viewer.$isJS ? ret : apiPlatform.createImage (ret));
+} else if (this.viewer.$isJS) {
 } else if (J.viewer.FileManager.urlTypeIndex (fullPathName) >= 0) {
 try {
 image = apiPlatform.createImage ( new java.net.URL (Clazz.castNullAs ("java.net.URL"), fullPathName, null));

@@ -3,7 +3,7 @@ Clazz.load (["java.lang.Enum", "J.api.JmolViewer", "J.atomdata.AtomDataServer", 
 c$ = Clazz.decorateAsClass (function () {
 this.autoExit = false;
 this.haveDisplay = false;
-this.isJS = false;
+this.$isJS = false;
 this.isWebGL = false;
 this.isSingleThreaded = false;
 this.queueOnHold = false;
@@ -168,6 +168,10 @@ Clazz.overrideMethod (c$, "isApplet",
 function () {
 return this.$isApplet;
 });
+$_M(c$, "isJS", 
+function () {
+return this.$isJS;
+});
 $_M(c$, "isRestricted", 
 function (a) {
 return this.access === a;
@@ -203,7 +207,6 @@ return this.viewerOptions;
 });
 $_M(c$, "setOptions", 
 ($fz = function (info) {
-//alert("viewer setoptions " + arguments.callee.caller.caller.caller.caller + " " + info)
 this.viewerOptions = info;
 if (J.util.Logger.debugging) {
 J.util.Logger.debug ("Viewer constructor " + this);
@@ -240,16 +243,13 @@ o = (this.commandOptions.contains ("platform=") ? this.commandOptions.substring 
 }if (Clazz.instanceOf (o, String)) {
 platform = o;
 this.isWebGL = (platform.indexOf (".awtjs.") >= 0);
-this.isJS = this.isWebGL || (platform.indexOf (".awtjs2d.") >= 0);
+this.$isJS = this.isWebGL || (platform.indexOf (".awtjs2d.") >= 0);
 o = J.api.Interface.getInterface (platform);
 }this.apiPlatform = o;
 this.display = info.get ("display");
-//alert("viewer display="+this.display)
 this.isSingleThreaded = this.apiPlatform.isSingleThreaded ();
 this.$noGraphicsAllowed = this.checkOption2 ("noGraphics", "-n");
 this.haveDisplay = (this.isWebGL || this.display != null && !this.$noGraphicsAllowed && !this.isHeadless () && !this.checkOption2 ("isDataOnly", "\0"));
-
-
 this.$noGraphicsAllowed = new Boolean (this.$noGraphicsAllowed & (this.display == null)).valueOf ();
 if (this.haveDisplay) {
 this.mustRender = true;
@@ -421,7 +421,7 @@ info.put ("registry", this.statusManager.getRegistryInfo ());
 }info.put ("version", J.viewer.JC.version);
 info.put ("date", J.viewer.JC.date);
 info.put ("javaVendor", J.viewer.Viewer.strJavaVendor);
-info.put ("javaVersion", J.viewer.Viewer.strJavaVersion + (!this.isJS ? "" : this.isWebGL ? "(WebGL)" : "(HTML5)"));
+info.put ("javaVersion", J.viewer.Viewer.strJavaVersion + (!this.$isJS ? "" : this.isWebGL ? "(WebGL)" : "(HTML5)"));
 info.put ("operatingSystem", J.viewer.Viewer.strOSName);
 return info;
 });
@@ -432,7 +432,7 @@ this.setStartupBooleans ();
 this.global.setI ("_width", this.dimScreen.width);
 this.global.setI ("_height", this.dimScreen.height);
 if (this.haveDisplay) {
-this.global.setB ("_is2D", this.isJS && !this.isWebGL);
+this.global.setB ("_is2D", this.$isJS && !this.isWebGL);
 this.global.setB ("_multiTouchClient", this.actionManager.isMTClient ());
 this.global.setB ("_multiTouchServer", this.actionManager.isMTServer ());
 }this.colorManager.resetElementColors ();
@@ -1920,8 +1920,8 @@ this.finalizeTransformParameters ();
 }, $fz.isPrivate = true, $fz), "~B");
 $_M(c$, "startHoverWatcher", 
 function (tf) {
-if (!this.haveDisplay) return;
-if (this.hoverEnabled || !tf) this.actionManager.startHoverWatcher (tf);
+if (!this.haveDisplay || tf && (!this.hoverEnabled || this.animationManager.animationOn)) return;
+this.actionManager.startHoverWatcher (tf);
 }, "~B");
 Clazz.overrideMethod (c$, "getModelSetName", 
 function () {
@@ -2311,10 +2311,10 @@ function (min, max, intType, bs) {
 return this.modelSet.getAtomsConnected (min, max, intType, bs);
 }, "~N,~N,~N,J.util.BS");
 $_M(c$, "getBranchBitSet", 
-function (atomIndex, atomIndexNot) {
+function (atomIndex, atomIndexNot, allowCyclic) {
 if (atomIndex < 0 || atomIndex >= this.getAtomCount ()) return  new J.util.BS ();
-return J.util.JmolMolecule.getBranchBitSet (this.modelSet.atoms, atomIndex, this.getModelUndeletedAtomsBitSet (this.modelSet.atoms[atomIndex].modelIndex), null, atomIndexNot, true, true);
-}, "~N,~N");
+return J.util.JmolMolecule.getBranchBitSet (this.modelSet.atoms, atomIndex, this.getModelUndeletedAtomsBitSet (this.modelSet.atoms[atomIndex].modelIndex), null, atomIndexNot, allowCyclic, true);
+}, "~N,~N,~B");
 $_M(c$, "getAtomIndexFromAtomNumber", 
 function (atomNumber) {
 return this.modelSet.getAtomIndexFromAtomNumber (atomNumber, this.getVisibleFramesBitSet ());
@@ -4960,7 +4960,7 @@ if (ifNotSet || sv.indexOf ("<not defined>") < 0) this.showString (key + " = " +
 }, "~S,~B,~N");
 $_M(c$, "showString", 
 function (str, isPrint) {
-if (this.isScriptQueued () && (!this.isSilent || isPrint) && !this.isJS) J.util.Logger.warn (str);
+if (this.isScriptQueued () && (!this.isSilent || isPrint) && !this.$isJS) J.util.Logger.warn (str);
 this.scriptEcho (str);
 }, "~S,~B");
 $_M(c$, "getAllSettings", 
@@ -5218,7 +5218,7 @@ this.setObjectMad (35, "frank", (TF ? 1 : 0));
 $_M(c$, "getShowFrank", 
 function () {
 if (this.$isPreviewOnly || this.$isApplet && this.creatingImage) return false;
-return (!this.isJS && this.$isSignedApplet && !this.isSignedAppletLocal || this.frankOn);
+return (!this.$isJS && this.$isSignedApplet && !this.isSignedAppletLocal || this.frankOn);
 });
 $_M(c$, "isSignedApplet", 
 function () {
@@ -5440,7 +5440,7 @@ return this.transformManager.stereoMode === J.constant.EnumStereoMode.DOUBLE;
 });
 Clazz.overrideMethod (c$, "getOperatingSystemName", 
 function () {
-return J.viewer.Viewer.strOSName + (!this.isJS ? "" : this.isWebGL ? "(WebGL)" : "(HTML5)");
+return J.viewer.Viewer.strOSName + (!this.$isJS ? "" : this.isWebGL ? "(WebGL)" : "(HTML5)");
 });
 Clazz.overrideMethod (c$, "getJavaVendor", 
 function () {
@@ -5563,18 +5563,18 @@ if (isOK) this.refresh (-1, "rotateAxisAngleAtCenter");
 return isOK;
 }, "J.api.JmolScriptEvaluator,J.util.P3,J.util.V3,~N,~N,~B,J.util.BS");
 $_M(c$, "rotateAboutPointsInternal", 
-function (eval, point1, point2, degreesPerSecond, endDegrees, isSpin, bsSelected, translation, finalPoints) {
-var isOK = this.transformManager.rotateAboutPointsInternal (eval, point1, point2, degreesPerSecond, endDegrees, false, isSpin, bsSelected, false, translation, finalPoints);
+function (eval, point1, point2, degreesPerSecond, endDegrees, isSpin, bsSelected, translation, finalPoints, dihedralList) {
+var isOK = this.transformManager.rotateAboutPointsInternal (eval, point1, point2, degreesPerSecond, endDegrees, false, isSpin, bsSelected, false, translation, finalPoints, dihedralList);
 if (isOK) this.refresh (-1, "rotateAxisAboutPointsInternal");
 return isOK;
-}, "J.api.JmolScriptEvaluator,J.util.P3,J.util.P3,~N,~N,~B,J.util.BS,J.util.V3,J.util.JmolList");
+}, "J.api.JmolScriptEvaluator,J.util.P3,J.util.P3,~N,~N,~B,J.util.BS,J.util.V3,J.util.JmolList,~A");
 $_M(c$, "startSpinningAxis", 
 function (pt1, pt2, isClockwise) {
 if (this.getSpinOn () || this.getNavOn ()) {
 this.setSpinOn (false);
 this.setNavOn (false);
 return;
-}this.transformManager.rotateAboutPointsInternal (null, pt1, pt2, this.global.pickingSpinRate, 3.4028235E38, isClockwise, true, null, false, null, null);
+}this.transformManager.rotateAboutPointsInternal (null, pt1, pt2, this.global.pickingSpinRate, 3.4028235E38, isClockwise, true, null, false, null, null, null);
 }, "J.util.P3,J.util.P3,~B");
 $_M(c$, "getModelDipole", 
 function () {
@@ -5832,7 +5832,7 @@ var a = atom1;
 atom1 = atom2;
 atom2 = a;
 }if (J.util.Measure.computeAngleABC (pt, atom1, atom2, true) > 90 || J.util.Measure.computeAngleABC (pt, atom2, atom1, true) > 90) {
-bsBranch = this.getBranchBitSet (atom2.index, atom1.index);
+bsBranch = this.getBranchBitSet (atom2.index, atom1.index, true);
 }if (bsBranch != null) for (var n = 0, i = atom1.getBonds ().length; --i >= 0; ) {
 if (bsBranch.get (atom1.getBondedAtomIndex (i)) && ++n == 2) {
 bsBranch = null;
@@ -5852,7 +5852,7 @@ v1.cross (v1, v2);
 var degrees = (v1.z > 0 ? 1 : -1) * v2.length ();
 var bs = J.util.BSUtil.copy (bsBranch);
 bs.andNot (this.selectionManager.getMotionFixedAtoms ());
-this.rotateAboutPointsInternal (this.eval, atom1, atom2, 0, degrees, false, bs, null, null);
+this.rotateAboutPointsInternal (this.eval, atom1, atom2, 0, degrees, false, bs, null, null, null);
 }, "~N,~N,~N,~N");
 $_M(c$, "refreshMeasures", 
 function (andStopMinimization) {
@@ -5984,7 +5984,7 @@ return this.getStateCreator ().createImagePathCheck (fileName, type, text, bytes
 }, "~S,~S,~S,~A,~N,~N,~N");
 $_M(c$, "getImageCreator", 
 function () {
-return (J.api.Interface.getOptionInterface (this.isJS && !this.isWebGL ? "exportjs.JSImageCreator" : "export.image.AwtImageCreator")).setViewer (this, this.privateKey);
+return (J.api.Interface.getOptionInterface (this.$isJS && !this.isWebGL ? "exportjs.JSImageCreator" : "export.image.AwtImageCreator")).setViewer (this, this.privateKey);
 });
 $_M(c$, "setSyncTarget", 
 ($fz = function (mode, TF) {
@@ -6198,7 +6198,7 @@ this.setCursor (0);
 this.setBooleanProperty ("refreshing", true);
 this.fileManager.setPathForAllFiles ("");
 J.util.Logger.error ("viewer handling error condition: " + er + "  ");
-er.printStackTrace ();
+if (!this.$isJS) er.printStackTrace ();
 this.notifyError ("Error", "doClear=" + doClear + "; " + er, "" + er);
 } catch (e1) {
 try {
@@ -6913,7 +6913,7 @@ this.setAnimationOn (false);
 });
 $_M(c$, "getEvalContextAndHoldQueue", 
 function (jse) {
-if (jse == null || !this.isJS) return null;
+if (jse == null || !this.$isJS) return null;
 jse.pushContextDown ();
 var sc = jse.getThisContext ();
 var sc0 = sc;
@@ -7105,6 +7105,18 @@ $_M(c$, "setBondParameters",
 function (modelIndex, i, bsBonds, rad, pymolValence, argb, trans) {
 this.modelSet.setBondParametersBS (modelIndex, i, bsBonds, rad, pymolValence, argb, trans);
 }, "~N,~N,J.util.BS,~N,~N,~N,~N");
+$_M(c$, "getDihedralMap", 
+function (atoms) {
+return this.modelSet.getDihedralMap (atoms);
+}, "~A");
+$_M(c$, "setDihedrals", 
+function (dihedralList, bsBranches, rate) {
+this.modelSet.setDihedrals (dihedralList, bsBranches, rate);
+}, "~A,~A,~N");
+$_M(c$, "getBsBranches", 
+function (dihedralList) {
+return this.modelSet.getBsBranches (dihedralList);
+}, "~A");
 Clazz.pu$h ();
 c$ = Clazz.declareType (J.viewer.Viewer, "ACCESS", Enum);
 Clazz.defineEnumConstant (c$, "NONE", 0, []);

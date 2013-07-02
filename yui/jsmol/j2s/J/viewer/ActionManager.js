@@ -1115,7 +1115,7 @@ var lengths =  Clazz.newIntArray (nb, 0);
 var points =  Clazz.newIntArray (nb, 0);
 var ni = 0;
 for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1), ni++) {
-lengths[ni] = this.viewer.getBranchBitSet (i, atomIndex).cardinality ();
+lengths[ni] = this.viewer.getBranchBitSet (i, atomIndex, true).cardinality ();
 points[ni] = i;
 }
 for (var j = 0; j < nb - 2; j++) {

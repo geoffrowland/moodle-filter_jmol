@@ -220,15 +220,21 @@ return J.i18n.GT._ ("Jmol Applet version {0} {1}.\n\nAn OpenScience project.\n\n
 });
 Clazz.overrideMethod (c$, "getProperty", 
 function (infoType, paramInfo) {
-return this.viewer.getProperty (null, infoType, paramInfo);
+{
+paramInfo || (paramInfo = "");
+}return this.viewer.getProperty (null, infoType, paramInfo);
 }, "~S,~S");
 Clazz.overrideMethod (c$, "getPropertyAsString", 
 function (infoType, paramInfo) {
-return this.viewer.getProperty ("readable", infoType, paramInfo).toString ();
+{
+paramInfo || (paramInfo = "");
+}return this.viewer.getProperty ("readable", infoType, paramInfo).toString ();
 }, "~S,~S");
 Clazz.overrideMethod (c$, "getPropertyAsJSON", 
 function (infoType, paramInfo) {
-return this.viewer.getProperty ("JSON", infoType, paramInfo).toString ();
+{
+paramInfo || (paramInfo = "");
+}return this.viewer.getProperty ("JSON", infoType, paramInfo).toString ();
 }, "~S,~S");
 $_M(c$, "loadInlineString", 
 function (strModel, script, isAppend) {

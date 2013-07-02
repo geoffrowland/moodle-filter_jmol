@@ -114,7 +114,7 @@ if (logTime) J.util.Logger.checkTimer (msg, false);
 g3d.renderAllStrings (null);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
-if (!this.viewer.isApplet ()) e.printStackTrace ();
+if (!this.viewer.isJS ()) e.printStackTrace ();
 J.util.Logger.error ("rendering error? " + e);
 } else {
 throw e;

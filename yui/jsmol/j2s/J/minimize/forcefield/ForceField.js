@@ -15,6 +15,7 @@ this.minAtoms = null;
 this.minBonds = null;
 this.minAngles = null;
 this.minTorsions = null;
+this.minPositions = null;
 this.bsFixed = null;
 this.minimizer = null;
 this.base = null;
@@ -150,6 +151,10 @@ return this.calc.energyTorsion (gradients);
 $_M(c$, "energyOOP", 
 function (gradients) {
 return this.calc.energyOOP (gradients);
+}, "~B");
+$_M(c$, "energyPosition", 
+function (gradients) {
+return this.calc.energyPos (gradients);
 }, "~B");
 $_M(c$, "energyVDW", 
 function (gradients) {
