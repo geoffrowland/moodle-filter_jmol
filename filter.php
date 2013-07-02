@@ -60,7 +60,7 @@ class filter_jmol extends moodle_text_filter {
 
         // Edit $jmolfiletypes to add/remove chemical structure file types that can be displayed.
         // For more detail see: http://wiki.jmol.org/index.php/File_formats.
-        $jmolfiletypes ='cif|mol|sdf|mol2|pdb\.gz|pdb|csmol|xyz|cml';
+        $jmolfiletypes ='cif|cml|csmol|mol|mol2|pdb\.gz|pdb|pse|sdf|xyz';
 
         $search = '/<a\\b([^>]*?)href=\"((?:\.|\\\|https?:\/\/' . $host . ')[^\"]+\.('.$jmolfiletypes.'))\??(.*?)\"([^>]*)>(.*?)<\/a>(\s*JMOLSCRIPT\{(.*?)\})?/is';
 
@@ -113,7 +113,9 @@ function filter_jmol_replace_callback($matches) {
     $jmolhelp = get_string('jmolhelp', 'filter_jmol');
     $jsdisabled = get_string('jsdisabled', 'filter_jmol');
     $downloadstructurefile = get_string('downloadstructurefile', 'filter_jmol');
-
+    
+    // File path = $matches[2]
+    // File extension = $matches[3]
     // Controls defined by parameter appended to structure file URL ?c=0, ?c=1 (default), ?c=2 ,?c=3 or ?c=4.
     switch($optmatch[1]) {
         // No controls at all.
@@ -163,7 +165,7 @@ function filter_jmol_replace_callback($matches) {
     // Each JSmol instance, in a page, has a unique ID.
     if ($matches[3] == "cif") {
         $loadscript = 'load \"'.$matches[2].'\" {1 1 1} PACKED; set antialiasDisplay on;';
-    } else if ($matches[3] == "pdb") {
+    } else if ($matches[3] == "pdb" | $matches[3] == "pdb.gz") {
         $loadscript =  'set pdbAddHydrogens true; load \"'.$matches[2].'\"; set antialiasDisplay on;';
     } else {
         $loadscript = 'load \"'.$matches[2].'\"; set antialiasDisplay on;';
@@ -177,6 +179,19 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $initscript = '';
     }
+    // Force Java applet for binary files (.pdb.gz or .pse) with some browsers (IE or Chrome)
+    $theUA = strtolower($_SERVER['HTTP_USER_AGENT']);
+    if ($matches[3] == "pdb.gz" | $matches[3] == "pse") { 
+        if (strpos($theUA,'msie')) {
+            $technol = 'JAVA';
+        } else if (strpos($theUA,'chrome')) {
+            $technol = 'JAVA';
+        } else {
+            $technol = 'HTML5';
+        }
+	} else {
+	    $technol = 'HTML5';	
+    } 
     return "<div id='jmoldiv".$id."' style='width:".$size."px; height:".$size."px; border: 1px solid lightgray'>
     <noscript>".$jsdisabled."</noscript>
     </div>
@@ -197,13 +212,13 @@ function filter_jmol_replace_callback($matches) {
             color: 'white',
             height: ".$size.",
             script: '".$loadscript.$initscript."',
-            use: 'HTML5',
+            use: '".$technol."',
+            serverURL: '".$wwwroot."/filter/jmol/yui/jsmol/jsmol.php',
             j2sPath: '".$wwwroot."/filter/jmol/yui/jsmol/j2s',
             jarPath: '".$wwwroot."/filter/jmol/yui/jsmol/java',
             jarFile: 'JmolApplet0.jar',
             isSigned: false,
             addSelectionOptions: false,
-            serverURL: '".$wwwroot."/filter/jmol/yui/jsmol/jsmol.php',
             readyFunction: null,
             console: 'jmol_infodiv',
             disableInitialConsole: true,
