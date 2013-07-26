@@ -164,7 +164,7 @@ function filter_jmol_replace_callback($matches) {
     // Each JSmol instance, in a page, has a unique ID.
     if ($matches[3] == "cif") {
         $loadscript = 'load \"'.$matches[2].'\" {1 1 1} PACKED; set antialiasDisplay on;';
-    } else if ($matches[3] == "pdb" | $matches[3] == "pdb.gz") {
+    } else if ($matches[3] == "pdb" || $matches[3] == "pdb.gz") {
         $loadscript =  'set pdbAddHydrogens true; load \"'.$matches[2].'\"; set antialiasDisplay on;';
     } else {
         $loadscript = 'load \"'.$matches[2].'\"; set antialiasDisplay on;';
