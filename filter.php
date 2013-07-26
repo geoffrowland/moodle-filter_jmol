@@ -69,7 +69,6 @@ class filter_jmol extends moodle_text_filter {
         if (($newtext != $text) && !isset($yui_jsmol_has_been_configured)) {
             $yui_jsmol_has_been_configured = true;
             $newtext = "<script type='text/javascript'>
-            //<![CDATA[
             YUI().applyConfig({
                 modules: {
                     'jsmol': {
@@ -181,10 +180,12 @@ function filter_jmol_replace_callback($matches) {
     }
     // Force Java applet for binary files (.pdb.gz or .pse) with some browsers (IE or Chrome)
     $theUA = strtolower($_SERVER['HTTP_USER_AGENT']);
-    if ($matches[3] == "pdb.gz" | $matches[3] == "pse") { 
+    if ($matches[3] == "pdb.gz" || $matches[3] == "pse") { 
         if (strpos($theUA,'msie')) {
             $technol = 'JAVA';
         } else if (strpos($theUA,'chrome')) {
+            $technol = 'JAVA';
+        } else if (strpos($theUA,'safari')) {
             $technol = 'JAVA';
         } else {
             $technol = 'HTML5';
@@ -234,6 +235,5 @@ function filter_jmol_replace_callback($matches) {
             $('#control".$id."').html(".$control.");
         });
     });
-    //]]>
     </script>";
 }
