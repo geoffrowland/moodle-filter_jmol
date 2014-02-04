@@ -14,7 +14,7 @@
  
 $string['filtername'] = 'Jmol';
 $string['antialias'] = 'Antialias';
-$string['Style'] = 'Style';
+$string['style'] = 'Style';
 $string['spin'] = 'Spin';
 $string['download'] = 'Download';
 $string['off'] = 'off';
