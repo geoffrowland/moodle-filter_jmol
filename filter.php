@@ -99,6 +99,7 @@ function filter_jmol_replace_callback($matches) {
         $optmatch = array(1 => 1);
     }
     // Get language strings.
+    $style = get_string('style', 'filter_jmol');
     $wireframe = get_string('wireframe', 'filter_jmol');
     $stick = get_string('stick', 'filter_jmol');
     $ballandstick = get_string('ballandstick', 'filter_jmol');
