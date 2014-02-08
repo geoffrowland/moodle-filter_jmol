@@ -179,7 +179,7 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $initscript = '';
     }
-    // Force Java applet for binary files (.pdb.gz or .pse) with some browsers (IE or Chrome)
+    // Force Java applet for binary files (.pdb.gz or .pse) with some browsers (IE, Chrome or Safari)
     $browser = strtolower($_SERVER['HTTP_USER_AGENT']);
     if ($matches[3] == "pdb.gz" || $matches[3] == "pse") { 
         if (strpos($browser,'ie')) {
