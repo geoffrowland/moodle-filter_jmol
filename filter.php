@@ -193,8 +193,8 @@ function filter_jmol_replace_callback($matches) {
         } else {
             $technol = 'HTML5';
         }
-	} else {
-	    $technol = 'HTML5';	
+    } else {
+        $technol = 'HTML5';	
     } 
     return "<div id='jmoldiv".$id."' style='width:".$size."px; height:".$size."px; border: 1px solid lightgray'>
     <noscript>".$jsdisabled."</noscript>
