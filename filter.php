@@ -196,8 +196,10 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $technol = 'HTML5';	
     } 
-    return "<div id='jmoldiv".$id."' style='width:".$size."px; height:".$size."px; border: 1px solid lightgray'>
+    return "<div style='position relative; width: ".$size."px; height: ".$size."px;'>
+    <div id='jmoldiv".$id."' style='position: absolute; z-index: 0; width: ".$size."px; height: ".$size."px;'>
     <noscript>".$jsdisabled."</noscript>
+    </div>
     </div>
     <div style='width: ".$size."px'>
     <div id='control".$id."' style='float: left'></div>
