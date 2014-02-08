@@ -234,11 +234,14 @@ function filter_jmol_replace_callback($matches) {
         }
 
         Y.on('load', function () {
-        	   Jmol.setDocument(0);
-        	   Jmol._alertNoBinary = false;
-        	   Jmol.getApplet('jmol".$id."', Info);
-            $('#jmoldiv".$id."').html(Jmol.getAppletHtml(jmol".$id."));
-            $('#control".$id."').html(".$control.");
+            //Uncomment following if MathJax is installed
+            //MathJax.Hub.Queue(function () {
+                Jmol.setDocument(0);
+        	Jmol._alertNoBinary = false;
+        	Jmol.getApplet('jmol".$id."', Info);
+                $('#jmoldiv".$id."').html(Jmol.getAppletHtml(jmol".$id."));
+                $('#control".$id."').html(".$control.");
+            //});
         });
     });
     </script>";
