@@ -58,7 +58,7 @@ this.discardLinesUntilContains ("----");
 }var atomPt = 0;
 while (this.readLine () != null && this.line.length > 0) {
 var tokens = this.getTokens ();
-var atom = (isInitial ? this.atomSetCollection.addNewAtom () : this.atomSetCollection.getAtom (atomPt++));
+var atom = (isInitial ? this.atomSetCollection.addNewAtom () : this.atomSetCollection.atoms[atomPt++]);
 if (isInitial) {
 this.atomNames.addLast (tokens[0]);
 if (tokens[0].length <= 2) atom.elementNumber = J.api.JmolAdapter.getElementNumber (tokens[0]);
@@ -189,7 +189,7 @@ var atomCount = this.atomSetCollection.getLastAtomSetAtomCount ();
 var tokens;
 while (this.readLine () != null && this.line.indexOf ("Frequency") >= 0) {
 tokens = this.getTokens ();
-var iAtom0 = this.atomSetCollection.getAtomCount ();
+var iAtom0 = this.atomSetCollection.atomCount;
 var ignore =  Clazz.newBooleanArray (1, false);
 if (!this.doGetVibration (++this.vibrationNumber)) continue;
 this.atomSetCollection.cloneLastAtomSet ();

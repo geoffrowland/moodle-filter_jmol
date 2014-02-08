@@ -139,7 +139,7 @@ for (var e, $e = map.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ())
 var name = e.getKey ();
 if (!"names".equals (name)) {
 this.viewer.log ("\n===" + name + "===");
-this.viewer.log (JU.PT.simpleReplace (e.getValue ().toString (), "[", "\n["));
+this.viewer.log (JU.PT.rep (e.getValue ().toString (), "[", "\n["));
 }}
 this.viewer.log ("\n===names===");
 for (var i = 1; i < names.size (); i++) {
@@ -147,7 +147,7 @@ this.viewer.log ("");
 var list = names.get (i);
 this.viewer.log (" =" + list.get (0).toString () + "=");
 try {
-this.viewer.log (JU.PT.simpleReplace (list.toString (), "[", "\n["));
+this.viewer.log (JU.PT.rep (list.toString (), "[", "\n["));
 } catch (e) {
 }
 }
@@ -201,7 +201,7 @@ this.desiredModelNumber = pymolState;
 for (var j = 0; j < this.stateCount; j++) {
 if (!this.doGetModel (++this.nModels, null)) continue;
 this.model (this.nModels);
-this.pymolScene.currentAtomSetIndex = this.atomSetCollection.getCurrentAtomSetIndex ();
+this.pymolScene.currentAtomSetIndex = this.atomSetCollection.currentAtomSetIndex;
 if (this.isTrajectory) {
 this.trajectoryStep =  new Array (this.totalAtomCount);
 this.trajectorySteps.addLast (this.trajectoryStep);
@@ -475,7 +475,7 @@ var state = this.listAt (states, iState);
 var idxToAtm = this.listAt (state, 3);
 var n = (idxToAtm == null ? 0 : idxToAtm.size ());
 if (n == 0) return null;
-this.$atomCount = this.atomCount0 = this.atomSetCollection.getAtomCount ();
+this.$atomCount = this.atomCount0 = this.atomSetCollection.atomCount;
 var nAtoms = J.adapter.readers.pymol.PyMOLReader.intAt (pymolObject, 3);
 if (nAtoms == 0) return null;
 this.ssMapSeq =  new java.util.Hashtable ();
@@ -494,7 +494,7 @@ if (a != null) this.trajectoryStep[this.trajectoryPtr++] = a;
 }
 this.addBonds (bonds);
 this.addMolStructures ();
-this.atoms = this.atomSetCollection.getAtoms ();
+this.atoms = this.atomSetCollection.atoms;
 if (!this.isStateScript) this.createShapeObjects ();
 this.ssMapSeq = null;
 J.util.Logger.info ("reading " + (this.$atomCount - this.atomCount0) + " atoms");
@@ -620,7 +620,7 @@ if (this.ssMapSeq.get (ssType) == null) return;
 var istart = -1;
 var iend = -1;
 var ichain = 0;
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 var bsSeq = null;
 var bsAtom = this.pymolScene.getSSMapAtom (ssType);
 var n = this.$atomCount + 1;

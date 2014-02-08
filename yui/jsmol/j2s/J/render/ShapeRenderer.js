@@ -38,4 +38,8 @@ this.exportType = 0;
 this.isExport = false;
 return needsTranslucent;
 }, "J.api.JmolRendererInterface,J.modelset.ModelSet,J.shape.Shape");
+$_M(c$, "isVisibleForMe", 
+function (a) {
+return a.isVisible (this.myVisibilityFlag | 9);
+}, "J.modelset.Atom");
 });

@@ -45,7 +45,7 @@ var y = this.parseFloatStr (tokens[1]);
 var z = this.parseFloatStr (tokens[2]);
 this.setAtomCoordXYZ (atom, x, y, z);
 }
-this.noAtoms = this.atomSetCollection.getAtomCount ();
+this.noAtoms = this.atomSetCollection.atomCount;
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "newAtomSet", 
 ($fz = function () {
@@ -58,7 +58,7 @@ $_M(c$, "readAtomsCartGeomThenCell",
 ($fz = function () {
 this.readLines (1);
 this.newAtomSet ();
-var atom0 = this.atomSetCollection.getAtomCount ();
+var atom0 = this.atomSetCollection.atomCount;
 for (var i = 0; i < this.noAtoms; i++) {
 var tokens = this.getTokens ();
 var atom = this.atomSetCollection.addNewAtom ();
@@ -71,8 +71,8 @@ this.readLine ();
 }
 this.discardLinesUntilContains ("outcell: Unit cell vectors");
 this.setCell ();
-var atoms = this.atomSetCollection.getAtoms ();
-var atomCount = this.atomSetCollection.getAtomCount ();
+var atoms = this.atomSetCollection.atoms;
+var atomCount = this.atomSetCollection.atomCount;
 for (var i = atom0; i < atomCount; i++) this.setAtomCoord (atoms[i]);
 
 this.discardLinesUntilContains ("siesta: E_KS(eV) = ");

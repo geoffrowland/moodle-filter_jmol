@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shapespecial");
-Clazz.load (["J.shape.Shape", "java.util.Hashtable"], "J.shapespecial.Ellipsoids", ["JU.BS", "$.SB", "$.V3", "J.constant.EnumPalette", "J.shapespecial.Ellipsoid", "J.util.BSUtil", "$.C", "$.Escape"], function () {
+Clazz.load (["J.shape.Shape", "java.util.Hashtable"], "J.shapespecial.Ellipsoids", ["JU.BS", "$.PT", "$.SB", "$.V3", "J.constant.EnumPalette", "J.shapespecial.Ellipsoid", "J.util.BSUtil", "$.C", "$.Escape"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.simpleEllipsoids = null;
 this.atomEllipsoids = null;
@@ -171,7 +171,7 @@ v1.scale (ellipsoid.lengths[i]);
 sb.append (" ").append (J.util.Escape.eP (v1));
 }
 sb.append (" " + J.shape.Shape.getColorCommandUnk ("", ellipsoid.colix, this.translucentAllowed));
-if (ellipsoid.options != null) sb.append (" options ").append (J.util.Escape.eS (ellipsoid.options));
+if (ellipsoid.options != null) sb.append (" options ").append (JU.PT.esc (ellipsoid.options));
 if (!ellipsoid.isOn) sb.append (" off");
 sb.append (";\n");
 }
@@ -186,11 +186,11 @@ var iType = e.tensor.iType;
 if (bsDone.get (iType + 1)) continue;
 bsDone.set (iType + 1);
 var isADP = (e.tensor.iType == 1);
-var cmd = (isADP ? null : "Ellipsoids set " + J.util.Escape.eS (e.tensor.type));
+var cmd = (isADP ? null : "Ellipsoids set " + JU.PT.esc (e.tensor.type));
 for (var e2, $e2 = this.atomEllipsoids.values ().iterator (); $e2.hasNext () && ((e2 = $e2.next ()) || true);) {
 if (e2.tensor.iType != iType || isADP && !e2.isOn) continue;
 var i = e2.tensor.atomIndex1;
-J.util.BSUtil.setMapBitSet (temp, i, i, (isADP ? "Ellipsoids " + e2.percent : cmd + " scale " + e2.scale + (e2.options == null ? "" : " options " + J.util.Escape.eS (e2.options)) + (e2.isOn ? " ON" : " OFF")));
+J.util.BSUtil.setMapBitSet (temp, i, i, (isADP ? "Ellipsoids " + e2.percent : cmd + " scale " + e2.scale + (e2.options == null ? "" : " options " + JU.PT.esc (e2.options)) + (e2.isOn ? " ON" : " OFF")));
 if (e2.colix != 0) J.util.BSUtil.setMapBitSet (temp2, i, i, J.shape.Shape.getColorCommand (cmd, e2.pid, e2.colix, this.translucentAllowed));
 }
 }
@@ -226,7 +226,7 @@ if (this.atomEllipsoids.isEmpty ()) return;
 for (var e, $e = this.atomEllipsoids.values ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) {
 var i = e.tensor.atomIndex1;
 var atom = this.modelSet.atoms[i];
-if ((atom.getShapeVisibilityFlags () & this.myVisibilityFlag) == 0 || this.modelSet.isAtomHidden (i)) continue;
+if ((atom.shapeVisibilityFlags & this.myVisibilityFlag) == 0 || this.modelSet.isAtomHidden (i)) continue;
 atom.setClickable (this.myVisibilityFlag);
 }
 });

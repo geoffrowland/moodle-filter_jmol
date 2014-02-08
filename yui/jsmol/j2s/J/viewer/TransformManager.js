@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.viewer");
-Clazz.load (["JU.A4", "$.M3", "$.M4", "$.P3", "$.P3i", "$.V3", "J.constant.EnumStereoMode"], "J.viewer.TransformManager", ["java.lang.Boolean", "$.Float", "java.util.Hashtable", "JU.P4", "$.SB", "J.api.Interface", "J.util.Escape", "$.Logger", "$.Quaternion"], function () {
+Clazz.load (["JU.A4", "$.M3", "$.M4", "$.P3", "$.P3i", "$.V3", "J.constant.EnumStereoMode", "J.util.Point3fi"], "J.viewer.TransformManager", ["java.lang.Boolean", "$.Float", "java.util.Hashtable", "JU.P4", "$.SB", "J.api.Interface", "J.util.Escape", "$.Logger", "$.Quaternion"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.viewer = null;
 this.perspectiveModel = 11;
@@ -120,7 +120,7 @@ this.vibrationOn = false;
 this.vibrationPeriod = 0;
 this.vibrationPeriodMs = 0;
 this.vibrationScale = 0;
-this.vibrationT = 0;
+this.vibrationT = null;
 this.vibrationThread = null;
 this.stereoMode = null;
 this.stereoColors = null;
@@ -172,7 +172,7 @@ this.matrixTransform =  new JU.M4 ();
 this.matrixTransformInv =  new JU.M4 ();
 this.point3fScreenTemp =  new JU.P3 ();
 this.point3iScreenTemp =  new JU.P3i ();
-this.ptVibTemp =  new JU.P3 ();
+this.ptVibTemp =  new J.util.Point3fi ();
 this.pointTsp =  new JU.P3 ();
 this.untransformedPoint =  new JU.P3 ();
 this.ptTest1 =  new JU.P3 ();
@@ -180,6 +180,7 @@ this.ptTest2 =  new JU.P3 ();
 this.ptTest3 =  new JU.P3 ();
 this.aaTest1 =  new JU.A4 ();
 this.matrixTest =  new JU.M3 ();
+this.vibrationT =  new JU.P3 ();
 this.stereoMode = J.constant.EnumStereoMode.NONE;
 this.matrixStereo =  new JU.M3 ();
 this.frameOffset =  new JU.P3 ();
@@ -205,9 +206,9 @@ this.setFixedRotationCenter (this.rotationCenterDefault);
 this.rotationRadiusDefault = this.setRotationRadius (0, true);
 this.windowCentered = true;
 this.setRotationCenterAndRadiusXYZ (null, true);
-this.matrixRotate.setIdentity ();
+this.matrixRotate.setScale (1);
 var m = this.viewer.getModelSetAuxiliaryInfoValue ("defaultOrientationMatrix");
-if (m != null) this.matrixRotate.setM (m);
+if (m != null) this.matrixRotate.setM3 (m);
 this.setZoomEnabled (true);
 this.zoomToPercent (this.viewer.global.modelKitMode ? 50 : 100);
 this.zoomPercent = this.zoomPercentSetting;
@@ -265,7 +266,7 @@ y -= this.fixedTranslation.y;
 var z = radius2 - x * x - y * y;
 z = (z < 0 ? -1 : 1) * Math.sqrt (Math.abs (z));
 if (factor == 0) {
-this.arcBall0Rotation.setM (this.matrixRotate);
+this.arcBall0Rotation.setM3 (this.matrixRotate);
 this.arcBall0.set (x, -y, z);
 if (!Float.isNaN (z)) this.arcBall0.normalize ();
 return;
@@ -274,7 +275,7 @@ this.arcBall1.set (x, -y, z);
 this.arcBall1.normalize ();
 this.arcBallAxis.cross (this.arcBall0, this.arcBall1);
 this.axisangleT.setVA (this.arcBallAxis, factor * Math.acos (this.arcBall0.dot (this.arcBall1)));
-this.matrixRotate.setM (this.arcBall0Rotation);
+this.matrixRotate.setM3 (this.arcBall0Rotation);
 this.rotateAxisAngle2 (this.axisangleT, null);
 }, "~N,~N,~N");
 $_M(c$, "rotateXYBy", 
@@ -289,7 +290,7 @@ this.rotateZRadians ((zDelta / 57.29577951308232));
 }, "~N,~N,~N");
 $_M(c$, "rotateFront", 
 function () {
-this.matrixRotate.setIdentity ();
+this.matrixRotate.setScale (1);
 });
 $_M(c$, "rotateX", 
 function (angleRadians) {
@@ -413,7 +414,7 @@ $_M(c$, "rotateAxisAngleRadiansInternal",
 function (radians, bsAtoms) {
 this.internalRotationAngle = radians;
 this.vectorT.set (this.internalRotationAxis.x, this.internalRotationAxis.y, this.internalRotationAxis.z);
-this.matrixRotate.transform2 (this.vectorT, this.vectorT2);
+this.matrixRotate.rotate2 (this.vectorT, this.vectorT2);
 this.axisangleT.setVA (this.vectorT2, radians);
 this.matrixTemp3.setAA (this.axisangleT);
 this.applyRotation (this.matrixTemp3, true, bsAtoms, this.internalTranslation, radians > 1e6);
@@ -423,12 +424,11 @@ $_M(c$, "getNewFixedRotationCenter",
 function () {
 this.axisangleT.setAA (this.internalRotationAxis);
 this.axisangleT.angle = -this.internalRotationAngle;
-this.matrixTemp4.setAA (this.axisangleT);
+this.matrixTemp4.setToAA (this.axisangleT);
 this.vectorT.setT (this.internalRotationCenter);
-this.pointT2.setT (this.fixedRotationCenter);
-this.pointT2.sub (this.vectorT);
+this.pointT2.sub2 (this.fixedRotationCenter, this.vectorT);
 var pt =  new JU.P3 ();
-this.matrixTemp4.transform2 (this.pointT2, pt);
+this.matrixTemp4.rotTrans2 (this.pointT2, pt);
 pt.add (this.vectorT);
 this.setRotationCenterAndRadiusXYZ (pt, false);
 });
@@ -564,11 +564,11 @@ return this.matrixRotate;
 });
 $_M(c$, "setRotation", 
 function (matrixRotation) {
-if (!Float.isNaN (matrixRotation.m00)) this.matrixRotate.setM (matrixRotation);
+if (!Float.isNaN (matrixRotation.m00)) this.matrixRotate.setM3 (matrixRotation);
 }, "JU.M3");
 $_M(c$, "getRotation", 
 function (matrixRotation) {
-matrixRotation.setM (this.matrixRotate);
+matrixRotation.setM3 (this.matrixRotate);
 }, "JU.M3");
 $_M(c$, "zoomBy", 
 function (pixels) {
@@ -794,12 +794,12 @@ this.visualRange = angstroms;
 }, "~N");
 $_M(c$, "getUnscaledTransformMatrix", 
 function () {
-var unscaled = JU.M4.newM (null);
+var unscaled = JU.M4.newM4 (null);
 this.vectorTemp.setT (this.fixedRotationCenter);
 this.matrixTemp.setZero ();
 this.matrixTemp.setTranslation (this.vectorTemp);
 unscaled.sub (this.matrixTemp);
-this.matrixTemp.setM3 (this.matrixRotate);
+this.matrixTemp.setToM3 (this.matrixRotate);
 unscaled.mul2 (this.matrixTemp, unscaled);
 return unscaled;
 });
@@ -928,12 +928,11 @@ return Clazz.doubleToInt (Math.floor ((1 - zPercent / 50) * this.modelRadiusPixe
 $_M(c$, "calcTransformMatrix", 
 function () {
 this.matrixTransform.setIdentity ();
-this.vectorTemp.setT (this.fixedRotationCenter);
-this.vectorTemp.sub (this.frameOffset);
+this.vectorTemp.sub2 (this.fixedRotationCenter, this.frameOffset);
 this.matrixTemp.setZero ();
 this.matrixTemp.setTranslation (this.vectorTemp);
 this.matrixTransform.sub (this.matrixTemp);
-this.matrixTemp.setM3 (this.stereoFrame ? this.matrixStereo : this.matrixRotate);
+this.matrixTemp.setToM3 (this.stereoFrame ? this.matrixStereo : this.matrixRotate);
 this.matrixTransform.mul2 (this.matrixTemp, this.matrixTransform);
 this.matrixTemp.setIdentity ();
 this.matrixTemp.m00 = this.matrixTemp.m11 = this.matrixTemp.m22 = this.scalePixelsPerAngstrom;
@@ -952,7 +951,7 @@ throw e;
 });
 $_M(c$, "rotatePoint", 
 function (pt, ptRot) {
-this.matrixRotate.transform2 (pt, ptRot);
+this.matrixRotate.rotate2 (pt, ptRot);
 ptRot.y = -ptRot.y;
 }, "JU.P3,JU.P3");
 $_M(c$, "transformPoints", 
@@ -961,18 +960,17 @@ for (var i = count; --i >= 0; ) screens[i].setT (this.transformPoint (angstroms[
 
 }, "~N,~A,~A");
 $_M(c$, "transformPointScr", 
-function (pointAngstroms, pointScreen) {
-pointScreen.setT (this.transformPoint (pointAngstroms));
+function (ptXYZ, pointScreen) {
+pointScreen.setT (this.transformPoint (ptXYZ));
 }, "JU.P3,JU.P3i");
-$_M(c$, "transformPointNoClip2", 
-function (pointAngstroms, pointScreen) {
-pointScreen.setT (this.transformPointNoClip (pointAngstroms));
+$_M(c$, "transformPointNoClip", 
+function (ptXYZ, pointScreen) {
+this.getTempScreenPt (ptXYZ, null);
+pointScreen.setT (this.point3fScreenTemp);
 }, "JU.P3,JU.P3");
 $_M(c$, "transformPoint", 
-function (pointAngstroms) {
-if (pointAngstroms.z == 3.4028235E38 || pointAngstroms.z == -3.4028235E38) return this.transformScreenPoint (pointAngstroms);
-this.getTemporaryScreenPoint (pointAngstroms, (this.internalSlab ? pointAngstroms : null));
-return this.point3iScreenTemp;
+function (ptXYZ) {
+return (ptXYZ.z == 3.4028235E38 || ptXYZ.z == -3.4028235E38 ? this.transformScreenPoint (ptXYZ) : this.getTempScreenPt (ptXYZ, this.internalSlab ? ptXYZ : null));
 }, "JU.P3");
 $_M(c$, "transformScreenPoint", 
 ($fz = function (ptXyp) {
@@ -985,30 +983,28 @@ this.point3iScreenTemp.y = (this.screenHeight - Clazz.floatToInt (ptXyp.y));
 }if (this.antialias) {
 this.point3iScreenTemp.x <<= 1;
 this.point3iScreenTemp.y <<= 1;
-}this.matrixTransform.transform2 (this.fixedRotationCenter, this.pointTsp);
+}this.matrixTransform.rotTrans2 (this.fixedRotationCenter, this.pointTsp);
 this.point3iScreenTemp.z = Clazz.floatToInt (this.pointTsp.z);
 return this.point3iScreenTemp;
 }, $fz.isPrivate = true, $fz), "JU.P3");
-$_M(c$, "transformPointNoClip", 
-function (pointAngstroms) {
-this.getTemporaryScreenPoint (pointAngstroms, null);
-return this.point3fScreenTemp;
-}, "JU.P3");
 $_M(c$, "transformPointVib", 
-function (pointAngstroms, v) {
-this.ptVibTemp.setT (pointAngstroms);
-if (this.vibrationOn && v != null) v.setTempPoint (this.ptVibTemp, this.vibrationT, this.vibrationScale);
-this.getTemporaryScreenPoint (this.ptVibTemp, pointAngstroms);
-return this.point3iScreenTemp;
+function (ptXYZ, v) {
+this.ptVibTemp.setT (ptXYZ);
+return this.getTempScreenPt (this.getVibrationPoint (v, this.ptVibTemp), ptXYZ);
 }, "JU.P3,J.util.Vibration");
+$_M(c$, "getVibrationPoint", 
+function (v, pt) {
+v.setTempPoint (pt, this.vibrationT, this.vibrationScale, this.viewer.global.modulationScale);
+return pt;
+}, "J.util.Vibration,J.util.Point3fi");
 $_M(c$, "transformPoint2", 
-function (pointAngstroms, screen) {
-this.getTemporaryScreenPoint (pointAngstroms, pointAngstroms);
+function (ptXYZ, screen) {
+this.getTempScreenPt (ptXYZ, ptXYZ);
 screen.setT (this.point3fScreenTemp);
 }, "JU.P3,JU.P3");
 $_M(c$, "transformVector", 
 function (vectorAngstroms, vectorTransformed) {
-this.matrixTransform.transformV2 (vectorAngstroms, vectorTransformed);
+this.matrixTransform.rotate2 (vectorAngstroms, vectorTransformed);
 }, "JU.V3,JU.V3");
 $_M(c$, "move", 
 function (eval, dRot, dZoom, dTrans, dSlab, floatSecondsTotal, fps) {
@@ -1023,14 +1019,14 @@ if (Float.isNaN (degrees)) return true;
 this.aaTest1.setVA (axis, (degrees / 57.29577951308232));
 this.ptTest1.set (4.321, 1.23456, 3.14159);
 this.getRotation (this.matrixTest);
-this.matrixTest.transform2 (this.ptTest1, this.ptTest2);
+this.matrixTest.rotate2 (this.ptTest1, this.ptTest2);
 this.matrixTest.setAA (this.aaTest1);
-this.matrixTest.transform2 (this.ptTest1, this.ptTest3);
+this.matrixTest.rotate2 (this.ptTest1, this.ptTest3);
 return (this.ptTest3.distance (this.ptTest2) < 0.1);
 }, "JU.V3,~N");
 $_M(c$, "moveToPyMOL", 
 function (eval, floatSecondsTotal, pymolView) {
-var m3 = JU.M3.newA (pymolView);
+var m3 = JU.M3.newA9 (pymolView);
 m3.invert ();
 var cameraX = pymolView[9];
 var cameraY = -pymolView[10];
@@ -1074,7 +1070,7 @@ var axis = JU.V3.newV (rotAxis);
 if (Float.isNaN (degrees)) {
 matrixEnd.m00 = NaN;
 } else if (degrees < 0.01 && degrees > -0.01) {
-matrixEnd.setIdentity ();
+matrixEnd.setScale (1);
 } else {
 if (axis.x == 0 && axis.y == 0 && axis.z == 0) {
 return;
@@ -1225,7 +1221,7 @@ var m = this.viewer.getModelSetAuxiliaryInfoValue ("defaultOrientationMatrix");
 if (m == null) {
 m = this.matrixRotate;
 } else {
-m = JU.M3.newM (m);
+m = JU.M3.newM3 (m);
 m.invert ();
 m.mul2 (this.matrixRotate, m);
 }var m22 = m.m22;
@@ -1366,7 +1362,7 @@ period = -period;
 }, "~N");
 $_M(c$, "setVibrationT", 
 function (t) {
-this.vibrationT = t;
+this.vibrationT.x = t;
 if (this.vibrationScale == 0) this.vibrationScale = this.viewer.global.vibrationScale;
 }, "~N");
 $_M(c$, "isVibrationOn", 
@@ -1552,9 +1548,9 @@ $_M(c$, "getPerspectiveFactor",
 function (z) {
 return (z <= 0 ? this.referencePlaneOffset : this.referencePlaneOffset / z);
 }, "~N");
-$_M(c$, "getTemporaryScreenPoint", 
-function (pointAngstroms, pt0) {
-this.matrixTransform.transform2 (pointAngstroms, this.point3fScreenTemp);
+$_M(c$, "getTempScreenPt", 
+function (ptXYZ, ptRef) {
+this.matrixTransform.rotTrans2 (ptXYZ, this.point3fScreenTemp);
 var z = this.point3fScreenTemp.z;
 if (Float.isNaN (z)) {
 if (!this.haveNotifiedNaN && J.util.Logger.debugging) J.util.Logger.debug ("NaN seen in TransformPoint");
@@ -1593,7 +1589,8 @@ if (Float.isNaN (this.point3fScreenTemp.x) && !this.haveNotifiedNaN) {
 if (J.util.Logger.debugging) J.util.Logger.debug ("NaN found in transformPoint ");
 this.haveNotifiedNaN = true;
 }this.point3iScreenTemp.set (Clazz.floatToInt (this.point3fScreenTemp.x), Clazz.floatToInt (this.point3fScreenTemp.y), Clazz.floatToInt (this.point3fScreenTemp.z));
-if (pt0 != null && (this.slabPlane != null && pt0.x * this.slabPlane.x + pt0.y * this.slabPlane.y + pt0.z * this.slabPlane.z + this.slabPlane.w > 0 || this.depthPlane != null && pt0.x * this.depthPlane.x + pt0.y * this.depthPlane.y + pt0.z * this.depthPlane.z + this.depthPlane.w < 0)) this.point3iScreenTemp.z = 1;
+if (ptRef != null && (this.slabPlane != null && ptRef.x * this.slabPlane.x + ptRef.y * this.slabPlane.y + ptRef.z * this.slabPlane.z + this.slabPlane.w > 0 || this.depthPlane != null && ptRef.x * this.depthPlane.x + ptRef.y * this.depthPlane.y + ptRef.z * this.depthPlane.z + this.depthPlane.w < 0)) this.point3iScreenTemp.z = 1;
+return this.point3iScreenTemp;
 }, "JU.P3,JU.P3");
 $_M(c$, "unTransformPoint", 
 function (screenPt, coordPt) {
@@ -1624,7 +1621,7 @@ this.untransformedPoint.x -= this.perspectiveShiftXY.x;
 this.untransformedPoint.y -= this.perspectiveShiftXY.y;
 break;
 }
-this.matrixTransformInv.transform2 (this.untransformedPoint, coordPt);
+this.matrixTransformInv.rotTrans2 (this.untransformedPoint, coordPt);
 }, "JU.P3,JU.P3");
 $_M(c$, "canNavigate", 
 function () {

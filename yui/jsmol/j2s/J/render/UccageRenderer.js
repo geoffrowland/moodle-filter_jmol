@@ -12,11 +12,7 @@ Clazz.instantialize (this, arguments);
 }, J.render, "UccageRenderer", J.render.CageRenderer);
 Clazz.prepareFields (c$, function () {
 this.verticesT =  new Array (8);
-{
-for (var i = 8; --i >= 0; ) {
-this.verticesT[i] =  new JU.P3 ();
-}
-}this.fset0 = JU.P3.new3 (555, 555, 1);
+this.fset0 = JU.P3.new3 (555, 555, 1);
 this.cell0 =  new JU.P3 ();
 this.cell1 =  new JU.P3 ();
 this.offset =  new JU.P3 ();
@@ -24,6 +20,8 @@ this.offsetT =  new JU.P3 ();
 });
 $_V(c$, "initRenderer", 
 function () {
+for (var i = 8; --i >= 0; ) this.verticesT[i] =  new JU.P3 ();
+
 this.tickEdges = J.util.BoxInfo.uccageTickEdges;
 this.draw000 = false;
 });

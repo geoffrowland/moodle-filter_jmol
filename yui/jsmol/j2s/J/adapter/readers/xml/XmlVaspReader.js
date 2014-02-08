@@ -59,7 +59,7 @@ if (!this.parent.doGetModel (++this.parent.modelNumber, null)) {
 this.parent.checkLastModel ();
 return;
 }this.parent.setFractionalCoordinates (true);
-this.atomSetCollection.setDoFixPeriodic ();
+this.atomSetCollection.doFixPeriodic = true;
 this.atomSetCollection.newAtomSet ();
 if (this.enthalpy != null) {
 this.atomSetCollection.setAtomSetAuxiliaryInfo ("enthalpy", Double.$valueOf (JU.PT.dVal (this.enthalpy)));

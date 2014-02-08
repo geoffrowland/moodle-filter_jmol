@@ -126,7 +126,6 @@ var isOK;
 var logTime = this.viewer.getBoolean (603979934);
 this.viewer.finalizeTransformParameters ();
 this.shapeManager.finalizeAtoms (null, null);
-this.shapeManager.transformAtoms ();
 var g3dExport = this.viewer.initializeExporter (params);
 isOK = (g3dExport != null);
 if (!isOK) {

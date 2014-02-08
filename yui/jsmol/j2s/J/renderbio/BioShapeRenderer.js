@@ -169,7 +169,7 @@ if (this.invalidateMesh) bioShape.falsifyMesh ();
 for (var i = this.monomerCount; --i >= 0; ) {
 if ((this.monomers[i].shapeVisibilityFlags & this.myVisibilityFlag) == 0 || this.modelSet.isAtomHidden (this.leadAtomIndices[i]) || bsDeleted != null && bsDeleted.get (this.leadAtomIndices[i])) continue;
 var lead = this.modelSet.atoms[this.leadAtomIndices[i]];
-if (!this.g3d.isInDisplayRange (lead.screenX, lead.screenY)) continue;
+if (!this.g3d.isInDisplayRange (lead.sX, lead.sY)) continue;
 this.bsVisible.set (i);
 haveVisible = true;
 }
@@ -228,9 +228,7 @@ for (var i = count; --i >= 0; ) this.calc1Screen (this.controlPoints[i], this.wi
 }, "~N");
 $_M(c$, "calc1Screen", 
 ($fz = function (center, vector, mad, offset_1000, screen) {
-this.pointT.setT (vector);
-var scale = mad * offset_1000;
-this.pointT.scaleAdd (scale, center);
+this.pointT.scaleAdd2 (mad * offset_1000, vector, center);
 this.viewer.transformPtScr (this.pointT, screen);
 }, $fz.isPrivate = true, $fz), "JU.P3,JU.V3,~N,~N,JU.P3i");
 $_M(c$, "getLeadColix", 
@@ -264,7 +262,7 @@ this.madEnd = this.madBeg;
 if (!thisTypeOnly || this.structureTypes[i] === this.structureTypes[this.iPrev]) this.madBeg = (((this.mads[this.iPrev] == 0 ? this.madMid : this.mads[this.iPrev]) + this.madMid) >> 1);
 if (!thisTypeOnly || this.structureTypes[i] === this.structureTypes[this.iNext]) this.madEnd = (((this.mads[this.iNext] == 0 ? this.madMid : this.mads[this.iNext]) + this.madMid) >> 1);
 }this.diameterBeg = Clazz.floatToInt (this.viewer.scaleToScreen (this.controlPointScreens[i].z, this.madBeg));
-this.diameterMid = Clazz.floatToInt (this.viewer.scaleToScreen (this.monomers[i].getLeadAtom ().screenZ, this.madMid));
+this.diameterMid = Clazz.floatToInt (this.viewer.scaleToScreen (this.monomers[i].getLeadAtom ().sZ, this.madMid));
 this.diameterEnd = Clazz.floatToInt (this.viewer.scaleToScreen (this.controlPointScreens[this.iNext].z, this.madEnd));
 this.doCap0 = (i == this.iPrev || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iPrev]);
 this.doCap1 = (this.iNext == this.iNext2 || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iNext]);
@@ -428,7 +426,7 @@ this.mat.setAA (this.aa);
 }this.pt1.setT (this.controlHermites[p]);
 var theta = (isFlatMesh ? 0 : angle);
 for (var k = 0; k < nPer; k++, theta += angle) {
-if (useMat && k > 0) this.mat.transform (this.wing);
+if (useMat && k > 0) this.mat.rotate (this.wing);
 switch (mode) {
 case 1:
 this.wingT.setT (this.wing1);

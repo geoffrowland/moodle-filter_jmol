@@ -5,29 +5,16 @@
 <script type="text/javascript">
 
 // This file simple_old.htm is exactly the same as an old one
-// except for the addition of the two JS script tags above and Jmol.Info below. 
+// except for the addition of the two JS script tags above and Info below. 
 // Clearly you could concatenate those two files and make one
 // called "Jmol.js" and then not have ANY difference with any older files.
 // 
-// I may not have implemented all the functions you are using; more complex
-// pages may need some adjustment of Jmol2.js. If you do that, please let me
-// know so I can make this Jmol2.js better.
-//
-// Realize that you need the full j2s subdirectory, and the Info definition at
-// the top of J
-//
-// Bob Hanson. 
-//
-// I've added the block below to override the jmolInitialize command; 
-// you might not need that, or you might want to change your initialize command.
-// But on large sites with many pages, I would just add something like this
-// along with the contents of JSmol.min.js and Jmol2.js into a file called "Jmol.js"
-// and then not change any pages at all.
+// If you have a big site with many HTML files, see comments in js/Jmol2.js
 
 Jmol.Info = {
       
       jarPath: "java",
-      jarFile: "",
+      jarFile: "JmolAppletSigned0.jar",
       j2sPath: "j2s",
       use: "HTML5", // could be JAVA or HTML5
 			disableJ2SLoadMonitor: false,
@@ -62,11 +49,13 @@ addModel("1d66","transcription")
 
 <script type="text/javascript">
 //jmolInitialize(".","http://chemapps.stolaf.edu/pe/protexpl/molview/JmolAppletSigned.jar")
-jmolInitialize(".","JmolAppletSigned0.jar")
+
+jmolInitialize("java","JmolAppletSigned0.jar")
 
 jmolSetCallback("errorCallback","myCallback")
 
 var xxxx = document.location.search
+if (xxxx.indexOf("USE=") > 0)xxxx = "";
 if (xxxx.length == 5 || xxxx.length == 0) {
 	xxxx = (xxxx + "?1crn").substring(1,5)
 	script = 'h2oOn=true;set animframecallback "jmolscript:if (!selectionHalos) {select model=_modelNumber}";'

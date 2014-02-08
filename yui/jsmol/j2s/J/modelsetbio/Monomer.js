@@ -4,6 +4,12 @@ c$ = Clazz.decorateAsClass (function () {
 this.bioPolymer = null;
 this.offsets = null;
 this.monomerIndex = 0;
+this.phi = NaN;
+this.psi = NaN;
+this.omega = NaN;
+this.straightness = NaN;
+this.mu = NaN;
+this.theta = NaN;
 Clazz.instantialize (this, arguments);
 }, J.modelsetbio, "Monomer", J.modelset.Group);
 c$.have = $_M(c$, "have", 
@@ -152,11 +158,11 @@ return this.getLeadAtom ();
 $_M(c$, "findNearestAtomIndex", 
 function (x, y, closest, madBegin, madEnd) {
 }, "~N,~N,~A,~N,~N");
-$_V(c$, "calcBioParameters", 
+$_M(c$, "calcBioParameters", 
 function () {
 return this.bioPolymer.calcParameters ();
 });
-$_V(c$, "haveParameters", 
+$_M(c$, "haveParameters", 
 function () {
 return this.bioPolymer.haveParameters;
 });
@@ -304,4 +310,48 @@ $_V(c$, "isConnectedPrevious",
 function () {
 return true;
 });
+$_M(c$, "setGroupParameter", 
+function (tok, f) {
+switch (tok) {
+case 1112539145:
+this.phi = f;
+break;
+case 1112539146:
+this.psi = f;
+break;
+case 1112539144:
+this.omega = f;
+break;
+case 1112539141:
+this.mu = f;
+break;
+case 1112539152:
+this.theta = f;
+break;
+case 1112539150:
+this.straightness = f;
+break;
+}
+}, "~N,~N");
+$_V(c$, "getGroupParameter", 
+function (tok) {
+if (!this.haveParameters ()) this.calcBioParameters ();
+switch (tok) {
+case 1073742030:
+return 1;
+case 1112539144:
+return this.omega;
+case 1112539145:
+return this.phi;
+case 1112539146:
+return this.psi;
+case 1112539141:
+return this.mu;
+case 1112539152:
+return this.theta;
+case 1112539150:
+return this.straightness;
+}
+return NaN;
+}, "~N");
 });

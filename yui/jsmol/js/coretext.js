@@ -837,7 +837,7 @@ return;
 }, "~S,~O,JU.BS");
 });
 Clazz_declarePackage ("J.shape");
-Clazz_load (["J.shape.AtomShape", "java.util.Hashtable"], "J.shape.Labels", ["javajs.awt.Font", "JU.AU", "$.BS", "J.constant.EnumPalette", "J.modelset.LabelToken", "$.Text", "J.util.BSUtil", "$.C", "J.viewer.JC"], function () {
+Clazz_load (["J.shape.AtomShape", "java.util.Hashtable"], "J.shape.Labels", ["javajs.awt.Font", "JU.AU", "$.BS", "$.List", "J.constant.EnumPalette", "J.modelset.LabelToken", "$.Text", "J.script.SV", "J.util.BSUtil", "$.C", "J.viewer.JC"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.strings = null;
 this.formats = null;
@@ -912,11 +912,24 @@ this.text.setScalePixelsPerMicron (scalePixelsPerMicron);
 return;
 }if ("label" === propertyName) {
 this.setScaling ();
+var tokens = null;
+if (Clazz_instanceOf (value, JU.List)) {
+var list = value;
+var n = list.size ();
+tokens = [null];
+for (var pt = 0, i = bsSelected.nextSetBit (0); i >= 0 && i < this.atomCount; i = bsSelected.nextSetBit (i + 1)) {
+if (pt >= n) {
+this.setLabel (J.shape.Labels.nullToken, "", i);
+return;
+}tokens[0] = null;
+this.setLabel (tokens, J.script.SV.sValue (list.get (pt++)), i);
+}
+} else {
 var strLabel = value;
-var tokens = (strLabel == null || strLabel.length == 0 ? J.shape.Labels.nullToken : [null]);
+tokens = (strLabel == null || strLabel.length == 0 ? J.shape.Labels.nullToken : [null]);
 for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.atomCount; i = bsSelected.nextSetBit (i + 1)) this.setLabel (tokens, strLabel, i);
 
-return;
+}return;
 }if ("labels" === propertyName) {
 this.setScaling ();
 var labels = value;
@@ -1036,7 +1049,7 @@ this.formats[i] = strLabel;
 this.bsSizeSet.set (i);
 if ((this.bsBgColixSet == null || !this.bsBgColixSet.get (i)) && this.defaultBgcolix != 0) this.setBgcolix (i, this.defaultBgcolix);
 this.mads[i] = (mode >= 0 ? 1 : -1);
-}atom.setShapeVisibility (this.myVisibilityFlag, this.strings != null && i < this.strings.length && this.strings[i] != null && this.mads[i] >= 0);
+}this.setShapeVisibility (atom, this.strings != null && i < this.strings.length && this.strings[i] != null && this.mads[i] >= 0);
 }
 return;
 }if (propertyName.startsWith ("label:")) {
@@ -1082,7 +1095,7 @@ if (t == null) return;
 var label = t.getText ();
 var atom = this.atoms[i];
 this.addString (atom, i, label, label);
-atom.setShapeVisibility (this.myVisibilityFlag, true);
+this.setShapeVisibility (atom, true);
 if (t.colix >= 0) this.setLabelColix (i, t.colix, J.constant.EnumPalette.UNKNOWN.id);
 this.setFont (i, t.font.fid);
 this.putLabel (i, t);
@@ -1111,7 +1124,7 @@ if (this.defaultFontId != this.zeroFontId) this.setFont (i, this.defaultFontId);
 }, "~A,~S,~N");
 $_M(c$, "addString", 
 function (atom, i, label, strLabel) {
-atom.setShapeVisibility (this.myVisibilityFlag, label != null);
+this.setShapeVisibility (atom, label != null);
 if (this.strings == null || i >= this.strings.length) this.strings = JU.AU.ensureLengthS (this.strings, i + 1);
 if (this.formats == null || i >= this.formats.length) this.formats = JU.AU.ensureLengthS (this.formats, i + 1);
 this.strings[i] = label;
@@ -1254,7 +1267,7 @@ var dmin = 3.4028235E38;
 var imin = -1;
 var zmin = 3.4028235E38;
 for (var entry, $entry = this.labelBoxes.entrySet ().iterator (); $entry.hasNext () && ((entry = $entry.next ()) || true);) {
-if (!this.atoms[entry.getKey ().intValue ()].isVisible (this.myVisibilityFlag)) continue;
+if (!this.atoms[entry.getKey ().intValue ()].isVisible (this.myVisibilityFlag | 9)) continue;
 var boxXY = entry.getValue ();
 var dx = x - boxXY[0];
 var dy = y - boxXY[1];
@@ -1585,7 +1598,7 @@ this.minZ[0] = 2147483647;
 var isAntialiased = this.g3d.isAntialiased ();
 for (var i = labelStrings.length; --i >= 0; ) {
 this.atomPt = this.atom = atoms[i];
-if (!this.atom.isVisible (this.myVisibilityFlag)) continue;
+if (!this.isVisibleForMe (this.atom)) continue;
 var label = labelStrings[i];
 if (label == null || label.length == 0 || labels.mads != null && labels.mads[i] < 0) continue;
 this.labelColix = labels.getColix2 (i, this.atom, false);
@@ -1599,7 +1612,7 @@ this.isExact = ((offsetFull & 128) != 0);
 this.offset = offsetFull >> 8;
 this.textAlign = J.shape.Labels.getAlignment (offsetFull);
 this.pointer = offsetFull & 3;
-this.zSlab = this.atom.screenZ - Clazz_doubleToInt (this.atom.screenDiameter / 2) - 3;
+this.zSlab = this.atom.sZ - Clazz_doubleToInt (this.atom.sD / 2) - 3;
 if (this.zCutoff > 0 && this.zSlab > this.zCutoff) continue;
 if (this.zSlab < 1) this.zSlab = 1;
 this.zBox = this.zSlab;
@@ -1630,19 +1643,17 @@ function (text, label) {
 var newText = false;
 if (text != null) {
 if (text.font == null) text.setFontFromFid (this.fid);
-text.atomX = this.atomPt.screenX;
-text.atomY = this.atomPt.screenY;
+text.atomX = this.atomPt.sX;
+text.atomY = this.atomPt.sY;
 text.atomZ = this.zSlab;
 if (text.pymolOffset == null) {
-text.setXYZs (this.atomPt.screenX, this.atomPt.screenY, this.zBox, this.zSlab);
+text.setXYZs (this.atomPt.sX, this.atomPt.sY, this.zBox, this.zSlab);
 text.setColix (this.labelColix);
 text.setBgColix (this.bgcolix);
 } else {
 if (text.pymolOffset[0] == 1) this.pTemp.setT (this.atomPt);
  else this.pTemp.set (0, 0, 0);
-this.pTemp.x += text.pymolOffset[4];
-this.pTemp.y += text.pymolOffset[5];
-this.pTemp.z += text.pymolOffset[6];
+this.pTemp.add3 (text.pymolOffset[4], text.pymolOffset[5], text.pymolOffset[6]);
 this.viewer.transformPtScr (this.pTemp, this.screen);
 text.setXYZs (this.screen.x, this.screen.y, this.screen.z, this.zSlab);
 text.setScalePixelsPerMicron (this.sppm);
@@ -1659,16 +1670,16 @@ this.descent = this.font3d.getDescent ();
 if (isSimple) {
 var doPointer = ((this.pointer & 1) != 0);
 var pointerColix = ((this.pointer & 2) != 0 && this.bgcolix != 0 ? this.bgcolix : this.labelColix);
-this.boxXY[0] = this.atomPt.screenX;
-this.boxXY[1] = this.atomPt.screenY;
+this.boxXY[0] = this.atomPt.sX;
+this.boxXY[1] = this.atomPt.sY;
 J.render.TextRenderer.renderSimpleLabel (this.g3d, this.font3d, label, this.labelColix, this.bgcolix, this.boxXY, this.zBox, this.zSlab, J.viewer.JC.getXOffset (this.offset), J.viewer.JC.getYOffset (this.offset), this.ascent, this.descent, doPointer, pointerColix, this.isExact);
 this.atomPt = null;
 } else {
 text = J.modelset.Text.newLabel (this.g3d.getGData (), this.font3d, label, this.labelColix, this.bgcolix, this.textAlign, 0, null);
-text.atomX = this.atomPt.screenX;
-text.atomY = this.atomPt.screenY;
+text.atomX = this.atomPt.sX;
+text.atomY = this.atomPt.sY;
 text.atomZ = this.zSlab;
-text.setXYZs (this.atomPt.screenX, this.atomPt.screenY, this.zBox, this.zSlab);
+text.setXYZs (this.atomPt.sX, this.atomPt.sY, this.zBox, this.zSlab);
 newText = true;
 }}if (this.atomPt != null) {
 if (text.pymolOffset == null) {
@@ -1693,7 +1704,7 @@ for (var t, $t = echo.objects.values ().iterator (); $t.hasNext () && ((t = $t.n
 if (!t.visible || t.hidden) {
 continue;
 }if (Clazz_instanceOf (t.pointerPt, J.modelset.Atom)) {
-if (!(t.pointerPt).isVisible (-1)) continue;
+if (!(t.pointerPt).checkVisible ()) continue;
 }if (t.valign == 4) {
 this.viewer.transformPtScr (t.xyz, this.pt0i);
 t.setXYZs (this.pt0i.x, this.pt0i.y, this.pt0i.z, this.pt0i.z);
@@ -1749,7 +1760,7 @@ var atom = this.modelSet.atoms[hover.atomIndex];
 var label = (hover.specialLabel != null ? hover.specialLabel : hover.atomFormats != null && hover.atomFormats[hover.atomIndex] != null ? this.viewer.modelSet.getLabeler ().formatLabel (this.viewer, atom, hover.atomFormats[hover.atomIndex]) : hover.labelFormat != null ? this.viewer.modelSet.getLabeler ().formatLabel (this.viewer, atom, this.fixLabel (atom, hover.labelFormat)) : null);
 if (label == null) return false;
 text.setText (label);
-text.setXYZs (atom.screenX, atom.screenY, 1, -2147483648);
+text.setXYZs (atom.sX, atom.sY, 1, -2147483648);
 } else if (hover.text != null) {
 text.setText (hover.text);
 text.setXYZs (hover.xy.x, hover.xy.y, 1, -2147483648);

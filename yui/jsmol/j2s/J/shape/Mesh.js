@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shape");
-Clazz.load (["J.util.MeshSurface", "JU.P3", "$.V3"], "J.shape.Mesh", ["java.lang.Boolean", "$.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.M3", "$.M4", "$.SB", "J.script.T", "J.util.BSUtil", "$.C", "$.Escape", "$.Measure", "$.Normix"], function () {
+Clazz.load (["J.util.MeshSurface", "JU.P3", "$.V3"], "J.shape.Mesh", ["java.lang.Boolean", "$.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.M3", "$.M4", "$.PT", "$.SB", "J.script.T", "J.util.BSUtil", "$.C", "$.Escape", "$.Measure", "$.Normix"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.title = null;
 this.meshColix = 0;
@@ -220,14 +220,14 @@ $_M(c$, "getState",
 function (type) {
 var s =  new JU.SB ();
 s.append (type);
-if (!type.equals ("mo")) s.append (" ID ").append (J.util.Escape.eS (this.thisID));
+if (!type.equals ("mo")) s.append (" ID ").append (JU.PT.esc (this.thisID));
 if (this.lattice != null) s.append (" lattice ").append (J.util.Escape.eP (this.lattice));
 if (this.meshColix != 0) s.append (" color mesh ").append (J.util.C.getHexCode (this.meshColix));
 s.append (this.getRendering ());
 if (!this.visible) s.append (" hidden");
 if (this.bsDisplay != null) {
 s.append (";\n  ").append (type);
-if (!type.equals ("mo")) s.append (" ID ").append (J.util.Escape.eS (this.thisID));
+if (!type.equals ("mo")) s.append (" ID ").append (JU.PT.esc (this.thisID));
 s.append (" display " + J.util.Escape.eBS (this.bsDisplay));
 }return s.toString ();
 }, "~S");
@@ -258,10 +258,10 @@ normal.scale (this.scale3d);
 if (this.mat4 != null) {
 var m3 =  new JU.M3 ();
 this.mat4.getRotationScale (m3);
-m3.transform (normal);
+m3.rotate (normal);
 }}for (var i = 0; i < this.vertexCount; i++) {
 if (this.vertexValues != null && Float.isNaN (val = this.vertexValues[i])) continue;
-if (this.mat4 != null) this.mat4.transform (this.altVertices[i]);
+if (this.mat4 != null) this.mat4.rotTrans (this.altVertices[i]);
 var pt = this.altVertices[i];
 if (normal != null && val != 0) pt.scaleAdd2 (val, normal, pt);
 }
@@ -368,9 +368,9 @@ this.mat4 = null;
 return;
 }var m3 =  new JU.M3 ();
 var v =  new JU.V3 ();
-if (this.mat4 == null) this.mat4 = JU.M4.newM (null);
+if (this.mat4 == null) this.mat4 = JU.M4.newM4 (null);
 this.mat4.getRotationScale (m3);
-this.mat4.get (v);
+this.mat4.getTranslation (v);
 if (q == null) {
 if (isAbsolute) v.setT (offset);
  else v.add (offset);

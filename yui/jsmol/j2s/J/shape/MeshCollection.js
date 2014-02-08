@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shape");
-Clazz.load (["J.shape.Shape"], "J.shape.MeshCollection", ["java.util.Hashtable", "JU.AU", "$.P3", "$.SB", "J.script.T", "J.shape.Mesh", "J.util.C", "$.Escape", "$.Logger", "$.Txt", "J.viewer.StateManager"], function () {
+Clazz.load (["J.shape.Shape"], "J.shape.MeshCollection", ["java.util.Hashtable", "JU.AU", "$.P3", "$.PT", "$.SB", "J.script.T", "J.shape.Mesh", "J.util.C", "$.Escape", "$.Logger", "$.Txt", "J.viewer.StateManager"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.meshCount = 0;
 this.meshes = null;
@@ -388,7 +388,7 @@ mesh.visibilityFlags = (mesh.visible && mesh.isValid && (mesh.modelIndex < 0 || 
 }, "JU.BS");
 $_M(c$, "setStatusPicked", 
 function (flag, v) {
-this.viewer.setStatusAtomPicked (flag, "[\"" + this.myType + "\"," + J.util.Escape.eS (this.pickedMesh.thisID) + "," + +this.pickedModel + "," + this.pickedVertex + "," + v.x + "," + v.y + "," + v.z + "," + (this.pickedMesh.title == null ? "\"\"" : J.util.Escape.eS (this.pickedMesh.title[0])) + "]");
+this.viewer.setStatusAtomPicked (flag, "[\"" + this.myType + "\"," + JU.PT.esc (this.pickedMesh.thisID) + "," + +this.pickedModel + "," + this.pickedVertex + "," + v.x + "," + v.y + "," + v.z + "," + (this.pickedMesh.title == null ? "\"\"" : JU.PT.esc (this.pickedMesh.title[0])) + "]");
 }, "~N,JU.P3");
 $_M(c$, "getPickedPoint", 
 function (v, modelIndex) {

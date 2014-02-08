@@ -176,7 +176,7 @@ this.atomSetCollection.addVibrationVector (atom.index, -this.parseFloatStr (toke
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "readFrequencies", 
 ($fz = function () {
-var firstFrequencyAtomSetIndex = this.atomSetCollection.getAtomSetCount ();
+var firstFrequencyAtomSetIndex = this.atomSetCollection.atomSetCount;
 var path = "Task " + this.taskNumber + J.adapter.smarter.SmarterJmolAdapter.PATH_SEPARATOR + "Frequencies";
 this.discardLinesUntilContains ("Atom information");
 this.readLines (2);
@@ -194,7 +194,7 @@ var firstTime = true;
 while (this.readLine () != null && this.line.indexOf ("P.Frequency") >= 0) {
 tokens = J.adapter.smarter.AtomSetCollectionReader.getTokensAt (this.line, 12);
 var frequencyCount = tokens.length;
-var iAtom0 = this.atomSetCollection.getAtomCount ();
+var iAtom0 = this.atomSetCollection.atomCount;
 var atomCount = this.atomSetCollection.getLastAtomSetAtomCount ();
 if (firstTime) iAtom0 -= atomCount;
 var ignore =  Clazz.newBooleanArray (frequencyCount, false);
@@ -216,11 +216,11 @@ for (var i = this.vibrationNumber, idx = firstFrequencyAtomSetIndex; --i >= 0; )
 if (this.readLine () == null) return;
 if (!this.doGetVibration (i + 1)) continue;
 tokens = this.getTokens ();
-var iset = this.atomSetCollection.getCurrentAtomSetIndex ();
-this.atomSetCollection.setCurrentAtomSetIndex (idx++);
+var iset = this.atomSetCollection.currentAtomSetIndex;
+this.atomSetCollection.currentAtomSetIndex = idx++;
 this.atomSetCollection.setAtomSetFrequency (null, null, tokens[i], null);
 this.atomSetCollection.setAtomSetModelProperty ("IRIntensity", tokens[5] + " KM/mol");
-this.atomSetCollection.setCurrentAtomSetIndex (iset);
+this.atomSetCollection.currentAtomSetIndex = iset;
 }
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
@@ -233,9 +233,9 @@ $_M(c$, "readPartialCharges",
 function () {
 var tokens;
 this.readLines (4);
-var atomCount = this.atomSetCollection.getAtomCount ();
+var atomCount = this.atomSetCollection.atomCount;
 var i0 = this.atomSetCollection.getLastAtomSetAtomIndex ();
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 for (var i = i0; i < atomCount; ++i) {
 while (atoms[i].elementNumber == 0) ++i;
 

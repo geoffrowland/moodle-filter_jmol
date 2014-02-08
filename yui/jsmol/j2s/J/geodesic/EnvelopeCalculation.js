@@ -120,7 +120,7 @@ if (map == null || map.isEmpty ()) continue;
 var bsNew =  new JU.BS ();
 for (var j = map.nextSetBit (0); j >= 0; j = map.nextSetBit (j + 1)) {
 pt.setT (J.util.Geodesic.getVertexVector (j));
-m.transform (pt);
+m.rotate (pt);
 bsNew.set (J.util.Normix.getNormixV (pt, this.bsTemp));
 }
 this.dotsConvexMaps[i] = bsNew;

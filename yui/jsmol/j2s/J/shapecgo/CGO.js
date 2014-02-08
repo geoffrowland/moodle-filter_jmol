@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shapecgo");
-Clazz.load (["J.shapespecial.Draw"], "J.shapecgo.CGO", ["JU.AU", "$.SB", "J.shapecgo.CGOMesh", "J.util.Escape"], function () {
+Clazz.load (["J.shapespecial.Draw"], "J.shapecgo.CGO", ["JU.AU", "$.PT", "$.SB", "J.shapecgo.CGOMesh"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.cmeshes = null;
 this.cgoMesh = null;
@@ -85,7 +85,7 @@ J.shape.Shape.appendCmd (s, this.myType + " delete");
 for (var i = 0; i < this.meshCount; i++) {
 var mesh = this.cmeshes[i];
 s.append (this.getCommand2 (mesh, mesh.modelIndex));
-if (!mesh.visible) s.append (" " + this.myType + " ID " + J.util.Escape.eS (mesh.thisID) + " off;\n");
+if (!mesh.visible) s.append (" " + this.myType + " ID " + JU.PT.esc (mesh.thisID) + " off;\n");
 }
 return s.toString ();
 });
@@ -95,7 +95,7 @@ var cmesh = mesh;
 var str =  new JU.SB ();
 var modelCount = this.viewer.getModelCount ();
 if (iModel >= 0 && modelCount > 1) J.shape.Shape.appendCmd (str, "frame " + this.viewer.getModelNumberDotted (iModel));
-str.append ("  CGO ID ").append (J.util.Escape.eS (mesh.thisID));
+str.append ("  CGO ID ").append (JU.PT.esc (mesh.thisID));
 if (iModel < 0) iModel = 0;
 str.append (" [");
 var n = cmesh.cmds.size ();

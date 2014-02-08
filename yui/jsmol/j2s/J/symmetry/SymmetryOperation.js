@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.symmetry");
-Clazz.load (["JU.M4"], "J.symmetry.SymmetryOperation", ["java.lang.Float", "JU.List", "$.P3", "$.P4", "$.PT", "$.SB", "$.V3", "J.util.Escape", "$.Logger", "$.Measure", "$.Parser", "$.Quaternion"], function () {
+Clazz.load (["JU.M4"], "J.symmetry.SymmetryOperation", ["java.lang.Float", "JU.List", "$.Matrix", "$.P3", "$.P4", "$.PT", "$.SB", "$.V3", "J.util.Escape", "$.Logger", "$.Measure", "$.Parser", "$.Quaternion"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.xyzOriginal = null;
 this.xyz = null;
@@ -7,14 +7,21 @@ this.doNormalize = true;
 this.isFinalized = false;
 this.opId = 0;
 this.atomTest = null;
-this.temp3 = null;
 this.myLabels = null;
 this.modDim = 0;
-this.rotTransMatrix = null;
-this.gammaIS = null;
+this.linearRotTrans = null;
+this.rsvs = null;
 this.isBio = false;
+this.sigma = null;
+this.index = 0;
+this.subsystemCode = null;
 Clazz.instantialize (this, arguments);
 }, J.symmetry, "SymmetryOperation", JU.M4);
+$_M(c$, "setSigma", 
+function (subsystemCode, sigma) {
+this.subsystemCode = subsystemCode;
+this.sigma = sigma;
+}, "~S,JU.Matrix");
 Clazz.overrideConstructor (c$, 
 function (op, atoms, atomIndex, countOrId, doNormalize) {
 this.doNormalize = doNormalize;
@@ -26,25 +33,44 @@ this.xyz = op.xyz;
 this.opId = op.opId;
 this.modDim = op.modDim;
 this.myLabels = op.myLabels;
-this.rotTransMatrix = op.rotTransMatrix;
-this.setM (op);
-if (op.rotTransMatrix.length == 32) this.setMod456 ();
+this.index = op.index;
+this.linearRotTrans = op.linearRotTrans;
+this.sigma = op.sigma;
+this.subsystemCode = op.subsystemCode;
+this.setMatrix (false);
 if (!op.isFinalized) this.doFinalize ();
-if (doNormalize) this.setOffset (atoms, atomIndex, countOrId);
+if (doNormalize && this.sigma == null) this.setOffset (atoms, atomIndex, countOrId);
 }, "J.symmetry.SymmetryOperation,~A,~N,~N,~B");
-$_M(c$, "setMod456", 
-($fz = function () {
-(this.gammaIS =  new JU.M4 ()).setA (this.rotTransMatrix, 16);
-}, $fz.isPrivate = true, $fz));
+$_M(c$, "setGamma", 
+($fz = function (isReverse) {
+var n = 3 + this.modDim;
+var a = (this.rsvs =  new JU.Matrix (null, n + 1, n + 1)).getArray ();
+var t =  Clazz.newDoubleArray (n, 0);
+var pt = 0;
+for (var i = 0; i < n; i++) {
+for (var j = 0; j < n; j++) a[i][j] = this.linearRotTrans[pt++];
+
+t[i] = (isReverse ? -1 : 1) * this.linearRotTrans[pt++];
+}
+a[n][n] = 1;
+if (isReverse) this.rsvs = this.rsvs.inverse ();
+for (var i = 0; i < n; i++) a[i][n] = t[i];
+
+a = this.rsvs.getSubmatrix (0, 0, 3, 3).getArray ();
+for (var i = 0; i < 3; i++) for (var j = 0; j < 4; j++) this.setElement (i, j, (j < 3 ? a[i][j] : t[i]));
+
+
+this.setElement (3, 3, 1);
+}, $fz.isPrivate = true, $fz), "~B");
 $_M(c$, "doFinalize", 
 function () {
 this.m03 /= 12;
 this.m13 /= 12;
 this.m23 /= 12;
 if (this.modDim > 0) {
-this.gammaIS.m03 /= 12;
-this.gammaIS.m13 /= 12;
-this.gammaIS.m23 /= 12;
+var a = this.rsvs.getArray ();
+for (var i = a.length - 1; --i >= 0; ) a[i][3 + this.modDim] /= 12;
+
 }this.isFinalized = true;
 });
 $_M(c$, "getXyz", 
@@ -52,11 +78,9 @@ function (normalized) {
 return (normalized && this.modDim == 0 || this.xyzOriginal == null ? this.xyz : this.xyzOriginal);
 }, "~B");
 $_M(c$, "newPoint", 
-function (atom1, atom2, transX, transY, transZ) {
-if (this.temp3 == null) this.temp3 =  new JU.P3 ();
-this.temp3.setT (atom1);
-this.transform2 (this.temp3, this.temp3);
-atom2.set (this.temp3.x + transX, this.temp3.y + transY, this.temp3.z + transZ);
+function (atom1, atom2, x, y, z) {
+this.rotTrans2 (atom1, atom2);
+atom2.add3 (x, y, z);
 }, "JU.P3,JU.P3,~N,~N,~N");
 $_M(c$, "dumpInfo", 
 function () {
@@ -71,110 +95,97 @@ function (s) {
 return  new JU.SB ().append ("{\t").appendI (Clazz.floatToInt (s.m00)).append ("\t").appendI (Clazz.floatToInt (s.m01)).append ("\t").appendI (Clazz.floatToInt (s.m02)).append ("\t").append (J.symmetry.SymmetryOperation.twelfthsOf ((s.m03 + 12) % 12)).append ("\t}\n").append ("{\t").appendI (Clazz.floatToInt (s.m10)).append ("\t").appendI (Clazz.floatToInt (s.m11)).append ("\t").appendI (Clazz.floatToInt (s.m12)).append ("\t").append (J.symmetry.SymmetryOperation.twelfthsOf ((s.m13 + 12) % 12)).append ("\t}\n").append ("{\t").appendI (Clazz.floatToInt (s.m20)).append ("\t").appendI (Clazz.floatToInt (s.m21)).append ("\t").appendI (Clazz.floatToInt (s.m22)).append ("\t").append (J.symmetry.SymmetryOperation.twelfthsOf ((s.m23 + 12) % 12)).append ("\t}\n").append ("{\t0\t0\t0\t1\t}\n").toString ();
 }, "JU.M4");
 $_M(c$, "setMatrixFromXYZ", 
-function (xyz, modDim) {
+function (xyz, modDim, allowScaling) {
 if (xyz == null) return false;
 this.xyzOriginal = xyz;
 xyz = xyz.toLowerCase ();
-var n = 16;
+var n = (modDim + 4) * (modDim + 4);
 this.modDim = modDim;
-if (modDim > 0) {
-n = 32;
-this.myLabels = J.symmetry.SymmetryOperation.labelsX1_6;
-}this.rotTransMatrix =  Clazz.newFloatArray (n, 0);
+if (modDim > 0) this.myLabels = J.symmetry.SymmetryOperation.labelsXn;
+this.linearRotTrans =  Clazz.newFloatArray (n, 0);
 var isReverse = (xyz.startsWith ("!"));
 if (isReverse) xyz = xyz.substring (1);
 if (xyz.indexOf ("xyz matrix:") == 0) {
 this.xyz = xyz;
-J.util.Parser.parseStringInfestedFloatArray (xyz, null, this.rotTransMatrix);
+J.util.Parser.parseStringInfestedFloatArray (xyz, null, this.linearRotTrans);
 return this.setFromMatrix (null, isReverse);
 }if (xyz.indexOf ("[[") == 0) {
 xyz = xyz.$replace ('[', ' ').$replace (']', ' ').$replace (',', ' ');
-J.util.Parser.parseStringInfestedFloatArray (xyz, null, this.rotTransMatrix);
+J.util.Parser.parseStringInfestedFloatArray (xyz, null, this.linearRotTrans);
 for (var i = 0; i < n; i++) {
-var v = this.rotTransMatrix[i];
+var v = this.linearRotTrans[i];
 if (Float.isNaN (v)) return false;
 }
-this.setA (this.rotTransMatrix, 0);
-if (n == 32) this.setMod456 ();
+this.setMatrix (isReverse);
 this.isFinalized = true;
-if (isReverse) this.invertM (this);
 this.isBio = (xyz.indexOf ("bio") >= 0);
 this.xyz = (this.isBio ? this.toString () : J.symmetry.SymmetryOperation.getXYZFromMatrix (this, false, false, false));
 return true;
-}var strOut = J.symmetry.SymmetryOperation.getMatrixFromString (this, xyz, this.rotTransMatrix, false);
+}var strOut = J.symmetry.SymmetryOperation.getMatrixFromString (this, xyz, this.linearRotTrans, allowScaling);
 if (strOut == null) return false;
-this.setA (this.rotTransMatrix, 0);
-if (n == 32) this.setMod456 ();
-if (isReverse) {
-this.invertM (this);
-this.xyz = J.symmetry.SymmetryOperation.getXYZFromMatrix (this, true, false, false);
-} else {
-this.xyz = strOut;
-}if (J.util.Logger.debugging) J.util.Logger.debug ("" + this);
+this.setMatrix (isReverse);
+this.xyz = (isReverse ? J.symmetry.SymmetryOperation.getXYZFromMatrix (this, true, false, false) : strOut);
+if (J.util.Logger.debugging) J.util.Logger.debug ("" + this);
 return true;
-}, "~S,~N");
+}, "~S,~N,~B");
+$_M(c$, "setMatrix", 
+($fz = function (isReverse) {
+if (this.linearRotTrans.length > 16) {
+this.setGamma (isReverse);
+} else {
+this.setA (this.linearRotTrans);
+if (isReverse) this.invertM (this);
+}}, $fz.isPrivate = true, $fz), "~B");
 $_M(c$, "setFromMatrix", 
 function (offset, isReverse) {
 var v = 0;
 var pt = 0;
-this.myLabels = (this.modDim == 0 ? J.symmetry.SymmetryOperation.labelsXYZ : J.symmetry.SymmetryOperation.labelsX1_6);
-for (var i = 0; i < this.rotTransMatrix.length; i++) {
-if (Float.isNaN (this.rotTransMatrix[i])) return false;
-v = this.rotTransMatrix[i];
+this.myLabels = (this.modDim == 0 ? J.symmetry.SymmetryOperation.labelsXYZ : J.symmetry.SymmetryOperation.labelsXn);
+var rowPt = 0;
+var n = 3 + this.modDim;
+for (var i = 0; rowPt < n; i++) {
+if (Float.isNaN (this.linearRotTrans[i])) return false;
+v = this.linearRotTrans[i];
 if (Math.abs (v) < 0.00001) v = 0;
-if (i % 4 == 3) {
+var isTrans = ((i + 1) % (n + 1) == 0);
+if (isTrans) {
 if (offset != null) {
 v /= 12;
 if (pt < offset.length) v += offset[pt++];
 }v = J.symmetry.SymmetryOperation.normalizeTwelfths ((v < 0 ? -1 : 1) * Math.round (Math.abs (v * 12)) / 12, this.doNormalize);
-}this.rotTransMatrix[i] = v;
-if (i == 11 || i == 27) i += 4;
+rowPt++;
+}this.linearRotTrans[i] = v;
 }
-this.rotTransMatrix[15] = 1;
-this.setA (this.rotTransMatrix, 0);
-if (this.rotTransMatrix.length == 32) {
-this.rotTransMatrix[31] = 1;
-(this.gammaIS =  new JU.M4 ()).setA (this.rotTransMatrix, 16);
-}this.isFinalized = true;
-if (isReverse) this.invertM (this);
+this.linearRotTrans[this.linearRotTrans.length - 1] = 1;
+this.setMatrix (isReverse);
+this.isFinalized = (offset == null);
 this.xyz = J.symmetry.SymmetryOperation.getXYZFromMatrix (this, true, false, false);
 return true;
 }, "~A,~B");
 c$.getMatrixFromString = $_M(c$, "getMatrixFromString", 
-function (op, xyz, rotTransMatrix, allowScaling) {
+function (op, xyz, linearRotTrans, allowScaling) {
 var isDenominator = false;
 var isDecimal = false;
 var isNegative = false;
-var incommensurate = (op != null && op.modDim > 0);
-var nRows = (incommensurate ? 4 + op.modDim : 4);
+var modDim = (op == null ? 0 : op.modDim);
+var nRows = 4 + modDim;
 var doNormalize = (op != null && op.doNormalize);
-rotTransMatrix[15] = 1;
-if (incommensurate) {
-for (var i = nRows, pt = nRows * 5 - 4; i < 7; i++, pt += 5) rotTransMatrix[pt] = 1;
-
-rotTransMatrix[31] = 1;
-}var myLabels = (op == null || !incommensurate ? null : op.myLabels);
+linearRotTrans[linearRotTrans.length - 1] = 1;
+var myLabels = (op == null || modDim == 0 ? null : op.myLabels);
 if (myLabels == null) myLabels = J.symmetry.SymmetryOperation.labelsXYZ;
-var ch;
-var x = 0;
-var y = 0;
-var z = 0;
-var iValue = 0;
-var strOut = "";
-var strT;
-var rowPt = -1;
-var decimalMultiplier = 1;
+xyz = xyz.toLowerCase ();
 xyz += ",";
-if (incommensurate) {
-xyz = JU.PT.simpleReplace (xyz, "x1", "x");
-xyz = JU.PT.simpleReplace (xyz, "x2", "y");
-xyz = JU.PT.simpleReplace (xyz, "x3", "z");
-xyz = JU.PT.simpleReplace (xyz, "x4", "x");
-xyz = JU.PT.simpleReplace (xyz, "x5", "y");
-xyz = JU.PT.simpleReplace (xyz, "x6", "z");
-}for (var i = 0; i < xyz.length; i++) {
-ch = xyz.charAt (i);
-switch (ch) {
+if (modDim > 0) for (var i = modDim + 3; --i >= 0; ) xyz = JU.PT.rep (xyz, J.symmetry.SymmetryOperation.labelsXn[i], J.symmetry.SymmetryOperation.labelsXnSub[i]);
+
+var tpt0 = 0;
+var rowPt = 0;
+var ch;
+var iValue = 0;
+var decimalMultiplier = 1;
+var strT = "";
+var strOut = "";
+for (var i = 0; i < xyz.length; i++) {
+switch (ch = xyz.charAt (i)) {
 case '\'':
 case ' ':
 case '{':
@@ -190,49 +201,38 @@ continue;
 case '/':
 isDenominator = true;
 continue;
-case 'X':
 case 'x':
+case 'y':
+case 'z':
+case 'a':
+case 'b':
+case 'c':
+case 'd':
+case 'e':
+case 'f':
+case 'g':
+case 'h':
 var val = (isNegative ? -1 : 1);
 if (allowScaling && iValue != 0) {
-val *= iValue;
+val = Clazz.floatToInt (iValue);
 iValue = 0;
-}x = val;
+}tpt0 = rowPt * nRows;
+var ipt = (ch >= 'x' ? ch.charCodeAt (0) - 120 : ch.charCodeAt (0) - 97 + 3);
+linearRotTrans[tpt0 + ipt] = val;
+strT += J.symmetry.SymmetryOperation.plusMinus (strT, val, myLabels[ipt]);
 break;
-case 'Y':
-case 'y':
-y = (isNegative ? -1 : 1);
-if (allowScaling && iValue != 0) {
-y *= iValue;
-iValue = 0;
-}break;
-case 'Z':
-case 'z':
-z = (isNegative ? -1 : 1);
-if (allowScaling && iValue != 0) {
-z *= iValue;
-iValue = 0;
-}break;
 case ',':
-if (++rowPt > 2 && !incommensurate) {
-J.util.Logger.warn ("Symmetry Operation? " + xyz);
-return null;
-}iValue = J.symmetry.SymmetryOperation.normalizeTwelfths (iValue, doNormalize);
-var tpt = rowPt * 4 + (rowPt > 2 ? 4 : 0);
-rotTransMatrix[tpt++] = x;
-rotTransMatrix[tpt++] = y;
-rotTransMatrix[tpt++] = z;
-rotTransMatrix[tpt] = iValue;
-strT = "";
-var pt = (rowPt < 3 ? 0 : 3);
-strT += J.symmetry.SymmetryOperation.plusMinus (strT, x, myLabels[pt++]);
-strT += J.symmetry.SymmetryOperation.plusMinus (strT, y, myLabels[pt++]);
-strT += J.symmetry.SymmetryOperation.plusMinus (strT, z, myLabels[pt++]);
+iValue = J.symmetry.SymmetryOperation.normalizeTwelfths (iValue, doNormalize);
+linearRotTrans[tpt0 + nRows - 1] = iValue;
 strT += J.symmetry.SymmetryOperation.xyzFraction (iValue, false, true);
 strOut += (strOut === "" ? "" : ",") + strT;
 if (rowPt == nRows - 2) return strOut;
-x = y = z = 0;
 iValue = 0;
-break;
+strT = "";
+if (rowPt++ > 2 && modDim == 0) {
+J.util.Logger.warn ("Symmetry Operation? " + xyz);
+return null;
+}break;
 case '.':
 isDecimal = true;
 decimalMultiplier = 1;
@@ -259,41 +259,20 @@ isDecimal = isDenominator = isNegative = false;
 }
 return null;
 }, "J.symmetry.SymmetryOperation,~S,~A,~B");
-c$.plusMinus = $_M(c$, "plusMinus", 
-($fz = function (strT, x, sx) {
-return (x == 0 ? "" : (x < 0 ? "-" : strT.length == 0 ? "" : "+") + sx);
-}, $fz.isPrivate = true, $fz), "~S,~N,~S");
-c$.normalizeTwelfths = $_M(c$, "normalizeTwelfths", 
-($fz = function (iValue, doNormalize) {
-iValue *= 12;
-if (doNormalize) {
-while (iValue > 6) iValue -= 12;
+c$.xyzFraction = $_M(c$, "xyzFraction", 
+($fz = function (n12ths, allPositive, halfOrLess) {
+n12ths = Math.round (n12ths);
+if (allPositive) {
+while (n12ths < 0) n12ths += 12;
 
-while (iValue <= -6) iValue += 12;
+} else if (halfOrLess) {
+while (n12ths > 6) n12ths -= 12;
 
-}return iValue;
-}, $fz.isPrivate = true, $fz), "~N,~B");
-c$.getXYZFromMatrix = $_M(c$, "getXYZFromMatrix", 
-function (mat, is12ths, allPositive, halfOrLess) {
-var str = "";
-var op = (Clazz.instanceOf (mat, J.symmetry.SymmetryOperation) ? mat : null);
-var thisLabels = (op == null ? null : op.myLabels);
-if (thisLabels == null) thisLabels = J.symmetry.SymmetryOperation.labelsXYZ;
-var row =  Clazz.newFloatArray (4, 0);
-var n = (op == null ? 3 : op.modDim + 3);
-for (var i = 0; i < n; i++) {
-var lpt = (i < 3 ? 0 : 3);
-if (i < 3) mat.getRow (i, row);
- else for (var j = 0, pt = i * 4 + 4; j < 4; j++, pt++) row[j] = op.rotTransMatrix[pt];
+while (n12ths < -6.0) n12ths += 12;
 
-var term = "";
-for (var j = 0; j < 3; j++) if (row[j] != 0) term += J.symmetry.SymmetryOperation.plusMinus (term, row[j], thisLabels[j + lpt]);
-
-term += J.symmetry.SymmetryOperation.xyzFraction ((is12ths ? row[3] : row[3] * 12), allPositive, halfOrLess);
-str += "," + term;
-}
-return str.substring (1);
-}, "JU.M4,~B,~B,~B");
+}var s = J.symmetry.SymmetryOperation.twelfthsOf (n12ths);
+return (s.charAt (0) == '0' ? "" : n12ths > 0 ? "+" + s : s);
+}, $fz.isPrivate = true, $fz), "~N,~B,~B");
 c$.twelfthsOf = $_M(c$, "twelfthsOf", 
 ($fz = function (n12ths) {
 var str = "";
@@ -333,17 +312,37 @@ break;
 }
 return str + (Clazz.doubleToInt (i12ths * m / 12)) + "/" + m;
 }, $fz.isPrivate = true, $fz), "~N");
-c$.xyzFraction = $_M(c$, "xyzFraction", 
-($fz = function (n12ths, allPositive, halfOrLess) {
-n12ths = Math.round (n12ths);
-if (allPositive) {
-while (n12ths < 0) n12ths += 12;
+c$.plusMinus = $_M(c$, "plusMinus", 
+($fz = function (strT, x, sx) {
+return (x == 0 ? "" : (x < 0 ? "-" : strT.length == 0 ? "" : "+") + (x == 1 || x == -1 ? "" : "" + Clazz.floatToInt (Math.abs (x))) + sx);
+}, $fz.isPrivate = true, $fz), "~S,~N,~S");
+c$.normalizeTwelfths = $_M(c$, "normalizeTwelfths", 
+($fz = function (iValue, doNormalize) {
+iValue *= 12;
+if (doNormalize) {
+while (iValue > 6) iValue -= 12;
 
-} else if (halfOrLess && n12ths > 6) {
-n12ths -= 12;
-}var s = J.symmetry.SymmetryOperation.twelfthsOf (n12ths);
-return (s.charAt (0) == '0' ? "" : n12ths > 0 ? "+" + s : s);
-}, $fz.isPrivate = true, $fz), "~N,~B,~B");
+while (iValue <= -6) iValue += 12;
+
+}return iValue;
+}, $fz.isPrivate = true, $fz), "~N,~B");
+c$.getXYZFromMatrix = $_M(c$, "getXYZFromMatrix", 
+function (mat, is12ths, allPositive, halfOrLess) {
+var str = "";
+var op = (Clazz.instanceOf (mat, J.symmetry.SymmetryOperation) ? mat : null);
+if (op != null && op.modDim > 0) return J.symmetry.SymmetryOperation.getXYZFromRsVs (op.rsvs.getRotation (), op.rsvs.getTranslation (), is12ths);
+var row =  Clazz.newFloatArray (4, 0);
+for (var i = 0; i < 3; i++) {
+var lpt = (i < 3 ? 0 : 3);
+mat.getRow (i, row);
+var term = "";
+for (var j = 0; j < 3; j++) if (row[j] != 0) term += J.symmetry.SymmetryOperation.plusMinus (term, row[j], J.symmetry.SymmetryOperation.labelsXYZ[j + lpt]);
+
+term += J.symmetry.SymmetryOperation.xyzFraction ((is12ths ? row[3] : row[3] * 12), allPositive, halfOrLess);
+str += "," + term;
+}
+return str.substring (1);
+}, "JU.M4,~B,~B,~B");
 $_M(c$, "setOffset", 
 ($fz = function (atoms, atomIndex, count) {
 var i1 = atomIndex;
@@ -378,7 +377,7 @@ this.getRotationScale (mTemp);
 for (var i = vectors.length; --i >= 0; ) {
 ptTemp.setT (vectors[i]);
 unitcell.toFractional (ptTemp, true);
-mTemp.transform (ptTemp);
+mTemp.rotate (ptTemp);
 unitcell.toCartesian (ptTemp, true);
 vRot[i] = JU.V3.newV (ptTemp);
 }
@@ -403,7 +402,7 @@ pt02.setT (ptTarget);
 uc.toUnitCell (pt01, ptemp);
 uc.toUnitCell (pt02, ptemp);
 uc.toFractional (pt01, false);
-this.transform (pt01);
+this.rotTrans (pt01);
 uc.toCartesian (pt01, false);
 uc.toUnitCell (pt01, ptemp);
 if (pt01.distance (pt02) > 0.1) return null;
@@ -411,7 +410,7 @@ pt01.setT (pt00);
 pt02.setT (ptTarget);
 uc.toFractional (pt01, false);
 uc.toFractional (pt02, false);
-this.transform (pt01);
+this.rotTrans (pt01);
 vtrans.sub2 (pt02, pt01);
 pt01.set (0, 0, 0);
 pt02.set (0, 0, 0);
@@ -427,10 +426,10 @@ uc.toFractional (p0, false);
 uc.toFractional (p1, false);
 uc.toFractional (p2, false);
 uc.toFractional (p3, false);
-this.transform2 (p0, p0);
-this.transform2 (p1, p1);
-this.transform2 (p2, p2);
-this.transform2 (p3, p3);
+this.rotTrans2 (p0, p0);
+this.rotTrans2 (p1, p1);
+this.rotTrans2 (p2, p2);
+this.rotTrans2 (p3, p3);
 p0.add (vtrans);
 p1.add (vtrans);
 p2.add (vtrans);
@@ -492,8 +491,7 @@ case 90:
 f = 1;
 break;
 case 180:
-pt0 =  new JU.P3 ();
-pt0.setT (pt00);
+pt0 = JU.P3.newP (pt00);
 pt0.add (d);
 pa1.scaleAdd2 (0.5, d, pt00);
 if (pt0.distance (p0) > 0.1) {
@@ -508,8 +506,7 @@ haveinversion = false;
 ismirrorplane = true;
 }
 if (f != 0) {
-vtemp.setT (pt00);
-vtemp.sub (pa1);
+vtemp.sub2 (pt00, pa1);
 vtemp.add (p0);
 vtemp.sub (pa1);
 vtemp.sub (d);
@@ -539,16 +536,14 @@ var pt1 =  new JU.P3 ();
 vtemp.setT (ax1);
 var ang2 = ang1;
 if (haveinversion) {
-pt1.setT (pa1);
-pt1.add (vtemp);
+pt1.add2 (pa1, vtemp);
 ang2 = Math.round (J.util.Measure.computeTorsion (ptinv, pa1, pt1, p0, true));
 } else if (pitch1 == 0) {
 pt1.setT (pa1);
 ptemp.scaleAdd2 (1, pt1, vtemp);
 ang2 = Math.round (J.util.Measure.computeTorsion (pt00, pa1, ptemp, p0, true));
 } else {
-ptemp.setT (pa1);
-ptemp.add (vtemp);
+ptemp.add2 (pa1, vtemp);
 pt1.scaleAdd2 (0.5, vtemp, pa1);
 ang2 = Math.round (J.util.Measure.computeTorsion (pt00, pa1, ptemp, p0, true));
 }if (ang2 != 0) ang1 = ang2;
@@ -603,16 +598,13 @@ draw1.append (drawid).append ("* delete");
 J.symmetry.SymmetryOperation.drawLine (draw1, drawid + "frame1X", 0.15, pt00, pt01, "red");
 J.symmetry.SymmetryOperation.drawLine (draw1, drawid + "frame1Y", 0.15, pt00, pt02, "green");
 J.symmetry.SymmetryOperation.drawLine (draw1, drawid + "frame1Z", 0.15, pt00, pt03, "blue");
-ptemp.setT (p1);
-ptemp.sub (p0);
+ptemp.sub2 (p1, p0);
 ptemp.scaleAdd2 (0.9, ptemp, p0);
 J.symmetry.SymmetryOperation.drawLine (draw1, drawid + "frame2X", 0.2, p0, ptemp, "red");
-ptemp.setT (p2);
-ptemp.sub (p0);
+ptemp.sub2 (p2, p0);
 ptemp.scaleAdd2 (0.9, ptemp, p0);
 J.symmetry.SymmetryOperation.drawLine (draw1, drawid + "frame2Y", 0.2, p0, ptemp, "green");
-ptemp.setT (p3);
-ptemp.sub (p0);
+ptemp.sub2 (p3, p0);
 ptemp.scaleAdd2 (0.9, ptemp, p0);
 J.symmetry.SymmetryOperation.drawLine (draw1, drawid + "frame2Z", 0.2, p0, ptemp, "purple");
 var color;
@@ -623,8 +615,7 @@ ang = ang1;
 var scale = 1.0;
 vtemp.setT (ax1);
 if (haveinversion) {
-pt1.setT (pa1);
-pt1.add (vtemp);
+pt1.add2 (pa1, vtemp);
 if (pitch1 == 0) {
 pt1.setT (ipt);
 vtemp.scale (3);
@@ -646,18 +637,15 @@ if (pitch1 == 0 && pt00.distance (p0) < 0.2) pt1.scaleAdd2 (0.5, pt1, vtemp);
 } else {
 color = "orange";
 draw1.append (drawid).append ("rotLine1 ").append (J.util.Escape.eP (pt00)).append (J.util.Escape.eP (pa1)).append (" color red");
-ptemp.setT (pa1);
-ptemp.add (vtemp);
+ptemp.add2 (pa1, vtemp);
 draw1.append (drawid).append ("rotLine2 ").append (J.util.Escape.eP (p0)).append (J.util.Escape.eP (ptemp)).append (" color red");
 pt1.scaleAdd2 (0.5, vtemp, pa1);
-}ptemp.setT (pt1);
-ptemp.add (vtemp);
+}ptemp.add2 (pt1, vtemp);
 if (haveinversion && pitch1 != 0) {
 draw1.append (drawid).append ("rotRotLine1").append (J.util.Escape.eP (pt1)).append (J.util.Escape.eP (ptinv)).append (" color red");
 draw1.append (drawid).append ("rotRotLine2").append (J.util.Escape.eP (pt1)).append (J.util.Escape.eP (p0)).append (" color red");
 }draw1.append (drawid).append ("rotRotArrow arrow width 0.10 scale " + scale + " arc ").append (J.util.Escape.eP (pt1)).append (J.util.Escape.eP (ptemp));
-if (haveinversion) ptemp.setT (ptinv);
- else ptemp.setT (pt00);
+ptemp.setT (haveinversion ? ptinv : pt00);
 if (ptemp.distance (p0) < 0.1) ptemp.set (Math.random (), Math.random (), Math.random ());
 draw1.append (J.util.Escape.eP (ptemp));
 ptemp.set (0, ang, 0);
@@ -681,7 +669,7 @@ vtemp.normalize ();
 var w = -vtemp.x * pa1.x - vtemp.y * pa1.y - vtemp.z * pa1.z;
 var plane = JU.P4.new4 (vtemp.x, vtemp.y, vtemp.z, w);
 var v =  new JU.List ();
-v.addLast (uc.getCanonicalCopy (1.05));
+v.addLast (uc.getCanonicalCopy (1.05, false));
 modelSet.intersectPlane (plane, v, 3);
 for (var i = v.size (); --i >= 0; ) {
 var pts = v.get (i);
@@ -690,23 +678,19 @@ if (pts.length == 3) draw1.append (J.util.Escape.eP (pts[2]));
 draw1.append (" color translucent ").append (color);
 }
 if (v.size () == 0) {
-ptemp.setT (pa1);
-ptemp.add (ax1);
+ptemp.add2 (pa1, ax1);
 draw1.append (drawid).append ("planeCircle scale 2.0 circle ").append (J.util.Escape.eP (pa1)).append (J.util.Escape.eP (ptemp)).append (" color translucent ").append (color).append (" mesh fill");
 }}if (haveinversion) {
 draw1.append (drawid).append ("invPoint diameter 0.4 ").append (J.util.Escape.eP (ipt));
 draw1.append (drawid).append ("invArrow arrow ").append (J.util.Escape.eP (pt00)).append (J.util.Escape.eP (ptinv)).append (" color indigo");
 if (!isinversion) {
-ptemp.setT (ptinv);
-ptemp.add (pt00);
+ptemp.add2 (ptinv, pt00);
 ptemp.sub (pt01);
 J.symmetry.SymmetryOperation.drawLine (draw1, drawid + "invFrameX", 0.15, ptinv, ptemp, "translucent red");
-ptemp.setT (ptinv);
-ptemp.add (pt00);
+ptemp.add2 (ptinv, pt00);
 ptemp.sub (pt02);
 J.symmetry.SymmetryOperation.drawLine (draw1, drawid + "invFrameY", 0.15, ptinv, ptemp, "translucent green");
-ptemp.setT (ptinv);
-ptemp.add (pt00);
+ptemp.add2 (ptinv, pt00);
 ptemp.sub (pt03);
 J.symmetry.SymmetryOperation.drawLine (draw1, drawid + "invFrameZ", 0.15, ptinv, ptemp, "translucent blue");
 }}if (trans != null) {
@@ -747,7 +731,7 @@ pa1 = null;
 ax1 = null;
 }if (ax1 != null) ax1.normalize ();
 var m2 = null;
-m2 = JU.M4.newM (this);
+m2 = JU.M4.newM4 (this);
 if (vtrans.length () != 0) {
 m2.m03 += vtrans.x;
 m2.m13 += vtrans.y;
@@ -802,8 +786,30 @@ operation.m03 = (Clazz.floatToInt (operation.m03) + 12) % 12;
 operation.m13 = (Clazz.floatToInt (operation.m13) + 12) % 12;
 operation.m23 = (Clazz.floatToInt (operation.m23) + 12) % 12;
 }, "JU.M4");
-c$.labelsXYZ = c$.prototype.labelsXYZ = ["x", "y", "z"];
-c$.labelsX1_6 = c$.prototype.labelsX1_6 = ["x1", "x2", "x3", "x4", "x5", "x6"];
+c$.getXYZFromRsVs = $_M(c$, "getXYZFromRsVs", 
+function (rs, vs, is12ths) {
+var ra = rs.getArray ();
+var va = vs.getArray ();
+var d = ra.length;
+var s = "";
+for (var i = 0; i < d; i++) {
+s += ",";
+for (var j = 0; j < d; j++) {
+var r = ra[i][j];
+if (r != 0) {
+s += (r < 0 ? "-" : s.endsWith (",") ? "" : "+") + (Math.abs (r) == 1 ? "" : "" + Clazz.doubleToInt (Math.abs (r))) + "x" + (j + 1);
+}}
+s += J.symmetry.SymmetryOperation.xyzFraction (Clazz.doubleToInt (va[i][0] * (is12ths ? 1 : 12)), false, true);
+}
+return JU.PT.rep (s.substring (1), ",+", ",");
+}, "JU.Matrix,JU.Matrix,~B");
+$_M(c$, "toString", 
+function () {
+return (this.rsvs == null ? Clazz.superCall (this, J.symmetry.SymmetryOperation, "toString", []) : Clazz.superCall (this, J.symmetry.SymmetryOperation, "toString", []) + " " + this.rsvs.toString ());
+});
 Clazz.defineStatics (c$,
 "twelfths", ["0", "1/12", "1/6", "1/4", "1/3", "5/12", "1/2", "7/12", "2/3", "3/4", "5/6", "11/12"]);
+c$.labelsXYZ = c$.prototype.labelsXYZ = ["x", "y", "z"];
+c$.labelsXn = c$.prototype.labelsXn = ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8", "x9", "x10", "x11", "x12", "x13"];
+c$.labelsXnSub = c$.prototype.labelsXnSub = ["x", "y", "z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
 });

@@ -33,7 +33,7 @@ function () {
 this.setGlobals ();
 for (var i = this.isosurface.meshCount; --i >= 0; ) {
 this.mesh = this.imesh = this.isosurface.meshes[i];
-if (this.imesh.connections != null && !this.viewer.getModelSet ().atoms[this.imesh.connections[0]].isVisible (0)) continue;
+if (this.imesh.connections != null && !this.viewer.getModelSet ().atoms[this.imesh.connections[0]].checkVisible ()) continue;
 this.hasColorRange = false;
 if (this.renderMeshSlab ()) {
 if (!this.isExport) this.renderInfo ();
@@ -111,7 +111,7 @@ $_M(c$, "renderMeshSlab",
 ($fz = function () {
 this.volumeRender = (this.imesh.jvxlData.colorDensity && this.imesh.jvxlData.allowVolumeRender);
 var thisSlabValue = this.mySlabValue;
-this.frontOnly = this.mesh.frontOnly;
+this.frontOnly = this.mesh.frontOnly || this.shapeID == 26;
 if (!this.isNavigationMode) {
 this.meshSlabValue = this.imesh.jvxlData.slabValue;
 if (this.meshSlabValue != -2147483648 && this.imesh.jvxlData.isSlabbable) {
@@ -175,8 +175,7 @@ v2.cross (v2, v1);
 v2.normalize ();
 var f = this.viewer.scaleToScreen (Clazz.floatToInt (this.pt1f.z), 100);
 v2.scale (f);
-this.pt1f.setT (this.pt2f);
-this.pt1f.add (v2);
+this.pt1f.add2 (this.pt2f, v2);
 this.pt2f.sub (v2);
 this.screens[0].set (Math.round (this.pt1f.x), Math.round (this.pt1f.y), Math.round (this.pt1f.z));
 this.g3d.fillSphereI (r, this.screens[0]);
@@ -364,9 +363,7 @@ if (i > 100) continue;
 this.ptTemp.setT (this.vertices[i]);
 var n = this.mesh.normixes[i];
 if (n >= 0) {
-this.ptTemp.add (vertexVectors[n]);
-this.ptTemp.add (vertexVectors[n]);
-this.ptTemp.add (vertexVectors[n]);
+this.ptTemp.scaleAdd2 (3, vertexVectors[n], this.ptTemp);
 this.viewer.transformPtScr (this.ptTemp, this.ptTempi);
 this.g3d.drawLineAB (this.screens[i], this.ptTempi);
 }}

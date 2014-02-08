@@ -92,10 +92,10 @@ this.isValid = true;
 c$.getEquationForQuadricWithCenter = $_M(c$, "getEquationForQuadricWithCenter", 
 function (x, y, z, mToElliptical, vTemp, mTemp, coef, mDeriv) {
 vTemp.set (x, y, z);
-mToElliptical.transform (vTemp);
+mToElliptical.rotate (vTemp);
 var f = 1 - vTemp.dot (vTemp);
 mTemp.transposeM (mToElliptical);
-mTemp.transform (vTemp);
+mTemp.rotate (vTemp);
 mTemp.mul (mToElliptical);
 coef[0] = mTemp.m00 / f;
 coef[1] = mTemp.m11 / f;

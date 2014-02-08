@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.viewer");
-Clazz.load (null, "J.viewer.OutputManager", ["java.lang.Boolean", "java.util.Date", "$.Hashtable", "$.Map", "JU.List", "$.PT", "$.SB", "J.api.Interface", "J.i18n.GT", "J.io.JmolBinary", "J.util.Escape", "$.Logger", "$.Txt", "J.viewer.FileManager", "$.JC", "$.Viewer"], function () {
+Clazz.load (null, "J.viewer.OutputManager", ["java.lang.Boolean", "java.util.Date", "$.Hashtable", "$.Map", "JU.List", "$.PT", "$.SB", "J.api.Interface", "J.i18n.GT", "J.io.JmolBinary", "J.util.Logger", "$.Txt", "J.viewer.FileManager", "$.JC", "$.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.viewer = null;
 this.privateKey = 0;
@@ -21,6 +21,7 @@ var quality = J.viewer.OutputManager.getInt (params, "quality", -2147483648);
 var out = params.get ("outputChannel");
 var closeStream = (out == null);
 var len = -1;
+var ret = null;
 try {
 if (!this.viewer.checkPrivateKey (this.privateKey)) return "ERROR: SECURITY";
 if (bytes != null) {
@@ -42,10 +43,12 @@ throw exc;
 }
 } finally {
 if (out != null) {
-if (closeStream) out.closeChannel ();
+if (closeStream) ret = out.closeChannel ();
 len = out.getByteCount ();
 }}
-return (len < 0 ? "Creation of " + fileName + " failed: " + this.viewer.getErrorMessageUn () : "OK " + type + " " + (len > 0 ? len + " " : "") + fileName + (quality == -2147483648 ? "" : "; quality=" + quality));
+var pt = fileName.indexOf ("?POST?");
+if (pt >= 0) fileName = fileName.substring (0, pt);
+return (len < 0 ? "Creation of " + fileName + " failed: " + (ret == null ? this.viewer.getErrorMessageUn () : ret) : "OK " + type + " " + (len > 0 ? len + " " : "") + fileName + (quality == -2147483648 ? "" : "; quality=" + quality));
 }, $fz.isPrivate = true, $fz), "java.util.Map");
 $_M(c$, "getOrSaveImage", 
 ($fz = function (params) {
@@ -70,7 +73,7 @@ var comment = null;
 var stateData = null;
 params.put ("date", this.viewer.apiPlatform.getDateFormat (false));
 if (type.startsWith ("JP")) {
-type = JU.PT.simpleReplace (type, "E", "");
+type = JU.PT.rep (type, "E", "");
 if (type.equals ("JPG64")) {
 params.put ("outputChannelTemp", this.getOutputChannel (null, null));
 comment = "";
@@ -270,7 +273,7 @@ var fullPath =  new Array (1);
 var out = this.getOutputChannel (fileName, fullPath);
 if (out == null) return "";
 fileName = fullPath[0];
-var pathName = (type.equals ("FILE") ? this.viewer.getFullPathName () : null);
+var pathName = (type.equals ("FILE") ? this.viewer.getFullPathName (false) : null);
 var getCurrentFile = (pathName != null && (pathName.equals ("string") || pathName.indexOf ("[]") >= 0 || pathName.equals ("JSNode")));
 var asBytes = (pathName != null && !getCurrentFile);
 if (asBytes) {
@@ -294,7 +297,7 @@ return msg.startsWith ("OK");
 $_M(c$, "getOutputFileNameFromDialog", 
 ($fz = function (fileName, quality) {
 if (fileName == null || this.viewer.$isKiosk) return null;
-var useDialog = (fileName.indexOf ("?") == 0);
+var useDialog = fileName.startsWith ("?");
 if (useDialog) fileName = fileName.substring (1);
 useDialog = new Boolean (useDialog | (this.viewer.isApplet () && (fileName.indexOf ("http:") < 0))).valueOf ();
 fileName = J.viewer.FileManager.getLocalPathForWritingFile (this.viewer, fileName);
@@ -400,7 +403,7 @@ break;
 }break;
 }
 if (out != null) params.put ("outputChannel", out);
-}params.put ("fileName", localName);
+}if (localName != null) params.put ("fileName", localName);
 if (sret == null) sret = this.writeToOutputChannel (params);
 this.viewer.statusManager.createImage (sret, type, null, null, quality);
 if (msg != null) this.viewer.showString (msg + " (" + params.get ("captureByteCount") + " bytes)", false);
@@ -439,7 +442,7 @@ $_M(c$, "logToFile",
 function (data) {
 try {
 var doClear = (data.equals ("$CLEAR$"));
-if (data.indexOf ("$NOW$") >= 0) data = JU.PT.simpleReplace (data, "$NOW$", this.viewer.apiPlatform.getDateFormat (false));
+if (data.indexOf ("$NOW$") >= 0) data = JU.PT.rep (data, "$NOW$", this.viewer.apiPlatform.getDateFormat (false));
 if (this.viewer.logFileName == null) {
 J.util.Logger.info (data);
 return;
@@ -472,7 +475,7 @@ J.io.JmolBinary.getFileReferences (script, fileNames);
 if (haveSceneScript) J.io.JmolBinary.getFileReferences (scripts[1], fileNames);
 }var haveScripts = (!haveSceneScript && scripts != null && scripts.length > 0);
 if (haveScripts) {
-script = this.wrapPathForAllFiles ("script " + J.util.Escape.eS (scripts[0]), "");
+script = this.wrapPathForAllFiles ("script " + JU.PT.esc (scripts[0]), "");
 for (var i = 0; i < scripts.length; i++) fileNames.addLast (scripts[i]);
 
 }var nFiles = fileNames.size ();

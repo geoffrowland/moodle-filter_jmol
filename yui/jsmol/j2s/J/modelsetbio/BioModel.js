@@ -100,7 +100,7 @@ bsCheck.or (bs2);
 }var atoms = modelSet.atoms;
 var viewer = modelSet.viewer;
 bsCheck.and (viewer.getModelUndeletedAtomsBitSet (this.modelIndex));
-for (var i = bsCheck.nextSetBit (0); i >= 0; i = bsCheck.nextSetBit (i + 1)) if (atoms[i].isVisible (0) && atoms[i].atomID == 2 && atoms[i].getGroupID () != 5) vCA.addLast ((a1 = atoms[i]));
+for (var i = bsCheck.nextSetBit (0); i >= 0; i = bsCheck.nextSetBit (i + 1)) if (atoms[i].checkVisible () && atoms[i].atomID == 2 && atoms[i].getGroupID () != 5) vCA.addLast ((a1 = atoms[i]));
 
 if (vCA.size () == 0) return 0;
 var thresh = viewer.getFloat (570425408);

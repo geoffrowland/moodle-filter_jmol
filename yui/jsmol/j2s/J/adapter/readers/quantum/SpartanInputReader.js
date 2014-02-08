@@ -27,7 +27,7 @@ if (this.line != null && this.line.indexOf ("BEGINCONSTRAINTS") >= 0) this.readC
 }while (this.line != null && this.line.indexOf ("END ") < 0 && this.line.indexOf ("MOLSTATE") < 0) this.readLine ();
 
 if (this.line != null && this.line.indexOf ("MOLSTATE") >= 0) this.readTransform ();
-if (this.atomSetCollection.getAtomCount () > 0) this.atomSetCollection.setAtomSetName (this.modelName);
+if (this.atomSetCollection.atomCount > 0) this.atomSetCollection.setAtomSetName (this.modelName);
 });
 $_M(c$, "readConstraints", 
 ($fz = function () {
@@ -64,7 +64,7 @@ atom.elementSymbol = J.adapter.smarter.AtomSetCollectionReader.getElementSymbol 
 this.setAtomCoordXYZ (atom, this.parseFloatStr (tokens[1]), this.parseFloatStr (tokens[2]), this.parseFloatStr (tokens[3]));
 this.modelAtomCount++;
 }
-this.atomCount = this.atomSetCollection.getAtomCount ();
+this.atomCount = this.atomSetCollection.atomCount;
 if (J.util.Logger.debugging) J.util.Logger.debug (this.atomCount + " atoms read");
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "readAtomNames", 
@@ -73,7 +73,7 @@ var atom0 = this.atomCount - this.modelAtomCount;
 for (var i = 0; i < this.modelAtomCount; i++) {
 this.line = this.readLine ().trim ();
 var name = this.line.substring (1, this.line.length - 1);
-this.atomSetCollection.getAtom (atom0 + i).atomName = name;
+this.atomSetCollection.atoms[atom0 + i].atomName = name;
 }
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "readBonds", 
@@ -93,6 +93,6 @@ this.atomSetCollection.addBond ( new J.adapter.smarter.Bond (sourceIndex, target
 nAtoms -= tokens.length;
 }}
 this.readLine ();
-if (J.util.Logger.debugging) J.util.Logger.debug (this.atomSetCollection.getBondCount () + " bonds read");
+if (J.util.Logger.debugging) J.util.Logger.debug (this.atomSetCollection.bondCount + " bonds read");
 }, $fz.isPrivate = true, $fz), "~N");
 });

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.script");
-Clazz.load (["J.api.JmolScriptManager", "JU.List"], "J.script.ScriptManager", ["java.io.BufferedReader", "java.lang.Boolean", "$.Thread", "javajs.api.ZInputStream", "JU.PT", "$.SB", "J.api.Interface", "J.io.JmolBinary", "J.script.ScriptQueueThread", "J.util.Escape", "$.Logger"], function () {
+Clazz.load (["J.api.JmolScriptManager", "JU.List"], "J.script.ScriptManager", ["java.io.BufferedReader", "java.lang.Boolean", "$.Thread", "javajs.api.ZInputStream", "JU.PT", "$.SB", "J.api.Interface", "J.io.JmolBinary", "J.script.ScriptQueueThread", "J.util.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.viewer = null;
 this.eval = null;
@@ -309,16 +309,16 @@ var isCached = fileName.startsWith ("cache://");
 if (this.viewer.isApplet () && fileName.indexOf ("://") < 0) fileName = "file://" + (fileName.startsWith ("/") ? "" : "/") + fileName;
 try {
 if (fileName.endsWith (".pse")) {
-cmd = (isCached ? "" : "zap;") + "load SYNC " + J.util.Escape.eS (fileName) + " filter 'DORESIZE'";
+cmd = (isCached ? "" : "zap;") + "load SYNC " + JU.PT.esc (fileName) + " filter 'DORESIZE'";
 return;
 }if (fileName.endsWith ("jvxl")) {
 cmd = "isosurface ";
 return;
-}if (!fileName.endsWith (".spt")) {
+}if (!fileName.toLowerCase ().endsWith (".spt")) {
 var type = this.getFileTypeName (fileName);
 if (type == null) {
 type = J.io.JmolBinary.determineSurfaceTypeIs (this.viewer.getBufferedInputStream (fileName));
-if (type != null) cmd = "if (_filetype == 'Pdb') { isosurface sigma 1.0 within 2.0 {*} " + J.util.Escape.eS (fileName) + " mesh nofill }; else; { isosurface " + J.util.Escape.eS (fileName) + "}";
+if (type != null) cmd = "if (_filetype == 'Pdb') { isosurface sigma 1.0 within 2.0 {*} " + JU.PT.esc (fileName) + " mesh nofill }; else; { isosurface " + JU.PT.esc (fileName) + "}";
 return;
 } else if (type.equals ("Jmol")) {
 cmd = "script ";
@@ -326,12 +326,12 @@ cmd = "script ";
 cmd = "isosurface sign red blue ";
 } else if (!type.equals ("spt")) {
 cmd = this.viewer.global.defaultDropScript;
-cmd = JU.PT.simpleReplace (cmd, "%FILE", fileName);
-cmd = JU.PT.simpleReplace (cmd, "%ALLOWCARTOONS", "" + pdbCartoons);
+cmd = JU.PT.rep (cmd, "%FILE", fileName);
+cmd = JU.PT.rep (cmd, "%ALLOWCARTOONS", "" + pdbCartoons);
 if (cmd.toLowerCase ().startsWith ("zap") && isCached) cmd = cmd.substring (3);
 return;
 }}if (allowScript && this.viewer.scriptEditorVisible && cmd == null) this.viewer.showEditor ([fileName, this.viewer.getFileAsString (fileName)]);
- else cmd = (cmd == null ? "script " : cmd) + J.util.Escape.eS (fileName);
+ else cmd = (cmd == null ? "script " : cmd) + JU.PT.esc (fileName);
 } finally {
 if (cmd != null) this.viewer.evalString (cmd);
 }

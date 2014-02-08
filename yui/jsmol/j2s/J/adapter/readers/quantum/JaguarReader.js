@@ -66,7 +66,7 @@ var iAtom = 0;
 while (this.readLine () != null && this.line.indexOf ("sum") < 0) {
 if (this.line.indexOf ("Charge") < 0) continue;
 var tokens = this.getTokens ();
-for (var i = 1; i < tokens.length; i++) this.atomSetCollection.getAtom (iAtom++).partialCharge = this.parseFloatStr (tokens[i]);
+for (var i = 1; i < tokens.length; i++) this.atomSetCollection.atoms[iAtom++].partialCharge = this.parseFloatStr (tokens[i]);
 
 }
 }, $fz.isPrivate = true, $fz));
@@ -202,7 +202,7 @@ $_M(c$, "readFrequencies",
 var atomCount = this.atomSetCollection.getLastAtomSetAtomCount ();
 this.discardLinesUntilStartsWith ("  frequencies ");
 while (this.line != null && this.line.startsWith ("  frequencies ")) {
-var iAtom0 = this.atomSetCollection.getAtomCount ();
+var iAtom0 = this.atomSetCollection.atomCount;
 var frequencies = this.getTokens ();
 var frequencyCount = frequencies.length - 1;
 var ignore =  Clazz.newBooleanArray (frequencyCount, false);

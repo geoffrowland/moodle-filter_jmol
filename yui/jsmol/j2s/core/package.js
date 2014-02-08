@@ -159,6 +159,7 @@ for (var i = 0; i < Jmol._coreFiles.length; i++)
 	]);
 
 	ClazzLoader.jarClasspath (base + "coresym.z.js",	[
+    "J.adapter.smarter.XtalSymmetry",
 		"J.api.SymmetryInterface",
 		"J.symmetry.Symmetry",
 		"$.PointGroup",

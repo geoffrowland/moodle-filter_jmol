@@ -1,3 +1,6 @@
+// BH 1/16/2014 8:44:03 PM   Jmol.__execDelayMS = 100; // FF bug when loading into a tab that is not 
+//                           immediately focused and not using jQuery for adding the applet and having  
+//                           multiple applets.
 // BH 12/6/2013 10:12:30 AM adding corejmoljsv.z.js
 // BH 9/17/2013 10:18:40 AM  file transfer functions moved to JSmolCore 
 // BH 3/5/2013 9:54:16 PM added support for a cover image: Info.coverImage, coverScript, coverTitle, deferApplet, deferUncover
@@ -32,6 +35,7 @@
   Jmol.__execStack = [];
   Jmol.__execTimer = 0;
   Jmol.__coreSet = [];
+  Jmol.__execDelayMS = 100; // must be > 55 ms for FF
   
   Jmol.showExecLog = function() { return Jmol.__execLog.join("\n") }; 
 
@@ -51,14 +55,19 @@
 	Jmol.__nextExecution = function(trigger) {
     delete Jmol.__execTimer;
 		var es = Jmol.__execStack;
+	  var e;
+    while (es.length > 0 && (e = es[0])[4] == "done")
+      es.shift();
 	  if (es.length == 0)
 	  	return;
 	  if (!trigger) {
 		  setTimeout("Jmol.__nextExecution(true)",10)
 	  	return;
 	  }
-	  var e = es.shift();
-	  Jmol.__execLog.push("exec " + e[0]._id + " " + e[3]);
+    e.push("done");
+    var s = "exec " + e[0]._id + " " + e[3] + " " + e[2];
+    if (self.console)console.log(s + " -- OK")
+	  Jmol.__execLog.push(s);
 		e[1](e[0],e[2]);	
 	};
 
@@ -91,7 +100,7 @@
 
 	Jmol._Canvas2D = function(id, Info, type, checkOnly){
     // type: Jmol or JSV
-		this._syncId = ("" + Math.random()).substring(3);
+    this._uniqueId = ("" + Math.random()).substring(3);
 		this._id = id;
 		this._is2D = true;
     this._isJava = false;
@@ -273,7 +282,7 @@
 			this._canScript = function(script) {return true;};
 			this._savedOrientations = [];
       Jmol.__execTimer && clearTimeout(Jmol.__execTimer);
-      Jmol.__execTimer = setTimeout(Jmol.__nextExecution, 50);// leaving a 50-ms delay for next applet creation initiation
+      Jmol.__execTimer = setTimeout(Jmol.__nextExecution, Jmol.__execDelayMS);
 		};
 
 		proto.__addExportHook = function(applet) {
@@ -287,7 +296,7 @@
 			viewerOptions.put("appletReadyCallback","Jmol._readyCallback");
 			viewerOptions.put("applet", true);
 			viewerOptions.put("name", applet._id + "_object");
-			viewerOptions.put("syncId", applet._syncId);      
+			viewerOptions.put("syncId", Jmol._syncId);      
       if (applet._color) 
         viewerOptions.put("bgcolor", applet._color);
       if (!applet._is2D)  
@@ -404,7 +413,7 @@
 	
 		proto.equals = function(a) { return this == a };
 		proto.clone = function() { return this };
-		proto.hashCode = function() { return parseInt(this._syncId) };  
+		proto.hashCode = function() { return parseInt(this._uniqueId) };  
 	
   
     proto._processGesture = function(touches) {
@@ -517,5 +526,45 @@
     canvas.getContext("2d").drawImage(canvas.image, 0, 0, width, height);
   };
 
+  Jmol.Sync = {
+    _doSync: false,
+    _syncData: {}
+  };
+  
+(function(Sync) {
+
+Sync._sync = function(applet, data) {
+  // from Jmol, JSME, or JSV
+  Sync.__checkNeeds(data);
+  Sync.__getData(data);
+}
+  
+
+Sync.__checkNeeds = function(applet, data) {
+
+
+}
+
+Sync.__getData = function(data) {
+
+  for (type in data) {
+    if (data[type] != "?" && data[type] != "!") continue;
+    switch(type) {
+    case "mol2d":
+      break;
+    case "mol3d":
+      break;
+    case "spec":
+      break;
+    }
+  }  
+}
+
+Sync.__sendSync = function(data) {
+
+}
+
+  
+}) (Jmol.Sync);
 		
 })(Jmol);

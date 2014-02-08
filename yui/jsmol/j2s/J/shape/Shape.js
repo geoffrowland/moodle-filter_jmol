@@ -26,6 +26,9 @@ this.myVisibilityFlag = J.viewer.JC.getShapeVisibilityFlag (shapeID);
 this.setModelSet (modelSet);
 this.initShape ();
 }, "J.viewer.Viewer,J.util.GData,J.modelset.ModelSet,~N");
+$_M(c$, "setVisibilityFlags", 
+function (bs) {
+}, "JU.BS");
 $_M(c$, "getSize", 
 function (atomIndex) {
 return 0;
@@ -42,6 +45,10 @@ this.initModelSet ();
 $_M(c$, "initModelSet", 
 function () {
 });
+$_M(c$, "setShapeVisibility", 
+function (atom, isVisible) {
+atom.setShapeVisibility (this.myVisibilityFlag, isVisible);
+}, "J.modelset.Atom,~B");
 $_M(c$, "initShape", 
 function () {
 });
@@ -135,9 +142,6 @@ $_M(c$, "getShapeDetail",
 function () {
 return null;
 });
-$_M(c$, "setVisibilityFlags", 
-function (bs) {
-}, "JU.BS");
 c$.getColix = $_M(c$, "getColix", 
 function (colixes, i, atom) {
 return J.util.C.getColixInherited ((colixes == null || i >= colixes.length ? 0 : colixes[i]), atom.getColix ());

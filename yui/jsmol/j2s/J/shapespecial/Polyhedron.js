@@ -37,8 +37,8 @@ this.distanceFactor = distanceFactor;
 $_M(c$, "getState", 
 function () {
 var bs =  new JU.BS ();
-for (var i = 0; i < this.ptCenter; i++) bs.set ((this.vertices[i]).getIndex ());
+for (var i = 0; i < this.ptCenter; i++) bs.set ((this.vertices[i]).index);
 
-return "  polyhedra ({" + this.centralAtom.getIndex () + "}) to " + J.util.Escape.eBS (bs) + (this.collapsed ? " collapsed" : "") + " distanceFactor " + this.distanceFactor + " faceCenterOffset " + this.faceCenterOffset + (this.isFullyLit ? " fullyLit" : "") + ";" + (this.visible ? "" : "polyhedra off;") + "\n";
+return "  polyhedra ({" + this.centralAtom.index + "}) to " + J.util.Escape.eBS (bs) + (this.collapsed ? " collapsed" : "") + " distanceFactor " + this.distanceFactor + " faceCenterOffset " + this.faceCenterOffset + (this.isFullyLit ? " fullyLit" : "") + ";" + (this.visible ? "" : "polyhedra off;") + "\n";
 });
 });

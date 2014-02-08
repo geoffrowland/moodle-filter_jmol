@@ -10,8 +10,8 @@ Clazz.instantialize (this, arguments);
 }, J.adapter.smarter, "AtomIterator", null, J.api.JmolAdapterAtomIterator);
 Clazz.makeConstructor (c$, 
 function (atomSetCollection) {
-this.atomCount = atomSetCollection.getAtomCount ();
-this.atoms = atomSetCollection.getAtoms ();
+this.atomCount = atomSetCollection.atomCount;
+this.atoms = atomSetCollection.atoms;
 this.bsAtoms = atomSetCollection.bsAtoms;
 this.iatom = 0;
 }, "J.adapter.smarter.AtomSetCollection");
@@ -89,7 +89,7 @@ return this.atom.chainID;
 });
 $_V(c$, "getAlternateLocationID", 
 function () {
-return J.api.JmolAdapter.canonizeAlternateLocationID (this.atom.alternateLocationID);
+return J.api.JmolAdapter.canonizeAlternateLocationID (this.atom.altLoc);
 });
 $_V(c$, "getGroup3", 
 function () {

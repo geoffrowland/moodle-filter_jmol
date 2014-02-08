@@ -3,7 +3,7 @@ Clazz.load (["J.api.JmolAdapter"], "J.adapter.smarter.SmarterJmolAdapter", ["jav
 c$ = Clazz.declareType (J.adapter.smarter, "SmarterJmolAdapter", J.api.JmolAdapter);
 $_V(c$, "getFileTypeName", 
 function (atomSetCollectionOrReader) {
-if (Clazz.instanceOf (atomSetCollectionOrReader, J.adapter.smarter.AtomSetCollection)) return (atomSetCollectionOrReader).getFileTypeName ();
+if (Clazz.instanceOf (atomSetCollectionOrReader, J.adapter.smarter.AtomSetCollection)) return (atomSetCollectionOrReader).fileTypeName;
 if (Clazz.instanceOf (atomSetCollectionOrReader, java.io.BufferedReader)) return J.adapter.smarter.Resolver.getFileType (atomSetCollectionOrReader);
 return null;
 }, "~O");
@@ -181,15 +181,15 @@ function (atomSetCollection) {
 }, "~O");
 $_V(c$, "getAtomSetCollectionName", 
 function (atomSetCollection) {
-return (atomSetCollection).getCollectionName ();
+return (atomSetCollection).collectionName;
 }, "~O");
 $_V(c$, "getAtomSetCollectionAuxiliaryInfo", 
 function (atomSetCollection) {
-return (atomSetCollection).getAtomSetCollectionAuxiliaryInfoMap ();
+return (atomSetCollection).atomSetCollectionAuxiliaryInfo;
 }, "~O");
 $_V(c$, "getAtomSetCount", 
 function (atomSetCollection) {
-return (atomSetCollection).getAtomSetCount ();
+return (atomSetCollection).atomSetCount;
 }, "~O");
 $_V(c$, "getAtomSetNumber", 
 function (atomSetCollection, atomSetIndex) {
@@ -214,34 +214,11 @@ return (atomSetCollection).getBondList ();
 $_V(c$, "getAtomCount", 
 function (atomSetCollection) {
 var a = atomSetCollection;
-return (a.bsAtoms == null ? a.getAtomCount () : a.bsAtoms.cardinality ());
+return (a.bsAtoms == null ? a.atomCount : a.bsAtoms.cardinality ());
 }, "~O");
 $_V(c$, "coordinatesAreFractional", 
 function (atomSetCollection) {
 return (atomSetCollection).coordinatesAreFractional;
-}, "~O");
-$_V(c$, "getNotionalUnitcell", 
-function (atomSetCollection) {
-return (atomSetCollection).notionalUnitCell;
-}, "~O");
-$_V(c$, "getPdbScaleMatrix", 
-function (atomSetCollection) {
-var a = (atomSetCollection).notionalUnitCell;
-if (a.length < 22) return null;
-var b =  Clazz.newFloatArray (16, 0);
-for (var i = 0; i < 16; i++) b[i] = a[6 + i];
-
-return b;
-}, "~O");
-$_V(c$, "getPdbScaleTranslate", 
-function (atomSetCollection) {
-var a = (atomSetCollection).notionalUnitCell;
-if (a.length < 22) return null;
-var b =  Clazz.newFloatArray (3, 0);
-b[0] = a[9];
-b[1] = a[13];
-b[2] = a[17];
-return b;
 }, "~O");
 $_V(c$, "getAtomIterator", 
 function (atomSetCollection) {
@@ -253,7 +230,7 @@ return  new J.adapter.smarter.BondIterator (atomSetCollection);
 }, "~O");
 $_V(c$, "getStructureIterator", 
 function (atomSetCollection) {
-return (atomSetCollection).getStructureCount () == 0 ? null :  new J.adapter.smarter.StructureIterator (atomSetCollection);
+return (atomSetCollection).structureCount == 0 ? null :  new J.adapter.smarter.StructureIterator (atomSetCollection);
 }, "~O");
 c$.close = $_M(c$, "close", 
 function (bufferedReader) {

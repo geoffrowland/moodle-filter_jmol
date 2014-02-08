@@ -27,7 +27,7 @@ this.atomSetCollection.newAtomSet ();
 var molName = this.getMolName ();
 this.atomSetCollection.setAtomSetName (molName);
 this.atomIndex = 0;
-this.baseAtomIndex = this.atomSetCollection.getAtomCount ();
+this.baseAtomIndex = this.atomSetCollection.atomCount;
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "getMolName", 
 ($fz = function () {

@@ -66,7 +66,7 @@ return null;
 }, "~S,JU.List");
 c$.findNodeById = $_M(c$, "findNodeById", 
 function (id, panelNodes) {
-for (var i = panelNodes.size (); --i >= 0; ) if (id.equals (panelNodes.get (i).id)) return panelNodes.get (i);
+if (id != null) for (var i = panelNodes.size (); --i >= 0; ) if (id.equals (panelNodes.get (i).id)) return panelNodes.get (i);
 
 return null;
 }, "~S,JU.List");

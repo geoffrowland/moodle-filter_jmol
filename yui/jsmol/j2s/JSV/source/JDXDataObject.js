@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.source");
-Clazz.load (["JSV.source.JDXHeader"], "JSV.source.JDXDataObject", ["java.lang.Character", "$.Double", "JU.DF", "$.PT", "JSV.common.Annotation", "$.Coordinate", "$.Integral", "JSV.exception.JSpecViewException", "J.util.Logger"], function () {
+Clazz.load (["JSV.source.JDXHeader"], "JSV.source.JDXDataObject", ["java.lang.Character", "$.Double", "JU.DF", "$.PT", "JSV.common.Annotation", "$.Coordinate", "$.Integral", "JSV.exception.JSVException", "J.util.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.filePath = null;
 this.filePathForwardSlash = null;
@@ -79,11 +79,11 @@ return this.yFactor;
 });
 $_M(c$, "checkRequiredTokens", 
 function () {
-if (this.fileFirstX == 1.7976931348623157E308) throw  new JSV.exception.JSpecViewException ("Error Reading Data Set: ##FIRST not found");
-if (this.fileLastX == 1.7976931348623157E308) throw  new JSV.exception.JSpecViewException ("Error Reading Data Set: ##LASTX not found");
-if (this.nPointsFile == -1) throw  new JSV.exception.JSpecViewException ("Error Reading Data Set: ##NPOINTS not found");
-if (this.xFactor == 1.7976931348623157E308) throw  new JSV.exception.JSpecViewException ("Error Reading Data Set: ##XFACTOR not found");
-if (this.yFactor == 1.7976931348623157E308) throw  new JSV.exception.JSpecViewException ("Error Reading Data Set: ##YFACTOR not found");
+if (this.fileFirstX == 1.7976931348623157E308) throw  new JSV.exception.JSVException ("Error Reading Data Set: ##FIRST not found");
+if (this.fileLastX == 1.7976931348623157E308) throw  new JSV.exception.JSVException ("Error Reading Data Set: ##LASTX not found");
+if (this.nPointsFile == -1) throw  new JSV.exception.JSVException ("Error Reading Data Set: ##NPOINTS not found");
+if (this.xFactor == 1.7976931348623157E308) throw  new JSV.exception.JSVException ("Error Reading Data Set: ##XFACTOR not found");
+if (this.yFactor == 1.7976931348623157E308) throw  new JSV.exception.JSVException ("Error Reading Data Set: ##YFACTOR not found");
 });
 $_M(c$, "setXUnits", 
 function (xUnits) {
@@ -95,6 +95,7 @@ return this.xUnits;
 });
 $_M(c$, "setYUnits", 
 function (yUnits) {
+if (yUnits.equals ("PPM")) yUnits = "ARBITRARY UNITS";
 this.yUnits = yUnits;
 }, "~S");
 $_M(c$, "getYUnits", 
@@ -112,7 +113,7 @@ this.yLabel = value;
 $_M(c$, "setObservedNucleus", 
 function (value) {
 this.observedNucl = value;
-if (this.numDim == 1) this.parent.nucleusX = this.nucleusX = JU.PT.trim (value, "[]^<>");
+if (this.numDim == 1) this.parent.nucleusX = this.nucleusX = this.fixNucleus (value);
 }, "~S");
 $_M(c$, "setObservedFreq", 
 function (observedFreq) {
@@ -144,8 +145,9 @@ var d = this.y2D;
 if (this.y2DUnits.equals ("HZ")) d /= this.freq2dY;
 return d;
 });
-$_M(c$, "setNucleus", 
+$_M(c$, "setNucleusAndFreq", 
 function (nuc, isX) {
+nuc = this.fixNucleus (nuc);
 if (isX) this.nucleusX = nuc;
  else this.nucleusY = nuc;
 var freq;
@@ -159,6 +161,10 @@ freq = this.observedFreq * g2 / g1;
  else this.freq2dY = freq;
 J.util.Logger.info ("Freq for " + nuc + " = " + freq);
 }, "~S,~B");
+$_M(c$, "fixNucleus", 
+($fz = function (nuc) {
+return JU.PT.rep (JU.PT.trim (nuc, "[]^<>"), "NUC_", "");
+}, $fz.isPrivate = true, $fz), "~S");
 c$.getGyroMagneticRatio = $_M(c$, "getGyroMagneticRatio", 
 ($fz = function (nuc) {
 var pt = 0;

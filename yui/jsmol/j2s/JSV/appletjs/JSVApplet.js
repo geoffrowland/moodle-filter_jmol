@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.appletjs");
-Clazz.load (["JSV.api.AppletFrame", "$.JSVAppletInterface"], "JSV.appletjs.JSVApplet", ["java.lang.Boolean", "java.net.URL", "java.util.Hashtable", "JU.PT", "JSV.app.JSVApp", "JSV.common.JSVersion", "JSV.js2d.JsPanel", "$.JsViewPanel", "J.util.Logger"], function () {
+Clazz.load (["JSV.api.AppletFrame", "$.JSVAppletInterface"], "JSV.appletjs.JSVApplet", ["java.lang.Boolean", "java.net.URL", "java.util.Hashtable", "JU.PT", "JSV.app.JSVApp", "JSV.common.JSVersion", "JSV.js2d.JsMainPanel", "$.JsPanel", "J.util.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.app = null;
 this.viewer = null;
@@ -172,9 +172,9 @@ function (isSigned, viewer) {
 $_V(c$, "validateContent", 
 function (mode) {
 }, "~N");
-$_V(c$, "addNewPanel", 
+$_V(c$, "createMainPanel", 
 function (viewer) {
-viewer.viewPanel =  new JSV.js2d.JsViewPanel ();
+viewer.mainPanel =  new JSV.js2d.JsMainPanel ();
 }, "JSV.common.JSViewer");
 $_V(c$, "newWindow", 
 function (isSelected) {
@@ -198,7 +198,7 @@ function (b) {
 }, "~B");
 $_V(c$, "getJSVPanel", 
 function (viewer, specs, initialStartIndex, initialEndIndex) {
-return JSV.js2d.JsPanel.getPanelMany (viewer, specs, initialStartIndex, initialEndIndex);
+return (specs == null ? JSV.js2d.JsPanel.getEmptyPanel (viewer) : JSV.js2d.JsPanel.getPanelMany (viewer, specs, initialStartIndex, initialEndIndex));
 }, "JSV.common.JSViewer,JU.List,~N,~N");
 $_V(c$, "setVisible", 
 function (b) {

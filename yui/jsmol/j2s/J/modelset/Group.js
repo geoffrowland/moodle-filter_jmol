@@ -11,12 +11,6 @@ this.groupID = 0;
 this.$isProtein = false;
 this.selectedIndex = 0;
 this.shapeVisibilityFlags = 0;
-this.phi = NaN;
-this.psi = NaN;
-this.omega = NaN;
-this.straightness = NaN;
-this.mu = NaN;
-this.theta = NaN;
 this.bsAdded = null;
 Clazz.instantialize (this, arguments);
 }, J.modelset, "Group");
@@ -42,56 +36,6 @@ this.firstAtomIndex = firstAtomIndex;
 this.lastAtomIndex = lastAtomIndex;
 return this;
 }, "J.modelset.Chain,~S,~N,~N,~N");
-$_M(c$, "calcBioParameters", 
-function () {
-return false;
-});
-$_M(c$, "haveParameters", 
-function () {
-return true;
-});
-$_M(c$, "setGroupParameter", 
-function (tok, f) {
-switch (tok) {
-case 1112539145:
-this.phi = f;
-break;
-case 1112539146:
-this.psi = f;
-break;
-case 1112539144:
-this.omega = f;
-break;
-case 1112539141:
-this.mu = f;
-break;
-case 1112539152:
-this.theta = f;
-break;
-case 1112539150:
-this.straightness = f;
-break;
-}
-}, "~N,~N");
-$_M(c$, "getGroupParameter", 
-function (tok) {
-if (!this.haveParameters ()) this.calcBioParameters ();
-switch (tok) {
-case 1112539144:
-return this.omega;
-case 1112539145:
-return this.phi;
-case 1112539146:
-return this.psi;
-case 1112539141:
-return this.mu;
-case 1112539152:
-return this.theta;
-case 1112539150:
-return this.straightness;
-}
-return NaN;
-}, "~N");
 $_M(c$, "setModelSet", 
 function (modelSet) {
 this.chain.model.modelSet = modelSet;
@@ -196,7 +140,7 @@ c$.getGroupIdFor = $_M(c$, "getGroupIdFor",
 ($fz = function (group3) {
 if (group3 == null) return -1;
 var groupID = J.modelset.Group.lookupGroupID (group3);
-return (groupID != -1) ? groupID : J.modelset.Group.addGroup3Name (group3);
+return (groupID == -1 ? J.modelset.Group.addGroup3Name (group3) : groupID);
 }, $fz.isPrivate = true, $fz), "~S");
 c$.lookupGroupID = $_M(c$, "lookupGroupID", 
 function (group3) {
@@ -417,9 +361,13 @@ if (this.bsAdded != null) for (var i = this.bsAdded.nextSetBit (0); i >= 0; i = 
 }, "~A,~A");
 $_M(c$, "checkMinZ", 
 ($fz = function (atom, minZ) {
-var z = atom.screenZ - Clazz.doubleToInt (atom.screenDiameter / 2) - 2;
+var z = atom.sZ - Clazz.doubleToInt (atom.sD / 2) - 2;
 if (z < minZ[0]) minZ[0] = Math.max (1, z);
 }, $fz.isPrivate = true, $fz), "J.modelset.Atom,~A");
+$_M(c$, "getGroupParameter", 
+function (tok) {
+return NaN;
+}, "~N");
 Clazz.defineStatics (c$,
 "SEQUENCE_NUMBER_FLAG", 0x80,
 "INSERTION_CODE_MASK", 0x7F,

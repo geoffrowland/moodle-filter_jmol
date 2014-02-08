@@ -1215,8 +1215,9 @@ this.setColorFromToken (g, JSV.common.ScriptToken.INTEGRALPLOTCOLOR);
 this.g2d.drawLine (g, x1, y0, x1, y1);
 this.setPlotColor (g, iColor);
 continue;
-}if (y1 == y2 && (y1 == this.yPixel0 || y1 == this.yPixel1)) continue;
-if (bsDraw != null && bsDraw.get (i) != plotOn) {
+}if (y1 == y2 && (y1 == this.yPixel0)) {
+continue;
+}if (bsDraw != null && bsDraw.get (i) != plotOn) {
 plotOn = bsDraw.get (i);
 if (!this.pd.isPrinting && this.pd.integralShiftMode != 0) this.setPlotColor (g, 0);
  else if (plotOn) this.setColorFromToken (g, JSV.common.ScriptToken.INTEGRALPLOTCOLOR);

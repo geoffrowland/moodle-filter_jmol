@@ -8,7 +8,8 @@ this.thisSet = null;
 this.isMolecular = false;
 this.rotationAxis = null;
 this.lcaoScale = null;
-this.isTranslucent = false;
+this.lcaoTranslucent = false;
+this.lcaoTranslucentLevel = 0;
 this.lcaoColorPos = null;
 this.lcaoColorNeg = null;
 this.isLonePair = false;
@@ -56,12 +57,12 @@ if (this.myColorPt++ == 0) this.lcaoColorNeg = this.lcaoColorPos;
 }if ("select" === propertyName) {
 this.thisSet = value;
 }if ("translucentLevel" === propertyName) {
-this.translucentLevel = (value).floatValue ();
+this.lcaoTranslucentLevel = (value).floatValue ();
 }if ("settranslucency" === propertyName) {
-this.isTranslucent = ((value).equals ("translucent"));
+this.lcaoTranslucent = ((value).equals ("translucent"));
 return;
 }if ("translucency" === propertyName) {
-this.isTranslucent = ((value).equals ("translucent"));
+this.lcaoTranslucent = ((value).equals ("translucent"));
 if (this.lcaoID == null) return;
 }if ("molecular" === propertyName) {
 this.isMolecular = true;
@@ -150,6 +151,7 @@ var isCpk = (this.thisType.equals ("cpk"));
 for (var i = this.meshCount; --i >= 0; ) if (this.meshes[i].thisID.indexOf (id) == 0) this.deleteMeshI (i);
 
 this.setPropI ("init", null, null);
+this.translucentLevel = this.lcaoTranslucentLevel;
 this.setPropI ("thisID", id, null);
 if (this.lcaoScale != null) this.setPropI ("scale", this.lcaoScale, null);
 if (isCpk) {
@@ -181,19 +183,19 @@ var colix = this.viewer.getModelSet ().getAtomColix (iAtom);
 if (J.util.C.isColixTranslucent (colix)) {
 this.setPropI ("translucentLevel", Float.$valueOf (J.util.C.getColixTranslucencyLevel (colix)), null);
 this.setPropI ("translucency", "translucent", null);
-}} else if (this.isTranslucent) for (var i = this.meshCount; --i >= 0; ) if (this.meshes[i].thisID.indexOf (id) == 0) this.meshes[i].setTranslucent (true, this.translucentLevel);
+}} else if (this.lcaoTranslucent) for (var i = this.meshCount; --i >= 0; ) if (this.meshes[i].thisID.indexOf (id) == 0) this.meshes[i].setTranslucent (true, this.translucentLevel);
 
 }, $fz.isPrivate = true, $fz), "~N");
 $_M(c$, "getID", 
 ($fz = function (id, i) {
-return (id != null ? id : (this.isLonePair || this.isRadical ? "lp_" : "lcao_") + (i + 1) + "_") + (this.thisType == null ? "" : JU.PT.simpleReplace (this.thisType, "-", (this.thisType.indexOf ("-p") == 0 ? "" : "_")));
+return (id != null ? id : (this.isLonePair || this.isRadical ? "lp_" : "lcao_") + (i + 1) + "_") + (this.thisType == null ? "" : JU.PT.rep (this.thisType, "-", (this.thisType.indexOf ("-p") == 0 ? "" : "_")));
 }, $fz.isPrivate = true, $fz), "~S,~N");
 $_M(c$, "getShapeState", 
 function () {
 var sb =  new JU.SB ();
 if (this.lcaoScale != null) J.shape.Shape.appendCmd (sb, "lcaoCartoon scale " + this.lcaoScale.floatValue ());
 if (this.lcaoColorNeg != null) J.shape.Shape.appendCmd (sb, "lcaoCartoon color " + J.util.Escape.escapeColor (this.lcaoColorNeg.intValue ()) + " " + J.util.Escape.escapeColor (this.lcaoColorPos.intValue ()));
-if (this.isTranslucent) J.shape.Shape.appendCmd (sb, "lcaoCartoon translucent " + this.translucentLevel);
+if (this.lcaoTranslucent) J.shape.Shape.appendCmd (sb, "lcaoCartoon translucent " + this.translucentLevel);
 for (var i = this.meshCount; --i >= 0; ) if (!this.meshes[i].visible) J.shape.Shape.appendCmd (sb, "lcaoCartoon ID " + this.meshes[i].thisID + " off");
 
 return Clazz.superCall (this, J.shapesurface.LcaoCartoon, "getShapeState", []) + sb.toString ();
@@ -203,7 +205,8 @@ function (shape) {
 var lc = shape;
 this.lcaoScale = lc.lcaoScale;
 this.lcaoColorNeg = lc.lcaoColorNeg;
-this.isTranslucent = lc.isTranslucent;
+this.lcaoTranslucent = lc.lcaoTranslucent;
+this.lcaoTranslucentLevel = lc.lcaoTranslucentLevel;
 Clazz.superCall (this, J.shapesurface.LcaoCartoon, "merge", [shape]);
 }, "J.shape.Shape");
 });

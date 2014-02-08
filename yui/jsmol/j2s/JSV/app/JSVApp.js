@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.app");
-Clazz.load (["JSV.api.JSVAppInterface", "$.PanelListener"], "JSV.app.JSVApp", ["java.lang.Boolean", "$.Double", "JU.List", "$.PT", "JSV.common.Coordinate", "$.JSVFileManager", "$.JSViewer", "$.PanelNode", "$.Parameters", "$.PeakPickEvent", "$.ScriptToken", "$.ScriptTokenizer", "$.SubSpecChangeEvent", "$.ZoomEvent", "JSV.source.FileReader", "JSV.util.JSVEscape", "J.util.Logger"], function () {
+Clazz.load (["JSV.api.JSVAppInterface", "$.PanelListener"], "JSV.app.JSVApp", ["java.lang.Boolean", "$.Double", "JU.List", "$.PT", "JSV.common.Coordinate", "$.JSVFileManager", "$.JSViewer", "$.PanelNode", "$.Parameters", "$.PeakPickEvent", "$.ScriptToken", "$.ScriptTokenizer", "$.SubSpecChangeEvent", "$.ZoomEvent", "JSV.source.FileReader", "J.util.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.appletFrame = null;
 this.fileCount = 0;
@@ -29,7 +29,7 @@ Clazz.makeConstructor (c$,
 function (appletFrame, isJS) {
 this.appletFrame = appletFrame;
 this.initViewer (isJS);
-this.init ();
+this.initParams (appletFrame.getParameter ("script"));
 }, "JSV.api.AppletFrame,~B");
 $_M(c$, "initViewer", 
 ($fz = function (isJS) {
@@ -118,7 +118,7 @@ return this.viewer.$export (type, n);
 }, "~S,~N");
 $_V(c$, "setFilePath", 
 function (tmpFilePath) {
-this.runScript ("load " + JSV.util.JSVEscape.eS (tmpFilePath));
+this.runScript ("load " + JU.PT.esc (tmpFilePath));
 }, "~S");
 $_V(c$, "setSpectrumNumber", 
 function (n) {
@@ -165,21 +165,19 @@ $_V(c$, "writeStatus",
 function (msg) {
 J.util.Logger.info (msg);
 }, "~S");
-$_M(c$, "init", 
-($fz = function () {
-this.initParams (this.appletFrame.getParameter ("script"));
-}, $fz.isPrivate = true, $fz));
 $_M(c$, "initParams", 
 function (params) {
 this.parseInitScript (params);
 this.newAppletPanel ();
 this.viewer.setPopupMenu (this.allowMenu, this.viewer.parameters.getBoolean (JSV.common.ScriptToken.ENABLEZOOM));
-this.runScriptNow (params);
+if (this.allowMenu) {
+this.viewer.closeSource (null);
+}this.runScriptNow (params);
 }, "~S");
 $_M(c$, "newAppletPanel", 
 ($fz = function () {
 J.util.Logger.info ("newAppletPanel");
-this.appletFrame.addNewPanel (this.viewer);
+this.appletFrame.createMainPanel (this.viewer);
 }, $fz.isPrivate = true, $fz));
 $_V(c$, "siSendPanelChange", 
 function (jsvp) {
@@ -206,7 +204,8 @@ function (width, height) {
 }, "~N,~N");
 $_V(c$, "siValidateAndRepaint", 
 function () {
-if (this.viewer.selectedPanel != null) this.viewer.selectedPanel.getPanelData ().taintedAll = true;
+var pd;
+if (this.viewer.selectedPanel != null && (pd = this.viewer.selectedPanel.getPanelData ()) != null) pd.taintedAll = true;
 this.appletFrame.validate ();
 this.repaint ();
 });
@@ -240,8 +239,7 @@ break;
 case JSV.common.ScriptToken.UNKNOWN:
 break;
 case JSV.common.ScriptToken.APPLETID:
-this.viewer.appletID = value;
-this.viewer.fullName = this.viewer.appletID + "__" + this.viewer.syncID + "__";
+this.viewer.fullName = this.viewer.appletID + "__" + (this.viewer.appletID = value) + "__";
 {
 if(typeof Jmol != "undefined") this.viewer.applet =
 Jmol._applets[value];
@@ -280,8 +278,7 @@ case JSV.common.ScriptToken.STARTINDEX:
 this.initialStartIndex = Integer.parseInt (value);
 break;
 case JSV.common.ScriptToken.SYNCID:
-this.viewer.syncID = value;
-this.viewer.fullName = this.viewer.appletID + "__" + this.viewer.syncID + "__";
+this.viewer.fullName = this.viewer.appletID + "__" + (this.viewer.syncID = value) + "__";
 break;
 }
 } catch (e) {
@@ -294,12 +291,16 @@ throw e;
 }, $fz.isPrivate = true, $fz), "~S");
 $_V(c$, "siOpenDataOrFile", 
 function (data, name, specs, url, firstSpec, lastSpec, isAppend) {
-var status = this.viewer.openDataOrFile (data, name, specs, url, firstSpec, lastSpec, isAppend);
-if (status == -1) return;
-if (status != 0) {
+switch (this.viewer.openDataOrFile (data, name, specs, url, firstSpec, lastSpec, isAppend)) {
+case 0:
+break;
+case -1:
+return;
+default:
 this.siSetSelectedPanel (null);
 return;
-}if (this.viewer.jsvpPopupMenu != null) this.viewer.jsvpPopupMenu.setCompoundMenu (this.viewer.panelNodes, this.allowCompoundMenu);
+}
+if (this.viewer.jsvpPopupMenu != null) this.viewer.jsvpPopupMenu.setCompoundMenu (this.viewer.panelNodes, this.allowCompoundMenu);
 J.util.Logger.info (this.appletFrame.getAppletInfo () + " File " + this.viewer.currentSource.getFilePath () + " Loaded Successfully");
 }, "~S,~S,JU.List,~S,~N,~N,~B");
 $_V(c$, "siProcessCommand", 
@@ -316,16 +317,19 @@ if (this.coordCallbackFunctionName == null && this.peakCallbackFunctionName == n
 var coord =  new JSV.common.Coordinate ();
 var actualCoord = (this.peakCallbackFunctionName == null ? null :  new JSV.common.Coordinate ());
 if (!this.viewer.selectedPanel.getPanelData ().getPickedCoordinates (coord, actualCoord)) return;
-var iSpec = this.viewer.viewPanel.getCurrentPanelIndex ();
+var iSpec = this.viewer.mainPanel.getCurrentPanelIndex ();
 if (actualCoord == null) this.appletFrame.callToJavaScript (this.coordCallbackFunctionName, [Double.$valueOf (coord.getXVal ()), Double.$valueOf (coord.getYVal ()), Integer.$valueOf (iSpec + 1)]);
  else this.appletFrame.callToJavaScript (this.peakCallbackFunctionName, [Double.$valueOf (coord.getXVal ()), Double.$valueOf (coord.getYVal ()), Double.$valueOf (actualCoord.getXVal ()), Double.$valueOf (actualCoord.getYVal ()), Integer.$valueOf (iSpec + 1)]);
 }, $fz.isPrivate = true, $fz));
 $_V(c$, "siSetSelectedPanel", 
 function (jsvp) {
-this.viewer.viewPanel.setSelectedPanel (jsvp, this.viewer.panelNodes);
+this.viewer.mainPanel.setSelectedPanel (this.viewer, jsvp, this.viewer.panelNodes);
 this.viewer.selectedPanel = jsvp;
 this.viewer.spectraTree.setSelectedPanel (this, jsvp);
-this.appletFrame.validate ();
+if (jsvp == null) {
+this.viewer.selectedPanel = jsvp = this.appletFrame.getJSVPanel (this.viewer, null, -1, -1);
+this.viewer.mainPanel.setSelectedPanel (this.viewer, jsvp, null);
+}this.appletFrame.validate ();
 if (jsvp != null) {
 jsvp.setEnabled (true);
 jsvp.setFocusable (true);
@@ -369,12 +373,12 @@ this.viewer.close (value);
 if (!fromScript) this.siValidateAndRepaint ();
 }, "~S");
 $_V(c$, "siExecLoad", 
-function (value) {
-this.viewer.load (value);
+function (value, script) {
+this.viewer.load (value, script);
 if (this.viewer.selectedPanel == null) return null;
 if (this.loadFileCallbackFunctionName != null) this.appletFrame.callToJavaScript (this.loadFileCallbackFunctionName, [this.viewer.appletID, value]);
 return null;
-}, "~S");
+}, "~S,~S");
 $_V(c$, "siExecHidden", 
 function (b) {
 }, "~B");
@@ -384,6 +388,7 @@ this.interfaceOverlaid = (value.equalsIgnoreCase ("single") || value.equalsIgnor
 }, "~S");
 $_V(c$, "siExecScriptComplete", 
 function (msg, isOK) {
+this.viewer.showMessage (msg);
 this.siValidateAndRepaint ();
 }, "~S,~B");
 $_V(c$, "siExecSetAutoIntegrate", 
@@ -432,7 +437,10 @@ return JSV.source.FileReader.createJDXSource (JSV.common.JSVFileManager.getBuffe
 }, "~S,~S,~N,~N");
 $_V(c$, "siGetNewJSVPanel2", 
 function (specs) {
-var jsvp = this.appletFrame.getJSVPanel (this.viewer, specs, this.initialStartIndex, this.initialEndIndex);
+if (specs == null) {
+this.initialEndIndex = this.initialStartIndex = -1;
+return this.appletFrame.getJSVPanel (this.viewer, null, -1, -1);
+}var jsvp = this.appletFrame.getJSVPanel (this.viewer, specs, this.initialStartIndex, this.initialEndIndex);
 this.initialEndIndex = this.initialStartIndex = -1;
 jsvp.getPanelData ().addListener (this);
 this.viewer.parameters.setFor (jsvp, null, true);
@@ -476,9 +484,6 @@ function (fileName, filePath) {
 $_V(c$, "siSetMenuEnables", 
 function (node, isSplit) {
 }, "JSV.common.PanelNode,~B");
-$_V(c$, "siSetRecentURL", 
-function (filePath) {
-}, "~S");
 $_V(c$, "siUpdateRecentMenus", 
 function (filePath) {
 }, "~S");

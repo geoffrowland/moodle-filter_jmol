@@ -64,9 +64,9 @@ var isRemove = (newStatusList.length > 0 && newStatusList.charAt (0) == '-');
 var isAdd = (newStatusList.length > 0 && newStatusList.charAt (0) == '+');
 var getList = false;
 if (isRemove) {
-this.statusList = JU.PT.simpleReplace (this.statusList, newStatusList.substring (1, newStatusList.length), "");
+this.statusList = JU.PT.rep (this.statusList, newStatusList.substring (1, newStatusList.length), "");
 } else {
-newStatusList = JU.PT.simpleReplace (newStatusList, "+", "");
+newStatusList = JU.PT.rep (newStatusList, "+", "");
 if (this.statusList.equals (newStatusList) || isAdd && this.statusList.indexOf (newStatusList) >= 0) {
 getList = true;
 } else {

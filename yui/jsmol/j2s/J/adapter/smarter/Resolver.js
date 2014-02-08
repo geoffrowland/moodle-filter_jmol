@@ -384,7 +384,7 @@ return false;
 }, $fz.isPrivate = true, $fz), "~A");
 Clazz.defineStatics (c$,
 "classBase", "J.adapter.readers.");
-c$.readerSets = c$.prototype.readerSets = ["cif.", ";Cif;", "molxyz.", ";Mol3D;Mol;Xyz;", "more.", ";BinaryDcd;Gromacs;Jcampdx;MdCrd;MdTop;Mol2;Pqr;P2n;TlsDataOnly;", "quantum.", ";Adf;Csf;Dgrid;GamessUK;GamessUS;Gaussian;GausianWfn;Jaguar;Molden;MopacGraphf;GenNBO;NWChem;Odyssey;Psi;Qchem;Spartan;SpartanSmol;WebMO;", "pdb.", ";Pdb;", "pymol.", ";PyMOL;", "simple.", ";Alchemy;Ampac;Cube;FoldingXyz;GhemicalMM;HyperChem;Jme;Mopac;MopacArchive;ZMatrix;JSON;", "xtal.", ";Abinit;Aims;Castep;Crystal;Dmol;Espresso;Gulp;Jana;Magres;Shelx;Siesta;VaspOutcar;VaspPoscar;Wien2k;Xcrysden;"];
+c$.readerSets = c$.prototype.readerSets = ["cif.", ";Cif;", "molxyz.", ";Mol3D;Mol;Xyz;", "more.", ";BinaryDcd;Gromacs;Jcampdx;MdCrd;MdTop;Mol2;TlsDataOnly;", "quantum.", ";Adf;Csf;Dgrid;GamessUK;GamessUS;Gaussian;GausianWfn;Jaguar;Molden;MopacGraphf;GenNBO;NWChem;Odyssey;Psi;Qchem;Spartan;SpartanSmol;WebMO;", "pdb.", ";Pdb;Pqr;P2n;", "pymol.", ";PyMOL;", "simple.", ";Alchemy;Ampac;Cube;FoldingXyz;GhemicalMM;HyperChem;Jme;Mopac;MopacArchive;ZMatrix;JSON;", "xtal.", ";Abinit;Aims;Castep;Crystal;Dmol;Espresso;Gulp;Jana;Magres;Shelx;Siesta;VaspOutcar;VaspPoscar;Wien2k;Xcrysden;"];
 Clazz.defineStatics (c$,
 "CML_NAMESPACE_URI", "http://www.xml-cml.org/schema",
 "SPECIAL_JME", 0,

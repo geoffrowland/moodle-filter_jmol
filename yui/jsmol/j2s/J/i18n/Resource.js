@@ -99,6 +99,6 @@ return (map.size () == 0 ? null :  new J.i18n.Resource (map, null));
 }, "~S");
 c$.fix = $_M(c$, "fix", 
 function (line) {
-return JU.PT.simpleReplace (line.substring (line.indexOf ("\"") + 1, line.lastIndexOf ("\"")), "\\n", "\n");
+return JU.PT.rep (line.substring (line.indexOf ("\"") + 1, line.lastIndexOf ("\"")), "\\n", "\n");
 }, "~S");
 });

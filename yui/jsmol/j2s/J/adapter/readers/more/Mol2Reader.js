@@ -67,7 +67,7 @@ return true;
 $_M(c$, "readAtoms", 
 ($fz = function (atomCount) {
 if (atomCount == 0) return;
-var i0 = this.atomSetCollection.getAtomCount ();
+var i0 = this.atomSetCollection.atomCount;
 for (var i = 0; i < atomCount; ++i) {
 var atom = this.atomSetCollection.addNewAtom ();
 var tokens = J.adapter.smarter.AtomSetCollectionReader.getTokensStr (this.readLine ());
@@ -88,23 +88,23 @@ if (tokens.length > 8) {
 atom.partialCharge = this.parseFloatStr (tokens[8]);
 if (atom.partialCharge == Clazz.floatToInt (atom.partialCharge)) atom.formalCharge = Clazz.floatToInt (atom.partialCharge);
 }}
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 var g3 = atoms[i0].group3;
 if (g3 == null) return;
 var isPDB = false;
-for (var i = this.atomSetCollection.getAtomCount (); --i >= i0; ) if (!g3.equals (atoms[this.atomSetCollection.getAtomCount () - 1].group3)) {
+for (var i = this.atomSetCollection.atomCount; --i >= i0; ) if (!g3.equals (atoms[this.atomSetCollection.atomCount - 1].group3)) {
 isPDB = true;
 break;
 }
 if (isPDB) {
 isPDB = false;
-for (var i = this.atomSetCollection.getAtomCount (); --i >= i0; ) {
+for (var i = this.atomSetCollection.atomCount; --i >= i0; ) {
 var atom = atoms[i];
 if (atom.group3.length <= 3 && J.api.JmolAdapter.lookupGroupID (atom.group3) >= 0) {
 isPDB = this.isPDB = true;
 break;
 }}
-}for (var i = this.atomSetCollection.getAtomCount (); --i >= i0; ) if (isPDB) atoms[i].isHetero = J.api.JmolAdapter.isHetero (atoms[i].group3);
+}for (var i = this.atomSetCollection.atomCount; --i >= i0; ) if (isPDB) atoms[i].isHetero = J.api.JmolAdapter.isHetero (atoms[i].group3);
  else atoms[i].group3 = null;
 
 }, $fz.isPrivate = true, $fz), "~N");
@@ -140,7 +140,7 @@ this.setSpaceGroupName (name);
 if (this.ignoreFileUnitCell) return;
 for (var i = 0; i < 6; i++) this.setUnitCellItem (i, this.parseFloatStr (tokens[i]));
 
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 for (var i = 0; i < this.atomCount; ++i) this.setAtomCoord (atoms[this.nAtoms + i]);
 
 }, $fz.isPrivate = true, $fz));

@@ -17,15 +17,4 @@ p.y = y;
 p.z = z;
 return p;
 }, "~N,~N,~N");
-$_M(c$, "distanceSquared", 
-function (p1) {
-var dx = this.x - p1.x;
-var dy = this.y - p1.y;
-var dz = this.z - p1.z;
-return (dx * dx + dy * dy + dz * dz);
-}, "JU.T3");
-$_M(c$, "distance", 
-function (p1) {
-return Math.sqrt (this.distanceSquared (p1));
-}, "JU.T3");
 });

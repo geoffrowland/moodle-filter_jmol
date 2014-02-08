@@ -140,10 +140,10 @@ break;
 case 2:
 this.volumetricVectors[2].set (0, 0, d);
 this.volumetricOrigin.z = min;
-if (this.isEccentric) this.eccentricityMatrix.transform (this.volumetricOrigin);
+if (this.isEccentric) this.eccentricityMatrix.rotate (this.volumetricOrigin);
 if (this.center != null && this.center.x != 3.4028235E38) this.volumetricOrigin.add (this.center);
 }
-if (this.isEccentric) this.eccentricityMatrix.transform (this.volumetricVectors[index]);
+if (this.isEccentric) this.eccentricityMatrix.rotate (this.volumetricVectors[index]);
 return this.voxelCounts[index];
 }, "~N,~N,~N,~N,~N,~N");
 $_V(c$, "readSurfaceData", 

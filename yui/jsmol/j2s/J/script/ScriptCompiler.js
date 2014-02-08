@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.script");
-Clazz.load (["J.script.ScriptCompilationTokenParser", "JU.List"], "J.script.ScriptCompiler", ["java.lang.Boolean", "$.Character", "$.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.M3", "$.M4", "$.PT", "$.SB", "J.api.Interface", "J.i18n.GT", "J.io.JmolBinary", "J.modelset.BondSet", "$.Group", "J.script.ContextToken", "$.SV", "$.ScriptContext", "$.ScriptEvaluator", "$.ScriptFlowContext", "$.ScriptFunction", "$.T", "J.util.Escape", "$.Logger", "$.Txt", "J.viewer.Viewer"], function () {
+Clazz.load (["J.script.ScriptCompilationTokenParser", "JU.List"], "J.script.ScriptCompiler", ["java.lang.Boolean", "$.Character", "$.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.M34", "$.M4", "$.PT", "$.SB", "J.api.Interface", "J.i18n.GT", "J.io.JmolBinary", "J.modelset.BondSet", "$.Group", "J.script.ContextToken", "$.SV", "$.ScriptContext", "$.ScriptEvaluator", "$.ScriptFlowContext", "$.ScriptFunction", "$.T", "J.util.Escape", "$.Logger", "$.Txt", "J.viewer.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.filename = null;
 this.isSilent = false;
@@ -101,7 +101,7 @@ this.thisFunction.addVariable (ident, false);
 }}, $fz.isPrivate = true, $fz), "~S");
 c$.addContextVariable = $_M(c$, "addContextVariable", 
 function (contextVariables, name) {
-contextVariables.put (name, J.script.SV.newVariable (4, "").setName (name));
+contextVariables.put (name, J.script.SV.newS ("").setName (name));
 }, "java.util.Map,~S");
 $_M(c$, "isContextVariable", 
 ($fz = function (ident) {
@@ -126,7 +126,7 @@ return J.io.JmolBinary.getEmbeddedScript (script);
 }, $fz.isPrivate = true, $fz), "~S");
 $_M(c$, "addTokenToPrefix", 
 ($fz = function (token) {
-if (this.logMessages) J.util.Logger.debug ("addTokenToPrefix" + token);
+if (this.logMessages) J.util.Logger.info ("addTokenToPrefix" + token);
 this.ltoken.addLast (token);
 if (token.tok != 0) this.lastToken = token;
 }, $fz.isPrivate = true, $fz), "J.script.T");
@@ -383,18 +383,10 @@ this.isComment = true;
 this.addTokenToPrefix (J.script.T.o (0, this.comment));
 }} else if (this.setBraceCount > 0 && this.endOfLine && this.ichToken < this.cchScript) {
 return 2;
-}if (this.tokCommand == 135271429 && this.checkImpliedScriptCmd) {
-var s = (this.nTokens == 2 ? this.lastToken.value.toString ().toUpperCase () : null);
-if (this.nTokens > 2 && !(this.tokAt (2) == 269484048 && this.ltoken.get (1).value.toString ().endsWith (".spt")) || s != null && (s.endsWith (".SORT") || s.endsWith (".REVERSE") || s.indexOf (".SORT(") >= 0 || s.indexOf (".REVERSE(") >= 0)) {
-this.ichToken = this.ichCurrentCommand;
-this.nTokens = 0;
-this.ltoken.clear ();
-this.cchToken = 0;
-this.tokCommand = 0;
-return 2;
-}}if (this.isNewSet && this.nTokens > 2 && this.tokAt (2) == 1048584 && (this.tokAt (3) == 1276117010 || this.tokAt (3) == 1141899269)) {
+}if (this.wasImpliedScript ()) return 2;
+if (this.isNewSet && this.nTokens > 2 && this.tokAt (2) == 1048584 && (this.tokAt (3) == 1276117011 || this.tokAt (3) == 1141899269 || this.tokAt (3) == 1276383749 || this.tokAt (3) == 1276383249)) {
 this.ltoken.set (0, J.script.T.tokenSet);
-this.ltoken.add (1, this.ltoken.get (1));
+this.ltoken.add (1, this.tokAt (3) == 1276383249 ? J.script.T.tokenAll : this.ltoken.get (1));
 } else if (this.tokInitialPlusPlus != 0) {
 if (!this.isNewSet) this.checkNewSetCommand ();
 this.tokenizePlusPlus (this.tokInitialPlusPlus, true);
@@ -485,6 +477,19 @@ this.ichToken = this.cchScript;
 return 0;
 }return 0;
 }, $fz.isPrivate = true, $fz), "~N,~B");
+$_M(c$, "wasImpliedScript", 
+($fz = function () {
+if (this.nTokens >= 2 && this.tokCommand == 135271429 && this.checkImpliedScriptCmd) {
+var s = (this.nTokens == 2 ? this.lastToken.value.toString ().toUpperCase () : null);
+if (this.nTokens > 2 ? !(this.tokAt (2) == 269484048 && this.ltoken.get (1).value.toString ().endsWith (".spt")) : s.endsWith (".SORT") || s.endsWith (".REVERSE") || s.endsWith (".POP") || s.indexOf (".SORT(") >= 0 || s.indexOf (".REVERSE(") >= 0 || s.indexOf (".POP(") >= 0 || s.indexOf (".PUSH(") >= 0) {
+this.ichToken = this.ichCurrentCommand;
+this.nTokens = 0;
+this.ltoken.clear ();
+this.cchToken = 0;
+this.tokCommand = 0;
+return true;
+}}return false;
+}, $fz.isPrivate = true, $fz));
 $_M(c$, "compileCommand", 
 ($fz = function () {
 switch (this.ltoken.size ()) {
@@ -633,7 +638,7 @@ return 2;
 }}}switch (this.tokCommand) {
 case 135271426:
 case 135271429:
-case 135270410:
+case 1276121098:
 if (this.script.charAt (this.ichToken) == '@') {
 this.iHaveQuotedString = true;
 return 0;
@@ -668,10 +673,15 @@ this.addTokenToPrefix (J.script.T.o (10, bs));
 return 2;
 }}if (!this.iHaveQuotedString && this.lookingAtImpliedString (false, this.tokCommand == 135271426, this.nTokens > 1 || this.tokCommand != 135271429)) {
 var str = this.script.substring (this.ichToken, this.ichToken + this.cchToken);
-if (this.tokCommand == 135271429 && str.startsWith ("javascript:")) {
+if (this.tokCommand == 135271429) {
+if (str.startsWith ("javascript:")) {
 this.lookingAtImpliedString (true, true, true);
 str = this.script.substring (this.ichToken, this.ichToken + this.cchToken);
-}this.iHaveQuotedString = true;
+} else if (str.toUpperCase ().indexOf (".PUSH(") >= 0) {
+this.cchToken = 0;
+this.iHaveQuotedString = true;
+return 2;
+}}this.iHaveQuotedString = true;
 this.addTokenToPrefix (J.script.T.o (4, str));
 return 2;
 }break;
@@ -683,7 +693,7 @@ if (iident == -2147483648 || Math.abs (iident) < 1000) this.addTokenToPrefix (J.
  else this.addTokenToPrefix (J.script.T.i (iident));
 return 2;
 }break;
-case 135270421:
+case 135270422:
 if (this.nTokens == 2 && this.lastToken.tok == 4115) this.iHaveQuotedString = true;
 if (!this.iHaveQuotedString) {
 if (this.script.charAt (this.ichToken) == '@') {
@@ -755,8 +765,8 @@ this.addTokenToPrefix (J.script.T.o (10, isBondOrMatrix ?  new J.modelset.BondSe
 return 2;
 }if (isBondOrMatrix) {
 var m = this.lookingAtMatrix ();
-if (Clazz.instanceOf (m, JU.M3) || Clazz.instanceOf (m, JU.M4)) {
-this.addTokenToPrefix (J.script.T.o ((Clazz.instanceOf (m, JU.M3) ? 11 : 12), m));
+if (Clazz.instanceOf (m, JU.M34)) {
+this.addTokenToPrefix (J.script.T.o ((Clazz.instanceOf (m, JU.M4) ? 12 : 11), m));
 return 2;
 }}}return 0;
 }, $fz.isPrivate = true, $fz));
@@ -876,12 +886,13 @@ this.ichBrace = this.ichToken;
 if (this.nTokens == 0) {
 this.braceCount = this.parenCount = 1;
 } else {
+if (!this.wasImpliedScript ()) {
 this.braceCount = this.parenCount = this.nSemiSkip = 0;
 if (this.theToken.tok != 102411 && this.theToken.tok != 102413) this.vBraces.addLast (this.theToken);
 this.iBrace++;
 this.isEndOfCommand = true;
 this.ichEnd = this.ichToken;
-return 2;
+}return 2;
 }}this.braceCount--;
 case 269484049:
 this.parenCount--;
@@ -1208,7 +1219,7 @@ var token = this.vBraces.remove (--this.iBrace);
 if (this.theTok == 1048586) {
 this.braceCount--;
 this.parenCount--;
-}if (token.tok == 266280) {
+}if (token.tok == 1276383749) {
 this.vPush.remove (--this.pushCount);
 this.addTokenToPrefix (this.setCommand (J.script.ContextToken.newContext (true)));
 this.isEndOfCommand = true;

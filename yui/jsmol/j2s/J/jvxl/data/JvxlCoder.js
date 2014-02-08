@@ -91,7 +91,7 @@ c$.jvxlSetCompressionRatio = $_M(c$, "jvxlSetCompressionRatio",
 ($fz = function (data, jvxlData, len) {
 var s = data.toString ();
 var r = Clazz.floatToInt (jvxlData.nBytes > 0 ? (jvxlData.nBytes) / len : ((jvxlData.nPointsX * jvxlData.nPointsY * jvxlData.nPointsZ * 13)) / len);
-return JU.PT.simpleReplace (s, "\"not calculated\"", (r > 0 ? "\"" + r + ":1\"" : "\"?\""));
+return JU.PT.rep (s, "\"not calculated\"", (r > 0 ? "\"" + r + ":1\"" : "\"?\""));
 }, $fz.isPrivate = true, $fz), "JU.SB,J.jvxl.data.JvxlData,~N");
 c$.appendXmlEdgeData = $_M(c$, "appendXmlEdgeData", 
 ($fz = function (sb, jvxlData) {
@@ -265,10 +265,8 @@ v.addLast (J.jvxl.data.JvxlCoder.getContourPoint (vertices, i3, i4, f2));
 c$.getContourPoint = $_M(c$, "getContourPoint", 
 ($fz = function (vertices, i, j, f) {
 var pt =  new JU.P3 ();
-pt.setT (vertices[j]);
-pt.sub (vertices[i]);
-pt.scale (f);
-pt.add (vertices[i]);
+pt.sub2 (vertices[j], vertices[i]);
+pt.scaleAdd2 (f, pt, vertices[i]);
 return pt;
 }, $fz.isPrivate = true, $fz), "~A,~N,~N,~N");
 c$.appendContourTriangleIntersection = $_M(c$, "appendContourTriangleIntersection", 

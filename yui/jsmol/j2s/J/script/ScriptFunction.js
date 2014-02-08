@@ -44,10 +44,10 @@ var nParams = (params == null ? 0 : params.size ());
 for (var i = this.names.size (); --i >= 0; ) {
 var name = this.names.get (i).toLowerCase ();
 var $var = (i < this.nParameters && i < nParams ? params.get (i) : null);
-if ($var != null && $var.tok != 7) $var = J.script.SV.newScriptVariableToken ($var);
-contextVariables.put (name, ($var == null ? J.script.SV.newVariable (4, "").setName (name) : $var));
+if ($var != null && $var.tok != 7) $var = J.script.SV.newT ($var);
+contextVariables.put (name, ($var == null ? J.script.SV.newS ("").setName (name) : $var));
 }
-contextVariables.put ("_retval", J.script.SV.newScriptVariableInt (this.tok == 364558 ? 2147483647 : 0));
+contextVariables.put ("_retval", J.script.SV.newI (this.tok == 364558 ? 2147483647 : 0));
 }, "java.util.Map,JU.List");
 $_M(c$, "unsetVariables", 
 function (contextVariables, params) {

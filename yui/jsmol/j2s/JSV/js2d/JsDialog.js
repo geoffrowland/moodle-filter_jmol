@@ -69,6 +69,7 @@ return null;
 cb.setSelected (isSelected);
 cb.setText (title);
 cb.setName (this.registryKey + "/" + name);
+cb.addActionListener (this.manager);
 var insets =  new javajs.swing.Insets (0, 20 * level, 2, 2);
 this.thisPanel.add (cb,  new javajs.swing.GridBagConstraints (0, this.iRow++, 1, 1, 0.0, 0.0, 17, 0, insets, 0, 0));
 return cb;

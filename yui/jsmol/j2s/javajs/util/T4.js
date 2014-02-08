@@ -1,12 +1,12 @@
 Clazz.declarePackage ("JU");
-Clazz.load (null, "JU.T4", ["JU.T3"], function () {
+Clazz.load (["javajs.api.JSONEncodable"], "JU.T4", ["JU.T3"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.x = 0;
 this.y = 0;
 this.z = 0;
 this.w = 0;
 Clazz.instantialize (this, arguments);
-}, JU, "T4", null, java.io.Serializable);
+}, JU, "T4", null, [java.io.Serializable, javajs.api.JSONEncodable]);
 Clazz.makeConstructor (c$, 
 function () {
 });
@@ -37,5 +37,9 @@ return (this.x == t.x && this.y == t.y && this.z == t.z && this.w == t.w);
 $_V(c$, "toString", 
 function () {
 return "(" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + ")";
+});
+$_V(c$, "toJSON", 
+function () {
+return "[" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + "]";
 });
 });

@@ -58,8 +58,7 @@ var axis = JU.V3.newV (this.axisUnitVector);
 axis.scale (this.axisB.distance (this.axisA) / this.monomerCount);
 for (var i = 1; i < this.monomerCount; i++) {
 var point = this.segments[i] =  new JU.P3 ();
-point.setT (this.segments[i - 1]);
-point.add (axis);
+point.add2 (this.segments[i - 1], axis);
 }
 });
 $_M(c$, "lowerNeighborIsHelixOrSheet", 

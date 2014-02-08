@@ -77,9 +77,7 @@ throw e;
 }
 }if (Clazz.instanceOf (this.atomSetCollection, String)) return;
 if (!this.isAppend && !this.viewer.displayLoadErrors) this.viewer.zap (false, true, false);
-this.fm.fullPathName = this.fullPathNameIn;
-this.fm.nameAsGiven = this.nameAsGivenIn;
-this.fm.fileName = this.fileNameIn;
+this.fm.setFileInfo ([this.fullPathNameIn, this.nameAsGivenIn, this.fileNameIn]);
 });
 $_M(c$, "getAtomSetCollection", 
 function () {

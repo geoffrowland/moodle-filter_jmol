@@ -27,7 +27,7 @@ return this.readVerticesPM ();
 $_V(c$, "readPolygons", 
 function () {
 this.br.close ();
-this.fileName = JU.PT.simpleReplace (this.fileName, ".vert", ".face");
+this.fileName = JU.PT.rep (this.fileName, ".vert", ".face");
 J.util.Logger.info ("reading from file " + this.fileName);
 try {
 this.br = J.io.JmolBinary.getBufferedReader (this.sg.getAtomDataServer ().getBufferedInputStream (this.fileName), null);

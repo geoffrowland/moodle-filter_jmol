@@ -12,8 +12,8 @@ Clazz.makeConstructor (c$,
 function (atomSetCollection) {
 Clazz.superConstructor (this, J.adapter.smarter.BondIterator, []);
 this.bsAtoms = atomSetCollection.bsAtoms;
-this.bonds = atomSetCollection.getBonds ();
-this.bondCount = atomSetCollection.getBondCount ();
+this.bonds = atomSetCollection.bonds;
+this.bondCount = atomSetCollection.bondCount;
 this.ibond = 0;
 }, "J.adapter.smarter.AtomSetCollection");
 $_V(c$, "hasNext", 

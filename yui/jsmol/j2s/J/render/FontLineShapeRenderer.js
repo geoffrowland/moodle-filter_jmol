@@ -4,8 +4,6 @@ c$ = Clazz.decorateAsClass (function () {
 this.imageFontScaling = 0;
 this.atomA = null;
 this.atomB = null;
-this.atomC = null;
-this.atomD = null;
 this.font3d = null;
 this.pt0i = null;
 this.pt1i = null;
@@ -66,12 +64,12 @@ pt1.set (Clazz.doubleToInt (Math.floor (p1.x)), Clazz.doubleToInt (Math.floor (p
 if (diameter < 0) this.g3d.drawDottedLine (pt0, pt1);
  else this.g3d.fillCylinder (this.endcap, diameter, pt0, pt1);
 if (!drawTicks || this.tickInfo == null) return;
-this.atomA.screenX = pt0.x;
-this.atomA.screenY = pt0.y;
-this.atomA.screenZ = pt0.z;
-this.atomB.screenX = pt1.x;
-this.atomB.screenY = pt1.y;
-this.atomB.screenZ = pt1.z;
+this.atomA.sX = pt0.x;
+this.atomA.sY = pt0.y;
+this.atomA.sZ = pt0.z;
+this.atomB.sX = pt1.x;
+this.atomB.sY = pt1.y;
+this.atomB.sZ = pt1.z;
 this.drawTicks (this.atomA, this.atomB, diameter, true);
 }, "JU.P3,JU.P3,~N,JU.P3i,JU.P3i,~B");
 $_M(c$, "drawTicks", 
@@ -85,13 +83,12 @@ $_M(c$, "drawTicks2",
 ($fz = function (ptA, ptB, dx, length, diameter, formats) {
 if (dx == 0) return;
 if (this.g3d.isAntialiased ()) length *= 2;
-this.vectorT2.set (ptB.screenX, ptB.screenY, 0);
-this.vectorT.set (ptA.screenX, ptA.screenY, 0);
+this.vectorT2.set (ptB.sX, ptB.sY, 0);
+this.vectorT.set (ptA.sX, ptA.sY, 0);
 this.vectorT2.sub (this.vectorT);
 if (this.vectorT2.length () < 50) return;
 var signFactor = this.tickInfo.signFactor;
-this.vectorT.setT (ptB);
-this.vectorT.sub (ptA);
+this.vectorT.sub2 (ptB, ptA);
 var d0 = this.vectorT.length ();
 if (this.tickInfo.scale != null) {
 if (Float.isNaN (this.tickInfo.scale.x)) {
@@ -103,12 +100,12 @@ this.vectorT.set (this.vectorT.x * this.tickInfo.scale.x, this.vectorT.y * this.
 if (d < dx) return;
 var f = dx / d * d0 / d;
 this.vectorT.scale (f);
-var dz = (ptB.screenZ - ptA.screenZ) / (d / dx);
+var dz = (ptB.sZ - ptA.sZ) / (d / dx);
 d += this.tickInfo.first;
 var p = (Clazz.doubleToInt (Math.floor (this.tickInfo.first / dx))) * dx - this.tickInfo.first;
 this.pointT.scaleAdd2 (p / dx, this.vectorT, ptA);
 p += this.tickInfo.first;
-var z = ptA.screenZ;
+var z = ptA.sZ;
 if (diameter < 0) diameter = 1;
 this.vectorT2.set (-this.vectorT2.y, this.vectorT2.x, 0);
 this.vectorT2.scale (length / this.vectorT2.length ());
@@ -116,9 +113,7 @@ var ptRef = this.tickInfo.reference;
 if (ptRef == null) {
 this.pointT3.setT (this.viewer.getBoundBoxCenter ());
 if (this.viewer.getAxesMode () === J.constant.EnumAxesMode.BOUNDBOX) {
-this.pointT3.x += 1.0;
-this.pointT3.y += 1.0;
-this.pointT3.z += 1.0;
+this.pointT3.add3 (1, 1, 1);
 }} else {
 this.pointT3.setT (ptRef);
 }this.viewer.transformPtScr (this.pointT3, this.pt2i);

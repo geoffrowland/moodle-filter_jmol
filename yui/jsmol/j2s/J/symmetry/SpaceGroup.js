@@ -2,6 +2,7 @@ Clazz.declarePackage ("J.symmetry");
 Clazz.load (["java.util.Hashtable"], "J.symmetry.SpaceGroup", ["java.lang.Character", "java.util.Arrays", "JU.AU", "$.List", "$.M4", "$.P3", "$.PT", "$.SB", "J.symmetry.HallInfo", "$.HallTranslation", "$.SymmetryOperation", "J.util.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.index = 0;
+this.isSSG = false;
 this.name = "unknown!";
 this.hallSymbol = null;
 this.hmSymbol = null;
@@ -24,7 +25,7 @@ this.finalOperations = null;
 this.operationCount = 0;
 this.latticeOp = -1;
 this.xyzList = null;
-this.modulationDimension = 0;
+this.modDim = 0;
 this.doNormalize = true;
 this.isBio = false;
 this.operationList = null;
@@ -43,7 +44,7 @@ Clazz.makeConstructor (c$,
 this.index = ++J.symmetry.SpaceGroup.sgIndex;
 if (!doInit) return;
 if (cifLine == null) {
-this.addSymmetry ("x,y,z", 0);
+this.addSymmetry ("x,y,z", 0, false);
 } else {
 this.buildSpaceGroup (cifLine);
 }}, $fz.isPrivate = true, $fz), "~S,~B");
@@ -78,11 +79,11 @@ sg.addSymmetrySM (xyz, operation);
 return sg;
 }, $fz.isPrivate = true, $fz), "~S,JU.List");
 $_M(c$, "addSymmetry", 
-function (xyz, opId) {
+function (xyz, opId, allowScaling) {
 xyz = xyz.toLowerCase ();
 if (xyz.indexOf ("[[") < 0 && xyz.indexOf ("x4") < 0 && (xyz.indexOf ("x") < 0 || xyz.indexOf ("y") < 0 || xyz.indexOf ("z") < 0)) return -1;
-return this.addOperation (xyz, opId);
-}, "~S,~N");
+return this.addOperation (xyz, opId, allowScaling);
+}, "~S,~N,~B");
 $_M(c$, "setFinalOperations", 
 function (atoms, atomIndex, count, doNormalize) {
 if (this.hallInfo == null && this.latticeParameter != 0) {
@@ -90,7 +91,7 @@ var h =  new J.symmetry.HallInfo (J.symmetry.HallTranslation.getHallLatticeEquiv
 this.generateAllOperators (h);
 }this.finalOperations = null;
 this.isBio = (this.name.indexOf ("bio") >= 0);
-if (this.index >= J.symmetry.SpaceGroup.getSpaceGroups ().length && !this.isBio) {
+if (this.index >= J.symmetry.SpaceGroup.getSpaceGroups ().length && !this.isBio && this.name.indexOf ("SSG:") < 0 && this.name.indexOf ("[subsystem") < 0) {
 var sg = this.getDerivedSpaceGroup ();
 if (sg != null) this.name = sg.getName ();
 }this.finalOperations =  new Array (this.operationCount);
@@ -98,11 +99,11 @@ if (doNormalize && count > 0 && atoms != null) {
 this.finalOperations[0] =  new J.symmetry.SymmetryOperation (this.operations[0], atoms, atomIndex, count, true);
 var atom = atoms[atomIndex];
 var c = JU.P3.newP (atom);
-this.finalOperations[0].transform (c);
+this.finalOperations[0].rotTrans (c);
 if (c.distance (atom) > 0.0001) for (var i = 0; i < count; i++) {
 atom = atoms[atomIndex + i];
 c.setT (atom);
-this.finalOperations[0].transform (c);
+this.finalOperations[0].rotTrans (c);
 atom.setT (c);
 }
 }for (var i = 0; i < this.operationCount; i++) {
@@ -119,7 +120,7 @@ return this.finalOperations[i];
 }, "~N");
 $_M(c$, "getXyz", 
 function (i, doNormalize) {
-return this.finalOperations[i].getXyz (doNormalize);
+return (this.finalOperations == null ? this.operations[i].getXyz (doNormalize) : this.finalOperations[i].getXyz (doNormalize));
 }, "~N,~B");
 $_M(c$, "newPoint", 
 function (i, atom1, atom2, transX, transY, transZ) {
@@ -189,7 +190,7 @@ if (sgDerived != null) return sgDerived;
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "getDerivedSpaceGroup", 
 function () {
-if (this.index >= 0 && this.index < J.symmetry.SpaceGroup.spaceGroupDefinitions.length) return this;
+if (this.index >= 0 && this.index < J.symmetry.SpaceGroup.spaceGroupDefinitions.length || this.modDim > 0) return this;
 if (this.finalOperations != null) this.setFinalOperations (null, 0, 0, false);
 var s = this.getCanonicalSeitzList ();
 return J.symmetry.SpaceGroup.findSpaceGroup (s);
@@ -257,43 +258,44 @@ sg.generateOperatorsFromXyzInfo (name);
 return sg;
 }, $fz.isPrivate = true, $fz), "~S");
 $_M(c$, "addOperation", 
-($fz = function (xyz0, opId) {
+($fz = function (xyz0, opId, allowScaling) {
 if (xyz0 == null || xyz0.length < 3) {
 this.xyzList =  new java.util.Hashtable ();
 return -1;
 }var isSpecial = (xyz0.charAt (0) == '=');
 if (isSpecial) xyz0 = xyz0.substring (1);
 if (this.xyzList.containsKey (xyz0)) return this.xyzList.get (xyz0).intValue ();
-if (xyz0.startsWith ("x1,x2,x3,x4") && this.modulationDimension == 0) {
+if (xyz0.startsWith ("x1,x2,x3,x4") && this.modDim == 0) {
 this.xyzList.clear ();
 this.operationCount = 0;
-this.modulationDimension = JU.PT.parseInt (xyz0.substring (xyz0.lastIndexOf ("x") + 1)) - 3;
+this.modDim = JU.PT.parseInt (xyz0.substring (xyz0.lastIndexOf ("x") + 1)) - 3;
 }var op =  new J.symmetry.SymmetryOperation (null, null, 0, opId, this.doNormalize);
-if (!op.setMatrixFromXYZ (xyz0, this.modulationDimension)) {
+if (!op.setMatrixFromXYZ (xyz0, this.modDim, allowScaling)) {
 J.util.Logger.error ("couldn't interpret symmetry operation: " + xyz0);
 return -1;
 }return this.addOp (op, xyz0, isSpecial);
-}, $fz.isPrivate = true, $fz), "~S,~N");
+}, $fz.isPrivate = true, $fz), "~S,~N,~B");
 $_M(c$, "addOp", 
 ($fz = function (op, xyz0, isSpecial) {
 var xyz = op.xyz;
 if (!isSpecial) {
 if (this.xyzList.containsKey (xyz)) return this.xyzList.get (xyz).intValue ();
-if (this.latticeOp < 0 && this.xyzList.containsKey (JU.PT.simpleReplace (JU.PT.simpleReplace (xyz, "+1/2", ""), "+1/2", ""))) this.latticeOp = this.operationCount;
+if (this.latticeOp < 0 && this.xyzList.containsKey (JU.PT.rep (JU.PT.rep (xyz, "+1/2", ""), "+1/2", ""))) this.latticeOp = this.operationCount;
 this.xyzList.put (xyz, Integer.$valueOf (this.operationCount));
 }if (xyz != null && !xyz.equals (xyz0)) this.xyzList.put (xyz0, Integer.$valueOf (this.operationCount));
 if (this.operations == null) this.operations =  new Array (4);
 if (this.operationCount == this.operations.length) this.operations = JU.AU.arrayCopyObject (this.operations, this.operationCount * 2);
 this.operations[this.operationCount++] = op;
+op.index = this.operationCount;
 if (J.util.Logger.debugging) J.util.Logger.debug ("\naddOperation " + this.operationCount + op.dumpInfo ());
 return this.operationCount - 1;
 }, $fz.isPrivate = true, $fz), "J.symmetry.SymmetryOperation,~S,~B");
 $_M(c$, "generateOperatorsFromXyzInfo", 
 ($fz = function (xyzInfo) {
-this.addOperation (null, 0);
-this.addSymmetry ("x,y,z", 0);
+this.addOperation (null, 0, false);
+this.addSymmetry ("x,y,z", 0, false);
 var terms = JU.PT.split (xyzInfo.toLowerCase (), ";");
-for (var i = 0; i < terms.length; i++) this.addSymmetry (terms[i], 0);
+for (var i = 0; i < terms.length; i++) this.addSymmetry (terms[i], 0, false);
 
 }, $fz.isPrivate = true, $fz), "~S");
 $_M(c$, "generateAllOperators", 
@@ -304,21 +306,21 @@ if (this.operationCount > 0) return;
 this.operations =  new Array (4);
 if (this.hallInfo == null || this.hallInfo.nRotations == 0) h = this.hallInfo =  new J.symmetry.HallInfo (this.hallSymbol);
 this.setLattice (this.hallInfo.latticeCode, this.hallInfo.isCentrosymmetric);
-this.addOperation (null, 0);
-this.addSymmetry ("x,y,z", 0);
+this.addOperation (null, 0, false);
+this.addSymmetry ("x,y,z", 0, false);
 }var mat1 =  new JU.M4 ();
 var operation =  new JU.M4 ();
 var newOps =  new Array (7);
 for (var i = 0; i < 7; i++) newOps[i] =  new JU.M4 ();
 
 for (var i = 0; i < h.nRotations; i++) {
-mat1.setM (h.rotationTerms[i].seitzMatrix12ths);
+mat1.setM4 (h.rotationTerms[i].seitzMatrix12ths);
 var nRot = h.rotationTerms[i].order;
 newOps[0].setIdentity ();
 var nOps = this.operationCount;
 for (var j = 1; j <= nRot; j++) {
 newOps[j].mul2 (mat1, newOps[0]);
-newOps[0].setM (newOps[j]);
+newOps[0].setM4 (newOps[j]);
 for (var k = 0; k < nOps; k++) {
 operation.mul2 (newOps[j], this.operations[k]);
 J.symmetry.SymmetryOperation.normalizeTranslation (operation);
@@ -330,10 +332,10 @@ this.addSymmetrySM (xyz, operation);
 }, $fz.isPrivate = true, $fz), "J.symmetry.HallInfo");
 $_M(c$, "addSymmetrySM", 
 function (xyz, operation) {
-var iop = this.addOperation (xyz, 0);
+var iop = this.addOperation (xyz, 0, false);
 if (iop >= 0) {
 var symmetryOperation = this.operations[iop];
-symmetryOperation.setM (operation);
+symmetryOperation.setM4 (operation);
 }return iop;
 }, "~S,JU.M4");
 c$.determineSpaceGroupN = $_M(c$, "determineSpaceGroupN", 
@@ -472,9 +474,9 @@ this.hmSymbolExt = (parts.length == 1 ? "" : parts[1]);
 var pt = this.hmSymbol.indexOf (" -3");
 if (pt >= 1) if ("admn".indexOf (this.hmSymbol.charAt (pt - 1)) >= 0) {
 this.hmSymbolAlternative = (this.hmSymbol.substring (0, pt) + " 3" + this.hmSymbol.substring (pt + 3)).toLowerCase ();
-}this.hmSymbolAbbr = JU.PT.simpleReplace (this.hmSymbol, " ", "");
-this.hmSymbolAbbrShort = JU.PT.simpleReplace (this.hmSymbol, " 1", "");
-this.hmSymbolAbbrShort = JU.PT.simpleReplace (this.hmSymbolAbbrShort, " ", "");
+}this.hmSymbolAbbr = JU.PT.rep (this.hmSymbol, " ", "");
+this.hmSymbolAbbrShort = JU.PT.rep (this.hmSymbol, " 1", "");
+this.hmSymbolAbbrShort = JU.PT.rep (this.hmSymbolAbbrShort, " ", "");
 this.hallSymbol = terms[3];
 if (this.hallSymbol.length > 1) this.hallSymbol = this.hallSymbol.substring (0, 2).toUpperCase () + this.hallSymbol.substring (2);
 var info = this.intlTableNumber + this.hallSymbol;
@@ -491,13 +493,12 @@ function (lattvecs) {
 var nOps = this.latticeOp = this.operationCount;
 for (var j = 0; j < lattvecs.size (); j++) {
 var data = lattvecs.get (j);
-if (data.length > this.modulationDimension + 3) return;
+if (data.length > this.modDim + 3) return;
 for (var i = 0; i < nOps; i++) {
-var op = this.operations[i];
-var rotTrans = op.rotTransMatrix;
 var newOp =  new J.symmetry.SymmetryOperation (null, null, 0, 0, this.doNormalize);
-newOp.modDim = this.modulationDimension;
-newOp.rotTransMatrix = JU.AU.arrayCopyF (rotTrans, -1);
+newOp.modDim = this.modDim;
+var op = this.operations[i];
+newOp.linearRotTrans = JU.AU.arrayCopyF (op.linearRotTrans, -1);
 newOp.setFromMatrix (data, false);
 newOp.xyzOriginal = newOp.xyz;
 this.addOp (newOp, newOp.xyz, true);
@@ -510,7 +511,7 @@ var n = this.finalOperations.length;
 var pts =  new JU.List ();
 for (var i = n; --i >= 0; ) {
 var pt1 = JU.P3.newP (pt);
-this.finalOperations[i].transform (pt1);
+this.finalOperations[i].rotTrans (pt1);
 unitCell.unitize (pt1);
 for (var j = pts.size (); --j >= 0; ) {
 var pt0 = pts.get (j);
@@ -518,9 +519,8 @@ if (pt1.distanceSquared (pt0) < 0.000001) {
 pt1 = null;
 break;
 }}
-if (pt1 != null) {
-pts.addLast (pt1);
-}}
+if (pt1 != null) pts.addLast (pt1);
+}
 return Clazz.doubleToInt (n / pts.size ());
 }, "JU.P3,J.symmetry.UnitCell");
 $_M(c$, "getOperationList", 

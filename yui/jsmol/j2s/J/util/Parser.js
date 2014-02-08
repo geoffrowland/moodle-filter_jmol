@@ -60,8 +60,8 @@ c$.fixDataString = $_M(c$, "fixDataString",
 function (str) {
 str = str.$replace (';', str.indexOf ('\n') < 0 ? '\n' : ' ');
 str = JU.PT.trim (str, "\n \t");
-str = JU.PT.simpleReplace (str, "\n ", "\n");
-str = JU.PT.simpleReplace (str, "\n\n", "\n");
+str = JU.PT.rep (str, "\n ", "\n");
+str = JU.PT.rep (str, "\n\n", "\n");
 return str;
 }, "~S");
 c$.parseFloatArray2d = $_M(c$, "parseFloatArray2d", 

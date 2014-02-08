@@ -14,7 +14,7 @@ function (name) {
 this.name = name.$replace ('\\', '/');
 this.fullName = name;
 if (!this.fullName.startsWith ("/") && J.viewer.FileManager.urlTypeIndex (name) < 0) this.fullName = J.viewer.Viewer.jsDocumentBase + "/" + this.fullName;
-this.fullName = JU.PT.simpleReplace (this.fullName, "/./", "/");
+this.fullName = JU.PT.rep (this.fullName, "/./", "/");
 name = name.substring (name.lastIndexOf ("/") + 1);
 }, "~S");
 $_V(c$, "getParentAsFile", 

@@ -175,6 +175,10 @@ c$.isShapeSecondary = $_M(c$, "isShapeSecondary",
 function (i) {
 return i >= 9 && i < 16;
 }, "~N");
+c$.getShapeVisibilityFlag = $_M(c$, "getShapeVisibilityFlag", 
+function (shapeID) {
+return 16 << Math.min (shapeID, 27);
+}, "~N");
 c$.shapeTokenIndex = $_M(c$, "shapeTokenIndex", 
 function (tok) {
 switch (tok) {
@@ -261,10 +265,6 @@ function (shapeID, isRenderer) {
 if (shapeID < 0) return J.viewer.JC.shapeClassBases[~shapeID];
 return "J." + (isRenderer ? "render" : "shape") + (shapeID >= 9 && shapeID < 16 ? "bio." : shapeID >= 16 && shapeID < 23 ? "special." : shapeID >= 24 && shapeID < 29 ? "surface." : shapeID == 23 ? "cgo." : ".") + J.viewer.JC.shapeClassBases[shapeID];
 }, "~N,~B");
-c$.getShapeVisibilityFlag = $_M(c$, "getShapeVisibilityFlag", 
-function (shapeID) {
-return (4 << shapeID);
-}, "~N");
 c$.getOffset = $_M(c$, "getOffset", 
 function (xOffset, yOffset) {
 xOffset = Math.min (Math.max (xOffset, -127), 127);
@@ -513,6 +513,7 @@ Clazz.defineStatics (c$,
 "SHAPE_CONTACT", 25,
 "SHAPE_LCAOCARTOON", 26,
 "SHAPE_MO", 27,
+"SHAPE_LAST_ATOM_VIS_FLAG", 27,
 "SHAPE_PMESH", 28,
 "SHAPE_PLOT3D", 29,
 "SHAPE_MAX_SURFACE", 29,
@@ -525,9 +526,18 @@ Clazz.defineStatics (c$,
 "SHAPE_HOVER", 34,
 "SHAPE_FRANK", 35,
 "SHAPE_MAX", 36,
+"ATOM_INFRAME", 1,
+"ATOM_VISSET", 2,
+"ATOM_VISIBLE", 4,
+"ATOM_NOTHIDDEN", 8,
+"ATOM_NOFLAGS", -16,
+"ATOM_INFRAME_NOTHIDDEN", 9,
+"ATOM_SHAPE_VIS_MASK", -10,
+"VIS_BOND_FLAG", 32,
+"VIS_BALLS_FLAG", 16,
+"VIS_LABEL_FLAG", 512,
+"VIS_BACKBONE_FLAG", 8192,
 "shapeClassBases", ["Balls", "Sticks", "Hsticks", "Sssticks", "Struts", "Labels", "Measures", "Stars", "Halos", "Backbone", "Trace", "Cartoon", "Strands", "MeshRibbon", "Ribbons", "Rockets", "Dots", "Dipoles", "Vectors", "GeoSurface", "Ellipsoids", "Polyhedra", "Draw", "CGO", "Isosurface", "Contact", "LcaoCartoon", "MolecularOrbital", "Pmesh", "Plot3D", "Echo", "Axes", "Bbcage", "Uccage", "Hover", "Frank"],
-"ATOM_IN_FRAME", 1,
-"ATOM_SLABBED", 2,
 "binaryExtensions", ";pse=PyMOL;",
 "SCRIPT_COMPLETED", "Script completed",
 "JPEG_EXTENSIONS", ";jpg;jpeg;jpg64;jpeg64;");

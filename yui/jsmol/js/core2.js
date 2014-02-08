@@ -115,12 +115,12 @@ if (check) return (n1 == n2 ? "diastereomers" : "ambiguous stereochemistry!");
 }, "~S,~S");
 $_V(c$, "reverseChirality", 
 function (smiles) {
-smiles = JU.PT.simpleReplace (smiles, "@@", "!@");
-smiles = JU.PT.simpleReplace (smiles, "@", "@@");
-smiles = JU.PT.simpleReplace (smiles, "!@@", "@");
-smiles = JU.PT.simpleReplace (smiles, "@@SP", "@SP");
-smiles = JU.PT.simpleReplace (smiles, "@@OH", "@OH");
-smiles = JU.PT.simpleReplace (smiles, "@@TB", "@TB");
+smiles = JU.PT.rep (smiles, "@@", "!@");
+smiles = JU.PT.rep (smiles, "@", "@@");
+smiles = JU.PT.rep (smiles, "!@@", "@");
+smiles = JU.PT.rep (smiles, "@@SP", "@SP");
+smiles = JU.PT.rep (smiles, "@@OH", "@OH");
+smiles = JU.PT.rep (smiles, "@@TB", "@TB");
 return smiles;
 }, "~S");
 $_V(c$, "getSubstructureSet", 
@@ -225,7 +225,7 @@ return null;
 }, "~S,~A,~N,JU.BS,JU.BS,~B,~B,~B,~N");
 $_M(c$, "countStereo", 
 function (s) {
-s = JU.PT.simpleReplace (s, "@@", "@");
+s = JU.PT.rep (s, "@@", "@");
 var i = s.lastIndexOf ('@') + 1;
 var n = 0;
 for (; --i >= 0; ) if (s.charAt (i) == '@') n++;
@@ -1079,8 +1079,7 @@ case 6:
 if (isNot != (!J.smiles.SmilesSearch.isDiaxial (atom0, atom0, atom6, atom1, v, -0.95))) return false;
 J.smiles.SmilesSearch.getPlaneNormals (atom2, atom3, atom4, atom5, v);
 if (isNot != (v.vNorm1.dot (v.vNorm2) < 0 || v.vNorm2.dot (v.vNorm3) < 0)) return false;
-v.vNorm2.setT (atom0);
-v.vNorm2.sub (atom1);
+v.vNorm2.sub2 (atom0, atom1);
 return (isNot == ((v.vNorm1.dot (v.vNorm2) < 0 ? 2 : 1) == order));
 case 8:
 J.smiles.SmilesSearch.getPlaneNormals (atom1, atom2, atom3, atom4, v);
@@ -1247,10 +1246,8 @@ return map;
 }, "J.util.JmolNode,J.util.JmolNode,~A");
 c$.isDiaxial = $_M(c$, "isDiaxial", 
 function (atomA, atomB, atom1, atom2, v, f) {
-v.vA.setT (atomA);
-v.vB.setT (atomB);
-v.vA.sub (atom1);
-v.vB.sub (atom2);
+v.vA.sub2 (atomA, atom1);
+v.vB.sub2 (atomB, atom2);
 v.vA.normalize ();
 v.vB.normalize ();
 return (v.vA.dot (v.vB) < f);
@@ -2875,13 +2872,10 @@ return ((d < this.min || d > this.max) == this.isNot);
 });
 c$.setTorsionData = $_M(c$, "setTorsionData", 
 function (pt1a, pt1, pt2, pt2a, v, isAll) {
-v.vTemp1.setT (pt1a);
-v.vTemp1.sub (pt1);
-v.vTemp2.setT (pt2a);
-v.vTemp2.sub (pt2);
+v.vTemp1.sub2 (pt1a, pt1);
+v.vTemp2.sub2 (pt2a, pt2);
 if (!isAll) return;
-v.vNorm1.setT (pt1);
-v.vNorm1.sub (pt2);
+v.vNorm1.sub2 (pt1, pt2);
 v.vNorm1.normalize ();
 v.vTemp1.cross (v.vTemp1, v.vNorm1);
 v.vTemp1.normalize ();
@@ -3742,12 +3736,12 @@ return (i < 10 ? "" + i : i < 100 ? "%" + i : "%(" + i + ")");
 c$.cleanPattern = $_M(c$, "cleanPattern", 
 function (pattern) {
 pattern = JU.PT.replaceAllCharacters (pattern, " \t\n\r", "");
-pattern = JU.PT.simpleReplace (pattern, "^^", "'");
+pattern = JU.PT.rep (pattern, "^^", "'");
 var i = 0;
 var i2 = 0;
 while ((i = pattern.indexOf ("//*")) >= 0 && (i2 = pattern.indexOf ("*//")) >= i) pattern = pattern.substring (0, i) + pattern.substring (i2 + 3);
 
-pattern = JU.PT.simpleReplace (pattern, "//", "");
+pattern = JU.PT.rep (pattern, "//", "");
 return pattern;
 }, "~S");
 });

@@ -28,7 +28,8 @@ jmol_isReady = function(applet) {
 }		
 
 var xxxx = document.location.search
-if (xxxx.length == 5 || xxxx.length == 0) {
+if (xxxx.indexOf("USE=") > 0)xxxx = "";
+if (xxxx.length == 5 || xxxx.length == 0) { 
 	xxxx = (xxxx + "?1crn").substring(1,5)
 	script = 'h2oOn=true;set animframecallback "jmolscript:if (!selectionHalos) {select model=_modelNumber}";'
 	+'set errorCallback "myCallback";'
@@ -130,7 +131,7 @@ jmolButton("if (!molname) { molname = 'tylenol'};var x = prompt('Enter the name 
 jmolBr()
 jmolButton("load ?","Load URL")
 jmolBr()
-jmolButton("load ?","Load FILE")
+jmolButton("load file://?","Load FILE")
 jmolBr()
 jmolButton("script ?.spt","Load SCRIPT")
 jmolBr()

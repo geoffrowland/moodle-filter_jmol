@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.util");
-Clazz.load (null, "J.util.Escape", ["java.lang.Character", "$.Float", "java.util.Map", "JU.A4", "$.BS", "$.List", "$.M3", "$.M4", "$.P3", "$.P4", "$.PT", "$.SB", "$.T3", "J.script.SV", "J.util.BSUtil"], function () {
+Clazz.load (null, "J.util.Escape", ["java.lang.Character", "$.Float", "java.util.Map", "JU.A4", "$.BS", "$.List", "$.M3", "$.M34", "$.M4", "$.P3", "$.P4", "$.PT", "$.SB", "$.T3", "J.script.SV", "J.util.BSUtil", "$.Quaternion"], function () {
 c$ = Clazz.declareType (J.util, "Escape");
 c$.escapeColor = $_M(c$, "escapeColor", 
 function (argb) {
@@ -32,59 +32,25 @@ return "{" + x.x + " " + x.y + " " + x.z + " " + x.w + "}";
 c$.e = $_M(c$, "e", 
 function (x) {
 if (x == null) return "null";
-if (Clazz.instanceOf (x, String)) return J.util.Escape.eS (x);
+if (JU.PT.isNonStringPrimitive (x)) return x.toString ();
+if (Clazz.instanceOf (x, String)) return JU.PT.esc (x);
 if (Clazz.instanceOf (x, JU.List)) return J.util.Escape.eV (x);
+if (Clazz.instanceOf (x, java.util.Map)) return J.util.Escape.escapeMap (x);
 if (Clazz.instanceOf (x, JU.BS)) return J.util.Escape.eBS (x);
 if (Clazz.instanceOf (x, JU.T3)) return J.util.Escape.eP (x);
 if (Clazz.instanceOf (x, JU.P4)) return J.util.Escape.eP4 (x);
 if (JU.PT.isAS (x)) return J.util.Escape.eAS (x, true);
-if (JU.PT.isAI (x)) return J.util.Escape.eAI (x);
-if (JU.PT.isAF (x)) return J.util.Escape.eAF (x);
-if (JU.PT.isAD (x)) return J.util.Escape.eAD (x);
-if (JU.PT.isAP (x)) return J.util.Escape.eAP (x);
-if (Clazz.instanceOf (x, JU.M3)) return JU.PT.simpleReplace ((x).toString (), "\t", ",\t");
-if (Clazz.instanceOf (x, JU.M4)) return JU.PT.simpleReplace ((x).toString (), "\t", ",\t");
+if (Clazz.instanceOf (x, JU.M34)) return JU.PT.rep (x.toString (), "\t", ",\t");
 if (Clazz.instanceOf (x, JU.A4)) {
 var a = x;
 return "{" + a.x + " " + a.y + " " + a.z + " " + (a.angle * 180 / 3.141592653589793) + "}";
-}if (Clazz.instanceOf (x, java.util.Map)) return J.util.Escape.escapeMap (x);
-if (JU.PT.isAII (x) || JU.PT.isAFF (x) || JU.PT.isAFFF (x)) return JU.PT.toJSON (null, x);
-return x.toString ();
+}if (Clazz.instanceOf (x, J.util.Quaternion)) return (x).toString ();
+var s = JU.PT.nonArrayString (x);
+return (s == null ? JU.PT.toJSON (null, x) : s);
 }, "~O");
-c$.eS = $_M(c$, "eS", 
-function (str) {
-if (str == null || str.length == 0) return "\"\"";
-var haveEscape = false;
-var i = 0;
-for (; i < "\\\\\tt\rr\nn\"\"".length; i += 2) if (str.indexOf ("\\\\\tt\rr\nn\"\"".charAt (i)) >= 0) {
-haveEscape = true;
-break;
-}
-if (haveEscape) while (i < "\\\\\tt\rr\nn\"\"".length) {
-var pt = -1;
-var ch = "\\\\\tt\rr\nn\"\"".charAt (i++);
-var ch2 = "\\\\\tt\rr\nn\"\"".charAt (i++);
-var sb =  new JU.SB ();
-var pt0 = 0;
-while ((pt = str.indexOf (ch, pt + 1)) >= 0) {
-sb.append (str.substring (pt0, pt)).appendC ('\\').appendC (ch2);
-pt0 = pt + 1;
-}
-sb.append (str.substring (pt0, str.length));
-str = sb.toString ();
-}
-for (i = str.length; --i >= 0; ) if (str.charCodeAt (i) > 0x7F) str = str.substring (0, i) + J.util.Escape.unicode (str.charAt (i)) + str.substring (i + 1);
-
-return "\"" + str + "\"";
-}, "~S");
-c$.unicode = $_M(c$, "unicode", 
-($fz = function (c) {
-var s = "0000" + Integer.toHexString (c.charCodeAt (0));
-return "\\u" + s.substring (s.length - 4);
-}, $fz.isPrivate = true, $fz), "~S");
 c$.eV = $_M(c$, "eV", 
 function (list) {
-if (list == null) return J.util.Escape.eS ("");
+if (list == null) return JU.PT.esc ("");
 var s =  new JU.SB ();
 s.append ("[");
 for (var i = 0; i < list.size (); i++) {
@@ -101,7 +67,7 @@ sb.append ("{ ");
 var sep = "";
 for (var entry, $entry = ht.entrySet ().iterator (); $entry.hasNext () && ((entry = $entry.next ()) || true);) {
 var key = entry.getKey ();
-sb.append (sep).append (J.util.Escape.eS (key)).appendC (':');
+sb.append (sep).append (JU.PT.esc (key)).appendC (':');
 var val = entry.getValue ();
 if (!(Clazz.instanceOf (val, J.script.SV))) val = J.script.SV.getVariable (val);
 sb.append ((val).escape ());
@@ -149,19 +115,19 @@ return sb.toString ();
 }, "~A,~B");
 c$.eAS = $_M(c$, "eAS", 
 function (list, nicely) {
-if (list == null) return J.util.Escape.eS ("");
+if (list == null) return JU.PT.esc ("");
 var s =  new JU.SB ();
 s.append ("[");
 for (var i = 0; i < list.length; i++) {
 if (i > 0) s.append (", ");
-s.append (nicely ? J.util.Escape.escapeNice (list[i]) : J.util.Escape.eS (list[i]));
+s.append (nicely ? J.util.Escape.escapeNice (list[i]) : JU.PT.esc (list[i]));
 }
 s.append ("]");
 return s.toString ();
 }, "~A,~B");
 c$.eAI = $_M(c$, "eAI", 
 function (ilist) {
-if (ilist == null) return J.util.Escape.eS ("");
+if (ilist == null) return JU.PT.esc ("");
 var s =  new JU.SB ();
 s.append ("[");
 for (var i = 0; i < ilist.length; i++) {
@@ -172,7 +138,7 @@ return s.append ("]").toString ();
 }, "~A");
 c$.eAD = $_M(c$, "eAD", 
 function (dlist) {
-if (dlist == null) return J.util.Escape.eS ("");
+if (dlist == null) return JU.PT.esc ("");
 var s =  new JU.SB ();
 s.append ("[");
 for (var i = 0; i < dlist.length; i++) {
@@ -183,7 +149,7 @@ return s.append ("]").toString ();
 }, "~A");
 c$.eAF = $_M(c$, "eAF", 
 function (flist) {
-if (flist == null) return J.util.Escape.eS ("");
+if (flist == null) return JU.PT.esc ("");
 var s =  new JU.SB ();
 s.append ("[");
 for (var i = 0; i < flist.length; i++) {
@@ -194,7 +160,7 @@ return s.append ("]").toString ();
 }, "~A");
 c$.eAP = $_M(c$, "eAP", 
 function (plist) {
-if (plist == null) return J.util.Escape.eS ("");
+if (plist == null) return JU.PT.esc ("");
 var s =  new JU.SB ();
 s.append ("[");
 for (var i = 0; i < plist.length; i++) {
@@ -207,7 +173,7 @@ c$.escapeNice = $_M(c$, "escapeNice",
 ($fz = function (s) {
 if (s == null) return "null";
 var f = JU.PT.parseFloatStrict (s);
-return (Float.isNaN (f) ? J.util.Escape.eS (s) : s);
+return (Float.isNaN (f) ? JU.PT.esc (s) : s);
 }, $fz.isPrivate = true, $fz), "~S");
 c$.uABsM = $_M(c$, "uABsM", 
 function (s) {
@@ -305,8 +271,8 @@ if (Float.isNaN (points[nPoints])) {
 break;
 }}
 if (!Float.isNaN (JU.PT.parseFloatNext (str, next))) return strMatrix;
-if (nPoints == 9) return JU.M3.newA (points);
-if (nPoints == 16) return JU.M4.newA (points);
+if (nPoints == 9) return JU.M3.newA9 (points);
+if (nPoints == 16) return JU.M4.newA16 (points);
 return strMatrix;
 }, "~S");
 c$.eBS = $_M(c$, "eBS", 
@@ -346,12 +312,14 @@ function (name, info) {
 var sb =  new JU.SB ();
 var sep = "";
 if (info == null) return "null";
-if (Clazz.instanceOf (info, String)) return J.util.Escape.packageReadable (name, null, J.util.Escape.eS (info));
+if (JU.PT.isNonStringPrimitive (info)) return J.util.Escape.packageReadable (name, null, info.toString ());
+if (Clazz.instanceOf (info, String)) return J.util.Escape.packageReadable (name, null, JU.PT.esc (info));
+if (Clazz.instanceOf (info, J.script.SV)) return J.util.Escape.packageReadable (name, null, (info).escape ());
 if (JU.PT.isAS (info)) {
 sb.append ("[");
 var imax = (info).length;
 for (var i = 0; i < imax; i++) {
-sb.append (sep).append (J.util.Escape.eS ((info)[i]));
+sb.append (sep).append (JU.PT.esc ((info)[i]));
 sep = ",";
 }
 sb.append ("]");
@@ -419,13 +387,22 @@ sep = ",\n";
 }
 sb.append ("]");
 return J.util.Escape.packageReadableSb (name, "float[][]", sb);
+}if (JU.PT.isADD (info)) {
+sb.append ("[\n");
+var imax = (info).length;
+for (var i = 0; i < imax; i++) {
+sb.append (sep).append (J.util.Escape.toReadable (null, (info)[i]));
+sep = ",\n";
+}
+sb.append ("]");
+return J.util.Escape.packageReadableSb (name, "double[][]", sb);
 }if (Clazz.instanceOf (info, JU.List)) {
 var imax = (info).size ();
 for (var i = 0; i < imax; i++) {
 sb.append (J.util.Escape.toReadable (name + "[" + (i + 1) + "]", (info).get (i)));
 }
 return J.util.Escape.packageReadableSb (name, "List[" + imax + "]", sb);
-}if (Clazz.instanceOf (info, JU.M3) || Clazz.instanceOf (info, JU.T3) || Clazz.instanceOf (info, JU.P4) || Clazz.instanceOf (info, JU.A4)) {
+}if (Clazz.instanceOf (info, JU.M34) || Clazz.instanceOf (info, JU.T3) || Clazz.instanceOf (info, JU.P4) || Clazz.instanceOf (info, JU.A4)) {
 sb.append (J.util.Escape.e (info));
 return J.util.Escape.packageReadableSb (name, null, sb);
 }if (Clazz.instanceOf (info, java.util.Map)) {
@@ -435,7 +412,7 @@ var key = e.next ();
 sb.append (J.util.Escape.toReadable ((name == null ? "" : name + ".") + key, (info).get (key)));
 }
 return sb.toString ();
-}return J.util.Escape.packageReadable (name, null, info.toString ());
+}return J.util.Escape.packageReadable (name, null, JU.PT.toJSON (null, info));
 }, "~S,~O");
 c$.packageReadableSb = $_M(c$, "packageReadableSb", 
 ($fz = function (infoName, infoType, sb) {
@@ -498,7 +475,7 @@ next[0] = 1;
 while (next[0] < data.length) {
 var s = JU.PT.getQuotedStringNext (data, next);
 if (s == null) return null;
-v.addLast (JU.PT.simpleReplace (s, "\\\"", "\""));
+v.addLast (JU.PT.rep (s, "\\\"", "\""));
 while (next[0] < data.length && data.charAt (next[0]) != '"') next[0]++;
 
 }
@@ -507,8 +484,6 @@ return v.toArray ( new Array (v.size ()));
 c$.isAV = $_M(c$, "isAV", 
 function (x) {
 {
-return Clazz.instanceOf(x[0], J.scriSV);
+return Clazz.instanceOf(x[0], J.script.SV);
 }}, "~O");
-Clazz.defineStatics (c$,
-"escapable", "\\\\\tt\rr\nn\"\"");
 });

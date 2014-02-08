@@ -26,7 +26,7 @@ return false;
 }}if (this.doGetModel (++this.modelNumber, null)) {
 this.processMolSdHeader ();
 this.processCtab (isMDL);
-this.iatom0 = this.atomSetCollection.getAtomCount ();
+this.iatom0 = this.atomSetCollection.atomCount;
 this.isV3000 = false;
 if (this.isLastModel (this.modelNumber)) {
 this.continuing = false;
@@ -41,7 +41,7 @@ if (this.isV3000) return;
 while (this.readLine () != null && this.line.indexOf ("$$$$") != 0) {
 if (this.line.toUpperCase ().contains ("_PARTIAL_CHARGES")) {
 try {
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 for (var i = this.parseIntStr (this.readLine ()); --i >= 0; ) {
 var tokens = J.adapter.smarter.AtomSetCollectionReader.getTokensStr (this.readLine ());
 var atomIndex = this.parseIntStr (tokens[0]) + atom0 - 1;
@@ -99,7 +99,7 @@ tokens = this.getTokens ();
 }if (this.line == null) return;
 var atomCount = (this.isV3000 ? this.parseIntStr (tokens[3]) : this.parseIntRange (this.line, 0, 3));
 var bondCount = (this.isV3000 ? this.parseIntStr (tokens[4]) : this.parseIntRange (this.line, 3, 6));
-var atom0 = this.atomSetCollection.getAtomCount ();
+var atom0 = this.atomSetCollection.atomCount;
 this.readAtoms (atomCount);
 this.readBonds (bondCount);
 this.readUserData (atom0);

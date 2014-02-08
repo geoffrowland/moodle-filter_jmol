@@ -1,5 +1,6 @@
 // JmolApi.js -- Jmol user functions  Bob Hanson hansonr@stolaf.edu
 
+// BH 12/13/2013 8:39:00 AM Jmol.evaulate is DEPRECATED -- use Jmol.evaluateVar
 // BH 11/25/2013 6:55:53 AM adds URL flags _USE=, _JAR=, _J2S=
 // BH 9/3/2013 5:48:03 PM simplification of Jmol.getAppletHTML()
 // BH 5/16/2013 9:01:41 AM checkbox group fix
@@ -169,6 +170,13 @@
 
 ////////////////// "get" methods ///////////////////
 	
+
+	Jmol.evaluateVar = function(applet,expr) {
+    arguments.length >= 2 || (expr = "");
+    return applet._getPropertyAsArray("variableInfo", expr);
+	}
+  
+  // DEPRECATED -- use Jmol.evaluateVar
 	Jmol.evaluate = function(applet,molecularMath) {
 		return applet._evaluate(molecularMath);
 	}

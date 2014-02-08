@@ -44,7 +44,7 @@ var satoms = JU.PT.getQuotedAttribute (peak, "atoms");
 var select = JU.PT.getQuotedAttribute (peak, "select");
 System.out.println ("Jmol JSpecView.java satoms select " + satoms + " " + select);
 var script = "";
-if (satoms != null) script += "visible & (atomno=" + JU.PT.simpleReplace (satoms, ",", " or atomno=") + ")";
+if (satoms != null) script += "visible & (atomno=" + JU.PT.rep (satoms, ",", " or atomno=") + ")";
  else if (select != null) script += "visible & (" + select + ")";
 System.out.println ("Jmol JSpecView.java script : " + script);
 bsPeak.or (this.viewer.getAtomBitSet (script));

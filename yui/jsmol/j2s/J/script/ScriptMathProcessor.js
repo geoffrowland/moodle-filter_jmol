@@ -54,11 +54,11 @@ if (this.asVector) {
 var result =  new JU.List ();
 for (var i = 0; i <= this.xPt; i++) result.addLast (J.script.SV.selectItemVar (this.xStack[i]));
 
-return J.script.SV.newVariable (135198, result);
+return J.script.SV.newV (135198, result);
 }if (this.xPt == 0) {
 var x = this.xStack[0];
 if (x.tok == 10 || x.tok == 7 || x.tok == 4 || x.tok == 11 || x.tok == 12) x = J.script.SV.selectItemVar (x);
-if (this.asBitSet && x.tok == 7) x = J.script.SV.newVariable (10, J.script.SV.unEscapeBitSetArray (x.value, false));
+if (this.asBitSet && x.tok == 7) x = J.script.SV.newV (10, J.script.SV.unEscapeBitSetArray (x.value, false));
 return x;
 }}if (!allowUnderflow && (this.xPt >= 0 || this.oPt >= 0)) {
 this.eval.error (22);
@@ -98,7 +98,7 @@ return this.wasX = true;
 }, "~O");
 $_M(c$, "addXStr", 
 function (x) {
-this.putX (J.script.SV.newVariable (4, x));
+this.putX (J.script.SV.newS (x));
 return this.wasX = true;
 }, "~S");
 $_M(c$, "addXBool", 
@@ -108,7 +108,7 @@ return this.wasX = true;
 }, "~B");
 $_M(c$, "addXInt", 
 function (x) {
-this.putX (J.script.SV.newScriptVariableInt (x));
+this.putX (J.script.SV.newI (x));
 return this.wasX = true;
 }, "~N");
 $_M(c$, "addXList", 
@@ -123,33 +123,33 @@ return this.wasX = true;
 }, "java.util.Map");
 $_M(c$, "addXM3", 
 function (x) {
-this.putX (J.script.SV.newVariable (11, x));
+this.putX (J.script.SV.newV (11, x));
 return this.wasX = true;
 }, "JU.M3");
 $_M(c$, "addXM4", 
 function (x) {
-this.putX (J.script.SV.newVariable (12, x));
+this.putX (J.script.SV.newV (12, x));
 return this.wasX = true;
 }, "JU.M4");
 $_M(c$, "addXFloat", 
 function (x) {
 if (Float.isNaN (x)) return this.addXStr ("NaN");
-this.putX (J.script.SV.newVariable (3, Float.$valueOf (x)));
+this.putX (J.script.SV.newV (3, Float.$valueOf (x)));
 return this.wasX = true;
 }, "~N");
 $_M(c$, "addXBs", 
 function (bs) {
-this.putX (J.script.SV.newVariable (10, bs));
+this.putX (J.script.SV.newV (10, bs));
 return this.wasX = true;
 }, "JU.BS");
 $_M(c$, "addXPt", 
 function (pt) {
-this.putX (J.script.SV.newVariable (8, pt));
+this.putX (J.script.SV.newV (8, pt));
 return this.wasX = true;
 }, "JU.P3");
 $_M(c$, "addXPt4", 
 function (pt) {
-this.putX (J.script.SV.newVariable (9, pt));
+this.putX (J.script.SV.newV (9, pt));
 return this.wasX = true;
 }, "JU.P4");
 $_M(c$, "addXNum", 
@@ -158,13 +158,13 @@ if (this.wasX) switch (x.tok) {
 case 2:
 if (x.intValue < 0) {
 this.addOp (J.script.T.tokenMinus);
-x = J.script.SV.newScriptVariableInt (-x.intValue);
+x = J.script.SV.newI (-x.intValue);
 }break;
 case 3:
 var f = (x.value).floatValue ();
 if (f < 0 || f == 0 && 1 / f == -Infinity) {
 this.addOp (J.script.T.tokenMinus);
-x = J.script.SV.newVariable (3, Float.$valueOf (-f));
+x = J.script.SV.newV (3, Float.$valueOf (-f));
 }break;
 }
 this.putX (x);
@@ -286,13 +286,13 @@ this.incrementX = (op.tok == 269484226 ? 1 : -1);
 if (this.ptid == this.ptx) {
 if (this.chk) return true;
 var x = this.xStack[this.xPt];
-this.xStack[this.xPt] = J.script.SV.newVariable (4, "").setv (x, false);
+this.xStack[this.xPt] = J.script.SV.newS ("").setv (x, false);
 return x.increment (this.incrementX);
 }break;
 case 269484192:
 if (this.wasX) break;
 this.addXInt (0);
-op = J.script.SV.newVariable (269484224, "-");
+op = J.script.SV.newV (269484224, "-");
 break;
 case 269484049:
 if (!this.wasX && this.oPt >= 1 && tok0 == 269484048 && !J.script.ScriptMathProcessor.isOpFunc (this.oStack[this.oPt - 1])) return false;
@@ -320,14 +320,14 @@ break;
 break;
 }if (op.tok == 269484097 && tok0 == 269484096) {
 if (this.isArrayItem && this.squareCount == 1 && this.equalCount == 0) {
-this.addXVar (J.script.SV.newScriptVariableToken (J.script.T.tokenArraySelector));
+this.addXVar (J.script.SV.newT (J.script.T.tokenArraySelector));
 break;
 }if (!this.doBitsetSelect ()) return false;
 break;
 }if (!this.operate ()) return false;
 tok0 = (this.oPt >= 0 ? this.oStack[this.oPt].tok : 0);
 }
-if (newOp != null) this.addXVar (J.script.SV.newVariable (269484436, newOp));
+if (newOp != null) this.addXVar (J.script.SV.newV (269484436, newOp));
 switch (op.tok) {
 case 269484048:
 this.parenCount++;
@@ -413,21 +413,21 @@ return false;
 }var var1 = this.xStack[this.xPt--];
 var $var = this.xStack[this.xPt];
 if ($var.tok == 7 && var1.tok == 4 && $var.intValue != 2147483647) {
-$var = J.script.SV.selectItemVar2 ($var, -2147483648);
+$var = J.script.SV.selectItemTok ($var, -2147483648);
 }if ($var.tok == 6) {
 var v = $var.mapValue (J.script.SV.sValue (var1));
-this.xStack[this.xPt] = (v == null ? J.script.SV.newVariable (4, "") : v);
+this.xStack[this.xPt] = (v == null ? J.script.SV.newS ("") : v);
 return true;
 }var i = var1.asInt ();
 switch ($var.tok) {
 default:
-$var = J.script.SV.newVariable (4, J.script.SV.sValue ($var));
+$var = J.script.SV.newS (J.script.SV.sValue ($var));
 case 10:
 case 7:
 case 4:
 case 11:
 case 12:
-this.xStack[this.xPt] = J.script.SV.selectItemVar2 ($var, i);
+this.xStack[this.xPt] = J.script.SV.selectItemTok ($var, i);
 break;
 }
 return true;
@@ -469,17 +469,14 @@ $_M(c$, "operate",
 ($fz = function () {
 var op = this.oStack[this.oPt--];
 var pt;
-var pt4;
 var m;
 var s;
-var f;
 if (this.logMessages) {
 this.dumpStacks ("operate: " + op);
 }if (this.isArrayItem && this.squareCount == 0 && this.equalCount == 1 && this.oPt < 0 && (op.tok == 269484436)) {
 return true;
 }var x2 = this.getX ();
 if (x2 === J.script.T.tokenArraySelector) return false;
-if (x2.tok == 7 || x2.tok == 11 || x2.tok == 12) x2 = J.script.SV.selectItemVar (x2);
 if (op.tok == 269484225 || op.tok == 269484226) {
 if (!this.chk && !x2.increment (this.incrementX)) return false;
 this.wasX = true;
@@ -491,11 +488,11 @@ switch (x2.tok) {
 case 9:
 return this.addXPt4 ((J.util.Quaternion.newP4 (x2.value)).inv ().toPoint4f ());
 case 11:
-m = JU.M3.newM (x2.value);
+m = JU.M3.newM3 (x2.value);
 m.invert ();
 return this.addXM3 (m);
 case 12:
-var m4 = JU.M4.newM (x2.value);
+var m4 = JU.M4.newM4 (x2.value);
 m4.invert ();
 return this.addXM4 (m4);
 case 10:
@@ -509,7 +506,7 @@ switch (iv) {
 case 1073741824:
 return this.getAllProperties (x2, op.value);
 case 1141899267:
-case 1276117011:
+case 1276117012:
 case 1141899270:
 if (iv == 1141899267 && Clazz.instanceOf (x2.value, J.modelset.BondSet)) break;
 return this.addXInt (J.script.SV.sizeOf (x2));
@@ -526,7 +523,7 @@ switch (x2.tok) {
 case 11:
 case 12:
 s = J.script.SV.sValue (x2);
-s = JU.PT.simpleReplace (s.substring (1, s.length - 1), "],[", "]\n[");
+s = JU.PT.rep (s.substring (1, s.length - 1), "],[", "]\n[");
 break;
 case 4:
 s = x2.value;
@@ -534,7 +531,7 @@ break;
 default:
 s = J.script.SV.sValue (x2);
 }
-s = JU.PT.simpleReplace (s, "\n\r", "\n").$replace ('\r', '\n');
+s = JU.PT.rep (s, "\n\r", "\n").$replace ('\r', '\n');
 return this.addXAS (JU.PT.split (s, "\n"));
 case 1766856708:
 switch (x2.tok) {
@@ -564,21 +561,30 @@ return this.getPointOrBitsetOperation (op, x2);
 }var x1 = this.getX ();
 if (this.chk) {
 if (op === J.script.T.tokenAndFALSE || op === J.script.T.tokenOrTRUE) this.chk = false;
-return this.addXVar (J.script.SV.newScriptVariableToken (x1));
-}switch (op.tok) {
+return this.addXVar (J.script.SV.newT (x1));
+}return this.binaryOp (op, x1, x2);
+}, $fz.isPrivate = true, $fz));
+$_M(c$, "binaryOp", 
+function (op, x1, x2) {
+var pt;
+var pt4;
+var m;
+var s;
+var f;
+switch (op.tok) {
 case 269484160:
 case 269484128:
 switch (x1.tok) {
 case 10:
 var bs = J.script.SV.bsSelectVar (x1);
 switch (x2.tok) {
+case 2:
+var x = x2.asInt ();
+return (this.addXBool (x < 0 ? false : bs.get (x)));
 case 10:
 bs = J.util.BSUtil.copy (bs);
 bs.and (J.script.SV.bsSelectVar (x2));
 return this.addXBs (bs);
-case 2:
-var x = x2.asInt ();
-return (this.addXBool (x < 0 ? false : bs.get (x)));
 }
 break;
 }
@@ -634,21 +640,11 @@ case 269484438:
 return this.addXBool (!J.script.SV.areEqual (x1, x2));
 case 269484193:
 switch (x1.tok) {
-default:
-return this.addXFloat (x1.asFloat () + x2.asFloat ());
-case 7:
-return this.addXVar (J.script.SV.concatList (x1, x2, true));
 case 2:
-switch (x2.tok) {
-case 4:
-if ((s = J.script.SV.sValue (x2).trim ()).indexOf (".") < 0 && s.indexOf ("+") <= 0 && s.lastIndexOf ("-") <= 0) return this.addXInt (x1.intValue + x2.asInt ());
+if (!this.isDecimal (x2)) return this.addXInt (x1.intValue + x2.asInt ());
 break;
-case 3:
-return this.addXFloat (x1.intValue + x2.asFloat ());
-}
-return this.addXInt (x1.intValue + x2.asInt ());
 case 4:
-return this.addXVar (J.script.SV.newVariable (4, J.script.SV.sValue (x1) + J.script.SV.sValue (x2)));
+return this.addXVar (J.script.SV.newS (J.script.SV.sValue (x1) + J.script.SV.sValue (x2)));
 case 9:
 var q1 = J.util.Quaternion.newP4 (x1.value);
 switch (x2.tok) {
@@ -676,51 +672,41 @@ switch (x2.tok) {
 default:
 return this.addXFloat (x1.asFloat () + x2.asFloat ());
 case 11:
-m = JU.M3.newM (x1.value);
+m = JU.M3.newM3 (x1.value);
 m.add (x2.value);
 return this.addXM3 (m);
 case 8:
 return this.addXM4 (J.script.ScriptMathProcessor.getMatrix4f (x1.value, x2.value));
 }
+case 7:
+return this.addXVar (J.script.SV.concatList (x1, x2, true));
 }
+return this.addXFloat (x1.asFloat () + x2.asFloat ());
 case 269484192:
-if (x1.tok == 2) {
-if (x2.tok == 4) {
-if ((s = (J.script.SV.sValue (x2)).trim ()).indexOf (".") < 0 && s.indexOf ("+") <= 0 && s.lastIndexOf ("-") <= 0) return this.addXInt (x1.intValue - x2.asInt ());
-} else if (x2.tok != 3) return this.addXInt (x1.intValue - x2.asInt ());
-}if (x1.tok == 4 && x2.tok == 2) {
-if ((s = (J.script.SV.sValue (x1)).trim ()).indexOf (".") < 0 && s.indexOf ("+") <= 0 && s.lastIndexOf ("-") <= 0) return this.addXInt (x1.asInt () - x2.intValue);
-}switch (x1.tok) {
-default:
-return this.addXFloat (x1.asFloat () - x2.asFloat ());
+switch (x1.tok) {
+case 2:
+if (!this.isDecimal (x2)) return this.addXInt (x1.intValue - x2.asInt ());
+break;
+case 4:
+if (!this.isDecimal (x2) && !this.isDecimal (x1)) return this.addXInt (x1.asInt () - x2.asInt ());
+break;
 case 6:
 var ht =  new java.util.Hashtable (x1.value);
 ht.remove (J.script.SV.sValue (x2));
 return this.addXVar (J.script.SV.getVariableMap (ht));
 case 11:
-switch (x2.tok) {
-default:
-return this.addXFloat (x1.asFloat () - x2.asFloat ());
-case 11:
-m = JU.M3.newM (x1.value);
+if (x2.tok != 11) break;
+m = JU.M3.newM3 (x1.value);
 m.sub (x2.value);
 return this.addXM3 (m);
-}
 case 12:
-switch (x2.tok) {
-default:
-return this.addXFloat (x1.asFloat () - x2.asFloat ());
-case 12:
-var m4 = JU.M4.newM (x1.value);
+if (x2.tok != 12) break;
+var m4 = JU.M4.newM4 (x1.value);
 m4.sub (x2.value);
 return this.addXM4 (m4);
-}
 case 8:
 pt = JU.P3.newP (x1.value);
 switch (x2.tok) {
-default:
-f = x2.asFloat ();
-return this.addXPt (JU.P3.new3 (pt.x - f, pt.y - f, pt.z - f));
 case 8:
 pt.sub (x2.value);
 return this.addXPt (pt);
@@ -729,20 +715,18 @@ pt4 = x2.value;
 pt.sub (JU.P3.new3 (pt4.x, pt4.y, pt4.z));
 return this.addXPt (pt);
 }
+f = x2.asFloat ();
+return this.addXPt (JU.P3.new3 (pt.x - f, pt.y - f, pt.z - f));
 case 9:
 var q1 = J.util.Quaternion.newP4 (x1.value);
-switch (x2.tok) {
-default:
-return this.addXPt4 (q1.add (-x2.asFloat ()).toPoint4f ());
-case 9:
+if (x2.tok == 9) {
 var q2 = J.util.Quaternion.newP4 (x2.value);
 return this.addXPt4 (q2.mulQ (q1.inv ()).toPoint4f ());
+}return this.addXPt4 (q1.add (-x2.asFloat ()).toPoint4f ());
 }
-}
+return this.addXFloat (x1.asFloat () - x2.asFloat ());
 case 269484224:
 switch (x2.tok) {
-default:
-return this.addXFloat (-x2.asFloat ());
 case 2:
 return this.addXInt (-x2.asInt ());
 case 8:
@@ -754,57 +738,65 @@ pt4 = JU.P4.newPt (x2.value);
 pt4.scale (-1.0);
 return this.addXPt4 (pt4);
 case 11:
-m = JU.M3.newM (x2.value);
+m = JU.M3.newM3 (x2.value);
 m.transpose ();
 return this.addXM3 (m);
 case 12:
-var m4 = JU.M4.newM (x2.value);
+var m4 = JU.M4.newM4 (x2.value);
 m4.transpose ();
 return this.addXM4 (m4);
 case 10:
 return this.addXBs (J.util.BSUtil.copyInvert (J.script.SV.bsSelectVar (x2), (Clazz.instanceOf (x2.value, J.modelset.BondSet) ? this.viewer.getBondCount () : this.viewer.getAtomCount ())));
 }
-case 269484209:
-if (x1.tok == 2 && x2.tok != 3) return this.addXInt (x1.intValue * x2.asInt ());
+return this.addXFloat (-x2.asFloat ());
+case 1276117508:
+if (x1.tok == 8 && x2.tok == 8) {
+pt = x1.value;
+var pt2 = x2.value;
+return this.addXPt (JU.P3.new3 (pt.x * pt2.x, pt.y * pt2.y, pt.z * pt2.z));
+}case 269484209:
+switch (x1.tok) {
+case 2:
+return (this.isDecimal (x2) ? this.addXFloat (x1.intValue * x2.asFloat ()) : this.addXInt (x1.intValue * x2.asInt ()));
+case 4:
+return (this.isDecimal (x2) || this.isDecimal (x1) ? this.addXFloat (x1.asFloat () * x2.asFloat ()) : this.addXInt (x1.asInt () * x2.asInt ()));
+}
 pt = (x1.tok == 11 ? this.ptValue (x2, false) : x2.tok == 11 ? this.ptValue (x1, false) : null);
 pt4 = (x1.tok == 12 ? this.planeValue (x2) : x2.tok == 12 ? this.planeValue (x1) : null);
 switch (x2.tok) {
 case 11:
 if (pt != null) {
-var m3b = JU.M3.newM (x2.value);
+var m3b = JU.M3.newM3 (x2.value);
 m3b.transpose ();
-m3b.transform (pt);
+m3b.rotate (pt);
 if (x1.tok == 7) return this.addXVar (J.script.SV.getVariableAF ([pt.x, pt.y, pt.z]));
 return this.addXPt (pt);
-}if (pt4 != null) {
-return this.addXPt4 ((J.util.Quaternion.newP4 (pt4).mulQ (J.util.Quaternion.newM (x2.value))).toPoint4f ());
-}break;
+}if (pt4 != null) return this.addXPt4 ((J.util.Quaternion.newP4 (pt4).mulQ (J.util.Quaternion.newM (x2.value))).toPoint4f ());
+break;
 case 12:
 if (pt4 != null) {
-var m4b = JU.M4.newM (x2.value);
+var m4b = JU.M4.newM4 (x2.value);
 m4b.transpose ();
-m4b.transform4 (pt4);
+m4b.transform (pt4);
 if (x1.tok == 7) return this.addXVar (J.script.SV.getVariableAF ([pt4.x, pt4.y, pt4.z, pt4.w]));
 return this.addXPt4 (pt4);
 }break;
 }
 switch (x1.tok) {
-default:
-return this.addXFloat (x1.asFloat () * x2.asFloat ());
 case 11:
 var m3 = x1.value;
 if (pt != null) {
-m3.transform (pt);
+m3.rotate (pt);
 if (x2.tok == 7) return this.addXVar (J.script.SV.getVariableAF ([pt.x, pt.y, pt.z]));
 return this.addXPt (pt);
 }switch (x2.tok) {
 case 11:
-m = JU.M3.newM (x2.value);
+m = JU.M3.newM3 (x2.value);
 m.mul2 (m3, m);
 return this.addXM3 (m);
 case 9:
 return this.addXM3 (J.util.Quaternion.newM (m3).mulQ (J.util.Quaternion.newP4 (x2.value)).getMatrix ());
-default:
+}
 f = x2.asFloat ();
 var aa =  new JU.A4 ();
 aa.setM (m3);
@@ -812,42 +804,64 @@ aa.angle *= f;
 var m2 =  new JU.M3 ();
 m2.setAA (aa);
 return this.addXM3 (m2);
-}
 case 12:
 var m4 = x1.value;
 if (pt != null) {
-m4.transform (pt);
+m4.rotTrans (pt);
 if (x2.tok == 7) return this.addXVar (J.script.SV.getVariableAF ([pt.x, pt.y, pt.z]));
 return this.addXPt (pt);
 }if (pt4 != null) {
-m4.transform4 (pt4);
+m4.transform (pt4);
 if (x2.tok == 7) return this.addXVar (J.script.SV.getVariableAF ([pt4.x, pt4.y, pt4.z, pt4.w]));
 return this.addXPt4 (pt4);
-}switch (x2.tok) {
-case 12:
-var m4b = JU.M4.newM (x2.value);
+}if (x2.tok == 12) {
+var m4b = JU.M4.newM4 (x2.value);
 m4b.mul2 (m4, m4b);
 return this.addXM4 (m4b);
-default:
-return this.addXStr ("NaN");
-}
+}return this.addXStr ("NaN");
 case 8:
 pt = JU.P3.newP (x1.value);
 switch (x2.tok) {
 case 8:
 var pt2 = (x2.value);
 return this.addXFloat (pt.x * pt2.x + pt.y * pt2.y + pt.z * pt2.z);
-default:
+}
 f = x2.asFloat ();
 return this.addXPt (JU.P3.new3 (pt.x * f, pt.y * f, pt.z * f));
-}
 case 9:
-switch (x2.tok) {
-case 9:
-return this.addXPt4 (J.util.Quaternion.newP4 (x1.value).mulQ (J.util.Quaternion.newP4 (x2.value)).toPoint4f ());
-}
+if (x2.tok == 9) return this.addXPt4 (J.util.Quaternion.newP4 (x1.value).mulQ (J.util.Quaternion.newP4 (x2.value)).toPoint4f ());
 return this.addXPt4 (J.util.Quaternion.newP4 (x1.value).mul (x2.asFloat ()).toPoint4f ());
 }
+return this.addXFloat (x1.asFloat () * x2.asFloat ());
+case 269484208:
+var f2;
+switch (x1.tok) {
+case 2:
+if (x2.tok == 2 && x2.intValue != 0) return this.addXInt (Clazz.doubleToInt (x1.intValue / x2.intValue));
+var n = (this.isDecimal (x2) ? x2.asInt () : 0);
+if (n != 0) return this.addXInt (Clazz.doubleToInt (x1.intValue / n));
+break;
+case 4:
+var i2;
+if (!this.isDecimal (x1) && !this.isDecimal (x2) && (i2 = x2.asInt ()) != 0) return this.addXInt (Clazz.doubleToInt (x1.asInt () / i2));
+break;
+case 8:
+pt = JU.P3.newP (x1.value);
+return this.addXPt ((f2 = x2.asFloat ()) == 0 ? JU.P3.new3 (NaN, NaN, NaN) : JU.P3.new3 (pt.x / f2, pt.y / f2, pt.z / f2));
+case 9:
+return this.addXPt4 (x2.tok == 9 ? J.util.Quaternion.newP4 (x1.value).div (J.util.Quaternion.newP4 (x2.value)).toPoint4f () : (f2 = x2.asFloat ()) == 0 ? JU.P4.new4 (NaN, NaN, NaN, NaN) : J.util.Quaternion.newP4 (x1.value).mul (1 / f2).toPoint4f ());
+}
+return this.addXFloat (x1.asFloat () / x2.asFloat ());
+case 269484211:
+f = x2.asFloat ();
+if (x1.tok == 9) {
+if (f == 0) return this.addXPt4 (JU.P4.new4 (NaN, NaN, NaN, NaN));
+if (x2.tok == 9) return this.addXPt4 (J.util.Quaternion.newP4 (x1.value).divLeft (J.util.Quaternion.newP4 (x2.value)).toPoint4f ());
+return this.addXPt4 (J.util.Quaternion.newP4 (x1.value).mul (1 / f).toPoint4f ());
+}return this.addXInt (f == 0 ? 0 : Clazz.doubleToInt (Math.floor (x1.asFloat () / x2.asFloat ())));
+case 269484227:
+f = Math.pow (x1.asFloat (), x2.asFloat ());
+return (x1.tok == 2 && x2.tok == 2 ? this.addXInt (Clazz.floatToInt (f)) : this.addXFloat (f));
 case 269484210:
 s = null;
 var n = x2.asInt ();
@@ -856,8 +870,7 @@ case 1048589:
 case 1048588:
 case 2:
 default:
-if (n == 0) return this.addXInt (0);
-return this.addXInt (x1.asInt () % n);
+break;
 case 3:
 f = x1.asFloat ();
 if (n == 0) return this.addXInt (Math.round (f));
@@ -938,7 +951,7 @@ m4.getRotationScale (m3);
 return this.addXM3 (m3);
 case 2:
 var v3 =  new JU.V3 ();
-m4.get (v3);
+m4.getTranslation (v3);
 return this.addXPt (JU.P3.newP (v3));
 default:
 return false;
@@ -946,38 +959,15 @@ return false;
 case 10:
 return this.addXBs (J.script.SV.bsSelectRange (x1, n));
 }
-case 269484208:
-if (x1.tok == 2 && x2.tok == 2 && x2.intValue != 0) return this.addXInt (Clazz.doubleToInt (x1.intValue / x2.intValue));
-var f2 = x2.asFloat ();
-switch (x1.tok) {
-default:
-var f1 = x1.asFloat ();
-return this.addXFloat (f1 / f2);
-case 8:
-pt = JU.P3.newP (x1.value);
-if (f2 == 0) return this.addXPt (JU.P3.new3 (NaN, NaN, NaN));
-return this.addXPt (JU.P3.new3 (pt.x / f2, pt.y / f2, pt.z / f2));
-case 9:
-if (x2.tok == 9) return this.addXPt4 (J.util.Quaternion.newP4 (x1.value).div (J.util.Quaternion.newP4 (x2.value)).toPoint4f ());
-if (f2 == 0) return this.addXPt4 (JU.P4.new4 (NaN, NaN, NaN, NaN));
-return this.addXPt4 (J.util.Quaternion.newP4 (x1.value).mul (1 / f2).toPoint4f ());
-}
-case 269484211:
-f = x2.asFloat ();
-switch (x1.tok) {
-default:
-return this.addXInt (f == 0 ? 0 : Clazz.doubleToInt (Math.floor (x1.asFloat () / x2.asFloat ())));
-case 9:
-if (f == 0) return this.addXPt4 (JU.P4.new4 (NaN, NaN, NaN, NaN));
-if (x2.tok == 9) return this.addXPt4 (J.util.Quaternion.newP4 (x1.value).divLeft (J.util.Quaternion.newP4 (x2.value)).toPoint4f ());
-return this.addXPt4 (J.util.Quaternion.newP4 (x1.value).mul (1 / f).toPoint4f ());
-}
-case 269484227:
-f = Math.pow (x1.asFloat (), x2.asFloat ());
-return (x1.tok == 2 && x2.tok == 2 ? this.addXInt (Clazz.floatToInt (f)) : this.addXFloat (f));
+return this.addXInt (n == 0 ? 0 : x1.asInt () % n);
 }
 return true;
-}, $fz.isPrivate = true, $fz));
+}, "J.script.T,J.script.SV,J.script.SV");
+$_M(c$, "isDecimal", 
+($fz = function (x) {
+var s;
+return (x.tok == 3 || x.tok == 4 && ((s = J.script.SV.sValue (x).trim ()).indexOf (".") >= 0 || s.indexOf ("+") > 0 || s.lastIndexOf ("-") > 0));
+}, $fz.isPrivate = true, $fz), "J.script.SV");
 $_M(c$, "ptValue", 
 function (x, allowFloat) {
 var pt;
@@ -1088,7 +1078,9 @@ case 192:
 case 128:
 case 160:
 return this.addXObj (this.eval.getExtension ().getMinMax (x2.getList (), op.intValue));
-case 1276117010:
+case 1276383249:
+return this.addXVar (x2.pushPop (null));
+case 1276117011:
 case 1141899269:
 return this.addXVar (x2.sortOrReverse (op.intValue == 1141899269 ? -2147483648 : 1));
 }
@@ -1159,7 +1151,7 @@ var bs = J.script.SV.bsSelectVar (x2);
 if (bs.cardinality () == 1 && (op.intValue & 480) == 0) op.intValue |= 32;
 var val = this.eval.getBitsetProperty (bs, op.intValue, null, null, x2.value, op.value, false, x2.index, true);
 if (op.intValue != 1678770178) return this.addXObj (val);
-return this.addXVar (J.script.SV.newVariable (10,  new J.modelset.BondSet (val, this.viewer.getAtomIndices (bs))));
+return this.addXVar (J.script.SV.newV (10,  new J.modelset.BondSet (val, this.viewer.getAtomIndices (bs))));
 }
 return false;
 }, $fz.isPrivate = true, $fz), "J.script.T,J.script.SV");

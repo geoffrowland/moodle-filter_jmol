@@ -93,7 +93,7 @@
 var $t$;
 //var c$;
 Clazz_declarePackage ("JSV.export");
-Clazz_load (["JSV.api.ExportInterface"], "JSV.export.Exporter", ["JU.Base64", "$.PT", "JSV.common.Annotation", "$.ExportType", "$.JSVFileManager", "$.JSViewer", "JSV.util.JSVTxt"], function () {
+Clazz_load (["JSV.api.ExportInterface"], "JSV.export.Exporter", ["JU.Base64", "$.PT", "JSV.common.Annotation", "$.ExportType", "$.JSVFileManager", "$.JSViewer"], function () {
 c$ = Clazz_declareType (JSV["export"], "Exporter", null, JSV.api.ExportInterface);
 Clazz_makeConstructor (c$, 
 function () {
@@ -292,6 +292,7 @@ function (viewer, imode) {
 var pd = viewer.selectedPanel.getPanelData ();
 var sourcePath = pd.getSpectrum ().getFilePath ();
 var newName = JSV.common.JSVFileManager.getName (sourcePath);
+if (newName.startsWith ("$")) newName = newName.substring (1);
 var pt = newName.lastIndexOf (".");
 var name = (pt < 0 ? newName : newName.substring (0, pt));
 var ext = ".jdx";
@@ -328,7 +329,7 @@ var br = JSV.common.JSVFileManager.getBufferedReaderFromName (name, null);
 var line = null;
 while ((line = br.readLine ()) != null) {
 out.append (line);
-out.append (JSV.util.JSVTxt.newLine);
+out.append (JSV["export"].Exporter.newLine);
 }
 out.closeChannel ();
 return "OK " + out.getByteCount () + " bytes";
@@ -340,6 +341,7 @@ throw e;
 }
 }
 }, "~S,JU.OC");
+c$.newLine = c$.prototype.newLine = System.getProperty ("line.separator");
 });
 Clazz_declarePackage ("JSV.api");
 Clazz_load (["JSV.api.JSVExporter"], "JSV.api.ExportInterface", null, function () {
@@ -347,42 +349,10 @@ Clazz_declareInterface (JSV.api, "ExportInterface", JSV.api.JSVExporter);
 });
 Clazz_declarePackage ("JSV.api");
 Clazz_declareInterface (JSV.api, "JSVExporter");
-Clazz_declarePackage ("JSV.util");
-Clazz_load (null, "JSV.util.JSVTxt", ["JU.DF", "$.PT"], function () {
-c$ = Clazz_declareType (JSV.util, "JSVTxt");
-c$.fixExponentInt = $_M(c$, "fixExponentInt", 
-function (x) {
-return (x == Math.floor (x) ? String.valueOf (Clazz_doubleToInt (x)) : JU.PT.simpleReplace (JSV.util.JSVTxt.fixExponent (x), "E+00", ""));
-}, "~N");
-c$.fixIntNoExponent = $_M(c$, "fixIntNoExponent", 
-function (x) {
-return (x == Math.floor (x) ? String.valueOf (Clazz_doubleToInt (x)) : JU.DF.formatDecimalTrimmed (x, 10));
-}, "~N");
-c$.isAlmostInteger = $_M(c$, "isAlmostInteger", 
-function (x) {
-return (x != 0 && Math.abs (x - Math.floor (x)) / x > 1e-8);
-}, "~N");
-c$.fixExponent = $_M(c$, "fixExponent", 
-function (x) {
-var s = JU.DF.formatDecimalDbl (x, -7);
-var pt = s.indexOf ("E");
-if (pt < 0) {
-return s;
-}switch (s.length - pt) {
-case 2:
-s = s.substring (0, pt + 1) + "0" + s.substring (pt + 1);
-break;
-case 3:
-if (s.charAt (pt + 1) == '-') s = s.substring (0, pt + 2) + "0" + s.substring (pt + 2);
-break;
-}
-if (s.indexOf ("E-") < 0) s = s.substring (0, pt + 1) + "+" + s.substring (pt + 1);
-return s;
-}, "~N");
-c$.newLine = c$.prototype.newLine = System.getProperty ("line.separator");
-});
+Clazz_declarePackage ("JSV.api");
+Clazz_declareInterface (JSV.api, "JSVPdfWriter");
 Clazz_declarePackage ("JSV.common");
-Clazz_load (["JSV.api.JSVGraphics"], "JSV.common.PDFWriter", ["java.util.Hashtable", "javajs.export.PDFCreator", "JU.CU", "JSV.common.JSVersion"], function () {
+Clazz_load (["JSV.api.JSVGraphics", "$.JSVPdfWriter"], "JSV.common.PDFWriter", ["java.util.Hashtable", "javajs.export.PDFCreator", "JU.CU", "JSV.common.JSVersion"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.g2d = null;
 this.date = null;
@@ -390,7 +360,7 @@ this.pdf = null;
 this.inPath = false;
 this.rgb = null;
 Clazz_instantialize (this, arguments);
-}, JSV.common, "PDFWriter", null, JSV.api.JSVGraphics);
+}, JSV.common, "PDFWriter", null, [JSV.api.JSVGraphics, JSV.api.JSVPdfWriter]);
 Clazz_prepareFields (c$, function () {
 this.rgb =  Clazz_newFloatArray (3, 0);
 });
@@ -398,7 +368,7 @@ Clazz_makeConstructor (c$,
 function () {
 this.pdf =  new javajs["export"].PDFCreator ();
 });
-$_M(c$, "createPdfDocument", 
+$_V(c$, "createPdfDocument", 
 function (panel, pl, os) {
 var isLandscape = pl.layout.equals ("landscape");
 this.date = pl.date;

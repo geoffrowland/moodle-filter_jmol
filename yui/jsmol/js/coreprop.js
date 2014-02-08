@@ -95,7 +95,7 @@ var $t$;
 Clazz_declarePackage ("J.api");
 Clazz_declareInterface (J.api, "JmolPropertyManager");
 Clazz_declarePackage ("J.viewer");
-Clazz_load (["J.api.JmolPropertyManager", "java.util.Hashtable"], "J.viewer.PropertyManager", ["java.lang.Boolean", "$.Double", "$.Float", "java.util.Arrays", "$.Map", "JU.BS", "$.Base64", "$.List", "$.M3", "$.P3", "$.PT", "$.SB", "$.V3", "J.modelset.Atom", "$.BondSet", "$.LabelToken", "J.script.SV", "$.T", "J.util.BSUtil", "$.C", "$.Elements", "$.Escape", "$.JmolEdge", "$.JmolMolecule", "$.Logger", "$.Txt", "J.viewer.Viewer"], function () {
+Clazz_load (["J.api.JmolPropertyManager", "java.util.Hashtable"], "J.viewer.PropertyManager", ["java.lang.Boolean", "$.Double", "$.Float", "java.util.Arrays", "$.Map", "JU.BS", "$.Base64", "$.List", "$.M3", "$.M4", "$.P3", "$.PT", "$.SB", "J.modelset.Atom", "$.BondSet", "$.LabelToken", "J.script.SV", "$.T", "J.util.BSUtil", "$.C", "$.Elements", "$.Escape", "$.JmolEdge", "$.JmolMolecule", "$.Logger", "$.Txt", "J.viewer.Viewer"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.viewer = null;
 this.map = null;
@@ -130,7 +130,7 @@ return (type.length > 0 && type !== "<atom selection>");
 }, "~S");
 $_V(c$, "getProperty", 
 function (returnType, infoType, paramInfo) {
-if (J.viewer.PropertyManager.propertyTypes.length != 123) J.util.Logger.warn ("propertyTypes is not the right length: " + J.viewer.PropertyManager.propertyTypes.length + " != " + 123);
+if (J.viewer.PropertyManager.propertyTypes.length != 126) J.util.Logger.warn ("propertyTypes is not the right length: " + J.viewer.PropertyManager.propertyTypes.length + " != " + 126);
 var info;
 if (infoType.indexOf (".") >= 0 || infoType.indexOf ("[") >= 0) {
 info = this.getModelProperty (infoType, paramInfo);
@@ -147,14 +147,14 @@ return info;
 $_M(c$, "getModelProperty", 
 function (propertyName, propertyValue) {
 propertyName = propertyName.$replace (']', ' ').$replace ('[', ' ').$replace ('.', ' ');
-propertyName = JU.PT.simpleReplace (propertyName, "  ", " ");
+propertyName = JU.PT.rep (propertyName, "  ", " ");
 var names = JU.PT.split (JU.PT.trim (propertyName, " "), " ");
 var args =  new Array (names.length);
 propertyName = names[0];
 var n;
 for (var i = 1; i < names.length; i++) {
-if ((n = JU.PT.parseInt (names[i])) != -2147483648) args[i] = J.script.SV.newScriptVariableInt (n);
- else args[i] = J.script.SV.newVariable (4, names[i]);
+if ((n = JU.PT.parseInt (names[i])) != -2147483648) args[i] = J.script.SV.newI (n);
+ else args[i] = J.script.SV.newV (4, names[i]);
 }
 return this.extractProperty (this.getProperty (null, propertyName, propertyValue), args, 1);
 }, "~S,~O");
@@ -176,6 +176,12 @@ var m = property;
 var f = [[m.m00, m.m01, m.m02], [m.m10, m.m11, m.m12], [m.m20, m.m21, m.m22]];
 if (pt < 0) pt += 3;
 if (pt >= 0 && pt < 3) return this.extractProperty (f, args, --ptr);
+return "";
+}if (Clazz_instanceOf (property, JU.M4)) {
+var m = property;
+var f = [[m.m00, m.m01, m.m02, m.m03], [m.m10, m.m11, m.m12, m.m13], [m.m20, m.m21, m.m22, m.m23], [m.m30, m.m31, m.m32, m.m33]];
+if (pt < 0) pt += 4;
+if (pt >= 0 && pt < 4) return this.extractProperty (f, args, --ptr);
 return "";
 }if (JU.PT.isAI (property)) {
 var ilist = property;
@@ -295,7 +301,7 @@ return this.viewer.getModelExtract (myParam, true, false, "MOL");
 case 32:
 return J.viewer.PropertyManager.getFileInfo (this.viewer.getFileData (), myParam.toString ());
 case 1:
-return this.viewer.getFullPathName ();
+return this.viewer.getFullPathName (false);
 case 2:
 return this.viewer.getFileHeader ();
 case 4:
@@ -314,7 +320,7 @@ if (width < 0 && height < 0) height = width = -1;
  else height = width;
 if (params.indexOf ("g64") >= 0 || params.indexOf ("base64") >= 0) returnType = "string";
 var type = "JPG";
-if (params.indexOf ("type=") >= 0) type = JU.PT.getTokens (JU.PT.replaceAllCharacter (params.substring (params.indexOf ("type=") + 5), ";,", ' '))[0];
+if (params.indexOf ("type=") >= 0) type = JU.PT.getTokens (JU.PT.replaceWithCharacter (params.substring (params.indexOf ("type=") + 5), ";,", ' '))[0];
 var errMsg =  new Array (1);
 var bytes = this.viewer.getImageAsBytes (type.toUpperCase (), width, height, -1, errMsg);
 return (errMsg[0] != null ? errMsg[0] : returnType == null ? bytes : JU.Base64.getBase64 (bytes).toString ());
@@ -324,6 +330,8 @@ case 36:
 return this.viewer.getShapeProperty (24, "getData");
 case 40:
 return this.viewer.getNMRCalculation ().getInfo (myParam.toString ());
+case 41:
+return this.getVariables (myParam.toString ());
 case 21:
 return this.viewer.getStatusChanged (myParam.toString ());
 case 22:
@@ -361,8 +369,8 @@ return this.viewer.getStateInfo3 (myParam.toString (), 0, 0);
 case 12:
 return this.viewer.getMatrixRotate ();
 }
-var data =  new Array (41);
-for (var i = 0; i < 41; i++) {
+var data =  new Array (42);
+for (var i = 0; i < 42; i++) {
 var paramType = J.viewer.PropertyManager.getParamType (i);
 var paramDefault = this.getDefaultPropertyParam (i);
 var name = J.viewer.PropertyManager.getPropertyName (i);
@@ -371,10 +379,14 @@ data[i] = (name.charAt (0) == 'X' ? "" : name + (paramType !== "" ? " " + J.view
 java.util.Arrays.sort (data);
 var info =  new JU.SB ();
 info.append ("getProperty ERROR\n").append (infoType).append ("?\nOptions include:\n");
-for (var i = 0; i < 41; i++) if (data[i].length > 0) info.append ("\n getProperty ").append (data[i]);
+for (var i = 0; i < 42; i++) if (data[i].length > 0) info.append ("\n getProperty ").append (data[i]);
 
 return info.toString ();
 }, "~S,~O,~S");
+$_M(c$, "getVariables", 
+function (name) {
+return (name.toLowerCase ().equals ("all") ? this.viewer.global.getAllVariables () : this.viewer.evaluateExpressionAsVariable (name));
+}, "~S");
 c$.getFileInfo = $_M(c$, "getFileInfo", 
 function (objHeader, type) {
 var ht =  new java.util.Hashtable ();
@@ -561,7 +573,7 @@ var asJSON = type.equalsIgnoreCase ("JSON") || type.equalsIgnoreCase ("CD");
 var mol =  new JU.SB ();
 var ms = this.viewer.modelSet;
 if (!asXYZVIB && !asJSON) {
-mol.append (isModelKit ? "Jmol Model Kit" : this.viewer.getFullPathName ().$replace ('\\', '/'));
+mol.append (isModelKit ? "Jmol Model Kit" : this.viewer.getFullPathName (false).$replace ('\\', '/'));
 var version = J.viewer.Viewer.getJmolVersion ();
 mol.append ("\n__Jmol-").append (version.substring (0, 2));
 var cMM;
@@ -801,7 +813,7 @@ case 1073742120:
 case 1087373320:
 var id = a.getChainID ();
 s = (id == 0 ? " " : a.getChainIDStr ());
-if (id > 255) s = J.util.Escape.eS (s);
+if (id > 255) s = JU.PT.esc (s);
 switch (tok) {
 case 1073742120:
 s = "[" + a.getGroup3 (false) + "]" + a.getSeqcodeString () + ":" + s;
@@ -841,12 +853,12 @@ var sb =  new JU.SB ();
 for (var i = 0; i < ms.modelCount; ++i) {
 if (frames != null && !frames.get (i)) continue;
 var s = "[\"" + ms.getModelNumberDotted (i) + "\"] = ";
-sb.append ("\n\nfile").append (s).append (J.util.Escape.eS (ms.getModelFileName (i)));
+sb.append ("\n\nfile").append (s).append (JU.PT.esc (ms.getModelFileName (i)));
 var id = ms.getModelAuxiliaryInfoValue (i, "modelID");
-if (id != null) sb.append ("\nid").append (s).append (J.util.Escape.eS (id));
-sb.append ("\ntitle").append (s).append (J.util.Escape.eS (ms.getModelTitle (i)));
-sb.append ("\nname").append (s).append (J.util.Escape.eS (ms.getModelName (i)));
-sb.append ("\ntype").append (s).append (J.util.Escape.eS (ms.getModelFileType (i)));
+if (id != null) sb.append ("\nid").append (s).append (JU.PT.esc (id));
+sb.append ("\ntitle").append (s).append (JU.PT.esc (ms.getModelTitle (i)));
+sb.append ("\nname").append (s).append (JU.PT.esc (ms.getModelName (i)));
+sb.append ("\ntype").append (s).append (JU.PT.esc (ms.getModelFileType (i)));
 }
 return sb.toString ();
 }, "JU.BS");
@@ -870,13 +882,13 @@ info.put ("x", Float.$valueOf (atom.x));
 info.put ("y", Float.$valueOf (atom.y));
 info.put ("z", Float.$valueOf (atom.z));
 info.put ("coord", JU.P3.newP (atom));
-if (ms.vibrations != null && ms.vibrations[i] != null) {
-info.put ("vibVector", JU.V3.newV (ms.vibrations[i]));
-}info.put ("bondCount", Integer.$valueOf (atom.getCovalentBondCount ()));
+if (ms.vibrations != null && ms.vibrations[i] != null) ms.vibrations[i].getInfo (info);
+info.put ("bondCount", Integer.$valueOf (atom.getCovalentBondCount ()));
 info.put ("radius", Float.$valueOf ((atom.getRasMolRadius () / 120.0)));
 info.put ("model", atom.getModelNumberForLabel ());
-info.put ("shape", J.modelset.Atom.atomPropertyString (this.viewer, atom, 1087373323));
-info.put ("visible", Boolean.$valueOf (atom.isVisible (0)));
+var shape = J.modelset.Atom.atomPropertyString (this.viewer, atom, 1087373323);
+if (shape != null) info.put ("shape", shape);
+info.put ("visible", Boolean.$valueOf (atom.checkVisible ()));
 info.put ("clickabilityFlags", Integer.$valueOf (atom.clickabilityFlags));
 info.put ("visibilityFlags", Integer.$valueOf (atom.shapeVisibilityFlags));
 info.put ("spacefill", Float.$valueOf (atom.getRadius ()));
@@ -1029,7 +1041,7 @@ info.append (id == 0 ? " " : atom.getChainIDStr ());
 }, "JU.SB,J.modelset.Atom");
 Clazz_defineStatics (c$,
 "atomExpression", "<atom selection>");
-c$.propertyTypes = c$.prototype.propertyTypes = ["appletInfo", "", "", "fileName", "", "", "fileHeader", "", "", "fileContents", "<pathname>", "", "fileContents", "", "", "animationInfo", "", "", "modelInfo", "<atom selection>", "{*}", "ligandInfo", "<atom selection>", "{*}", "shapeInfo", "", "", "measurementInfo", "", "", "centerInfo", "", "", "orientationInfo", "", "", "transformInfo", "", "", "atomList", "<atom selection>", "(visible)", "atomInfo", "<atom selection>", "(visible)", "bondInfo", "<atom selection>", "(visible)", "chainInfo", "<atom selection>", "(visible)", "polymerInfo", "<atom selection>", "(visible)", "moleculeInfo", "<atom selection>", "(visible)", "stateInfo", "<state type>", "all", "extractModel", "<atom selection>", "(visible)", "jmolStatus", "statusNameList", "", "jmolViewer", "", "", "messageQueue", "", "", "auxiliaryInfo", "<atom selection>", "{*}", "boundBoxInfo", "", "", "dataInfo", "<data type>", "types", "image", "<width=www,height=hhh>", "", "evaluate", "<expression>", "", "menu", "<type>", "current", "minimizationInfo", "", "", "pointGroupInfo", "<atom selection>", "(visible)", "fileInfo", "<type>", "", "errorMessage", "", "", "mouseInfo", "", "", "isosurfaceInfo", "", "", "isosurfaceData", "", "", "consoleText", "", "", "JSpecView", "<key>", "", "scriptQueueInfo", "", "", "nmrInfo", "<elementSymbol> or 'all' or 'shifts'", "all"];
+c$.propertyTypes = c$.prototype.propertyTypes = ["appletInfo", "", "", "fileName", "", "", "fileHeader", "", "", "fileContents", "<pathname>", "", "fileContents", "", "", "animationInfo", "", "", "modelInfo", "<atom selection>", "{*}", "ligandInfo", "<atom selection>", "{*}", "shapeInfo", "", "", "measurementInfo", "", "", "centerInfo", "", "", "orientationInfo", "", "", "transformInfo", "", "", "atomList", "<atom selection>", "(visible)", "atomInfo", "<atom selection>", "(visible)", "bondInfo", "<atom selection>", "(visible)", "chainInfo", "<atom selection>", "(visible)", "polymerInfo", "<atom selection>", "(visible)", "moleculeInfo", "<atom selection>", "(visible)", "stateInfo", "<state type>", "all", "extractModel", "<atom selection>", "(visible)", "jmolStatus", "statusNameList", "", "jmolViewer", "", "", "messageQueue", "", "", "auxiliaryInfo", "<atom selection>", "{*}", "boundBoxInfo", "", "", "dataInfo", "<data type>", "types", "image", "<width=www,height=hhh>", "", "evaluate", "<expression>", "", "menu", "<type>", "current", "minimizationInfo", "", "", "pointGroupInfo", "<atom selection>", "(visible)", "fileInfo", "<type>", "", "errorMessage", "", "", "mouseInfo", "", "", "isosurfaceInfo", "", "", "isosurfaceData", "", "", "consoleText", "", "", "JSpecView", "<key>", "", "scriptQueueInfo", "", "", "nmrInfo", "<elementSymbol> or 'all' or 'shifts'", "all", "variableInfo", "<name>", "all"];
 Clazz_defineStatics (c$,
 "PROP_APPLET_INFO", 0,
 "PROP_FILENAME", 1,
@@ -1072,7 +1084,8 @@ Clazz_defineStatics (c$,
 "PROP_JSPECVIEW", 38,
 "PROP_SCRIPT_QUEUE_INFO", 39,
 "PROP_NMR_INFO", 40,
-"PROP_COUNT", 41,
+"PROP_VAR_INFO", 41,
+"PROP_COUNT", 42,
 "readableTypes", ["", "stateinfo", "extractmodel", "filecontents", "fileheader", "image", "menu", "minimizationInfo"]);
 });
 })(Clazz

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shape");
-Clazz.load (["J.shape.AtomShape", "java.util.Hashtable"], "J.shape.Labels", ["javajs.awt.Font", "JU.AU", "$.BS", "J.constant.EnumPalette", "J.modelset.LabelToken", "$.Text", "J.util.BSUtil", "$.C", "J.viewer.JC"], function () {
+Clazz.load (["J.shape.AtomShape", "java.util.Hashtable"], "J.shape.Labels", ["javajs.awt.Font", "JU.AU", "$.BS", "$.List", "J.constant.EnumPalette", "J.modelset.LabelToken", "$.Text", "J.script.SV", "J.util.BSUtil", "$.C", "J.viewer.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.strings = null;
 this.formats = null;
@@ -74,11 +74,24 @@ this.text.setScalePixelsPerMicron (scalePixelsPerMicron);
 return;
 }if ("label" === propertyName) {
 this.setScaling ();
+var tokens = null;
+if (Clazz.instanceOf (value, JU.List)) {
+var list = value;
+var n = list.size ();
+tokens = [null];
+for (var pt = 0, i = bsSelected.nextSetBit (0); i >= 0 && i < this.atomCount; i = bsSelected.nextSetBit (i + 1)) {
+if (pt >= n) {
+this.setLabel (J.shape.Labels.nullToken, "", i);
+return;
+}tokens[0] = null;
+this.setLabel (tokens, J.script.SV.sValue (list.get (pt++)), i);
+}
+} else {
 var strLabel = value;
-var tokens = (strLabel == null || strLabel.length == 0 ? J.shape.Labels.nullToken : [null]);
+tokens = (strLabel == null || strLabel.length == 0 ? J.shape.Labels.nullToken : [null]);
 for (var i = bsSelected.nextSetBit (0); i >= 0 && i < this.atomCount; i = bsSelected.nextSetBit (i + 1)) this.setLabel (tokens, strLabel, i);
 
-return;
+}return;
 }if ("labels" === propertyName) {
 this.setScaling ();
 var labels = value;
@@ -198,7 +211,7 @@ this.formats[i] = strLabel;
 this.bsSizeSet.set (i);
 if ((this.bsBgColixSet == null || !this.bsBgColixSet.get (i)) && this.defaultBgcolix != 0) this.setBgcolix (i, this.defaultBgcolix);
 this.mads[i] = (mode >= 0 ? 1 : -1);
-}atom.setShapeVisibility (this.myVisibilityFlag, this.strings != null && i < this.strings.length && this.strings[i] != null && this.mads[i] >= 0);
+}this.setShapeVisibility (atom, this.strings != null && i < this.strings.length && this.strings[i] != null && this.mads[i] >= 0);
 }
 return;
 }if (propertyName.startsWith ("label:")) {
@@ -244,7 +257,7 @@ if (t == null) return;
 var label = t.getText ();
 var atom = this.atoms[i];
 this.addString (atom, i, label, label);
-atom.setShapeVisibility (this.myVisibilityFlag, true);
+this.setShapeVisibility (atom, true);
 if (t.colix >= 0) this.setLabelColix (i, t.colix, J.constant.EnumPalette.UNKNOWN.id);
 this.setFont (i, t.font.fid);
 this.putLabel (i, t);
@@ -273,7 +286,7 @@ if (this.defaultFontId != this.zeroFontId) this.setFont (i, this.defaultFontId);
 }, $fz.isPrivate = true, $fz), "~A,~S,~N");
 $_M(c$, "addString", 
 ($fz = function (atom, i, label, strLabel) {
-atom.setShapeVisibility (this.myVisibilityFlag, label != null);
+this.setShapeVisibility (atom, label != null);
 if (this.strings == null || i >= this.strings.length) this.strings = JU.AU.ensureLengthS (this.strings, i + 1);
 if (this.formats == null || i >= this.formats.length) this.formats = JU.AU.ensureLengthS (this.formats, i + 1);
 this.strings[i] = label;
@@ -416,7 +429,7 @@ var dmin = 3.4028235E38;
 var imin = -1;
 var zmin = 3.4028235E38;
 for (var entry, $entry = this.labelBoxes.entrySet ().iterator (); $entry.hasNext () && ((entry = $entry.next ()) || true);) {
-if (!this.atoms[entry.getKey ().intValue ()].isVisible (this.myVisibilityFlag)) continue;
+if (!this.atoms[entry.getKey ().intValue ()].isVisible (this.myVisibilityFlag | 9)) continue;
 var boxXY = entry.getValue ();
 var dx = x - boxXY[0];
 var dy = y - boxXY[1];

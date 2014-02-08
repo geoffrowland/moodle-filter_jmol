@@ -214,9 +214,7 @@ this.xTransDelta = this.xTrans - this.xTransStart;
 this.yTransStart = this.tm.navigationOffset.y;
 this.yTransDelta = this.yTrans - this.yTransStart;
 this.degreeStep = this.degrees / (this.totalSteps + 1);
-this.aaStepCenter =  new JU.V3 ();
-this.aaStepCenter.setT (this.center == null ? this.tm.navigationCenter : this.center);
-this.aaStepCenter.sub (this.tm.navigationCenter);
+this.aaStepCenter = JU.V3.newVsub (this.center == null ? this.tm.navigationCenter : this.center, this.tm.navigationCenter);
 this.aaStepCenter.scale (1 / (this.totalSteps + 1));
 this.centerStart = JU.P3.newP (this.tm.navigationCenter);
 }}, $fz.isPrivate = true, $fz));
@@ -256,29 +254,28 @@ $_M(c$, "alignZX",
 var pt0s =  new JU.P3 ();
 var pt1s =  new JU.P3 ();
 var m = this.tm.getMatrixRotate ();
-m.transform2 (pt0, pt0s);
-m.transform2 (pt1, pt1s);
+m.rotate2 (pt0, pt0s);
+m.rotate2 (pt1, pt1s);
 var vPath = JU.V3.newVsub (pt0s, pt1s);
 var v = JU.V3.new3 (0, 0, 1);
 var angle = vPath.angle (v);
 v.cross (vPath, v);
 if (angle != 0) this.tm.navigateAxis (v, (angle * 57.29577951308232));
-m.transform2 (pt0, pt0s);
+m.rotate2 (pt0, pt0s);
 var pt2 = JU.P3.newP (ptVectorWing);
 pt2.add (pt0);
 var pt2s =  new JU.P3 ();
-m.transform2 (pt2, pt2s);
-vPath.setT (pt2s);
-vPath.sub (pt0s);
+m.rotate2 (pt2, pt2s);
+vPath.sub2 (pt2s, pt0s);
 vPath.z = 0;
 v.set (-1, 0, 0);
 angle = vPath.angle (v);
 if (vPath.y < 0) angle = -angle;
 v.set (0, 0, 1);
 if (angle != 0) this.tm.navigateAxis (v, (angle * 57.29577951308232));
-m.transform2 (pt0, pt0s);
-m.transform2 (pt1, pt1s);
-m.transform2 (ptVectorWing, pt2s);
+m.rotate2 (pt0, pt0s);
+m.rotate2 (pt1, pt1s);
+m.rotate2 (ptVectorWing, pt2s);
 }, $fz.isPrivate = true, $fz), "JU.P3,JU.P3,JU.P3");
 $_V(c$, "zoomByFactor", 
 function (factor, x, y) {
@@ -320,9 +317,9 @@ break;
 case -2:
 case 3:
 var pt1 =  new JU.P3 ();
-this.tm.matrixTransform.transform2 (this.tm.navigationCenter, pt1);
+this.tm.matrixTransform.rotTrans2 (this.tm.navigationCenter, pt1);
 var z = pt1.z;
-this.tm.matrixTransform.transform2 (this.tm.fixedRotationCenter, pt1);
+this.tm.matrixTransform.rotTrans2 (this.tm.fixedRotationCenter, pt1);
 this.tm.modelCenterOffset = this.tm.referencePlaneOffset + (pt1.z - z);
 this.tm.calcCameraFactors ();
 this.tm.calcTransformMatrix ();
@@ -332,17 +329,17 @@ this.tm.navigationOffset.z = this.tm.referencePlaneOffset;
 this.tm.unTransformPoint (this.tm.navigationOffset, this.tm.navigationCenter);
 break;
 }
-this.tm.matrixTransform.transform2 (this.tm.navigationCenter, this.tm.navigationShiftXY);
+this.tm.matrixTransform.rotTrans2 (this.tm.navigationCenter, this.tm.navigationShiftXY);
 if (this.viewer.getBoolean (603979888)) {
 var pt = JU.P3.newP (this.tm.navigationCenter);
 this.viewer.toUnitCell (this.tm.navigationCenter, null);
 if (pt.distance (this.tm.navigationCenter) > 0.01) {
-this.tm.matrixTransform.transform2 (this.tm.navigationCenter, pt);
+this.tm.matrixTransform.rotTrans2 (this.tm.navigationCenter, pt);
 var dz = this.tm.navigationShiftXY.z - pt.z;
 this.tm.modelCenterOffset += dz;
 this.tm.calcCameraFactors ();
 this.tm.calcTransformMatrix ();
-this.tm.matrixTransform.transform2 (this.tm.navigationCenter, this.tm.navigationShiftXY);
+this.tm.matrixTransform.rotTrans2 (this.tm.navigationCenter, this.tm.navigationShiftXY);
 }}this.tm.transformPoint2 (this.tm.fixedRotationCenter, this.tm.fixedTranslation);
 this.tm.fixedRotationOffset.setT (this.tm.fixedTranslation);
 this.tm.previousX = this.tm.fixedTranslation.x;
@@ -370,7 +367,7 @@ var f = -this.tm.getPerspectiveFactor (pt.z);
 pt.x /= f;
 pt.y /= f;
 pt.z = this.tm.referencePlaneOffset;
-this.tm.matrixTransformInv.transform2 (pt, this.tm.navigationCenter);
+this.tm.matrixTransformInv.rotTrans2 (pt, this.tm.navigationCenter);
 this.tm.mode = 1;
 }, $fz.isPrivate = true, $fz));
 $_V(c$, "setNavigationOffsetRelative", 

@@ -1,11 +1,11 @@
 Clazz.declarePackage ("JU");
-Clazz.load (null, "JU.BS", ["java.lang.IndexOutOfBoundsException", "$.NegativeArraySizeException", "JU.SB"], function () {
+Clazz.load (["javajs.api.JSONEncodable"], "JU.BS", ["java.lang.IndexOutOfBoundsException", "$.NegativeArraySizeException", "JU.SB"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.words = null;
 this.wordsInUse = 0;
 this.sizeIsSticky = false;
 Clazz.instantialize (this, arguments);
-}, JU, "BS", null, Cloneable);
+}, JU, "BS", null, [Cloneable, javajs.api.JSONEncodable]);
 c$.wordIndex = $_M(c$, "wordIndex", 
 ($fz = function (bitIndex) {
 return bitIndex >> 5;
@@ -238,7 +238,7 @@ $_V(c$, "toString",
 function () {
 var numBits = (this.wordsInUse > 128) ? this.cardinality () : this.wordsInUse * 32;
 var b = JU.SB.newN (6 * numBits + 2);
-b.appendC ('{');
+b.appendC ('[');
 var i = this.nextSetBit (0);
 if (i != -1) {
 b.appendI (i);
@@ -248,7 +248,7 @@ do {
 b.append (", ").appendI (i);
 } while (++i < endOfRun);
 }
-}b.appendC ('}');
+}b.appendC (']');
 return b.toString ();
 });
 c$.copy = $_M(c$, "copy", 
@@ -271,6 +271,10 @@ for (var i = this.length (); --i >= max; ) if (this.get (i)) n--;
 
 return n;
 }, "~N");
+$_V(c$, "toJSON", 
+function () {
+return this.toString ();
+});
 Clazz.defineStatics (c$,
 "ADDRESS_BITS_PER_WORD", 5,
 "BITS_PER_WORD", 32,

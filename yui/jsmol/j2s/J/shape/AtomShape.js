@@ -59,7 +59,7 @@ function (i, rd, isVisible) {
 var atom = this.atoms[i];
 this.mads[i] = atom.calculateMad (this.viewer, rd);
 this.bsSizeSet.setBitTo (i, isVisible);
-atom.setShapeVisibility (this.myVisibilityFlag, isVisible);
+this.setShapeVisibility (atom, isVisible);
 }, "~N,J.atomdata.RadiusData,~B");
 $_M(c$, "setPropAS", 
 function (propertyName, value, bs) {
@@ -135,7 +135,7 @@ function () {
 if (!this.isActive) return;
 for (var i = this.atomCount; --i >= 0; ) {
 var atom = this.atoms[i];
-if ((atom.getShapeVisibilityFlags () & this.myVisibilityFlag) == 0 || this.modelSet.isAtomHidden (i)) continue;
+if ((atom.shapeVisibilityFlags & this.myVisibilityFlag) == 0 || this.modelSet.isAtomHidden (i)) continue;
 atom.setClickable (this.myVisibilityFlag);
 }
 });

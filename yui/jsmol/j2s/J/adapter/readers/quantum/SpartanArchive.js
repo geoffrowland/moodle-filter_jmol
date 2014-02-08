@@ -84,7 +84,7 @@ $_M(c$, "readAtoms",
 ($fz = function (atomCount0, doAddAtoms) {
 for (var i = 0; i < this.modelAtomCount; i++) {
 var tokens = this.getTokens (this.readLine ());
-var atom = (doAddAtoms ? this.r.atomSetCollection.addNewAtom () : this.r.atomSetCollection.getAtom (atomCount0 - this.modelAtomCount + i));
+var atom = (doAddAtoms ? this.r.atomSetCollection.addNewAtom () : this.r.atomSetCollection.atoms[atomCount0 - this.modelAtomCount + i]);
 atom.elementSymbol = J.adapter.smarter.AtomSetCollectionReader.getElementSymbol (this.parseInt (tokens[0]));
 this.r.setAtomCoordXYZ (atom, this.parseFloat (tokens[1]) * 0.5291772, this.parseFloat (tokens[2]) * 0.5291772, this.parseFloat (tokens[3]) * 0.5291772);
 }
@@ -101,7 +101,7 @@ var bondOrder = this.parseInt (tokens[i++]);
 if (bondOrder > 0) {
 this.r.atomSetCollection.addBond ( new J.adapter.smarter.Bond (sourceIndex, targetIndex, bondOrder < 4 ? bondOrder : bondOrder == 5 ? 515 : 1));
 }}
-var bondCount = this.r.atomSetCollection.getBondCount ();
+var bondCount = this.r.atomSetCollection.bondCount;
 if (J.util.Logger.debugging) {
 J.util.Logger.debug (bondCount + " bonds read");
 }}, "~S,~N");
@@ -318,7 +318,7 @@ if (J.util.Logger.debugging) {
 J.util.Logger.debug ("reading VIBFREQ vibration records: frequencyCount = " + frequencyCount);
 }var ignore =  Clazz.newBooleanArray (frequencyCount, false);
 for (var i = 0; i < frequencyCount; ++i) {
-var atomCount0 = this.r.atomSetCollection.getAtomCount ();
+var atomCount0 = this.r.atomSetCollection.atomCount;
 ignore[i] = !this.r.doGetVibration (i + 1);
 if (!ignore[i] && this.r.desiredVibrationNumber <= 0) {
 this.r.atomSetCollection.cloneLastAtomSet ();
@@ -376,7 +376,7 @@ if (J.util.Logger.debugging) {
 J.util.Logger.debug ("reading PROP VALUE:VIB FREQ_MODE vibration records: frequencyCount = " + frequencyCount);
 }var v;
 for (var i = 0; i < frequencyCount; ++i) {
-var atomCount0 = this.r.atomSetCollection.getAtomCount ();
+var atomCount0 = this.r.atomSetCollection.atomCount;
 this.r.atomSetCollection.cloneLastAtomSet ();
 this.addBonds (this.bondData, atomCount0);
 var info =  new java.util.Hashtable ();

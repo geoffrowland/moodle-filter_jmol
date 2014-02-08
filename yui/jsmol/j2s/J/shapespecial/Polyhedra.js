@@ -129,7 +129,7 @@ this.polyhedrons[i].modelIndex--;
 }, "~S,~O,JU.BS");
 $_M(c$, "setLighting", 
 ($fz = function (isFullyLit, bs) {
-for (var i = this.polyhedronCount; --i >= 0; ) if (bs.get (this.polyhedrons[i].centralAtom.getIndex ())) {
+for (var i = this.polyhedronCount; --i >= 0; ) if (bs.get (this.polyhedrons[i].centralAtom.index)) {
 var normixes = this.polyhedrons[i].normixes;
 this.polyhedrons[i].isFullyLit = isFullyLit;
 for (var j = normixes.length; --j >= 0; ) {
@@ -140,7 +140,7 @@ if (normixes[j] < 0 != isFullyLit) normixes[j] = ~normixes[j];
 $_M(c$, "andBitSet", 
 ($fz = function (bs) {
 var bsCenters =  new JU.BS ();
-for (var i = this.polyhedronCount; --i >= 0; ) bsCenters.set (this.polyhedrons[i].centralAtom.getIndex ());
+for (var i = this.polyhedronCount; --i >= 0; ) bsCenters.set (this.polyhedrons[i].centralAtom.index);
 
 bsCenters.and (bs);
 return bsCenters;
@@ -151,7 +151,7 @@ var newCount = 0;
 var pid = J.constant.EnumPalette.pidOf (null);
 for (var i = 0; i < this.polyhedronCount; ++i) {
 var p = this.polyhedrons[i];
-var iAtom = p.centralAtom.getIndex ();
+var iAtom = p.centralAtom.index;
 if (this.centers.get (iAtom)) this.setColixAndPalette (0, pid, iAtom);
  else this.polyhedrons[newCount++] = p;
 }
@@ -163,7 +163,7 @@ $_M(c$, "setVisible",
 ($fz = function (visible) {
 for (var i = this.polyhedronCount; --i >= 0; ) {
 var p = this.polyhedrons[i];
-if (p != null && this.centers.get (p.centralAtom.getIndex ())) p.visible = visible;
+if (p != null && this.centers.get (p.centralAtom.index)) p.visible = visible;
 }
 }, $fz.isPrivate = true, $fz), "~B");
 $_M(c$, "buildPolyhedra", 
@@ -188,7 +188,7 @@ var bondCount = 0;
 for (var i = bonds.length; --i >= 0; ) {
 var bond = bonds[i];
 var otherAtom = bond.getAtom1 () === atom ? bond.getAtom2 () : bond.getAtom1 ();
-if (this.bsVertices != null && !this.bsVertices.get (otherAtom.getIndex ())) continue;
+if (this.bsVertices != null && !this.bsVertices.get (otherAtom.index)) continue;
 if (this.radius > 0 && bond.getAtom1 ().distance (bond.getAtom2 ()) > this.radius) continue;
 this.otherAtoms[bondCount++] = otherAtom;
 if (bondCount == 150) break;
@@ -210,7 +210,7 @@ var otherAtomCount = 0;
 this.viewer.setIteratorForAtom (iter, atomIndex, this.radius);
 while (iter.hasNext ()) {
 var other = this.atoms[iter.next ()];
-if (this.bsVertices != null && !this.bsVertices.get (other.getIndex ()) || atom.distance (other) > this.radius) continue;
+if (this.bsVertices != null && !this.bsVertices.get (other.index) || atom.distance (other) > this.radius) continue;
 if (other.getAlternateLocationID () != atom.getAlternateLocationID () && (other.getAlternateLocationID ()).charCodeAt (0) != 0 && (atom.getAlternateLocationID ()).charCodeAt (0) != 0) continue;
 if (otherAtomCount == 150) break;
 this.otherAtoms[otherAtomCount++] = other;
@@ -356,7 +356,7 @@ $_V(c$, "setVisibilityFlags",
 function (bs) {
 for (var i = this.polyhedronCount; --i >= 0; ) {
 var p = this.polyhedrons[i];
-p.visibilityFlags = (p.visible && bs.get (p.modelIndex) && !this.modelSet.isAtomHidden (p.centralAtom.getIndex ()) ? this.myVisibilityFlag : 0);
+p.visibilityFlags = (p.visible && bs.get (p.modelIndex) && !this.modelSet.isAtomHidden (p.centralAtom.index) ? this.myVisibilityFlag : 0);
 }
 }, "JU.BS");
 $_V(c$, "getShapeState", 

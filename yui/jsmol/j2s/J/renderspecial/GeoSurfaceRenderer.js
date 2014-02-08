@@ -1,6 +1,7 @@
 Clazz.declarePackage ("J.renderspecial");
 Clazz.load (["J.renderspecial.DotsRenderer", "JU.P3i"], "J.renderspecial.GeoSurfaceRenderer", ["J.util.Geodesic"], function () {
 c$ = Clazz.decorateAsClass (function () {
+this.requireTranslucent = false;
 this.facePt1 = null;
 this.facePt2 = null;
 this.facePt3 = null;
@@ -15,18 +16,21 @@ $_V(c$, "render",
 function () {
 var gs = this.shape;
 this.iShowSolid = !(!this.viewer.checkMotionRendering (1113198597) && gs.ec.getDotsConvexMax () > 100);
-if (!this.iShowSolid) return false;
-if (!this.g3d.setColix (4)) return true;
+if (!this.iShowSolid && !this.g3d.setColix (4)) return false;
+var tcover = this.g3d.getTranslucentCoverOnly ();
+if (this.iShowSolid) this.g3d.setTranslucentCoverOnly (true);
 this.g3d.addRenderer (1073742182);
 if (this.iShowSolid && this.faceMap == null) this.faceMap =  Clazz.newIntArray (this.screenDotCount, 0);
 this.render1 (gs);
-return false;
+this.g3d.setTranslucentCoverOnly (tcover);
+return this.requireTranslucent;
 });
 $_V(c$, "renderConvex", 
 function (colix, visibilityMap, nPoints) {
 this.colix = colix;
 if (this.iShowSolid) {
 if (this.g3d.setColix (colix)) this.renderSurface (visibilityMap);
+ else this.requireTranslucent = true;
 return;
 }this.renderDots (nPoints);
 }, "~N,JU.BS,~N");

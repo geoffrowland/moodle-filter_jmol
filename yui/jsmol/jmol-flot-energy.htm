@@ -6,6 +6,8 @@ jmol-flot.htm
 Bob Hanson hansonr@stolaf.edu
 5:52 AM 5/12/2009
 
+BH 1/20/2014 1:16:57 PM adding "0+" to generate numbers in JavaScript
+
 This demonstration illustrates how Jquery Flot can be use with Jmol.
 
 page HTML:
@@ -31,15 +33,44 @@ right:
 </style>
 <script type="text/javascript" src="JSmol.min.js"></script>
 <script type="text/javascript" src="js/Jmol2.js"></script>
-<script type="text/javascript" src="flot/excanvas.js"></script>
 <script type="text/javascript" src="flot/jquery.flot2.js"></script>
-<script type="text/javascript" src="flot/showobj.js"></script>
-<script type="text/javascript" src="flot/json2.js"></script>
-
-
 
 
 <script type="text/javascript">
+
+function roundoff(x,ndec){
+	//round x to ndec decimal places (+) fixed; (-) floating
+	if(x==0)return 0
+	if(ndec==0)return Math.round(x)
+	var neg=(x<0?"-":"")
+	var xs=Math.abs(x)+""
+	var i=(xs.indexOf("E") & xs.indexOf("e"))
+	if(ndec<0 && i<0){
+		var xs=roundoff(Math.abs(x)*1e-100,-ndec)
+		var i=(xs.indexOf("E") & xs.indexOf("e"))
+		var e=(eval(xs.substring(i+1,xs.length))+100)
+		return neg+xs.substring(0,i)+(e!=0?"E"+e:"")
+	}
+	if (i>0) {
+		var s=roundoff(xs.substring(0,i),Math.abs(ndec)-1)+"E"+xs.substring(i+1,xs.length)
+		return neg+s
+	}
+	i=xs.indexOf(".")
+	if (i<0) {
+		xs=xs+"."
+		i=xs.indexOf(".")
+	}
+	xs=xs+"000000000"
+	var s="."+xs.substring(i+1+ndec,xs.length)
+	xs=xs.substring(0,i)+xs.substring(i+1,i+1+ndec)
+	var add1=(xs.charAt(0)=="0")
+	if(add1)xs="1"+xs
+	xs=eval(xs)+Math.round(eval(s))+""
+	if(add1)xs=xs.substring(1,xs.length)
+	xs=xs.substring(0,xs.length-ndec)+"."+xs.substring(xs.length-ndec,xs.length)
+	if(xs.substring(0,1)==".")xs="0"+xs
+	return neg+xs
+}
 
 //Jmol.debugCode=true
 
@@ -123,25 +154,22 @@ if (c == "zapped")return
 	//   Note that Flot allows additional element data other than just x and y -- we use this in the callback.
 	//   We build an array: [x,y,modelnumber,label].
 
-
 	for (var i = 0; i < modelCount; i++) {
 		var modelnumber = 0 + Info[i].modelNumber
 		var name = Info[i].name
+		var Properties = Info[i].modelProperties
 		var energy = (Properties && Properties.Energy ? parseFloat(Properties.Energy)
 			: Info[i].energy ? parseFloat(Info[i].energy) 
 			: parseFloat(name.substring((name.toLowerCase() + " kj").split("kj")[0].lastIndexOf("=") + 1))); //parse the name to pull out the energy
-		var Properties = Info[i].modelProperties
 		var label = (Properties && Properties.Constraint ? Properties.Constraint : 'Model = ' + modelnumber) 
 			+ ', Energy = ' + roundoff(energy,1) + ' kJ/mol'
-		A.push([i+1,energy,modelnumber,label])
+		A.push([i+1,0 + energy,modelnumber,label])
 	}
-
 
 
 	// add that data to the array
 
 	data.push(A)
-
 
 	// select flot options:
 
@@ -160,6 +188,8 @@ if (c == "zapped")return
 
 	theplot = $.plot($("#plotarea"), data, options)
 
+
+
 	// globals for callback
 
 	previousPoint = null
@@ -170,6 +200,7 @@ if (c == "zapped")return
 	$("#plotarea").bind("plotclick", plotClickCallback)
 
 	// execute an initial plotClickCallback:
+
 
 	setTimeout('plotClickCallback(null,null,item0);iamready=true;jmolScript("animation mode palindrome 1 1;animation on")',100)
 
@@ -182,6 +213,9 @@ var iamready = false
 function doHighlight(app, modelIndex) {
 	if (!iamready)return
 	theplot.unhighlight(0,-1)
+
+  modelIndex = 0 + modelIndex // required for JavaScript
+
 	theplot.highlight(0, modelIndex)
 	var label = data[0][modelIndex][3]
         setTimeout('jmolScript("set echo top left;echo ' + label+'")',100)
@@ -254,7 +288,10 @@ function showTooltip(x, y, contents, pos) {
 <div id="imagediv" class="printonly"></div>
 <div id="appletdiv" style="width:450;height:470;text-align:center">
 <script type="text/javascript">
-	jmolInitialize(".","JmolAppletSigned0.jar")
+
+  Jmol.Info.j2sPath = "j2s"
+  
+	jmolInitialize("java","JmolAppletSigned0.jar")
 	jmolSetAppletColor("lightblue");
 	jmolApplet(450, "set antialiasDisplay;set loadStructCallback 'plotEnergies';set animFrameCallback 'doHighlight'; load " + modelFile);
 

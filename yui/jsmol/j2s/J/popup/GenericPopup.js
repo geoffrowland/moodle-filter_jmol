@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.popup");
-Clazz.load (["javajs.api.GenericMenuInterface", "J.popup.JmolAbstractMenu", "java.util.Hashtable", "$.Properties", "JU.List"], "J.popup.GenericPopup", ["java.lang.Boolean", "java.util.StringTokenizer", "JU.PT", "$.SB", "J.i18n.GT", "J.popup.MainPopupResourceBundle", "J.util.Elements", "$.Escape", "$.Logger", "J.viewer.JC"], function () {
+Clazz.load (["javajs.api.GenericMenuInterface", "J.popup.JmolAbstractMenu", "java.util.Hashtable", "$.Properties", "JU.List"], "J.popup.GenericPopup", ["java.lang.Boolean", "java.util.StringTokenizer", "JU.PT", "$.SB", "J.i18n.GT", "J.popup.MainPopupResourceBundle", "J.util.Elements", "$.Logger", "J.viewer.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.viewer = null;
 this.htCheckbox = null;
@@ -197,13 +197,13 @@ id = id.substring (pt + 1);
 if ((pt = id.indexOf ("]")) >= 0) id = id.substring (0, pt);
 id = id.$replace ('_', ' ');
 if (script.indexOf ("[]") < 0) script = "[] " + script;
-return JU.PT.simpleReplace (script, "[]", id);
+return JU.PT.rep (script, "[]", id);
 } else if (script.indexOf ("?FILEROOT?") >= 0) {
-script = JU.PT.simpleReplace (script, "FILEROOT?", this.modelSetRoot);
+script = JU.PT.rep (script, "FILEROOT?", this.modelSetRoot);
 } else if (script.indexOf ("?FILE?") >= 0) {
-script = JU.PT.simpleReplace (script, "FILE?", this.modelSetFileName);
+script = JU.PT.rep (script, "FILE?", this.modelSetFileName);
 } else if (script.indexOf ("?PdbId?") >= 0) {
-script = JU.PT.simpleReplace (script, "PdbId?", "=xxxx");
+script = JU.PT.rep (script, "PdbId?", "=xxxx");
 }return script;
 }, "~S,~S");
 $_M(c$, "initialize", 
@@ -418,7 +418,7 @@ what = "set picking " + basename.substring (0, basename.length - 2);
 }} else {
 what = what.substring (pt + 1);
 if ((pt = what.indexOf ("|")) >= 0) what = (TF ? what.substring (0, pt) : what.substring (pt + 1)).trim ();
-what = JU.PT.simpleReplace (what, "T/F", (TF ? " TRUE" : " FALSE"));
+what = JU.PT.rep (what, "T/F", (TF ? " TRUE" : " FALSE"));
 }}this.viewer.evalStringQuiet (what);
 }, $fz.isPrivate = true, $fz), "~O,~S,~B");
 $_V(c$, "checkMenuClick", 
@@ -524,7 +524,7 @@ for (var i = 0; i < n; i++) {
 var peak = peaks.get (i);
 var title = JU.PT.getQuotedAttribute (peak, "title");
 var atoms = JU.PT.getQuotedAttribute (peak, "atoms");
-if (atoms != null) this.menuCreateItem (menu, title, "select visible & (@" + JU.PT.simpleReplace (atoms, ",", " or @") + ")", "Focus" + i);
+if (atoms != null) this.menuCreateItem (menu, title, "select visible & (@" + JU.PT.rep (atoms, ",", " or @") + ")", "Focus" + i);
 }
 this.menuEnable (menu, true);
 return true;
@@ -587,7 +587,7 @@ this.menuRemoveAll (menu, 0);
 this.menuEnable (menu, false);
 var scenes = this.viewer.getSceneList ();
 if (scenes == null) return;
-for (var i = 0; i < scenes.length; i++) this.menuCreateItem (menu, scenes[i], "restore scene " + J.util.Escape.eS (scenes[i]) + " 1.0", null);
+for (var i = 0; i < scenes.length; i++) this.menuCreateItem (menu, scenes[i], "restore scene " + JU.PT.esc (scenes[i]) + " 1.0", null);
 
 this.menuEnable (menu, true);
 }, $fz.isPrivate = true, $fz));

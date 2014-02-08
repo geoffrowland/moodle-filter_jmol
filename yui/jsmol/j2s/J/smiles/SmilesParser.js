@@ -848,12 +848,12 @@ return (i < 10 ? "" + i : i < 100 ? "%" + i : "%(" + i + ")");
 c$.cleanPattern = $_M(c$, "cleanPattern", 
 function (pattern) {
 pattern = JU.PT.replaceAllCharacters (pattern, " \t\n\r", "");
-pattern = JU.PT.simpleReplace (pattern, "^^", "'");
+pattern = JU.PT.rep (pattern, "^^", "'");
 var i = 0;
 var i2 = 0;
 while ((i = pattern.indexOf ("//*")) >= 0 && (i2 = pattern.indexOf ("*//")) >= i) pattern = pattern.substring (0, i) + pattern.substring (i2 + 3);
 
-pattern = JU.PT.simpleReplace (pattern, "//", "");
+pattern = JU.PT.rep (pattern, "//", "");
 return pattern;
 }, "~S");
 });

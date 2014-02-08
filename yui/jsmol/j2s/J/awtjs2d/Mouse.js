@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.awtjs2d");
-Clazz.load (["javajs.api.GenericMouseInterface", "javajs.awt.event.Event"], "J.awtjs2d.Mouse", ["java.lang.Character", "JU.V3", "J.util.Escape", "$.Logger"], function () {
+Clazz.load (["javajs.api.GenericMouseInterface", "javajs.awt.event.Event"], "J.awtjs2d.Mouse", ["java.lang.Character", "JU.PT", "$.V3", "J.util.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.viewer = null;
 this.manager = null;
@@ -213,12 +213,12 @@ return;
 if (this.keyBuffer.length > 0) this.keyBuffer = this.keyBuffer.substring (0, this.keyBuffer.length - 1);
 } else {
 this.keyBuffer += ch;
-}if (this.viewer.getBooleanProperty ("showKeyStrokes")) this.viewer.evalStringQuietSync ("!set echo _KEYSTROKES; set echo bottom left;echo " + J.util.Escape.eS ("\1" + this.keyBuffer), true, true);
+}if (this.viewer.getBooleanProperty ("showKeyStrokes")) this.viewer.evalStringQuietSync ("!set echo _KEYSTROKES; set echo bottom left;echo " + JU.PT.esc ("\1" + this.keyBuffer), true, true);
 }, $fz.isPrivate = true, $fz), "~S");
 $_M(c$, "sendKeyBuffer", 
 ($fz = function () {
 var kb = this.keyBuffer;
-if (this.viewer.getBooleanProperty ("showKeyStrokes")) this.viewer.evalStringQuietSync ("!set echo _KEYSTROKES; set echo bottom left;echo " + J.util.Escape.eS (this.keyBuffer), true, true);
+if (this.viewer.getBooleanProperty ("showKeyStrokes")) this.viewer.evalStringQuietSync ("!set echo _KEYSTROKES; set echo bottom left;echo " + JU.PT.esc (this.keyBuffer), true, true);
 this.clearKeyBuffer ();
 this.viewer.evalStringQuietSync (kb, false, true);
 }, $fz.isPrivate = true, $fz));

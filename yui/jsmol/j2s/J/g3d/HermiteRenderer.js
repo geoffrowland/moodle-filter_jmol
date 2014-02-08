@@ -18,10 +18,10 @@ this.c1 = null;
 this.c2 = null;
 this.d1 = null;
 this.d2 = null;
-this.depth1 = null;
-this.needToFill = null;
 this.T1 = null;
 this.T2 = null;
+this.depth1 = null;
+this.needToFill = null;
 Clazz.instantialize (this, arguments);
 }, J.g3d, "HermiteRenderer", null, J.g3d.G3DRenderer);
 Clazz.prepareFields (c$, function () {
@@ -50,10 +50,10 @@ this.c1 =  new JU.P3 ();
 this.c2 =  new JU.P3 ();
 this.d1 =  new JU.P3 ();
 this.d2 =  new JU.P3 ();
-this.depth1 =  new JU.V3 ();
-this.needToFill =  Clazz.newBooleanArray (16, false);
 this.T1 =  new JU.V3 ();
 this.T2 =  new JU.V3 ();
+this.depth1 =  new JU.V3 ();
+this.needToFill =  Clazz.newBooleanArray (16, false);
 });
 Clazz.makeConstructor (c$, 
 function () {
@@ -190,15 +190,19 @@ this.g3d.fillSphere (3, a);
 this.g3d.fillSphere (3, c);
 }if (this.needToFill[sp]) {
 if (aspectRatio > 0) {
-this.setDepth (this.depth1, c, a, b, ratio);
-J.g3d.HermiteRenderer.setPoint (this.a1, a, this.depth1, 1);
-J.g3d.HermiteRenderer.setPoint (this.a2, a, this.depth1, -1);
-J.g3d.HermiteRenderer.setPoint (this.b1, b, this.depth1, 1);
-J.g3d.HermiteRenderer.setPoint (this.b2, b, this.depth1, -1);
-J.g3d.HermiteRenderer.setPoint (this.c1, c, this.depth1, 1);
-J.g3d.HermiteRenderer.setPoint (this.c2, c, this.depth1, -1);
-J.g3d.HermiteRenderer.setPoint (this.d1, d, this.depth1, 1);
-J.g3d.HermiteRenderer.setPoint (this.d2, d, this.depth1, -1);
+this.T1.sub2 (a, c);
+this.T1.scale (ratio);
+this.T2.sub2 (a, b);
+this.depth1.cross (this.T1, this.T2);
+this.depth1.scale (this.T1.length () / this.depth1.length ());
+this.a1.add2 (a, this.depth1);
+this.a2.sub2 (a, this.depth1);
+this.b1.add2 (b, this.depth1);
+this.b2.sub2 (b, this.depth1);
+this.c1.add2 (c, this.depth1);
+this.c2.sub2 (c, this.depth1);
+this.d1.add2 (d, this.depth1);
+this.d2.sub2 (d, this.depth1);
 this.g3d.fillQuadrilateral (this.a1, this.b1, this.d1, this.c1);
 this.g3d.fillQuadrilateral (this.a2, this.b2, this.d2, this.c2);
 this.g3d.fillQuadrilateral (this.a1, this.b1, this.b2, this.a2);
@@ -353,20 +357,6 @@ var size = points.size ();
 for (var top = 0; top < numTopStrandPoints && (top + numTopStrandPoints) < size; top++) this.g3d.drawLineAB (points.get (top), points.get (top + numTopStrandPoints));
 
 }, $fz.isPrivate = true, $fz), "~B,~N,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i");
-$_M(c$, "setDepth", 
-($fz = function (depth, c, a, b, ratio) {
-this.T1.sub2 (a, c);
-this.T1.scale (ratio);
-this.T2.sub2 (a, b);
-depth.cross (this.T1, this.T2);
-depth.scale (this.T1.length () / depth.length ());
-}, $fz.isPrivate = true, $fz), "JU.V3,JU.P3,JU.P3,JU.P3,~N");
-c$.setPoint = $_M(c$, "setPoint", 
-($fz = function (a1, a, depth, direction) {
-a1.setT (a);
-if (direction == 1) a1.add (depth);
- else a1.sub (depth);
-}, $fz.isPrivate = true, $fz), "JU.P3,JU.P3,JU.V3,~N");
 c$.vAB = c$.prototype.vAB =  new JU.V3 ();
 c$.vAC = c$.prototype.vAC =  new JU.V3 ();
 });

@@ -2,7 +2,6 @@ Clazz.declarePackage ("JSV.common");
 c$ = Clazz.decorateAsClass (function () {
 this.repaintPending = false;
 this.viewer = null;
-this.n = 0;
 Clazz.instantialize (this, arguments);
 }, JSV.common, "RepaintManager");
 Clazz.makeConstructor (c$, 
@@ -11,9 +10,7 @@ this.viewer = viewer;
 }, "JSV.common.JSViewer");
 $_M(c$, "refresh", 
 function () {
-this.n++;
 if (this.repaintPending) {
-System.out.println ("Repaint " + this.n + " skipped");
 return false;
 }this.repaintPending = true;
 this.viewer.selectedPanel.getPanelData ().taintedAll = true;

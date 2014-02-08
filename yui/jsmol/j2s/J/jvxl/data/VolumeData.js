@@ -174,7 +174,7 @@ return true;
 }, $fz.isPrivate = true, $fz));
 $_V(c$, "transform", 
 function (v1, v2) {
-this.volumetricMatrix.transform2 (v1, v2);
+this.volumetricMatrix.rotate2 (v1, v2);
 }, "JU.V3,JU.V3");
 $_V(c$, "setPlaneParameters", 
 function (plane) {
@@ -233,7 +233,7 @@ $_V(c$, "xyzToVoxelPt",
 function (x, y, z, pt3i) {
 this.ptXyzTemp.set (x, y, z);
 this.ptXyzTemp.sub (this.volumetricOrigin);
-this.inverseMatrix.transform (this.ptXyzTemp);
+this.inverseMatrix.rotate (this.ptXyzTemp);
 pt3i.set (Math.round (this.ptXyzTemp.x), Math.round (this.ptXyzTemp.y), Math.round (this.ptXyzTemp.z));
 }, "~N,~N,~N,JU.P3i");
 $_V(c$, "lookupInterpolatedVoxelValue", 
@@ -243,7 +243,7 @@ if (this.sr != null) {
 var v = this.sr.getValueAtPoint (point, getSource);
 return (this.isSquared ? v * v : v);
 }this.ptXyzTemp.sub2 (point, this.volumetricOrigin);
-this.inverseMatrix.transform (this.ptXyzTemp);
+this.inverseMatrix.rotate (this.ptXyzTemp);
 var iMax;
 var xLower = this.indexLower (this.ptXyzTemp.x, iMax = this.voxelCounts[0] - 1);
 var xUpper = this.indexUpper (this.ptXyzTemp.x, xLower, iMax);

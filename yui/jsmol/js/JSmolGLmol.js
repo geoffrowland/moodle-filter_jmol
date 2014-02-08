@@ -44,7 +44,7 @@ THREE.ShaderLib.lambert.vertexShader = THREE.ShaderLib.lambert.vertexShader.repl
 GLmol = (function() {
 
 Jmol._Canvas3D = function(id, Info, type, checkOnly){
-	this._syncId = ("" + Math.random()).substring(3);
+	this._uniqueId = ("" + Math.random()).substring(3);
 	this._id = id;
 	this._is2D = false;
   this._isJava = false;

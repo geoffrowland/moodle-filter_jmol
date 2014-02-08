@@ -1,12 +1,12 @@
 Clazz.declarePackage ("JU");
-Clazz.load (null, "JU.A4", ["JU.T3"], function () {
+Clazz.load (["javajs.api.JSONEncodable"], "JU.A4", ["JU.T3"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.x = 0;
 this.y = 0;
 this.z = 0;
 this.angle = 0;
 Clazz.instantialize (this, arguments);
-}, JU, "A4", null, java.io.Serializable);
+}, JU, "A4", null, [javajs.api.JSONEncodable, java.io.Serializable]);
 Clazz.makeConstructor (c$, 
 function () {
 this.z = 1.0;
@@ -63,9 +63,9 @@ this.z = (m10 - m01);
 var sin = 0.5 * Math.sqrt (this.x * this.x + this.y * this.y + this.z * this.z);
 this.angle = Math.atan2 (sin, cos);
 }, $fz.isPrivate = true, $fz), "~N,~N,~N,~N,~N,~N,~N,~N,~N");
-$_V(c$, "toString", 
+$_V(c$, "hashCode", 
 function () {
-return "(" + this.x + ", " + this.y + ", " + this.z + ", " + this.angle + ")";
+return JU.T3.floatToIntBits0 (this.x) ^ JU.T3.floatToIntBits0 (this.y) ^ JU.T3.floatToIntBits0 (this.z) ^ JU.T3.floatToIntBits0 (this.angle);
 });
 $_V(c$, "equals", 
 function (o) {
@@ -73,8 +73,12 @@ if (!(Clazz.instanceOf (o, JU.A4))) return false;
 var a1 = o;
 return this.x == a1.x && this.y == a1.y && this.z == a1.z && this.angle == a1.angle;
 }, "~O");
-$_V(c$, "hashCode", 
+$_V(c$, "toString", 
 function () {
-return JU.T3.floatToIntBits0 (this.x) ^ JU.T3.floatToIntBits0 (this.y) ^ JU.T3.floatToIntBits0 (this.z) ^ JU.T3.floatToIntBits0 (this.angle);
+return "(" + this.x + ", " + this.y + ", " + this.z + ", " + this.angle + ")";
+});
+$_V(c$, "toJSON", 
+function () {
+return "[" + this.x + "," + this.y + "," + this.z + "," + (this.angle * 180.0 / 3.141592653589793) + "]";
 });
 });

@@ -102,9 +102,9 @@ this.get (i).addSpecShift (dx);
 }, "~N");
 $_M(c$, "addMarks", 
 function (ppms) {
-ppms = JU.PT.simpleReplace (" " + ppms, ",", " ");
-ppms = JU.PT.simpleReplace (ppms, " -", " #");
-ppms = JU.PT.simpleReplace (ppms, "--", "-#");
+ppms = JU.PT.rep (" " + ppms, ",", " ");
+ppms = JU.PT.rep (ppms, " -", " #");
+ppms = JU.PT.rep (ppms, "--", "-#");
 ppms = ppms.$replace ('-', '^');
 ppms = ppms.$replace ('#', '-');
 var tokens = JSV.common.ScriptToken.getTokens (ppms);

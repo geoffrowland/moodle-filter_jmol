@@ -33,10 +33,10 @@ if (this.filter != null) {
 this.chargeType = this.getFilter ("CHARGE=");
 if (this.chargeType != null && this.chargeType.length > 4) this.chargeType = this.chargeType.substring (0, 4);
 this.filter = this.filter.$replace ('(', '{').$replace (')', '}');
-this.filter = JU.PT.simpleReplace (this.filter, "  ", " ");
+this.filter = JU.PT.rep (this.filter, "  ", " ");
 this.isAllQ = this.checkFilterKey ("Q=ALL");
 if (!this.isAllQ && this.filter.indexOf ("{") >= 0) this.setDesiredQpt (this.filter.substring (this.filter.indexOf ("{")));
-this.filter = JU.PT.simpleReplace (this.filter, "-PT", "");
+this.filter = JU.PT.rep (this.filter, "-PT", "");
 }this.continuing = this.readFileData ();
 });
 $_M(c$, "setDesiredQpt", 
@@ -217,8 +217,8 @@ this.isTrajectory = false;
 } else {
 this.doApplySymmetry = true;
 this.setLatticeVectors ();
-var nAtoms = this.atomSetCollection.getAtomCount ();
-for (var i = 0; i < nAtoms; i++) this.setAtomCoord (this.atomSetCollection.getAtom (i));
+var nAtoms = this.atomSetCollection.atomCount;
+for (var i = 0; i < nAtoms; i++) this.setAtomCoord (this.atomSetCollection.atoms[i]);
 
 }this.finalizeReaderASCR ();
 });
@@ -340,7 +340,7 @@ return (this.line == null ? 0 : (this.tokens = this.getTokens ()).length);
 $_M(c$, "readOutputBornChargeTensors", 
 ($fz = function () {
 if (this.readLine ().indexOf ("--------") < 0) return;
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 this.appendLoadNote ("Ellipsoids: Born Charge Tensors");
 while (this.readLine ().indexOf ('=') < 0) this.getTensor (atoms[this.readOutputAtomIndex ()], this.line.substring (12));
 
@@ -371,7 +371,7 @@ J.util.Logger.info ("reading charges: " + this.line);
 this.readLines (2);
 var haveSpin = (this.line.indexOf ("Spin") >= 0);
 this.readLine ();
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 var spins = (haveSpin ?  new Array (atoms.length) : null);
 if (spins != null) for (var i = 0; i < spins.length; i++) spins[i] = "0";
 
@@ -401,9 +401,9 @@ this.setAtomCoordXYZ (atom, this.parseFloatStr (this.tokens[1]), this.parseFloat
 atom.elementSymbol = this.tokens[4];
 atom.bfactor = this.parseFloatStr (this.tokens[5]);
 }
-this.atomCount = this.atomSetCollection.getAtomCount ();
+this.atomCount = this.atomSetCollection.atomCount;
 this.atomPts =  new Array (this.atomCount);
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 for (var i = 0; i < this.atomCount; i++) this.atomPts[i] = JU.P3.newP (atoms[i]);
 
 }, $fz.isPrivate = true, $fz));
@@ -431,7 +431,7 @@ var nx = 1;
 var ny = 1;
 var nz = 1;
 if (this.ptSupercell != null && !isOK && !isSecond) {
-this.atomSetCollection.setSupercellFromPoint (this.ptSupercell);
+this.atomSetCollection.getXSymmetry ().setSupercellFromPoint (this.ptSupercell);
 nx = this.ptSupercell.x;
 ny = this.ptSupercell.y;
 nz = this.ptSupercell.z;
@@ -470,8 +470,8 @@ this.applySymmetryAndSetTrajectory ();
 }}this.symmetry = this.atomSetCollection.getSymmetry ();
 var iatom = this.atomSetCollection.getLastAtomSetAtomIndex ();
 var freq = freqs.get (i).floatValue ();
-var atoms = this.atomSetCollection.getAtoms ();
-var aCount = this.atomSetCollection.getAtomCount ();
+var atoms = this.atomSetCollection.atoms;
+var aCount = this.atomSetCollection.atomCount;
 for (var j = 0; j < this.atomCount; j++) {
 this.fillFloatArray (null, 0, data);
 for (var k = iatom++; k < aCount; k++) if (atoms[k].atomSite == j) {
@@ -490,7 +490,7 @@ this.atomSetCollection.setAtomSetName (JU.DF.formatDecimal (freq, 2) + " cm-1 " 
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "getFractionalCoord", 
 ($fz = function (qvec) {
-return (J.adapter.readers.xtal.CastepReader.isInt (qvec.x * 12) && J.adapter.readers.xtal.CastepReader.isInt (qvec.y * 12) && J.adapter.readers.xtal.CastepReader.isInt (qvec.z * 12) ? this.getSymmetry ().fcoord (qvec) : null);
+return (this.symmetry != null && J.adapter.readers.xtal.CastepReader.isInt (qvec.x * 12) && J.adapter.readers.xtal.CastepReader.isInt (qvec.y * 12) && J.adapter.readers.xtal.CastepReader.isInt (qvec.z * 12) ? this.symmetry.fcoord (qvec) : null);
 }, $fz.isPrivate = true, $fz), "JU.V3");
 c$.isInt = $_M(c$, "isInt", 
 ($fz = function (f) {

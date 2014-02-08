@@ -27,7 +27,7 @@ if (this.stopped || this.eval.isStopped ()) {
 mode = -2;
 break;
 }{
-return Jmol._loadFileAsynchronously(this, this.viewer.applet, this.fileName);
+return Jmol._loadFileAsynchronously(this, this.viewer.applet, this.fileName, null);
 }break;
 case -2:
 this.resumeEval ();
@@ -36,9 +36,9 @@ return;
 
 }, "~N");
 $_M(c$, "setData", 
-function (fileName, data) {
+function (fileName, data, myData) {
 if (fileName != null) this.sc.parentContext.htFileCache.put (this.key, this.cacheName = this.cacheName.substring (0, this.cacheName.lastIndexOf ("_") + 1) + fileName);
 this.viewer.cachePut (this.cacheName, data);
 this.run1 (-2);
-}, "~S,~O");
+}, "~S,~O,~O");
 });

@@ -121,7 +121,7 @@ case 76:
 return this.propertyColorEncoder.getColorIndexFromPalette (atom.getSelectedMonomerIndexWithinPolymer (), 0, atom.getSelectedMonomerCountWithinPolymer () - 1, 1, false);
 case 77:
 modelSet = this.viewer.getModelSet ();
-return this.propertyColorEncoder.getColorIndexFromPalette (modelSet.getMoleculeIndex (atom.getIndex (), true), 0, modelSet.getMoleculeCountInModel (atom.getModelIndex ()) - 1, 0, false);
+return this.propertyColorEncoder.getColorIndexFromPalette (modelSet.getMoleculeIndex (atom.index, true), 0, modelSet.getMoleculeCountInModel (atom.getModelIndex ()) - 1, 0, false);
 case 14:
 modelSet = this.viewer.getModelSet ();
 modelIndex = atom.getModelIndex ();

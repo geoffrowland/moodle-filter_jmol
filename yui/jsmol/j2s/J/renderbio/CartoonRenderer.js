@@ -64,9 +64,7 @@ var isTraceAlpha = this.viewer.getBoolean (603979966);
 for (var i = this.bsVisible.nextSetBit (0); i >= 0; i = this.bsVisible.nextSetBit (i + 1)) {
 if (isTraceAlpha) {
 this.ptConnectScr.set (Clazz.doubleToInt ((this.controlPointScreens[i].x + this.controlPointScreens[i + 1].x) / 2), Clazz.doubleToInt ((this.controlPointScreens[i].y + this.controlPointScreens[i + 1].y) / 2), Clazz.doubleToInt ((this.controlPointScreens[i].z + this.controlPointScreens[i + 1].z) / 2));
-this.ptConnect.setT (this.controlPoints[i]);
-this.ptConnect.scale (0.5);
-this.ptConnect.scaleAdd2 (0.5, this.controlPoints[i + 1], this.ptConnect);
+this.ptConnect.ave (this.controlPoints[i], this.controlPoints[i + 1]);
 } else {
 this.ptConnectScr.setT (this.controlPointScreens[i + 1]);
 this.ptConnect.setT (this.controlPoints[i + 1]);

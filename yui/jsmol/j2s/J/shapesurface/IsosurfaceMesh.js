@@ -120,8 +120,7 @@ this.centers =  new Array (this.polygonCount);
 for (var i = 0; i < this.polygonCount; i++) {
 var pi = this.polygonIndexes[i];
 if (pi == null) continue;
-var pt = this.centers[i] =  new JU.P3 ();
-pt.add (this.vertices[pi[0]]);
+var pt = this.centers[i] = JU.P3.newP (this.vertices[pi[0]]);
 pt.add (this.vertices[pi[1]]);
 pt.add (this.vertices[pi[2]]);
 pt.scale (0.33333334);
@@ -240,10 +239,8 @@ return (v == (v1 = vertexValues[i]) ? 0 : v == (v2 = vertexValues[j]) ? 1 : (v1 
 c$.getContourPoint = $_M(c$, "getContourPoint", 
 ($fz = function (vertices, i, j, f) {
 var pt =  new JU.P3 ();
-pt.setT (vertices[j]);
-pt.sub (vertices[i]);
-pt.scale (f);
-pt.add (vertices[i]);
+pt.sub2 (vertices[j], vertices[i]);
+pt.scaleAdd2 (f, pt, vertices[i]);
 return pt;
 }, $fz.isPrivate = true, $fz), "~A,~N,~N,~N");
 $_M(c$, "setDiscreteColixes", 
@@ -338,8 +335,7 @@ var bsVertices = (isAtoms ?  new JU.BS () : bs);
 this.checkAllocColixes ();
 if (isAtoms) for (var i = 0; i < this.vertexCount; i++) {
 var pt = this.vertexSource[i];
-if (pt < 0) continue;
-if (bs.get (pt)) {
+if (pt >= 0 && bs.get (pt)) {
 this.vertexColixes[i] = colix;
 if (bsVertices != null) bsVertices.set (i);
 }}
@@ -465,7 +461,7 @@ this.jvxlData.nVertexColors = this.vertexCount;
 var atoms = viewer.getModelSet ().atoms;
 for (var i = this.mergeVertexCount0; i < this.vertexCount; i++) {
 var pt = this.vertexSource[i];
-if (pt < atoms.length) this.jvxlData.vertexColors[i] = viewer.getColorArgbOrGray (this.vertexColixes[i] = J.util.C.copyColixTranslucency (this.colix, atoms[pt].getColix ()));
+if (pt >= 0 && pt < atoms.length) this.jvxlData.vertexColors[i] = viewer.getColorArgbOrGray (this.vertexColixes[i] = J.util.C.copyColixTranslucency (this.colix, atoms[pt].getColix ()));
 }
 return;
 }this.jvxlData.vertexColors = null;
@@ -577,7 +573,7 @@ return ipt;
 }, $fz.isPrivate = true, $fz), "J.util.MeshSurface,~N,~N,~A");
 $_V(c$, "getUnitCell", 
 function () {
-return (this.spanningVectors == null ? null : (J.api.Interface.getOptionInterface ("symmetry.Symmetry")).getUnitCell (this.spanningVectors));
+return (this.spanningVectors == null ? null : (J.api.Interface.getOptionInterface ("symmetry.Symmetry")).getUnitCell (this.spanningVectors, true));
 });
 $_V(c$, "slabBrillouin", 
 function (unitCellPoints) {
@@ -653,7 +649,7 @@ doUpdate = true;
 break;
 }
 if (!doUpdate) return;
-if (this.mat4 == null) this.mat4 = JU.M4.newM (null);
+if (this.mat4 == null) this.mat4 = JU.M4.newM4 (null);
 this.mat4.mul2 (m, this.mat4);
 this.recalcAltVertices = true;
 }, "JU.M4,JU.BS");

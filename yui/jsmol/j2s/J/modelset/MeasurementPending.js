@@ -1,24 +1,12 @@
 Clazz.declarePackage ("J.modelset");
 Clazz.load (["J.modelset.Measurement"], "J.modelset.MeasurementPending", null, function () {
 c$ = Clazz.decorateAsClass (function () {
-this.$haveTarget = false;
-this.$haveModified = false;
+this.haveTarget = false;
+this.haveModified = false;
 this.numSet = 0;
 this.lastIndex = -1;
 Clazz.instantialize (this, arguments);
 }, J.modelset, "MeasurementPending", J.modelset.Measurement);
-$_M(c$, "haveTarget", 
-function () {
-return this.$haveTarget;
-});
-$_M(c$, "haveModified", 
-function () {
-return this.$haveModified;
-});
-$_M(c$, "getNumSet", 
-function () {
-return this.numSet;
-});
 $_M(c$, "set", 
 function (modelSet) {
 return this.setM (modelSet, null, NaN, 0, null, 0);
@@ -42,14 +30,14 @@ this.numSet = count;
 }, "~N");
 $_M(c$, "addPoint", 
 function (atomIndex, ptClicked, doSet) {
-this.$haveModified = (atomIndex != this.lastIndex);
+this.haveModified = (atomIndex != this.lastIndex);
 this.lastIndex = atomIndex;
 if (ptClicked == null) {
 if (this.getIndexOf (atomIndex) > 0) {
 if (doSet) this.numSet = this.count;
 return this.count;
-}this.$haveTarget = (atomIndex >= 0);
-if (!this.$haveTarget) return this.count = this.numSet;
+}this.haveTarget = (atomIndex >= 0);
+if (!this.haveTarget) return this.count = this.numSet;
 this.count = this.numSet + 1;
 this.countPlusIndices[this.count] = atomIndex;
 } else {
@@ -57,13 +45,13 @@ if (!this.checkPoint (ptClicked)) {
 if (doSet) this.numSet = this.count;
 return this.count;
 }var pt = this.numSet;
-this.$haveModified = this.$haveTarget = true;
+this.haveModified = this.haveTarget = true;
 this.count = this.numSet + 1;
 this.pts[pt] = ptClicked;
 this.countPlusIndices[this.count] = -2 - pt;
 }this.countPlusIndices[0] = this.count;
 if (doSet) this.numSet = this.count;
-this.value = this.getMeasurement ();
+this.value = this.getMeasurement (null);
 this.strFormat = null;
 this.formatMeasurement (null);
 return this.count;

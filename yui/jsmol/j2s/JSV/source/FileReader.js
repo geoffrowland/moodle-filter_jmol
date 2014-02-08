@@ -1,6 +1,7 @@
 Clazz.declarePackage ("JSV.source");
-Clazz.load (null, "JSV.source.FileReader", ["java.io.BufferedReader", "$.StringReader", "java.lang.Character", "$.Double", "$.Exception", "$.Float", "java.util.Arrays", "$.Hashtable", "$.StringTokenizer", "JU.BS", "$.List", "$.PT", "$.SB", "JSV.api.JSVZipReader", "JSV.common.Coordinate", "$.JDXSpectrum", "$.JSVFileManager", "$.JSViewer", "$.PeakInfo", "JSV.exception.JDXSourceException", "$.JSpecViewException", "JSV.source.JDXDecompressor", "$.JDXSource", "$.JDXSourceStreamTokenizer", "JSV.util.JSVEscape", "J.util.Logger"], function () {
+Clazz.load (null, "JSV.source.FileReader", ["java.io.BufferedReader", "$.StringReader", "java.lang.Character", "$.Double", "$.Float", "java.util.Arrays", "$.Hashtable", "$.StringTokenizer", "JU.BS", "$.List", "$.PT", "$.SB", "JSV.api.JSVZipReader", "JSV.common.Coordinate", "$.JDXSpectrum", "$.JSVFileManager", "$.JSViewer", "$.PeakInfo", "JSV.exception.JSVException", "JSV.source.JDXDecompressor", "$.JDXSource", "$.JDXSourceStreamTokenizer", "J.util.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
+this.normalizeY = false;
 this.source = null;
 this.t = null;
 this.errorLog = null;
@@ -21,8 +22,8 @@ Clazz.instantialize (this, arguments);
 }, JSV.source, "FileReader");
 Clazz.makeConstructor (c$, 
 ($fz = function (filePath, obscure, loadImaginary, iSpecFirst, iSpecLast) {
-System.out.println ("FileReader filePath=" + filePath + "<<");
 filePath = JU.PT.trimQuotes (filePath);
+if (filePath != null && filePath.startsWith ("http://SIMULATION/")) this.normalizeY = true;
 this.filePath = (filePath != null && filePath.startsWith ("http://SIMULATION/MOL=") ? "http://SIMULATION/" + "MOL=" + Math.abs (filePath.hashCode ()) : filePath);
 this.obscure = obscure;
 this.firstSpec = iSpecFirst;
@@ -35,28 +36,34 @@ return JSV.source.FileReader.createJDXSource (JSV.common.JSVFileManager.getBuffe
 }, "java.io.InputStream,~B,~B");
 c$.createJDXSource = $_M(c$, "createJDXSource", 
 function (br, filePath, obscure, loadImaginary, iSpecFirst, iSpecLast) {
+var header = null;
 try {
 if (br == null) br = JSV.common.JSVFileManager.getBufferedReaderFromName (filePath, "##TITLE");
 br.mark (400);
 var chs =  Clazz.newCharArray (400, '\0');
 br.read (chs, 0, 400);
 br.reset ();
-var header =  String.instantialize (chs);
+header =  String.instantialize (chs);
 var pt1 = header.indexOf ('#');
 var pt2 = header.indexOf ('<');
 if (pt1 < 0 || pt2 >= 0 && pt2 < pt1) {
 var xmlType = header.toLowerCase ();
-if (xmlType.contains ("404")) System.out.println (xmlType);
 xmlType = (xmlType.contains ("<animl") || xmlType.contains ("<!doctype technique") ? "AnIML" : xmlType.contains ("xml-cml") ? "CML" : null);
-var xmlSource = (JSV.common.JSViewer.getInterface ("JSV.source." + xmlType + "Reader")).getSource (filePath, br);
+var xmlSource = null;
+if (xmlType != null) xmlSource = (JSV.common.JSViewer.getInterface ("JSV.source." + xmlType + "Reader")).getSource (filePath, br);
 br.close ();
-if (xmlSource == null) throw  new JSV.exception.JSpecViewException ("File type not recognized");
-return xmlSource;
+if (xmlSource == null) {
+J.util.Logger.error (header + "...");
+throw  new JSV.exception.JSVException ("File type not recognized");
+}return xmlSource;
 }return ( new JSV.source.FileReader (filePath, obscure, loadImaginary, iSpecFirst, iSpecLast)).getJDXSource (br);
 } catch (e) {
-if (Clazz.exceptionOf (e, JSV.exception.JSpecViewException)) {
-br.close ();
-throw  new Exception ("Error reading JDX format: " + e);
+if (Clazz.exceptionOf (e, Exception)) {
+if (br != null) br.close ();
+if (header != null) J.util.Logger.error (header + "...");
+var s = e.getMessage ();
+{
+}throw  new JSV.exception.JSVException ("Error reading data: " + s);
 } else {
 throw e;
 }
@@ -69,7 +76,9 @@ this.isZipFile = (Clazz.instanceOf (reader, JSV.api.JSVZipReader));
 this.t =  new JSV.source.JDXSourceStreamTokenizer (reader);
 this.errorLog =  new JU.SB ();
 var label = null;
+var isOK = false;
 while (!this.done && "##TITLE".equals (this.t.peakLabel ())) {
+isOK = true;
 if (label != null && !this.isZipFile) this.errorLog.append ("Warning - file is a concatenation without LINK record -- does not conform to IUPAC standards!\n");
 var spectrum =  new JSV.common.JDXSpectrum ();
 var dataLDRTable =  new JU.List ();
@@ -84,18 +93,20 @@ spectrum = null;
 continue;
 }if (java.util.Arrays.binarySearch (JSV.source.FileReader.TABULAR_DATA_LABELS, label) > 0) {
 this.setTabularDataType (spectrum, label);
-if (!this.processTabularData (spectrum, dataLDRTable)) throw  new JSV.exception.JDXSourceException ("Unable to read JDX file");
+if (!this.processTabularData (spectrum, dataLDRTable)) throw  new JSV.exception.JSVException ("Unable to read JDX file");
 this.addSpectrum (spectrum, false);
 spectrum = null;
 continue;
 }if (spectrum == null) spectrum =  new JSV.common.JDXSpectrum ();
-if (JSV.source.FileReader.readDataLabel (spectrum, label, this.t, this.errorLog, this.obscure)) continue;
+if (this.readDataLabel (spectrum, label, this.t, this.errorLog, this.obscure)) continue;
 var value = this.t.getValue ();
 JSV.source.FileReader.addHeader (dataLDRTable, this.t.getRawLabel (), value);
 if (this.checkCustomTags (spectrum, label, value)) continue;
 }
 }
+if (!isOK) throw  new JSV.exception.JSVException ("##TITLE record not found");
 this.source.setErrorLog (this.errorLog.toString ());
+if (this.normalizeY && !this.source.isCompoundSource) this.source.getJDXSpectrum (0).doNormalize ();
 return this.source;
 }, $fz.isPrivate = true, $fz), "~O");
 $_M(c$, "isEnd", 
@@ -131,14 +142,14 @@ this.t.getValue ();
 var nBlocks = JU.PT.parseInt (this.t.getValue ());
 if (nBlocks > 100 && this.firstSpec <= 0) forceSub = true;
 }}
-if (!"##TITLE".equals (label)) throw  new JSV.exception.JSpecViewException ("Unable to read block source");
+if (!"##TITLE".equals (label)) throw  new JSV.exception.JSVException ("Unable to read block source");
 if (isNew) this.source.setHeaderTable (sourceLDRTable);
 this.source.type = 1;
 this.source.isCompoundSource = true;
 var dataLDRTable;
 var spectrum =  new JSV.common.JDXSpectrum ();
 dataLDRTable =  new JU.List ();
-JSV.source.FileReader.readDataLabel (spectrum, label, this.t, this.errorLog, this.obscure);
+this.readDataLabel (spectrum, label, this.t, this.errorLog, this.obscure);
 try {
 var tmp;
 while ((tmp = this.t.getLabel ()) != null) {
@@ -148,7 +159,7 @@ break;
 }label = tmp;
 if (java.util.Arrays.binarySearch (JSV.source.FileReader.TABULAR_DATA_LABELS, label) > 0) {
 this.setTabularDataType (spectrum, label);
-if (!this.processTabularData (spectrum, dataLDRTable)) throw  new JSV.exception.JDXSourceException ("Unable to read Block Source");
+if (!this.processTabularData (spectrum, dataLDRTable)) throw  new JSV.exception.JSVException ("Unable to read Block Source");
 continue;
 }if (label.equals ("##DATATYPE") && this.t.getValue ().toUpperCase ().equals ("LINK")) {
 this.getBlockSpectra (dataLDRTable);
@@ -173,7 +184,7 @@ if (label === "") continue;
 if (label == null) {
 label = "##END";
 continue;
-}}if (JSV.source.FileReader.readDataLabel (spectrum, label, this.t, this.errorLog, this.obscure)) continue;
+}}if (this.readDataLabel (spectrum, label, this.t, this.errorLog, this.obscure)) continue;
 if (this.isEnd (label)) {
 if (spectrum.getXYCoords ().length > 0 && !this.addSpectrum (spectrum, forceSub)) return this.source;
 spectrum =  new JSV.common.JDXSpectrum ();
@@ -188,9 +199,9 @@ if (this.checkCustomTags (spectrum, label, value)) continue;
 if (Clazz.exceptionOf (e$$, java.util.NoSuchElementException)) {
 var nsee = e$$;
 {
-throw  new JSV.exception.JSpecViewException ("Unable to Read Block Source");
+throw  new JSV.exception.JSVException ("Unable to Read Block Source");
 }
-} else if (Clazz.exceptionOf (e$$, JSV.exception.JSpecViewException)) {
+} else if (Clazz.exceptionOf (e$$, JSV.exception.JSVException)) {
 var jsve = e$$;
 {
 throw jsve;
@@ -250,7 +261,7 @@ while (st.hasMoreTokens ()) attrList.addLast (st.nextToken ().trim ());
 nTupleTable.put (label, attrList);
 }
 var symbols = nTupleTable.get ("##SYMBOL");
-if (!label.equals ("##PAGE")) throw  new JSV.exception.JSpecViewException ("Error Reading NTuple Source");
+if (!label.equals ("##PAGE")) throw  new JSV.exception.JSVException ("Error Reading NTuple Source");
 var page = this.t.getValue ();
 var spectrum = null;
 var isFirst = true;
@@ -289,7 +300,7 @@ var line = this.t.flushLine ();
 if (line.trim ().indexOf ("PEAKS") > 0) continuous = false;
 var index1 = line.indexOf ('(');
 var index2 = line.lastIndexOf (')');
-if (index1 == -1 || index2 == -1) throw  new JSV.exception.JDXSourceException ("Variable List not Found");
+if (index1 == -1 || index2 == -1) throw  new JSV.exception.JSVException ("Variable List not Found");
 var varList = line.substring (index1, index2 + 1);
 var countSyms = 0;
 for (var i = 0; i < symbols.size (); i++) {
@@ -299,7 +310,7 @@ plotSymbols[countSyms++] = sym;
 }if (countSyms == 2) break;
 }
 this.setTabularDataType (spectrum, "##" + (continuous ? "XYDATA" : "PEAKTABLE"));
-if (!this.readNTUPLECoords (spectrum, nTupleTable, plotSymbols, minMaxY)) throw  new JSV.exception.JDXSourceException ("Unable to read Ntuple Source");
+if (!this.readNTUPLECoords (spectrum, nTupleTable, plotSymbols, minMaxY)) throw  new JSV.exception.JSVException ("Unable to read Ntuple Source");
 if (!spectrum.nucleusX.equals ("?")) spectrum0.nucleusX = spectrum.nucleusX;
 spectrum0.nucleusY = spectrum.nucleusY;
 spectrum0.freq2dX = spectrum.freq2dX;
@@ -325,7 +336,6 @@ var peakData =  new JU.List ();
 var reader =  new java.io.BufferedReader ( new java.io.StringReader (peakList));
 try {
 var offset = (isSignals ? 1 : 0);
-System.out.println ("offset is " + offset + " isSignals=" + isSignals);
 var tag1 = (isSignals ? "Signals" : "Peaks");
 var tag2 = (isSignals ? "<Signal" : "<PeakData");
 var line = this.discardUntil (reader, tag1);
@@ -353,7 +363,7 @@ title = " title=" + this.escape (title);
 title = "";
 }var stringInfo = "<PeakData " + file + " index=\"%INDEX%\"" + title + type + (this.getQuotedAttribute (line, "model") == null ? model : "") + " " + line.substring (tag2.length).trim ();
 var atoms = this.getQuotedAttribute (stringInfo, "atoms");
-if (atoms != null) stringInfo = this.simpleReplace (stringInfo, "atoms=\"" + atoms + "\"", "atoms=\"%ATOMS%\"");
+if (atoms != null) stringInfo = this.rep (stringInfo, "atoms=\"" + atoms + "\"", "atoms=\"%ATOMS%\"");
 var key = (Clazz.floatToInt (this.parseFloatStr (this.getQuotedAttribute (line, "xMin")) * 100)) + "_" + (Clazz.floatToInt (this.parseFloatStr (this.getQuotedAttribute (line, "xMax")) * 100));
 var o = htSets.get (key);
 if (o == null) {
@@ -364,25 +374,23 @@ list.addLast (o);
 if (atoms != null && bs != null) {
 atoms = atoms.$replace (',', ' ');
 bs.or (this.unescapeBitSet ("({" + atoms + "})"));
-System.out.println ("bs is  " + bs);
 }}}
 var nH = 0;
 var n = list.size ();
 for (var i = 0; i < n; i++) {
 var o = list.get (i);
 var stringInfo = o[0];
-stringInfo = this.simpleReplace (stringInfo, "%INDEX%", "" + this.getPeakIndex ());
+stringInfo = this.rep (stringInfo, "%INDEX%", "" + this.getPeakIndex ());
 var bs = o[1];
 if (bs != null) {
-System.out.println ("bs " + i + " is " + bs);
 var s = "";
 for (var j = bs.nextSetBit (0); j >= 0; j = bs.nextSetBit (j + 1)) s += "," + (j + offset);
 
 var na = bs.cardinality ();
 nH += na;
-stringInfo = this.simpleReplace (stringInfo, "%ATOMS%", s.substring (1));
-stringInfo = this.simpleReplace (stringInfo, "%S%", (na == 1 ? "" : "s"));
-stringInfo = this.simpleReplace (stringInfo, "%NATOMS%", "" + na);
+stringInfo = this.rep (stringInfo, "%ATOMS%", s.substring (1));
+stringInfo = this.rep (stringInfo, "%S%", (na == 1 ? "" : "s"));
+stringInfo = this.rep (stringInfo, "%NATOMS%", "" + na);
 }this.info ("JSpecView using " + stringInfo);
 this.add (peakData, stringInfo);
 }
@@ -458,13 +466,13 @@ $_M(c$, "parseFloatStr",
 ($fz = function (s) {
 return JU.PT.parseFloat (s);
 }, $fz.isPrivate = true, $fz), "~S");
-$_M(c$, "simpleReplace", 
+$_M(c$, "rep", 
 ($fz = function (s, sfrom, sto) {
-return JU.PT.simpleReplace (s, sfrom, sto);
+return JU.PT.rep (s, sfrom, sto);
 }, $fz.isPrivate = true, $fz), "~S,~S,~S");
 $_M(c$, "escape", 
 ($fz = function (s) {
-return JSV.util.JSVEscape.eS (s);
+return JU.PT.esc (s);
 }, $fz.isPrivate = true, $fz), "~S");
 $_M(c$, "getQuotedAttribute", 
 ($fz = function (s, attr) {
@@ -472,7 +480,7 @@ return JU.PT.getQuotedAttribute (s, attr);
 }, $fz.isPrivate = true, $fz), "~S,~S");
 $_M(c$, "getPeakFilePath", 
 ($fz = function () {
-return " file=" + JSV.util.JSVEscape.eS (JU.PT.trimQuotes (this.filePath).$replace ('\\', '/'));
+return " file=" + JU.PT.esc (JU.PT.trimQuotes (this.filePath).$replace ('\\', '/'));
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "setSpectrumPeaks", 
 ($fz = function (spectrum, peakData, nH) {
@@ -490,7 +498,7 @@ $_M(c$, "getPeakIndex",
 ($fz = function () {
 return ++this.peakIndex;
 }, $fz.isPrivate = true, $fz));
-c$.readDataLabel = $_M(c$, "readDataLabel", 
+$_M(c$, "readDataLabel", 
 ($fz = function (spectrum, label, t, errorLog, obscure) {
 if (JSV.source.FileReader.readHeaderLabel (spectrum, label, t, errorLog, obscure)) return true;
 if (label.equals ("##MINX") || label.equals ("##MINY") || label.equals ("##MAXX") || label.equals ("##MAXY") || label.equals ("##FIRSTY") || label.equals ("##DELTAX") || label.equals ("##DATACLASS")) {
@@ -664,8 +672,8 @@ list = nTupleTable.get ("##UNITS");
 spec.setXUnits (list.get (index1));
 spec.setYUnits (list.get (index2));
 if (spec.nucleusX == null && (list = nTupleTable.get ("##.NUCLEUS")) != null) {
-spec.setNucleus (list.get (0), false);
-spec.setNucleus (list.get (index1), true);
+spec.setNucleusAndFreq (list.get (0), false);
+spec.setNucleusAndFreq (list.get (index1), true);
 } else {
 if (spec.nucleusX == null) spec.nucleusX = "?";
 }this.decompressData (spec, minMaxY);
@@ -692,7 +700,7 @@ var decompressor =  new JSV.source.JDXDecompressor (this.t, spec.fileFirstX, spe
 var firstLastX =  Clazz.newDoubleArray (2, 0);
 var t = System.currentTimeMillis ();
 var xyCoords = decompressor.decompressData (this.errorLog, firstLastX);
-System.out.println ("decompression time = " + (System.currentTimeMillis () - t) + " ms");
+if (J.util.Logger.debugging) J.util.Logger.debug ("decompression time = " + (System.currentTimeMillis () - t) + " ms");
 spec.setXYCoords (xyCoords);
 var d = decompressor.getMinY ();
 if (minMaxY != null) {

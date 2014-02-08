@@ -31,7 +31,7 @@ return true;
 }if (this.line.indexOf ("Input orientation:") >= 0 || this.line.indexOf ("Z-Matrix orientation:") >= 0 || this.line.indexOf ("Standard orientation:") >= 0) {
 if (!this.doGetModel (++this.modelNumber, null)) return this.checkLastModel ();
 this.equivalentAtomSets++;
-J.util.Logger.info (this.atomSetCollection.getAtomSetCount () + " model " + this.modelNumber + " step " + this.stepNumber + " equivalentAtomSet " + this.equivalentAtomSets + " calculation " + this.calculationNumber + " scan point " + this.scanPoint + this.line);
+J.util.Logger.info (this.atomSetCollection.atomSetCount + " model " + this.modelNumber + " step " + this.stepNumber + " equivalentAtomSet " + this.equivalentAtomSets + " calculation " + this.calculationNumber + " scan point " + this.scanPoint + this.line);
 this.readAtoms ();
 return false;
 }if (!this.doProcessLines) return true;
@@ -142,7 +142,7 @@ this.shells.addLast (slater);
 this.gaussianCount += nGaussians;
 for (var i = 0; i < nGaussians; i++) {
 this.readLine ();
-this.line = JU.PT.simpleReplace (this.line, "D ", "D+");
+this.line = JU.PT.rep (this.line, "D ", "D+");
 tokens = this.getTokens ();
 if (J.util.Logger.debugging) J.util.Logger.debug ("Gaussians " + (i + 1) + " " + J.util.Escape.eAS (tokens, true));
 gdata.addLast (tokens);
@@ -222,7 +222,7 @@ continue;
 } else if (this.line.length < 21 || (this.line.charAt (5) != ' ' && !Character.isDigit (this.line.charAt (5)))) {
 continue;
 }try {
-this.line = JU.PT.simpleReplace (this.line, " 0 ", "0  ");
+this.line = JU.PT.rep (this.line, " 0 ", "0  ");
 tokens = this.getTokens ();
 var type = tokens[tokens.length - nThisLine - 1].substring (1);
 if (Character.isDigit (type.charAt (0))) type = type.substring (1);
@@ -241,8 +241,8 @@ throw e;
 }
 }
 this.addMOData (nThisLine, data, mos);
-this.setMOData (this.moModelSet != this.atomSetCollection.getAtomSetCount ());
-this.moModelSet = this.atomSetCollection.getAtomSetCount ();
+this.setMOData (this.moModelSet != this.atomSetCollection.atomSetCount);
+this.moModelSet = this.atomSetCollection.atomSetCount;
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "readFrequencies", 
 ($fz = function () {
@@ -254,7 +254,7 @@ var frequencies = J.adapter.smarter.AtomSetCollectionReader.getTokensAt (this.di
 var red_masses = J.adapter.smarter.AtomSetCollectionReader.getTokensAt (this.discardLinesUntilStartsWith (" Red. masses"), 15);
 var frc_consts = J.adapter.smarter.AtomSetCollectionReader.getTokensAt (this.discardLinesUntilStartsWith (" Frc consts"), 15);
 var intensities = J.adapter.smarter.AtomSetCollectionReader.getTokensAt (this.discardLinesUntilStartsWith (" IR Inten"), 15);
-var iAtom0 = this.atomSetCollection.getAtomCount ();
+var iAtom0 = this.atomSetCollection.atomCount;
 var atomCount = this.atomSetCollection.getLastAtomSetAtomCount ();
 var frequencyCount = frequencies.length;
 var ignore =  Clazz.newBooleanArray (frequencyCount, false);
@@ -263,8 +263,8 @@ ignore[i] = !this.doGetVibration (++this.vibrationNumber);
 if (ignore[i]) continue;
 this.atomSetCollection.cloneLastAtomSet ();
 var name = this.atomSetCollection.setAtomSetFrequency ("Calculation " + this.calculationNumber, symmetries[i], frequencies[i], null);
-this.appendLoadNote ("model " + this.atomSetCollection.getAtomSetCount () + ": " + name);
-this.namedSets.set (this.atomSetCollection.getCurrentAtomSetIndex ());
+this.appendLoadNote ("model " + this.atomSetCollection.atomSetCount + ": " + name);
+this.namedSets.set (this.atomSetCollection.currentAtomSetIndex);
 this.atomSetCollection.setAtomSetModelProperty ("ReducedMass", red_masses[i] + " AMU");
 this.atomSetCollection.setAtomSetModelProperty ("ForceConstant", frc_consts[i] + " mDyne/A");
 this.atomSetCollection.setAtomSetModelProperty ("IRIntensity", intensities[i] + " KM/Mole");
@@ -278,22 +278,22 @@ function () {
 var tokens = J.adapter.smarter.AtomSetCollectionReader.getTokensStr (this.readLine ());
 if (tokens.length != 8) return;
 var dipole = JU.V3.new3 (this.parseFloatStr (tokens[1]), this.parseFloatStr (tokens[3]), this.parseFloatStr (tokens[5]));
-J.util.Logger.info ("Molecular dipole for model " + this.atomSetCollection.getAtomSetCount () + " = " + dipole);
+J.util.Logger.info ("Molecular dipole for model " + this.atomSetCollection.atomSetCount + " = " + dipole);
 this.atomSetCollection.setAtomSetAuxiliaryInfo ("dipole", dipole);
 });
 $_M(c$, "readPartialCharges", 
 function () {
 this.readLine ();
-var atomCount = this.atomSetCollection.getAtomCount ();
+var atomCount = this.atomSetCollection.atomCount;
 var i0 = this.atomSetCollection.getLastAtomSetAtomIndex ();
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 for (var i = i0; i < atomCount; ++i) {
 while (atoms[i].elementNumber == 0) ++i;
 
 var charge = this.parseFloatStr (J.adapter.smarter.AtomSetCollectionReader.getTokensStr (this.readLine ())[2]);
 atoms[i].partialCharge = charge;
 }
-J.util.Logger.info ("Mulliken charges found for Model " + this.atomSetCollection.getAtomSetCount ());
+J.util.Logger.info ("Mulliken charges found for Model " + this.atomSetCollection.atomSetCount);
 });
 Clazz.defineStatics (c$,
 "STD_ORIENTATION_ATOMIC_NUMBER_OFFSET", 1);

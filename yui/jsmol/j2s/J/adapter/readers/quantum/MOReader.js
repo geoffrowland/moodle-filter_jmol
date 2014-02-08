@@ -27,7 +27,7 @@ this.getNBOs = this.filterMO ();
 this.line = "\nNBOCHARGES";
 this.getNBOCharges = (this.filter != null && this.filterMO ());
 if (this.filter == null) return;
-var f = JU.PT.simpleReplace (this.filter, "NBOCHARGES", "");
+var f = JU.PT.rep (this.filter, "NBOCHARGES", "");
 if (f.length < 3) this.filter = null;
 });
 $_M(c$, "checkNboLine", 
@@ -53,9 +53,9 @@ if (this.haveNboCharges) return;
 this.discardLinesUntilContains ("----");
 this.discardLinesUntilContains ("----");
 this.haveNboCharges = true;
-var atomCount = this.atomSetCollection.getAtomCount ();
+var atomCount = this.atomSetCollection.atomCount;
 var i0 = this.atomSetCollection.getLastAtomSetAtomIndex ();
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 for (var i = i0; i < atomCount; ++i) {
 while (atoms[i].elementNumber == 0) ++i;
 
@@ -67,7 +67,7 @@ return;
 }atoms[i].partialCharge = charge;
 if (J.util.Logger.debugging) J.util.Logger.debug ("Atom " + i + " using NBOcharge: " + charge);
 }
-J.util.Logger.info ("Using NBO charges for Model " + this.atomSetCollection.getAtomSetCount ());
+J.util.Logger.info ("Using NBO charges for Model " + this.atomSetCollection.atomSetCount);
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "getNboTypes", 
 function () {
@@ -282,12 +282,12 @@ $_M(c$, "readSecondOrderData",
 this.readLines (5);
 if (this.lastMoData == null || this.moTypes == null) return;
 var ht =  new java.util.Hashtable ();
-for (var i = this.moTypes.size (); --i >= 0; ) ht.put (JU.PT.simpleReplace (this.moTypes.get (i).substring (10), " ", ""), Integer.$valueOf (i + this.iMo0));
+for (var i = this.moTypes.size (); --i >= 0; ) ht.put (JU.PT.rep (this.moTypes.get (i).substring (10), " ", ""), Integer.$valueOf (i + this.iMo0));
 
 var strSecondOrderData =  new JU.List ();
 while (this.readLine () != null && this.line.indexOf ("NBO") < 0) {
 if (this.line.length < 5 || this.line.charAt (4) != '.') continue;
-strSecondOrderData.addLast ([JU.PT.simpleReplace (this.line.substring (5, 27).trim (), " ", ""), JU.PT.simpleReplace (this.line.substring (32, 54).trim (), " ", ""), this.line.substring (55, 62).trim (), this.line.substring (71).trim ()]);
+strSecondOrderData.addLast ([JU.PT.rep (this.line.substring (5, 27).trim (), " ", ""), JU.PT.rep (this.line.substring (32, 54).trim (), " ", ""), this.line.substring (55, 62).trim (), this.line.substring (71).trim ()]);
 }
 var secondOrderData =  Clazz.newFloatArray (strSecondOrderData.size (), 4, 0);
 this.lastMoData.put ("secondOrderData", secondOrderData);

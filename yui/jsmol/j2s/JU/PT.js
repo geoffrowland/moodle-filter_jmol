@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JU");
-Clazz.load (null, "JU.PT", ["java.lang.Character", "$.Double", "$.Float", "java.util.Map", "JU.A4", "$.DF", "$.List", "$.M3", "$.M4", "$.P4", "$.SB", "$.T3"], function () {
+Clazz.load (null, "JU.PT", ["java.lang.Boolean", "$.Character", "$.Float", "$.Number", "java.util.Map", "javajs.api.JSONEncodable", "JU.AU", "$.DF", "$.List", "$.M34", "$.M4", "$.SB"], function () {
 c$ = Clazz.declareType (JU, "PT");
 c$.parseInt = $_M(c$, "parseInt", 
 function (str) {
@@ -271,9 +271,8 @@ return str.substring (ich, ichLast + 1);
 c$.dVal = $_M(c$, "dVal", 
 function (s) {
 {
-if(s==null){
+if(s==null)
 throw new NumberFormatException("null");
-}
 var d=parseFloat(s);
 if(isNaN(d))
 throw new NumberFormatException("Not a Number : "+s);
@@ -359,7 +358,7 @@ c$.approx = $_M(c$, "approx",
 function (f, n) {
 return Math.round (f * n) / n;
 }, "~N,~N");
-c$.simpleReplace = $_M(c$, "simpleReplace", 
+c$.rep = $_M(c$, "rep", 
 function (str, strFrom, strTo) {
 if (str == null || strFrom.length == 0 || str.indexOf (strFrom) < 0) return str;
 var isOnce = (strTo.indexOf (strFrom) >= 0);
@@ -395,11 +394,18 @@ for (var i = padLength; --i > 0; ) sb.appendC (padChar);
 if (!alignLeft) sb.append (isNeg ? padChar + value.substring (1) : value);
 return sb.toString ();
 }, "~S,~N,~N,~B,~B");
+c$.replaceWithCharacter = $_M(c$, "replaceWithCharacter", 
+function (str, strFrom, chTo) {
+if (str == null) return null;
+for (var i = strFrom.length; --i >= 0; ) str = str.$replace (strFrom.charAt (i), chTo);
+
+return str;
+}, "~S,~S,~S");
 c$.replaceAllCharacters = $_M(c$, "replaceAllCharacters", 
 function (str, strFrom, strTo) {
 for (var i = strFrom.length; --i >= 0; ) {
 var chFrom = strFrom.substring (i, i + 1);
-str = JU.PT.simpleReplace (str, chFrom, strTo);
+str = JU.PT.rep (str, chFrom, strTo);
 }
 return str;
 }, "~S,~S,~S");
@@ -419,174 +425,92 @@ c$.trimQuotes = $_M(c$, "trimQuotes",
 function (value) {
 return (value != null && value.length > 1 && value.startsWith ("\"") && value.endsWith ("\"") ? value.substring (1, value.length - 1) : value);
 }, "~S");
-c$.replaceAllCharacter = $_M(c$, "replaceAllCharacter", 
-function (str, strFrom, chTo) {
-if (str == null) return null;
-for (var i = strFrom.length; --i >= 0; ) str = str.$replace (strFrom.charAt (i), chTo);
-
-return str;
-}, "~S,~S,~S");
+c$.isNonStringPrimitive = $_M(c$, "isNonStringPrimitive", 
+function (info) {
+return Clazz.instanceOf (info, Number) || Clazz.instanceOf (info, Boolean);
+}, "~O");
+c$.arrayGet = $_M(c$, "arrayGet", 
+($fz = function (info, i) {
+{
+return info[i];
+}}, $fz.isPrivate = true, $fz), "~O,~N");
 c$.toJSON = $_M(c$, "toJSON", 
 function (infoType, info) {
-var sb =  new JU.SB ();
-var sep = "";
 if (info == null) return JU.PT.packageJSON (infoType, null);
-if (Clazz.instanceOf (info, Integer) || Clazz.instanceOf (info, Float) || Clazz.instanceOf (info, Double)) return JU.PT.packageJSON (infoType, info.toString ());
-if (Clazz.instanceOf (info, String)) return JU.PT.packageJSON (infoType, JU.PT.fixString (info));
-if (JU.PT.isAS (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.fixString ((info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAI (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).appendI ((info)[i]);
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAF (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).appendF ((info)[i]);
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAD (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).appendD ((info)[i]);
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAP (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep);
-JU.PT.addJsonTuple (sb, (info)[i]);
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isASS (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAII (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAFF (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAFFF (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz.instanceOf (info, JU.List)) {
-sb.append ("[ ");
-var imax = (info).size ();
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info).get (i)));
-sep = ",";
-}
-sb.append (" ]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz.instanceOf (info, JU.M4)) {
-var x =  Clazz.newFloatArray (4, 0);
-var m4 = info;
-sb.appendC ('[');
-for (var i = 0; i < 4; i++) {
-if (i > 0) sb.appendC (',');
-m4.getRow (i, x);
-sb.append (JU.PT.toJSON (null, x));
-}
-sb.appendC (']');
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz.instanceOf (info, JU.M3)) {
-var x =  Clazz.newFloatArray (3, 0);
-var m3 = info;
-sb.appendC ('[');
-for (var i = 0; i < 3; i++) {
-if (i > 0) sb.appendC (',');
-m3.getRow (i, x);
-sb.append (JU.PT.toJSON (null, x));
-}
-sb.appendC (']');
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz.instanceOf (info, JU.T3)) {
-JU.PT.addJsonTuple (sb, info);
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz.instanceOf (info, JU.A4)) {
-sb.append ("[").appendF ((info).x).append (",").appendF ((info).y).append (",").appendF ((info).z).append (",").appendF (((info).angle * 180 / 3.141592653589793)).append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz.instanceOf (info, JU.P4)) {
-sb.append ("[").appendF ((info).x).append (",").appendF ((info).y).append (",").appendF ((info).z).append (",").appendF ((info).w).append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz.instanceOf (info, java.util.Map)) {
+if (JU.PT.isNonStringPrimitive (info)) return JU.PT.packageJSON (infoType, info.toString ());
+var s = null;
+var sb = null;
+while (true) {
+if (Clazz.instanceOf (info, String)) {
+s = JU.PT.fixString (info);
+break;
+}if (Clazz.instanceOf (info, javajs.api.JSONEncodable)) {
+s = (info).toJSON ();
+break;
+}sb =  new JU.SB ();
+if (Clazz.instanceOf (info, java.util.Map)) {
 sb.append ("{ ");
+var sep = "";
 for (var key, $key = (info).keySet ().iterator (); $key.hasNext () && ((key = $key.next ()) || true);) {
 sb.append (sep).append (JU.PT.packageJSON (key, JU.PT.toJSON (null, (info).get (key))));
 sep = ",";
 }
 sb.append (" }");
-return JU.PT.packageJSONSb (infoType, sb);
-}return JU.PT.packageJSON (infoType, JU.PT.fixString (info.toString ()));
+break;
+}if (Clazz.instanceOf (info, JU.List)) {
+sb.append ("[ ");
+var n = (info).size ();
+for (var i = 0; i < n; i++) {
+if (i > 0) sb.appendC (',');
+sb.append (JU.PT.toJSON (null, (info).get (i)));
+}
+sb.append (" ]");
+break;
+}if (Clazz.instanceOf (info, JU.M34)) {
+var len = (Clazz.instanceOf (info, JU.M4) ? 4 : 3);
+var x =  Clazz.newFloatArray (len, 0);
+var m = info;
+sb.appendC ('[');
+for (var i = 0; i < len; i++) {
+if (i > 0) sb.appendC (',');
+m.getRow (i, x);
+sb.append (JU.PT.toJSON (null, x));
+}
+sb.appendC (']');
+break;
+}s = JU.PT.nonArrayString (info);
+if (s == null) {
+sb.append ("[");
+var n = JU.AU.getLength (info);
+for (var i = 0; i < n; i++) {
+if (i > 0) sb.appendC (',');
+sb.append (JU.PT.toJSON (null, JU.PT.arrayGet (info, i)));
+}
+sb.append ("]");
+break;
+}info = info.toString ();
+}
+return JU.PT.packageJSON (infoType, (s == null ? sb.toString () : s));
 }, "~S,~O");
-c$.packageJSONSb = $_M(c$, "packageJSONSb", 
-function (infoType, sb) {
-return JU.PT.packageJSON (infoType, sb.toString ());
-}, "~S,JU.SB");
+c$.nonArrayString = $_M(c$, "nonArrayString", 
+function (x) {
+{
+var s = x.toString(); return (s.startsWith("[object") &&
+s.endsWith("Array]") ? null : s);
+}}, "~O");
 c$.packageJSON = $_M(c$, "packageJSON", 
 function (infoType, info) {
-if (infoType == null) return info;
-return "\"" + infoType + "\": " + info;
+return (infoType == null ? info : "\"" + infoType + "\": " + info);
 }, "~S,~S");
 c$.fixString = $_M(c$, "fixString", 
-function (s) {
+($fz = function (s) {
 {
 if (typeof s == "undefined") return "null"
 }if (s == null || s.indexOf ("{\"") == 0) return s;
-s = JU.PT.simpleReplace (s, "\"", "''");
-s = JU.PT.simpleReplace (s, "\n", " | ");
+s = JU.PT.rep (s, "\"", "\\\"");
+s = JU.PT.rep (s, "\n", "\\n");
 return "\"" + s + "\"";
-}, "~S");
-c$.addJsonTuple = $_M(c$, "addJsonTuple", 
-function (sb, pt) {
-sb.append ("[").appendF (pt.x).append (",").appendF (pt.y).append (",").appendF (pt.z).append ("]");
-}, "JU.SB,JU.T3");
+}, $fz.isPrivate = true, $fz), "~S");
 c$.isAS = $_M(c$, "isAS", 
 function (x) {
 {
@@ -617,6 +541,11 @@ function (x) {
 {
 return Clazz.isAF(x);
 }}, "~O");
+c$.isADD = $_M(c$, "isADD", 
+function (x) {
+{
+return Clazz.isAFF(x);
+}}, "~O");
 c$.isAB = $_M(c$, "isAB", 
 function (x) {
 {
@@ -644,16 +573,45 @@ return Clazz.isAFFF(x);
 }}, "~O");
 c$.escapeUrl = $_M(c$, "escapeUrl", 
 function (url) {
-url = JU.PT.simpleReplace (url, "\n", "");
-url = JU.PT.simpleReplace (url, "%", "%25");
-url = JU.PT.simpleReplace (url, "#", "%23");
-url = JU.PT.simpleReplace (url, "[", "%5B");
-url = JU.PT.simpleReplace (url, "]", "%5D");
-url = JU.PT.simpleReplace (url, " ", "%20");
+url = JU.PT.rep (url, "\n", "");
+url = JU.PT.rep (url, "%", "%25");
+url = JU.PT.rep (url, "#", "%23");
+url = JU.PT.rep (url, "[", "%5B");
+url = JU.PT.rep (url, "]", "%5D");
+url = JU.PT.rep (url, " ", "%20");
 return url;
+}, "~S");
+c$.esc = $_M(c$, "esc", 
+function (str) {
+if (str == null || str.length == 0) return "\"\"";
+var haveEscape = false;
+var i = 0;
+for (; i < "\\\\\tt\rr\nn\"\"".length; i += 2) if (str.indexOf ("\\\\\tt\rr\nn\"\"".charAt (i)) >= 0) {
+haveEscape = true;
+break;
+}
+if (haveEscape) while (i < "\\\\\tt\rr\nn\"\"".length) {
+var pt = -1;
+var ch = "\\\\\tt\rr\nn\"\"".charAt (i++);
+var ch2 = "\\\\\tt\rr\nn\"\"".charAt (i++);
+var sb =  new JU.SB ();
+var pt0 = 0;
+while ((pt = str.indexOf (ch, pt + 1)) >= 0) {
+sb.append (str.substring (pt0, pt)).appendC ('\\').appendC (ch2);
+pt0 = pt + 1;
+}
+sb.append (str.substring (pt0, str.length));
+str = sb.toString ();
+}
+for (i = str.length; --i >= 0; ) if (str.charCodeAt (i) > 0x7F) {
+var s = "0000" + Integer.toHexString (str.charCodeAt (i));
+str = str.substring (0, i) + "\\u" + s.substring (s.length - 4) + str.substring (i + 1);
+}
+return "\"" + str + "\"";
 }, "~S");
 Clazz.defineStatics (c$,
 "tensScale", [10, 100, 1000, 10000, 100000, 1000000],
 "decimalScale", [0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001, 0.000000001],
-"FLOAT_MIN_SAFE", 2E-45);
+"FLOAT_MIN_SAFE", 2E-45,
+"escapable", "\\\\\tt\rr\nn\"\"");
 });

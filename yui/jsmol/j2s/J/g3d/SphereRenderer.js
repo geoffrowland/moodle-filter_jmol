@@ -366,7 +366,7 @@ mode = 2;
 this.z0 = zPixel;
 if (checkOctant) {
 this.ptTemp.set (xCurrent - this.x, yCurrent - this.y, zPixel - this.z);
-this.mat.transform (this.ptTemp);
+this.mat.rotate (this.ptTemp);
 var thisOctant = J.util.GData.getScreenOctant (this.ptTemp);
 if (thisOctant == this.selectedOctant) {
 iShade = this.getPlaneShade (xCurrent, yCurrent, this.zroot);

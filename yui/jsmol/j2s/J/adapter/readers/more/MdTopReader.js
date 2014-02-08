@@ -27,7 +27,7 @@ return false;
 $_V(c$, "finalizeReader", 
 function () {
 this.finalizeReaderASCR ();
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 var atom;
 for (var i = 0; i < this.atomCount; i++) {
 atom = atoms[i];
@@ -95,7 +95,7 @@ $_M(c$, "getCharges",
 ($fz = function () {
 var data = this.getDataBlock ();
 if (data.length != this.atomCount) return;
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 for (var i = this.atomCount; --i >= 0; ) atoms[i].partialCharge = this.parseFloatStr (data[i]);
 
 }, $fz.isPrivate = true, $fz));
@@ -105,7 +105,7 @@ var resPtrs = this.getDataBlock ();
 J.util.Logger.info ("Total number of residues=" + resPtrs.length);
 var pt1 = this.atomCount;
 var pt2;
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 for (var i = resPtrs.length; --i >= 0; ) {
 var ptr = pt2 = this.parseIntStr (resPtrs[i]) - 1;
 while (ptr < pt1) {
@@ -122,7 +122,7 @@ this.group3s = this.getDataBlock ();
 $_M(c$, "getAtomNames", 
 ($fz = function () {
 var names = this.getDataBlock ();
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 for (var i = 0; i < this.atomCount; i++) atoms[i].atomName = names[i];
 
 }, $fz.isPrivate = true, $fz));

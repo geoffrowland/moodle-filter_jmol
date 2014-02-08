@@ -54,8 +54,8 @@ this.parent.setUnitCellItem (4, 90);
 this.parent.setUnitCellItem (5, 90);
 var pt = JU.P3.new3 (-x / 2, -y / 2, -z / 2);
 this.atomSetCollection.setAtomSetAuxiliaryInfo ("periodicOriginXyz", pt);
-var atoms = this.atomSetCollection.getAtoms ();
-for (var i = this.atomSetCollection.getAtomCount (); --i >= 0; ) {
+var atoms = this.atomSetCollection.atoms;
+for (var i = this.atomSetCollection.atomCount; --i >= 0; ) {
 atoms[i].sub (pt);
 this.parent.setAtomCoord (atoms[i]);
 }

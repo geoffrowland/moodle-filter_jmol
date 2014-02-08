@@ -70,7 +70,7 @@ while (this.readLine () != null && this.line.length >= 15) data.append (this.lin
 var tokens = J.adapter.smarter.AtomSetCollectionReader.getTokensStr (data.toString ());
 var nFuncs = Clazz.doubleToInt (tokens.length / 2);
 var ptSlater =  Clazz.newIntArray (nFuncs, 0);
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 for (var i = 0, pt = 0; i < tokens.length; ) {
 var iAtom = this.parseIntStr (tokens[i++]) - 1;
 var code = tokens[i++];

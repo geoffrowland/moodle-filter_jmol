@@ -97,8 +97,8 @@
   Jmol._JMEApplet._get = function(id, Info, linkedApplet, checkOnly) {
 	
 	// requires JmolJME.js and JME.jar
-	// note that the variable name the return is assigned to MUST match the first parameter in quotes
-	// jme = Jmol.getJMEApplet("jme", Info)
+	// Jmol.getJMEApplet("jme", Info)
+  // window["jme"] will be created as the return to this function
 
 		Info || (Info = {});
 		var DefaultInfo = {

@@ -1,18 +1,29 @@
 Clazz.declarePackage ("J.adapter.readers.cif");
-Clazz.load (["J.adapter.readers.cif.MSReader", "J.adapter.smarter.MSCifInterface"], "J.adapter.readers.cif.MSCifReader", ["java.lang.Character", "$.Float", "JU.M4", "$.P3"], function () {
+Clazz.load (["J.adapter.readers.cif.MSCifInterface", "$.MSReader"], "J.adapter.readers.cif.MSCifReader", ["java.lang.Character", "$.Double", "JU.Matrix", "$.PT"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.field = null;
 Clazz.instantialize (this, arguments);
-}, J.adapter.readers.cif, "MSCifReader", J.adapter.readers.cif.MSReader, J.adapter.smarter.MSCifInterface);
+}, J.adapter.readers.cif, "MSCifReader", J.adapter.readers.cif.MSReader, J.adapter.readers.cif.MSCifInterface);
 Clazz.makeConstructor (c$, 
 function () {
 Clazz.superConstructor (this, J.adapter.readers.cif.MSCifReader, []);
 });
-$_V(c$, "processModulationLoopBlock", 
+$_V(c$, "processEntry", 
 function () {
-if (this.modAverage) return false;
 var cr = this.cr;
-if (cr.atomSetCollection.getCurrentAtomSetIndex () < 0) cr.atomSetCollection.newAtomSet ();
+if (cr.key.equals ("_jana_cell_commen_t_section_1")) {
+this.isCommensurate = true;
+this.commensurateSection1 = cr.parseIntStr (cr.data);
+}});
+$_V(c$, "processLoopBlock", 
+function () {
+var cr = this.cr;
+if (cr.key.equals ("_cell_subsystem_code")) {
+this.processSubsystemLoopBlock ();
+return 1;
+}if (!cr.key.startsWith ("_cell_wave") && !cr.key.contains ("fourier") && !cr.key.contains ("_special_func")) return 0;
+if (this.modAverage) return -1;
+if (cr.atomSetCollection.currentAtomSetIndex < 0) cr.atomSetCollection.newAtomSet ();
 cr.parseLoopParameters (J.adapter.readers.cif.MSCifReader.modulationFields);
 var tok;
 while (cr.tokenizer.getData ()) {
@@ -20,7 +31,7 @@ var ignore = false;
 var id = null;
 var atomLabel = null;
 var axis = null;
-var pt = JU.P3.new3 (NaN, NaN, NaN);
+var pt = [NaN, NaN, NaN];
 var c = NaN;
 var w = NaN;
 var fid = null;
@@ -31,7 +42,7 @@ case 41:
 case 42:
 case 0:
 case 4:
-pt.x = pt.y = pt.z = 0;
+pt[0] = pt[1] = pt[2] = 0;
 case 13:
 case 19:
 case 35:
@@ -49,7 +60,7 @@ case 40:
 case 41:
 case 42:
 fid = "?" + this.field;
-pt.z = 1;
+pt[2] = 1;
 continue;
 case 43:
 case 44:
@@ -65,7 +76,7 @@ id += this.field;
 break;
 case 46:
 id = "J_O";
-pt.x = pt.z = 1;
+pt[0] = pt[2] = 1;
 case 24:
 if (id == null) id = "D_S";
 case 30:
@@ -90,27 +101,22 @@ case 20:
 case 14:
 case 36:
 case 31:
-pt.z = 0;
+pt[2] = 0;
 case 1:
 case 5:
 case 25:
-pt.x = cr.parseFloatStr (this.field);
+pt[0] = cr.parseFloatStr (this.field);
 break;
 case 8:
-id += "_q_";
-pt.x = cr.parseFloatStr (this.field);
-switch (this.modDim) {
-case 1:
-pt.y = 0;
-case 2:
-pt.z = 0;
-}
+id += "_coefs_";
+pt =  Clazz.newDoubleArray (this.modDim, 0);
+pt[0] = cr.parseFloatStr (this.field);
 break;
 case 16:
 case 22:
 case 38:
-pt.x = cr.parseFloatStr (this.field);
-pt.z = 1;
+pt[0] = cr.parseFloatStr (this.field);
+pt[2] = 1;
 break;
 case 51:
 case 21:
@@ -128,13 +134,13 @@ case 26:
 case 47:
 case 53:
 case 49:
-pt.y = cr.parseFloatStr (this.field);
+pt[1] = cr.parseFloatStr (this.field);
 break;
 case 3:
 case 7:
 case 10:
 case 27:
-pt.z = cr.parseFloatStr (this.field);
+pt[2] = cr.parseFloatStr (this.field);
 break;
 case 28:
 c = cr.parseFloatStr (this.field);
@@ -143,7 +149,11 @@ case 29:
 w = cr.parseFloatStr (this.field);
 break;
 }
-if (ignore || Float.isNaN (pt.x + pt.y + pt.z) || pt.x == 0 && pt.y == 0 && pt.z == 0 || id == null || atomLabel != null && !atomLabel.equals ("*") && cr.rejectAtomName (atomLabel)) continue;
+if (ignore || id == null || atomLabel != null && !atomLabel.equals ("*") && cr.rejectAtomName (atomLabel)) continue;
+var d = 0;
+for (var j = 0; j < pt.length; j++) d += pt[j];
+
+if (Double.isNaN (d) || d > 1e10 || d == 0) continue;
 switch (id.charAt (0)) {
 case 'W':
 case 'F':
@@ -154,10 +164,10 @@ case 'U':
 case 'J':
 if (atomLabel == null || axis == null) continue;
 if (id.equals ("D_S")) {
-if (Float.isNaN (c) || Float.isNaN (w)) continue;
-if (pt.x != 0) this.addMod ("D_S#x;" + atomLabel, fid, JU.P3.new3 (c, w, pt.x));
-if (pt.y != 0) this.addMod ("D_S#y;" + atomLabel, fid, JU.P3.new3 (c, w, pt.y));
-if (pt.z != 0) this.addMod ("D_S#z;" + atomLabel, fid, JU.P3.new3 (c, w, pt.z));
+if (Double.isNaN (c) || Double.isNaN (w)) continue;
+if (pt[0] != 0) this.addMod ("D_S#x;" + atomLabel, fid, [c, w, pt[0]]);
+if (pt[1] != 0) this.addMod ("D_S#y;" + atomLabel, fid, [c, w, pt[1]]);
+if (pt[2] != 0) this.addMod ("D_S#z;" + atomLabel, fid, [c, w, pt[2]]);
 continue;
 }id += "#" + axis + ";" + atomLabel;
 break;
@@ -165,36 +175,37 @@ break;
 this.addMod (id, fid, pt);
 }
 }
-return true;
+return 1;
 });
 $_M(c$, "addMod", 
 ($fz = function (id, fid, params) {
 if (fid != null) id += fid;
 this.addModulation (null, id, params, -1);
-}, $fz.isPrivate = true, $fz), "~S,~S,JU.P3");
-$_V(c$, "processSubsystemLoopBlock", 
-function () {
+}, $fz.isPrivate = true, $fz), "~S,~S,~A");
+$_M(c$, "processSubsystemLoopBlock", 
+($fz = function () {
 var cr = this.cr;
 cr.parseLoopParameters (null);
 while (cr.tokenizer.getData ()) {
 this.fieldProperty (cr, 0);
 var id = this.field;
-this.addSubsystem (id, this.getMatrix4 (cr, 1), null);
+this.addSubsystem (id, this.getSubSystemMatrix (cr, 1));
 }
-});
-$_M(c$, "getMatrix4", 
+}, $fz.isPrivate = true, $fz));
+$_M(c$, "getSubSystemMatrix", 
 ($fz = function (cr, i) {
-var m4 =  new JU.M4 ();
-var a =  Clazz.newFloatArray (16, 0);
+var m =  new JU.Matrix (null, 3 + this.modDim, 3 + this.modDim);
+var a = m.getArray ();
+var key;
+var p;
 for (; i < cr.tokenizer.fieldCount; ++i) {
-var key = cr.fields[this.fieldProperty (cr, i)];
-if (!key.contains ("_w_")) continue;
-var r = key.charCodeAt (key.length - 3) - 49;
-var c = key.charCodeAt (key.length - 1) - 49;
-a[r * 4 + c] = cr.parseFloatStr (cr.field);
+if ((p = this.fieldProperty (cr, i)) < 0 || !(key = cr.fields[p]).contains ("_w_")) continue;
+var tokens = JU.PT.split (key, "_");
+var r = cr.parseIntStr (tokens[tokens.length - 2]) - 1;
+var c = cr.parseIntStr (tokens[tokens.length - 1]) - 1;
+a[r][c] = cr.parseFloatStr (this.field);
 }
-m4.setA (a, 0);
-return m4;
+return m;
 }, $fz.isPrivate = true, $fz), "J.adapter.readers.cif.CifReader,~N");
 $_M(c$, "fieldProperty", 
 ($fz = function (cr, i) {

@@ -34,7 +34,7 @@ if (infoType.charAt (0) != ';') infoType = ";" + infoType + ".";
 switch (Clazz.doubleToInt (";.............;eigenvalues..;eigenvectors.;asymmatrix...;symmatrix....;value........;isotropy.....;anisotropy...;asymmetry....;eulerzyz.....;eulerzxz.....;quaternion...;indices......;string.......;type.........;id...........;span.........;skew.........".indexOf (infoType) / 14)) {
 default:
 var info =  new java.util.Hashtable ();
-var s = JU.PT.getTokens (JU.PT.replaceAllCharacter (";.............;eigenvalues..;eigenvectors.;asymmatrix...;symmatrix....;value........;isotropy.....;anisotropy...;asymmetry....;eulerzyz.....;eulerzxz.....;quaternion...;indices......;string.......;type.........;id...........;span.........;skew.........", ";.", ' ').trim ());
+var s = JU.PT.getTokens (JU.PT.replaceWithCharacter (";.............;eigenvalues..;eigenvectors.;asymmatrix...;symmatrix....;value........;isotropy.....;anisotropy...;asymmetry....;eulerzyz.....;eulerzxz.....;quaternion...;indices......;string.......;type.........;id...........;span.........;skew.........", ";.", ' ').trim ());
 java.util.Arrays.sort (s);
 for (var i = 0; i < s.length; i++) {
 var o = this.getInfo (s[i]);
@@ -55,7 +55,7 @@ var pt = 0;
 for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++) a[pt++] = this.asymMatrix[i][j];
 
 
-return JU.M3.newA (a);
+return JU.M3.newA9 (a);
 case 4:
 if (this.symMatrix == null) return null;
 var b =  Clazz.newFloatArray (9, 0);
@@ -63,7 +63,7 @@ var p2 = 0;
 for (var i = 0; i < 3; i++) for (var j = 0; j < 3; j++) b[p2++] = this.symMatrix[i][j];
 
 
-return JU.M3.newA (b);
+return JU.M3.newA9 (b);
 case 5:
 return Float.$valueOf (this.eigenValues[2]);
 case 6:
@@ -159,7 +159,7 @@ var n =  new JU.V3 ();
 var cross =  new JU.V3 ();
 for (var i = 0; i < 3; i++) {
 n.setT (evec[i]);
-m.transform (n);
+m.rotate (n);
 cross.cross (n, evec[i]);
 n.setT (evec[i]);
 n.normalize ();

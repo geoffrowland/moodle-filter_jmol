@@ -79,7 +79,7 @@ return true;
 $_V(c$, "finalizeReader", 
 function () {
 this.finalizeReaderASCR ();
-if (this.atomCount > 0 && this.spartanArchive != null && this.atomSetCollection.getBondCount () == 0 && this.bondData != null) this.spartanArchive.addBonds (this.bondData, 0);
+if (this.atomCount > 0 && this.spartanArchive != null && this.atomSetCollection.bondCount == 0 && this.bondData != null) this.spartanArchive.addBonds (this.bondData, 0);
 if (this.moData != null) {
 var n = this.atomSetCollection.getAtomSetCollectionAuxiliaryInfo ("HOMO_N");
 if (n != null) this.moData.put ("HOMO", Integer.$valueOf (n.intValue ()));
@@ -123,7 +123,7 @@ if (this.atomCount == 0 || !this.isTrajectory) this.atomCount += this.modelAtomC
 }}, $fz.isPrivate = true, $fz));
 $_M(c$, "setCharges", 
 ($fz = function () {
-if (this.haveCharges || this.atomSetCollection.getAtomCount () == 0) return;
+if (this.haveCharges || this.atomSetCollection.atomCount == 0) return;
 this.haveCharges = (this.espCharges && this.atomSetCollection.setAtomSetCollectionPartialCharges ("ESPCHARGES") || this.atomSetCollection.setAtomSetCollectionPartialCharges ("MULCHARGES") || this.atomSetCollection.setAtomSetCollectionPartialCharges ("Q1_CHARGES") || this.atomSetCollection.setAtomSetCollectionPartialCharges ("ESPCHARGES"));
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "readProperties", 

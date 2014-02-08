@@ -6,6 +6,8 @@ jmol-flot.htm
 Bob Hanson hansonr@stolaf.edu
 5:52 AM 5/12/2009
 
+BH  1/20/2014 1:22:24 PM modified for JSmol/HTML5
+
 This demonstration illustrates how Jquery Flot can be use with Jmol.
 
 -->
@@ -22,11 +24,7 @@ This demonstration illustrates how Jquery Flot can be use with Jmol.
 </style>
 <script type="text/javascript" src="JSmol.min.js"></script>
 <script type="text/javascript" src="js/Jmol2.js"></script>
-<script type="text/javascript" src="flot/excanvas.js"></script>
-<script type="text/javascript" src="flot/jquery.js"></script>
 <script type="text/javascript" src="flot/jquery.flot2.js"></script>
-<script type="text/javascript" src="flot/showobj.js"></script>
-<script type="text/javascript" src="flot/json2.js"></script>
 <script type="text/javascript">
 
 var appletPrintable = (navigator.appName != "Netscape") // Sorry, I don't know how to check for this
@@ -382,11 +380,14 @@ function doPrintAll() {
 <div id="imagediv" class="printonly"></div>
 <div id="appletdiv" style="width:450;height:450">
 <script type="text/javascript">
-//jmolInitialize(".","http://chemapps.stolaf.edu/pe/protexpl/molview/JmolAppletSigned.jar")
-jmolInitialize(".","JmolAppletSigned0.jar")
+
+Jmol.Info.j2sPath = "j2s";
+
+jmolInitialize("java","JmolAppletSigned0.jar")
 
 
 var xxxx = document.location.search
+if (xxxx.indexOf("USE=") > 0)xxxx = "";
 if (xxxx.indexOf("?load") == 0) {
 	script = unescape(xxxx.substring(1))
 } else {
@@ -397,7 +398,6 @@ if (xxxx.indexOf("?load") == 0) {
 	+'spacefill off;wireframe off;cartoons on;color structure;'
 	script = script.replace(/XXXX/g, xxxx)
 }
-//alert(script)
 jmolApplet(["450","450"],script + ";set loadStructCallback \"jmolLoadStructCallback\";set defaultloadscript \"cartoon only;color structure;set bondmode OR;isDssp = false;\"")
 
 </script>

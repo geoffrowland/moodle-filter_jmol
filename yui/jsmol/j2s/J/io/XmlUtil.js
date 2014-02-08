@@ -46,11 +46,11 @@ sb.appendO (data);
 c$.wrapCdata = $_M(c$, "wrapCdata", 
 function (data) {
 var s = "" + data;
-return (s.indexOf ("&") < 0 && s.indexOf ("<") < 0 ? (s.startsWith ("\n") ? "" : "\n") + s : "<![CDATA[" + JU.PT.simpleReplace (s, "]]>", "]]]]><![CDATA[>") + "]]>");
+return (s.indexOf ("&") < 0 && s.indexOf ("<") < 0 ? (s.startsWith ("\n") ? "" : "\n") + s : "<![CDATA[" + JU.PT.rep (s, "]]>", "]]]]><![CDATA[>") + "]]>");
 }, "~O");
 c$.unwrapCdata = $_M(c$, "unwrapCdata", 
 function (s) {
-return (s.startsWith ("<![CDATA[") && s.endsWith ("]]>") ? JU.PT.simpleReplace (s.substring (9, s.length - 3), "]]]]><![CDATA[>", "]]>") : s);
+return (s.startsWith ("<![CDATA[") && s.endsWith ("]]>") ? JU.PT.rep (s.substring (9, s.length - 3), "]]]]><![CDATA[>", "]]>") : s);
 }, "~S");
 c$.appendTagObj = $_M(c$, "appendTagObj", 
 function (sb, name, attributes, data) {

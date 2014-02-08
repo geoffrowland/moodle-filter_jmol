@@ -35,7 +35,7 @@ this.vectorScale = this.viewer.getFloat (1649410049);
 this.vectorSymmetry = this.viewer.getBoolean (603979973);
 for (var i = this.modelSet.getAtomCount (); --i >= 0; ) {
 var atom = atoms[i];
-if (!atom.isVisible (this.myVisibilityFlag)) continue;
+if (!this.isVisibleForMe (atom)) continue;
 var vibrationVector = this.viewer.getVibration (i);
 if (vibrationVector == null) continue;
 if (!this.transform (mads[i], atom, vibrationVector)) continue;
@@ -62,8 +62,7 @@ this.doShaft = (0.1 + Math.abs (this.headScale / len) < Math.abs (this.vectorSca
 this.headOffsetVector.setT (vibrationVector);
 this.headOffsetVector.scale (this.headScale / len);
 this.pointVectorEnd.scaleAdd2 (this.vectorScale, vibrationVector, atom);
-this.pointArrowHead.setT (this.pointVectorEnd);
-this.pointArrowHead.add (this.headOffsetVector);
+this.pointArrowHead.add2 (this.pointVectorEnd, this.headOffsetVector);
 this.screenArrowHead.setT (this.viewer.transformPtVib (this.pointArrowHead, vibrationVector));
 this.screenVectorEnd.setT (this.viewer.transformPtVib (this.pointVectorEnd, vibrationVector));
 this.diameter = Clazz.floatToInt (mad < 1 ? 1 : mad <= 20 ? mad : this.viewer.scaleToScreen (this.screenVectorEnd.z, mad));
@@ -73,7 +72,7 @@ return true;
 }, $fz.isPrivate = true, $fz), "~N,J.modelset.Atom,J.util.Vibration");
 $_M(c$, "renderVector", 
 ($fz = function (atom) {
-if (this.doShaft) this.g3d.fillCylinderScreen (1, this.diameter, atom.screenX, atom.screenY, atom.screenZ, this.screenArrowHead.x, this.screenArrowHead.y, this.screenArrowHead.z);
+if (this.doShaft) this.g3d.fillCylinderScreen (1, this.diameter, atom.sX, atom.sY, atom.sZ, this.screenArrowHead.x, this.screenArrowHead.y, this.screenArrowHead.z);
 this.g3d.fillConeScreen (2, this.headWidthPixels, this.screenArrowHead, this.screenVectorEnd, false);
 }, $fz.isPrivate = true, $fz), "J.modelset.Atom");
 Clazz.defineStatics (c$,

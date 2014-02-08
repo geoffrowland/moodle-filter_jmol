@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.script");
-Clazz.load (null, "J.script.ScriptCompilationTokenParser", ["java.lang.Float", "JU.List", "$.P3", "$.PT", "J.i18n.GT", "J.script.ScriptEvaluator", "$.T", "J.util.Logger", "J.viewer.JC"], function () {
+Clazz.load (null, "J.script.ScriptCompilationTokenParser", ["java.lang.Float", "JU.List", "$.P3", "$.PT", "J.i18n.GT", "J.script.ScriptEvaluator", "$.T", "J.util.Logger", "$.SimpleUnitCell", "J.viewer.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.viewer = null;
 this.script = null;
@@ -85,14 +85,19 @@ firstToken = 0;
 case 12295:
 if (tok == 1678770178) firstToken = 2;
 break;
+case 135280132:
+switch (tok) {
+case 1048589:
+case 1048588:
+tok = this.tokAt (++firstToken);
+break;
+}
 case 12294:
 case 1610625028:
-case 135280132:
 switch (tok) {
 case 1276118017:
 case 1073742119:
-firstToken = 2;
-tok = this.tokAt (2);
+tok = this.tokAt (++firstToken);
 break;
 }
 if (tok == 1087373318) firstToken++;
@@ -296,9 +301,9 @@ return this.clauseConnected ();
 case 135267335:
 case 135267336:
 return this.clauseSubstructure ();
-case 135266324:
+case 135266325:
 case 135402505:
-return this.clauseWithin (tok == 135266324);
+return this.clauseWithin (tok == 135266325);
 case 1060866:
 return this.clauseDefine (false, false);
 case 1678770178:
@@ -620,6 +625,22 @@ if (tokenComparator != null) this.returnToken ();
 this.returnToken ();
 return false;
 }if (J.script.ScriptCompilationTokenParser.tokenAttr (tokenAtomProperty, 1087373312) && tokenComparator.tok != 269484436 && tokenComparator.tok != 269484438) return this.errorStr (15, "== !=");
+if (this.tokPeek () == 269484096) {
+this.getToken ();
+this.addTokenToPostfixToken (J.script.T.tokenLeftParen);
+while (true) {
+if (!this.addCompare (tokenAtomProperty, tokenComparator)) return false;
+if (this.tokPeek () == 269484080) this.getToken ();
+ else if (this.tokPeek () == 269484097) break;
+this.addTokenToPostfixToken (tokenComparator.tok == 269484438 ? J.script.T.tokenAnd : J.script.T.tokenOr);
+}
+this.getToken ();
+this.addTokenToPostfixToken (J.script.T.tokenRightParen);
+return true;
+}return this.addCompare (tokenAtomProperty, tokenComparator);
+}, $fz.isPrivate = true, $fz), "~B");
+$_M(c$, "addCompare", 
+($fz = function (tokenAtomProperty, tokenComparator) {
 if (this.getToken () == null) return this.errorStr (17, "" + this.valuePeek ());
 var isNegative = (this.isToken (269484192));
 if (isNegative && this.getToken () == null) return this.error (12);
@@ -642,7 +663,7 @@ return this.clausePrimitive ();
 }this.addTokenToPostfixToken (this.theToken);
 if (this.theToken.tok == 1060866) return this.clauseDefine (true, false);
 return true;
-}, $fz.isPrivate = true, $fz), "~B");
+}, $fz.isPrivate = true, $fz), "J.script.T,J.script.T");
 $_M(c$, "clauseCell", 
 ($fz = function (tok) {
 var cell =  new JU.P3 ();
@@ -650,10 +671,7 @@ this.tokenNext ();
 if (!this.tokenNextTok (269484436)) return this.errorStr (15, "=");
 if (this.getToken () == null) return this.error (3);
 if (this.isToken (2)) {
-var nnn = this.theToken.intValue;
-cell.x = Clazz.doubleToInt (nnn / 100) - 4;
-cell.y = Clazz.doubleToInt ((nnn % 100) / 10) - 4;
-cell.z = (nnn % 10) - 4;
+J.util.SimpleUnitCell.ijkToPoint3f (this.theToken.intValue, cell, 1);
 return this.addTokenToPostfix (tok, cell);
 }if (!this.isToken (1048586) || !this.getNumericalToken ()) return this.error (3);
 cell.x = this.floatValue ();
@@ -683,7 +701,7 @@ return this.addSubstituteTokenIf (1048590, J.script.T.tokenExpressionEnd) && thi
 }, $fz.isPrivate = true, $fz), "~B,~B");
 $_M(c$, "generateResidueSpecCode", 
 ($fz = function (token) {
-if (this.residueSpecCodeGenerated) this.addTokenToPostfixToken (J.script.T.tokenAND);
+if (this.residueSpecCodeGenerated) this.addTokenToPostfixToken (J.script.T.tokenAndSpec);
 this.addTokenToPostfixToken (token);
 this.residueSpecCodeGenerated = true;
 return true;
@@ -979,8 +997,8 @@ break;
 if (msg.indexOf ("{0}") < 0) {
 if (value != null) msg += ": " + value;
 } else {
-msg = JU.PT.simpleReplace (msg, "{0}", value);
-if (msg.indexOf ("{1}") >= 0) msg = JU.PT.simpleReplace (msg, "{1}", more);
+msg = JU.PT.rep (msg, "{0}", value);
+if (msg.indexOf ("{1}") >= 0) msg = JU.PT.rep (msg, "{1}", more);
  else if (more != null) msg += ": " + more;
 }if (!translated) J.i18n.GT.setDoTranslate (doTranslate);
 return msg;

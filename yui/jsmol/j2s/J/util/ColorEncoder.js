@@ -137,9 +137,9 @@ if (name.length > 0) isOverloaded = true;
 var n = 0;
 if (colorScheme.length > pt + 1 && !colorScheme.contains ("[")) {
 colorScheme = "[" + colorScheme.substring (pt + 1).trim () + "]";
-colorScheme = JU.PT.simpleReplace (colorScheme.$replace ('\n', ' '), "  ", " ");
-colorScheme = JU.PT.simpleReplace (colorScheme, ", ", ",").$replace (' ', ',');
-colorScheme = JU.PT.simpleReplace (colorScheme, ",", "][");
+colorScheme = JU.PT.rep (colorScheme.$replace ('\n', ' '), "  ", " ");
+colorScheme = JU.PT.rep (colorScheme, ", ", ",").$replace (' ', ',');
+colorScheme = JU.PT.rep (colorScheme, ",", "][");
 }pt = -1;
 while ((pt = colorScheme.indexOf ("[", pt + 1)) >= 0) n++;
 

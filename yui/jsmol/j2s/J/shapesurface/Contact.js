@@ -50,9 +50,9 @@ if (rd == null) rd =  new J.atomdata.RadiusData (null, saProbeRadius, J.atomdata
 if (colorDensity) {
 switch (displayType) {
 case 1073741961:
-case 1276117510:
+case 1276117512:
 case 135266319:
-displayType = 1276117510;
+displayType = 1276117512;
 break;
 case 4106:
 case 1073742036:
@@ -119,12 +119,12 @@ this.newSurface (135266319, null, bsA, bsB, rd, parameters, func, colorDensity, 
 this.mergeMesh (null);
 break;
 case 1073741961:
-case 1276117510:
+case 1276117512:
 colorByType = false;
-this.newSurface (1276117510, null, bsA, bsB, rd, null, null, colorDensity, null, 0);
+this.newSurface (1276117512, null, bsA, bsB, rd, null, null, colorDensity, null, 0);
 if (displayType == 1073741961) {
 this.sg.initState ();
-this.newSurface (1276117510, null, bsB, bsA, rd, parameters, func, colorDensity, null, 0);
+this.newSurface (1276117512, null, bsB, bsA, rd, parameters, func, colorDensity, null, 0);
 this.mergeMesh (null);
 } else {
 var meshData =  new J.jvxl.data.MeshData ();
@@ -210,7 +210,7 @@ this.newSurface (displayType, cp, null, null, null, null, func, isColorDensity, 
 cp.switchAtoms ();
 this.newSurface (displayType, cp, null, null, null, null, null, isColorDensity, volumeData, 0);
 break;
-case 1276117510:
+case 1276117512:
 case 135266319:
 case 4106:
 this.newSurface (displayType, cp, null, null, null, parameters, func, isColorDensity, volumeData, 0);
@@ -340,7 +340,7 @@ switch (displayType) {
 case 1073742136:
 case 3145756:
 case 554176565:
-case 1276117510:
+case 1276117512:
 case 1073741961:
 var rdA;
 var rdB;
@@ -368,7 +368,7 @@ params.bsSelected = bs2;
 this.setPropI ("sasurface", Float.$valueOf (sasurfaceRadius), null);
 switch (displayType) {
 case 1073741961:
-case 1276117510:
+case 1276117512:
 iSlab0 = -100;
 break;
 case 1073742136:

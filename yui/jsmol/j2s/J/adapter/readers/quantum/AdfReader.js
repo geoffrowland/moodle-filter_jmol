@@ -72,7 +72,7 @@ while (this.readLine () != null && this.line.indexOf (".") < 0 && this.line.inde
 if (this.line == null || this.line.indexOf (".") < 0) return;
 var frequencies = this.getTokens ();
 this.readLine ();
-var iAtom0 = this.atomSetCollection.getAtomCount ();
+var iAtom0 = this.atomSetCollection.atomCount;
 var atomCount = this.atomSetCollection.getLastAtomSetAtomCount ();
 var frequencyCount = frequencies.length;
 var ignore =  Clazz.newBooleanArray (frequencyCount, false);

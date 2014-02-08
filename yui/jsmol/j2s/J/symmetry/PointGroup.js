@@ -230,8 +230,7 @@ nFound++;
 var a1 = this.points[i];
 var e1 = this.elements[i];
 if (q != null) {
-pt.setT (a1);
-pt.sub (center);
+pt.sub2 (a1, center);
 q.transformP2 (pt, pt).add (center);
 } else {
 pt.setT (a1);
@@ -307,9 +306,7 @@ if (this.isParallel (v1, v2)) {
 this.getAllAxes (v1);
 continue;
 }if (this.nAxes[16] < J.symmetry.PointGroup.axesMaxN[16]) {
-v3.setT (a1);
-v3.add (a2);
-v3.scale (0.5);
+v3.ave (a1, a2);
 v3.sub (this.center);
 this.getAllAxes (v3);
 }var order = (6.283185307179586 / v1.angle (v2));
@@ -331,8 +328,7 @@ vs[n].setT (this.axes[16][i].normalOrAxis);
 vs[n++].scale (-1);
 }
 for (var i = vs.length; --i >= 2; ) for (var j = i; --j >= 1; ) for (var k = j; --k >= 0; ) {
-v3.setT (vs[i]);
-v3.add (vs[j]);
+v3.add2 (vs[i], vs[j]);
 v3.add (vs[k]);
 if (v3.length () < 1.0) continue;
 this.checkAxisOrder (17, v3, this.center);
@@ -353,8 +349,7 @@ v1.normalize ();
 v2.normalize ();
 v3.cross (v1, v2);
 this.getAllAxes (v3);
-v1.setT (this.points[i]);
-v1.add (this.points[j]);
+v1.add2 (this.points[i], this.points[j]);
 v1.add (this.points[k]);
 v1.normalize ();
 if (!this.isParallel (v1, v3)) this.getAllAxes (v1);
@@ -373,12 +368,9 @@ if (!this.haveInversionCenter) for (var i = 0; i < this.maxElement; i++) if (vs[
 
 for (var i = 0; i < this.maxElement; i++) if (vs[i] != null) for (var j = 0; j < this.maxElement; j++) {
 if (i == j || vs[j] == null) continue;
-if (this.haveInversionCenter) {
-v1.cross (vs[i], vs[j]);
-} else {
-v1.setT (vs[i]);
-v1.sub (vs[j]);
-}this.checkAxisOrder (16, v1, this.center);
+if (this.haveInversionCenter) v1.cross (vs[i], vs[j]);
+ else v1.sub2 (vs[i], vs[j]);
+this.checkAxisOrder (16, v1, this.center);
 }
 
 return this.getHighestOrder ();
@@ -488,8 +480,7 @@ if (!this.isParallel (v1, v2)) {
 v3.cross (v1, v2);
 v3.normalize ();
 nPlanes = this.getPlane (v3);
-}v3.setT (a2);
-v3.sub (a1);
+}v3.sub2 (a2, a1);
 v3.normalize ();
 nPlanes = this.getPlane (v3);
 if (nPlanes == J.symmetry.PointGroup.axesMaxN[0]) return nPlanes;
@@ -554,8 +545,7 @@ var scale = scaleFactor * this.radius + offset;
 if (!haveType || type.equalsIgnoreCase (label) || anyProperAxis && i >= 14 || anyImproperAxis && i < 14) for (var j = 0; j < this.nAxes[i]; j++) {
 if (index > 0 && j + 1 != index) continue;
 op = this.axes[i][j];
-v.setT (op.normalOrAxis);
-v.add (this.center);
+v.add2 (op.normalOrAxis, this.center);
 if (op.type == 2) scale = -scale;
 sb.append ("draw pgva").append (m).append (label).append ("_").appendI (j + 1).append (" width 0.05 scale ").appendF (scale).append (" ").append (J.util.Escape.eP (v));
 v.scaleAdd2 (-2, op.normalOrAxis, v);
@@ -567,17 +557,13 @@ if (!haveType || type.equalsIgnoreCase ("Cs")) for (var j = 0; j < this.nAxes[0]
 if (index > 0 && j + 1 != index) continue;
 op = this.axes[0][j];
 sb.append ("draw pgvp").append (m).appendI (j + 1).append ("disk scale ").appendF (scaleFactor * this.radius * 2).append (" CIRCLE PLANE ").append (J.util.Escape.eP (this.center));
-v.setT (op.normalOrAxis);
-v.add (this.center);
+v.add2 (op.normalOrAxis, this.center);
 sb.append (J.util.Escape.eP (v)).append (" color translucent yellow;\n");
-v.setT (op.normalOrAxis);
-v.add (this.center);
+v.add2 (op.normalOrAxis, this.center);
 sb.append ("draw pgvp").append (m).appendI (j + 1).append ("ring width 0.05 scale ").appendF (scaleFactor * this.radius * 2).append (" arc ").append (J.util.Escape.eP (v));
 v.scaleAdd2 (-2, op.normalOrAxis, v);
 sb.append (J.util.Escape.eP (v));
-v.x += 0.011;
-v.y += 0.012;
-v.z += 0.013;
+v.add3 (0.011, 0.012, 0.013);
 sb.append (J.util.Escape.eP (v)).append ("{0 360 0.5} color ").append (this.principalPlane != null && op.index == this.principalPlane.index ? "red" : "blue").append (";\n");
 }
 sb.append ("# name=").append (this.name);

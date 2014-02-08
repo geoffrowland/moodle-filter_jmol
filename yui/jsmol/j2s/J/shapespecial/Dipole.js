@@ -137,7 +137,7 @@ function () {
 if (!this.isValid) return "";
 var s =  new JU.SB ();
 s.append ("dipole ID ").append (this.thisID);
-if (this.haveAtoms) s.append (" ({").appendI (this.atoms[0].getIndex ()).append (" ").appendI (this.atoms[1].getIndex ()).append ("})");
+if (this.haveAtoms) s.append (" ({").appendI (this.atoms[0].index).append (" ").appendI (this.atoms[1].index).append ("})");
  else if (this.coords[0] == null) return "";
  else s.append (" ").append (J.util.Escape.eP (this.coords[0])).append (" ").append (J.util.Escape.eP (this.coords[1]));
 if (this.isUserValue) s.append (" value ").appendF (this.dipoleValue);

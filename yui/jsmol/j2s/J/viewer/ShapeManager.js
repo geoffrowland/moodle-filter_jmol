@@ -113,7 +113,7 @@ if (this.shapes[5] == null) return;
 this.loadShape (5);
 this.setShapeSizeBs (5, 0, null, bsSelection);
 }this.setShapePropertyBs (5, "label", strLabel, bsSelection);
-}, "~S,JU.BS");
+}, "~O,JU.BS");
 $_M(c$, "setShapePropertyBs", 
 function (shapeID, propertyName, value, bsSelected) {
 if (this.shapes == null || this.shapes[shapeID] == null) return;
@@ -239,6 +239,22 @@ if (this.shapes == null || this.shapes[0] == null) return;
 var bs = this.viewer.getVisibleFramesBitSet ();
 for (var i = 1; i < 36; i++) if (this.shapes[i] != null) this.shapes[i].setVisibilityFlags (bs);
 
+var showHydrogens = this.viewer.getBoolean (603979922);
+var bsDeleted = this.viewer.getDeletedAtoms ();
+var atoms = this.modelSet.atoms;
+var flag0 = -48;
+for (var i = this.modelSet.atomCount; --i >= 0; ) {
+var atom = atoms[i];
+atom.shapeVisibilityFlags &= flag0;
+if (bsDeleted != null && bsDeleted.get (i) || !showHydrogens && atom.getElementNumber () == 1) continue;
+var modelIndex = atom.getModelIndex ();
+if (bs.get (modelIndex)) {
+var f = 1;
+if (!this.modelSet.isAtomHidden (i)) {
+f |= 8;
+if (atom.madAtom != 0) f |= 16;
+atom.setShapeVisibility (f, true);
+}}}
 this.shapes[0].setVisibilityFlags (bs);
 for (var i = 0; i < 36; ++i) {
 var shape = this.shapes[i];
@@ -256,27 +272,19 @@ this.viewer.unTransformPoint (pt, pt);
 pt.sub (ptCenter);
 this.viewer.setAtomCoordsRelative (pt, bsAtoms);
 ptOffset.set (0, 0, 0);
-}this.bsRenderableAtoms.clearAll ();
-var atoms = this.modelSet.atoms;
-for (var i = this.modelSet.getAtomCount (); --i >= 0; ) {
-var atom = atoms[i];
-if ((atom.getShapeVisibilityFlags () & 1) == 0) continue;
-this.bsRenderableAtoms.set (i);
-}
-}, "JU.BS,JU.P3");
-$_M(c$, "transformAtoms", 
-function () {
+}this.modelSet.getRenderable (this.bsRenderableAtoms);
 var vibrationVectors = this.modelSet.vibrations;
 var atoms = this.modelSet.atoms;
+var vibs = (vibrationVectors != null && this.viewer.isVibrationOn ());
 for (var i = this.bsRenderableAtoms.nextSetBit (0); i >= 0; i = this.bsRenderableAtoms.nextSetBit (i + 1)) {
 var atom = atoms[i];
-var screen = (vibrationVectors != null && atom.hasVibration () ? this.viewer.transformPtVib (atom, vibrationVectors[i]) : this.viewer.transformPt (atom));
-atom.screenX = screen.x;
-atom.screenY = screen.y;
-atom.screenZ = screen.z;
+var screen = (vibs && atom.hasVibration () ? this.viewer.transformPtVib (atom, vibrationVectors[i]) : this.viewer.transformPt (atom));
+atom.sX = screen.x;
+atom.sY = screen.y;
+atom.sZ = screen.z;
 var d = Math.abs (atom.madAtom);
 if (d == J.modelset.Atom.MAD_GLOBAL) d = Clazz.floatToInt (this.viewer.getFloat (1141899265) * 2000);
-atom.screenDiameter = Clazz.floatToShort (this.viewer.scaleToScreen (screen.z, d));
+atom.sD = Clazz.floatToShort (this.viewer.scaleToScreen (screen.z, d));
 }
 if (this.viewer.getSlabEnabled ()) {
 var slabByMolecule = this.viewer.getBoolean (603979940);
@@ -291,21 +299,21 @@ var m = molecules[i];
 var j = 0;
 var pt = m.firstAtomIndex;
 if (!this.bsRenderableAtoms.get (pt)) continue;
-for (; j < m.atomCount; j++, pt++) if (this.gdata.isClippedZ (atoms[pt].screenZ - (atoms[pt].screenDiameter >> 1))) break;
+for (; j < m.atomCount; j++, pt++) if (this.gdata.isClippedZ (atoms[pt].sZ - (atoms[pt].sD >> 1))) break;
 
 if (j != m.atomCount) {
 pt = m.firstAtomIndex;
 for (var k = 0; k < m.atomCount; k++) {
 this.bsRenderableAtoms.clear (pt);
-atoms[pt++].screenZ = 0;
+atoms[pt++].sZ = 0;
 }
 }}
 }for (var i = this.bsRenderableAtoms.nextSetBit (0); i >= 0; i = this.bsRenderableAtoms.nextSetBit (i + 1)) {
 var atom = atoms[i];
-if (this.gdata.isClippedZ (atom.screenZ - (slabByAtom ? atoms[i].screenDiameter >> 1 : 0))) {
+if (this.gdata.isClippedZ (atom.sZ - (slabByAtom ? atoms[i].sD >> 1 : 0))) {
 atom.setClickable (0);
-var r = Clazz.doubleToInt ((slabByAtom ? -1 : 1) * atom.screenDiameter / 2);
-if (atom.screenZ + r < minZ || atom.screenZ - r > maxZ || !this.gdata.isInDisplayRange (atom.screenX, atom.screenY)) {
+var r = Clazz.doubleToInt ((slabByAtom ? -1 : 1) * atom.sD / 2);
+if (atom.sZ + r < minZ || atom.sZ - r > maxZ || !this.gdata.isInDisplayRange (atom.sX, atom.sY)) {
 this.bsRenderableAtoms.clear (i);
 }}}
 }if (this.modelSet.getAtomCount () == 0 || !this.viewer.getShowNavigationPoint ()) return null;
@@ -315,17 +323,17 @@ var minY = 2147483647;
 var maxY = -2147483648;
 for (var i = this.bsRenderableAtoms.nextSetBit (0); i >= 0; i = this.bsRenderableAtoms.nextSetBit (i + 1)) {
 var atom = atoms[i];
-if (atom.screenX < minX) minX = atom.screenX;
-if (atom.screenX > maxX) maxX = atom.screenX;
-if (atom.screenY < minY) minY = atom.screenY;
-if (atom.screenY > maxY) maxY = atom.screenY;
+if (atom.sX < minX) minX = atom.sX;
+if (atom.sX > maxX) maxX = atom.sX;
+if (atom.sY < minY) minY = atom.sY;
+if (atom.sY > maxY) maxY = atom.sY;
 }
 this.navigationCrossHairMinMax[0] = minX;
 this.navigationCrossHairMinMax[1] = maxX;
 this.navigationCrossHairMinMax[2] = minY;
 this.navigationCrossHairMinMax[3] = maxY;
 return this.navigationCrossHairMinMax;
-});
+}, "JU.BS,JU.P3");
 $_M(c$, "setModelSet", 
 function (modelSet) {
 this.modelSet = this.viewer.modelSet = modelSet;

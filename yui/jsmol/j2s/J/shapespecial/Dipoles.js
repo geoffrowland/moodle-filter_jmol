@@ -299,7 +299,7 @@ return (dipole != null && dipole.isBondType () && (dipole.dipoleInfo + dipole.di
 $_M(c$, "getDipoleIndex", 
 ($fz = function (atomIndex1, atomIndex2) {
 for (var i = this.dipoleCount; --i >= 0; ) {
-if (this.dipoles[i] != null && this.dipoles[i].atoms[0] != null && this.dipoles[i].atoms[1] != null && (this.dipoles[i].atoms[0].getIndex () == atomIndex1 && this.dipoles[i].atoms[1].getIndex () == atomIndex2 || this.dipoles[i].atoms[1].getIndex () == atomIndex1 && this.dipoles[i].atoms[0].getIndex () == atomIndex2)) return i;
+if (this.dipoles[i] != null && this.dipoles[i].atoms[0] != null && this.dipoles[i].atoms[1] != null && (this.dipoles[i].atoms[0].index == atomIndex1 && this.dipoles[i].atoms[1].index == atomIndex2 || this.dipoles[i].atoms[1].index == atomIndex1 && this.dipoles[i].atoms[0].index == atomIndex2)) return i;
 }
 return -1;
 }, $fz.isPrivate = true, $fz), "~N,~N");
@@ -324,7 +324,7 @@ return this.dipoles[dipoleIndex];
 }, $fz.isPrivate = true, $fz), "~S");
 $_M(c$, "findDipole", 
 ($fz = function (atom1, atom2, doAllocate) {
-var dipoleIndex = this.getDipoleIndex (atom1.getIndex (), atom2.getIndex ());
+var dipoleIndex = this.getDipoleIndex (atom1.index, atom2.index);
 if (dipoleIndex >= 0) {
 return this.dipoles[dipoleIndex];
 }return (doAllocate ? this.allocDipole ("", "") : null);
@@ -387,11 +387,11 @@ info.put ("vector", dipole.vector);
 info.put ("origin", dipole.origin);
 if (dipole.atoms[0] != null) {
 atomInfo =  new java.util.Hashtable ();
-this.viewer.getAtomIdentityInfo (dipole.atoms[0].getIndex (), atomInfo);
+this.viewer.getAtomIdentityInfo (dipole.atoms[0].index, atomInfo);
 var atoms =  new JU.List ();
 atoms.addLast (atomInfo);
 atomInfo =  new java.util.Hashtable ();
-this.viewer.getAtomIdentityInfo (dipole.atoms[1].getIndex (), atomInfo);
+this.viewer.getAtomIdentityInfo (dipole.atoms[1].index, atomInfo);
 atoms.addLast (atomInfo);
 info.put ("atoms", atoms);
 info.put ("magnitude", Float.$valueOf (dipole.vector.length ()));

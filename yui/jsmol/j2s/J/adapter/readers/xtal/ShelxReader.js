@@ -68,7 +68,7 @@ break;
 }, $fz.isPrivate = true, $fz), "~N");
 $_M(c$, "parseLattRecord", 
 ($fz = function () {
-this.atomSetCollection.setLatticeParameter (this.parseIntStr (this.tokens[1]));
+this.atomSetCollection.getXSymmetry ().setLatticeParameter (this.parseIntStr (this.tokens[1]));
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "parseSymmRecord", 
 ($fz = function () {

@@ -16,7 +16,7 @@ this.g3d.addRenderer (1073742182);
 var colixes = polyhedra.colixes;
 var needTranslucent = false;
 for (var i = polyhedra.polyhedronCount; --i >= 0; ) {
-var iAtom = polyhedrons[i].centralAtom.getIndex ();
+var iAtom = polyhedrons[i].centralAtom.index;
 var colix = (colixes == null || iAtom >= colixes.length ? 0 : polyhedra.colixes[iAtom]);
 if (this.render1 (polyhedrons[i], colix)) needTranslucent = true;
 }
@@ -41,7 +41,7 @@ for (var i = vertices.length; --i >= 0; ) this.screens[i] =  new JU.P3i ();
 for (var i = vertices.length; --i >= 0; ) {
 var atom = (Clazz.instanceOf (vertices[i], J.modelset.Atom) ? vertices[i] : null);
 if (atom == null) this.viewer.transformPtScr (vertices[i], this.screens[i]);
- else this.screens[i].set (atom.screenX, atom.screenY, atom.screenZ);
+ else this.screens[i].set (atom.sX, atom.sY, atom.sZ);
 }
 this.isAll = (this.drawEdges == 1);
 this.frontOnly = (this.drawEdges == 2);

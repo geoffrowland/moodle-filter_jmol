@@ -525,7 +525,7 @@ this.matTemp.setAA (aa);
 this.ptTemp.setT (a1);
 for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
 this.atoms[i].sub (this.ptTemp);
-this.matTemp.transform (this.atoms[i]);
+this.matTemp.rotate (this.atoms[i]);
 this.atoms[i].add (this.ptTemp);
 this.taintAtom (i, 2);
 }
@@ -535,9 +535,9 @@ $_M(c$, "moveAtoms",
 function (mNew, matrixRotate, translation, bs, center, isInternal, translationOnly) {
 if (!translationOnly) {
 if (mNew == null) {
-this.matTemp.setM (matrixRotate);
+this.matTemp.setM3 (matrixRotate);
 } else {
-this.matInv.setM (matrixRotate);
+this.matInv.setM3 (matrixRotate);
 this.matInv.invert ();
 this.ptTemp.set (0, 0, 0);
 this.matTemp.mul2 (mNew, matrixRotate);
@@ -546,20 +546,20 @@ this.matTemp.mul2 (this.matInv, this.matTemp);
 this.vTemp.setT (center);
 this.mat4.setIdentity ();
 this.mat4.setTranslation (this.vTemp);
-this.mat4t.setM3 (this.matTemp);
-this.mat4.mulM4 (this.mat4t);
+this.mat4t.setToM3 (this.matTemp);
+this.mat4.mul (this.mat4t);
 this.mat4t.setIdentity ();
 this.vTemp.scale (-1);
 this.mat4t.setTranslation (this.vTemp);
-this.mat4.mulM4 (this.mat4t);
+this.mat4.mul (this.mat4t);
 } else {
-this.mat4.setM3 (this.matTemp);
+this.mat4.setToM3 (this.matTemp);
 }for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
 if (isInternal) {
-this.mat4.transform (this.atoms[i]);
+this.mat4.rotTrans (this.atoms[i]);
 } else {
 this.ptTemp.add (this.atoms[i]);
-this.mat4.transform (this.atoms[i]);
+this.mat4.rotTrans (this.atoms[i]);
 this.ptTemp.sub (this.atoms[i]);
 }this.taintAtom (i, 2);
 }

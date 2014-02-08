@@ -25,7 +25,7 @@ this.isrhombohedral = ((this.latticeCode = this.line.charAt (0)) == 'R');
 if (this.line.startsWith ("CYZ")) this.latticeCode = 'A';
  else if (this.line.startsWith ("CXZ")) this.latticeCode = 'B';
  else if (this.line.startsWith ("B")) this.latticeCode = 'I';
-if (this.latticeCode != 'R' && this.latticeCode != 'H') this.atomSetCollection.setLatticeParameter (this.latticeCode.charCodeAt (0));
+if (this.latticeCode != 'R' && this.latticeCode != 'H') this.atomSetCollection.getXSymmetry ().setLatticeParameter (this.latticeCode.charCodeAt (0));
 if (this.line.length > 32) {
 var name = this.line.substring (32).trim ();
 if (name.indexOf (" ") >= 0) name = name.substring (name.indexOf (" ") + 1);
@@ -53,7 +53,7 @@ $_M(c$, "readAtoms",
 ($fz = function () {
 this.readLine ();
 while (this.line != null && (this.line.indexOf ("ATOM") == 0 || !this.doSymmetry && this.line.indexOf (":") == 8)) {
-var thisAtom = this.atomSetCollection.getAtomCount ();
+var thisAtom = this.atomSetCollection.atomCount;
 this.addAtom ();
 if (this.readLine ().indexOf ("MULT=") == 10) for (var i = this.parseIntRange (this.line, 15, 18); --i >= 0; ) {
 this.readLine ();
@@ -62,10 +62,10 @@ if (!this.doSymmetry) this.addAtom ();
 var atomName = this.line.substring (0, 10);
 var sym = atomName.substring (0, 2).trim ();
 if (sym.length == 2 && Character.isDigit (sym.charAt (1))) sym = sym.substring (0, 1);
-atomName = JU.PT.simpleReplace (atomName, " ", "");
+atomName = JU.PT.rep (atomName, " ", "");
 var n = 0;
-for (var i = this.atomSetCollection.getAtomCount (); --i >= thisAtom; ) {
-var atom = this.atomSetCollection.getAtom (i);
+for (var i = this.atomSetCollection.atomCount; --i >= thisAtom; ) {
+var atom = this.atomSetCollection.atoms[i];
 atom.elementSymbol = sym;
 atom.atomName = atomName + "_" + (n++);
 }

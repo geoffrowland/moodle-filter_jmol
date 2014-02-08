@@ -1,4 +1,8 @@
+// JSmolMenu.js
+// author: Bob Hanson, hansonr@stolaf.edu
 
+// BH 1/16/2014 9:20:15 AM allowing second attempt to initiate this library to gracefully skip processing
+  
 /*! jQuery UI - v1.9.2 - 2012-12-17
 * http://jqueryui.com
 * Includes: jquery.ui.core.js, jquery.ui.widget.js, jquery.ui.mouse.js, jquery.ui.position.js, jquery.ui.menu.js
@@ -47,11 +51,11 @@ try{
 * Copyright (c) 2012 jQuery Foundation and other contributors Licensed MIT */
 
 
-Jmol.Menu = {
-	_menuCounter: 0
-}
+Jmol.Menu || (Jmol.Menu = {_menuCounter: 0})
 
 ;(function(M) {
+
+if (M._getID)return;
 
 M._getID = function(applet, name) {
 	return applet._id + '_' + name + '_' + (++M._menuCounter);

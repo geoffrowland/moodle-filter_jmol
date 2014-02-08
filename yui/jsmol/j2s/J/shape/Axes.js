@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shape");
-Clazz.load (["J.shape.FontLineShape", "JU.P3", "$.V3"], "J.shape.Axes", ["java.lang.Boolean", "JU.SB", "J.constant.EnumAxesMode", "J.util.Escape", "J.viewer.JC"], function () {
+Clazz.load (["J.shape.FontLineShape", "JU.P3", "$.V3"], "J.shape.Axes", ["java.lang.Boolean", "JU.PT", "$.SB", "J.constant.EnumAxesMode", "J.util.Escape", "J.viewer.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.axisXY = null;
 this.scale = 0;
@@ -28,8 +28,7 @@ return (isDataFrame ? J.shape.Axes.pt0 : this.originPoint);
 $_M(c$, "getAxisPoint", 
 function (i, isDataFrame) {
 if (!isDataFrame && this.axisXY.z == 0) return this.axisPoints[i];
-this.ptTemp.setT (this.axisPoints[i]);
-this.ptTemp.sub (this.originPoint);
+this.ptTemp.sub2 (this.axisPoints[i], this.originPoint);
 this.ptTemp.scale (0.5);
 return this.ptTemp;
 }, "~N,~B");
@@ -71,8 +70,7 @@ if (unitcell != null) {
 var vertices = unitcell.getUnitCellVertices ();
 var offset = unitcell.getCartesianOffset ();
 if (this.fixedOrigin == null) {
-this.originPoint.setT (offset);
-this.originPoint.add (vertices[0]);
+this.originPoint.add2 (offset, vertices[0]);
 } else {
 offset = this.fixedOrigin;
 }this.scale = this.viewer.getFloat (570425346) / 2;
@@ -116,7 +114,7 @@ if (this.fixedOrigin != null) sb.append ("  axes center ").append (J.util.Escape
 if (this.axisXY.z != 0) sb.append ("  axes position [").appendI (Clazz.floatToInt (this.axisXY.x)).append (" ").appendI (Clazz.floatToInt (this.axisXY.y)).append (" ").append (this.axisXY.z < 0 ? " %" : "").append ("];\n");
 if (this.labels != null) {
 sb.append ("  axes labels ");
-for (var i = 0; i < this.labels.length; i++) if (this.labels[i] != null) sb.append (J.util.Escape.eS (this.labels[i])).append (" ");
+for (var i = 0; i < this.labels.length; i++) if (this.labels[i] != null) sb.append (JU.PT.esc (this.labels[i])).append (" ");
 
 sb.append (";\n");
 }return Clazz.superCall (this, J.shape.Axes, "getShapeState", []) + sb;

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.export");
-Clazz.load (["JSV.api.JSVExporter"], "JSV.export.JDXExporter", ["java.util.Arrays", "JSV.common.Coordinate", "$.ExportType", "JSV.export.JDXCompressor", "JSV.source.FileReader", "JSV.util.JSVTxt"], function () {
+Clazz.load (["JSV.api.JSVExporter"], "JSV.export.JDXExporter", ["java.util.Arrays", "JU.DF", "$.PT", "JSV.common.Coordinate", "$.ExportType", "JSV.export.JDXCompressor", "JSV.source.FileReader"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.out = null;
 this.type = null;
@@ -116,25 +116,42 @@ if (observedFreq != 1.7976931348623157E308) this.out.append ("##.OBSERVE FREQUEN
 if (this.spectrum.observedNucl !== "") this.out.append ("##.OBSERVE NUCLEUS= ").append (this.spectrum.observedNucl).append (JSV["export"].JDXExporter.newLine);
 this.out.append ("##XUNITS= ").append (this.spectrum.isHZtoPPM () ? "HZ" : this.spectrum.getXUnits ()).append (JSV["export"].JDXExporter.newLine);
 this.out.append ("##YUNITS= ").append (this.spectrum.getYUnits ()).append (JSV["export"].JDXExporter.newLine);
-this.out.append ("##XFACTOR= ").append (JSV.util.JSVTxt.fixExponentInt (tmpXFactor)).append (JSV["export"].JDXExporter.newLine);
-this.out.append ("##YFACTOR= ").append (JSV.util.JSVTxt.fixExponentInt (tmpYFactor)).append (JSV["export"].JDXExporter.newLine);
+this.out.append ("##XFACTOR= ").append (JSV["export"].JDXExporter.fixExponentInt (tmpXFactor)).append (JSV["export"].JDXExporter.newLine);
+this.out.append ("##YFACTOR= ").append (JSV["export"].JDXExporter.fixExponentInt (tmpYFactor)).append (JSV["export"].JDXExporter.newLine);
 var f = (this.spectrum.isHZtoPPM () ? observedFreq : 1);
 var xyCoords = this.spectrum.getXYCoords ();
-this.out.append ("##FIRSTX= ").append (JSV.util.JSVTxt.fixExponentInt (xyCoords[startIndex].getXVal () * f)).append (JSV["export"].JDXExporter.newLine);
-this.out.append ("##FIRSTY= ").append (JSV.util.JSVTxt.fixExponentInt (xyCoords[startIndex].getYVal ())).append (JSV["export"].JDXExporter.newLine);
-this.out.append ("##LASTX= ").append (JSV.util.JSVTxt.fixExponentInt (xyCoords[endIndex].getXVal () * f)).append (JSV["export"].JDXExporter.newLine);
+this.out.append ("##FIRSTX= ").append (JSV["export"].JDXExporter.fixExponentInt (xyCoords[startIndex].getXVal () * f)).append (JSV["export"].JDXExporter.newLine);
+this.out.append ("##FIRSTY= ").append (JSV["export"].JDXExporter.fixExponentInt (xyCoords[startIndex].getYVal ())).append (JSV["export"].JDXExporter.newLine);
+this.out.append ("##LASTX= ").append (JSV["export"].JDXExporter.fixExponentInt (xyCoords[endIndex].getXVal () * f)).append (JSV["export"].JDXExporter.newLine);
 this.out.append ("##NPOINTS= ").append ("" + (Math.abs (endIndex - startIndex) + 1)).append (JSV["export"].JDXExporter.newLine);
-this.out.append ("##MINY= ").append (JSV.util.JSVTxt.fixExponentInt (minY)).append (JSV["export"].JDXExporter.newLine);
-this.out.append ("##MAXY= ").append (JSV.util.JSVTxt.fixExponentInt (maxY)).append (JSV["export"].JDXExporter.newLine);
+this.out.append ("##MINY= ").append (JSV["export"].JDXExporter.fixExponentInt (minY)).append (JSV["export"].JDXExporter.newLine);
+this.out.append ("##MAXY= ").append (JSV["export"].JDXExporter.fixExponentInt (maxY)).append (JSV["export"].JDXExporter.newLine);
 }, $fz.isPrivate = true, $fz), "~S,~N,~N,~N,~N,~N,~N");
 c$.areIntegers = $_M(c$, "areIntegers", 
 ($fz = function (xyCoords, startIndex, endIndex, factor, isX) {
 for (var i = startIndex; i <= endIndex; i++) {
 var x = (isX ? xyCoords[i].getXVal () : xyCoords[i].getYVal ()) / factor;
-if (JSV.util.JSVTxt.isAlmostInteger (x)) return false;
+if (JSV["export"].JDXExporter.isAlmostInteger (x)) return false;
 }
 return true;
 }, $fz.isPrivate = true, $fz), "~A,~N,~N,~N,~B");
+c$.isAlmostInteger = $_M(c$, "isAlmostInteger", 
+($fz = function (x) {
+return (x != 0 && Math.abs (x - Math.floor (x)) / x > 1e-8);
+}, $fz.isPrivate = true, $fz), "~N");
+c$.fixExponentInt = $_M(c$, "fixExponentInt", 
+($fz = function (x) {
+return (x == Math.floor (x) ? String.valueOf (Clazz.doubleToInt (x)) : JU.PT.rep (JSV["export"].JDXExporter.fixExponent (x), "E+00", ""));
+}, $fz.isPrivate = true, $fz), "~N");
+c$.fixExponent = $_M(c$, "fixExponent", 
+($fz = function (x) {
+var s = JU.DF.formatDecimalDbl (x, -7);
+var pt = s.indexOf ("E");
+if (pt < 0) {
+return s;
+}if (s.length == pt + 3) s = s.substring (0, pt + 2) + "0" + s.substring (pt + 2);
+return s;
+}, $fz.isPrivate = true, $fz), "~N");
 c$.newLine = c$.prototype.newLine = System.getProperty ("line.separator");
 Clazz.defineStatics (c$,
 "FACTOR_DIVISOR", 1000000);

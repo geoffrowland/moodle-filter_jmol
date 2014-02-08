@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.util");
-Clazz.load (["J.api.JmolAppletInterface", "$.JmolStatusListener", "java.util.Hashtable"], "J.util.GenericApplet", ["java.lang.Boolean", "java.net.URL", "javajs.awt.Dimension", "JU.List", "$.PT", "$.SB", "J.constant.EnumCallback", "J.i18n.GT", "J.util.Escape", "$.Logger", "J.viewer.JC", "$.Viewer"], function () {
+Clazz.load (["J.api.JmolAppletInterface", "$.JmolStatusListener", "java.util.Hashtable"], "J.util.GenericApplet", ["java.lang.Boolean", "java.net.URL", "javajs.awt.Dimension", "JU.List", "$.PT", "$.SB", "J.constant.EnumCallback", "J.i18n.GT", "J.util.Logger", "J.viewer.JC", "$.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.isJS = false;
 this.codeBase = null;
@@ -154,7 +154,7 @@ return this.viewer.processMouseEvent (e.id, e.x, e.y, e.modifiers, e.when);
 }, "java.awt.Event");
 $_V(c$, "getAppletInfo", 
 function () {
-return J.i18n.GT.o (J.i18n.GT._ ("Jmol Applet version {0} {1}.\n\nAn OpenScience project.\n\nSee http://www.jmol.org for more information"), [J.viewer.JC.version, J.viewer.JC.date]) + "\nhtmlName = " + J.util.Escape.eS (this.htmlName) + "\nsyncId = " + J.util.Escape.eS (this.syncId) + "\ndocumentBase = " + J.util.Escape.eS (this.documentBase) + "\ncodeBase = " + J.util.Escape.eS (this.codeBase);
+return J.i18n.GT.o (J.i18n.GT._ ("Jmol Applet version {0} {1}.\n\nAn OpenScience project.\n\nSee http://www.jmol.org for more information"), [J.viewer.JC.version, J.viewer.JC.date]) + "\nhtmlName = " + JU.PT.esc (this.htmlName) + "\nsyncId = " + JU.PT.esc (this.syncId) + "\ndocumentBase = " + JU.PT.esc (this.documentBase) + "\ncodeBase = " + JU.PT.esc (this.codeBase);
 });
 $_V(c$, "script", 
 function (script) {
@@ -522,7 +522,8 @@ if (!appletName2.equals (excludeName) && appletName2.indexOf (ext) > 0) {
 apps.addLast (appletName2);
 }}
 return;
-}if (appletName.indexOf ("__") < 0) appletName += ext;
+}if (excludeName.indexOf ("_object") >= 0 && appletName.indexOf ("_object") < 0) appletName += "_object";
+if (appletName.indexOf ("__") < 0) appletName += ext;
 if (!J.util.GenericApplet.htRegistry.containsKey (appletName)) appletName = "jmolApplet" + appletName;
 if (!appletName.equals (excludeName) && J.util.GenericApplet.htRegistry.containsKey (appletName)) {
 apps.addLast (appletName);

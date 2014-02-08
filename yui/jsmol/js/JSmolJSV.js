@@ -22,7 +22,7 @@
     this._version="2.0";
 		this._jmolType = "Jmol._JSVApplet" + (Info.isSigned ? " (signed)" : "");
 		this._id = id;
-	  this._syncId = ("" + Math.random()).substring(3);
+	  this._uniqueId = ("" + Math.random()).substring(3);
     this._isJava = true;
 		Jmol._setObject(this, id, Info);
     this._startupScript = Jmol._JSVApplet.getStartupScript(this, Info);
@@ -108,7 +108,7 @@
 
   Jmol._JSVApplet.getStartupScript = function(applet, Info) {
     return (Info.initParams ? Info.initParams : "") 
-        + ';appletID ' + applet._id + ';syncID '+ applet._syncId
+        + ';appletID ' + applet._id + ';syncID '+ Jmol._syncId
         + ';backgroundcolor ' + applet._color
         + ';appletReadyCallbackFunctionName Jmol._readyCallback'// + applet._id + '._readyCallback'
         + ';syncCallbackFunctionName Jmol._mySyncCallback;';	
@@ -124,7 +124,7 @@
 		var params = {
 			boxbgcolor: this._color,
 			boxfgcolor: "white",
-			syncId: this._syncId,
+			syncId: Jmol._syncId,
       code:"jspecview.applet.JSVApplet" + (this._isSigned ? "Pro" : "")
   		};
 

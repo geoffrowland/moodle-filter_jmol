@@ -71,9 +71,10 @@ this.s += buf.s;
 }, "JU.SB");
 $_M(c$, "appendO", 
 function (data) {
+if (data != null) {
 {
 this.s += data.toString();
-}return this;
+}}return this;
 }, "~O");
 $_M(c$, "appendCB", 
 function (cb, off, len) {

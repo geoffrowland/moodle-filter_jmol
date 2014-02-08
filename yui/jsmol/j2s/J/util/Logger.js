@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.util");
-Clazz.load (["java.util.Hashtable", "J.util.DefaultLogger"], "J.util.Logger", null, function () {
+Clazz.load (["java.util.Hashtable", "J.util.DefaultLogger"], "J.util.Logger", ["java.lang.Long"], function () {
 c$ = Clazz.declareType (J.util, "Logger");
 c$.getProperty = $_M(c$, "getProperty", 
 ($fz = function (level, defaultValue) {
@@ -136,7 +136,7 @@ J.util.Logger._logger.fatalEx (txt, e);
 }, "~S,Throwable");
 c$.startTimer = $_M(c$, "startTimer", 
 function (msg) {
-if (msg != null) J.util.Logger.htTiming.put (msg, Integer.$valueOf (System.currentTimeMillis ()));
+if (msg != null) J.util.Logger.htTiming.put (msg, Long.$valueOf (System.currentTimeMillis ()));
 }, "~S");
 c$.getTimerMsg = $_M(c$, "getTimerMsg", 
 function (msg, time) {
@@ -146,7 +146,7 @@ return "Time for " + msg + ": " + (time) + " ms";
 c$.getTimeFrom = $_M(c$, "getTimeFrom", 
 ($fz = function (msg) {
 var t;
-return (msg == null || (t = J.util.Logger.htTiming.get (msg)) == null ? -1 : (System.currentTimeMillis () - t.intValue ()));
+return (msg == null || (t = J.util.Logger.htTiming.get (msg)) == null ? -1 : System.currentTimeMillis () - t.longValue ());
 }, $fz.isPrivate = true, $fz), "~S");
 c$.checkTimer = $_M(c$, "checkTimer", 
 function (msg, andReset) {

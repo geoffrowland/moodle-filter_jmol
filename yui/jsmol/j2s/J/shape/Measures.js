@@ -57,11 +57,11 @@ return;
 }if ("pending" === propertyName) {
 this.measurementPending = value;
 if (this.measurementPending == null) return;
-if (this.measurementPending.getCount () > 1) this.viewer.setStatusMeasuring ("measurePending", this.measurementPending.getCount (), this.measurementPending.toVector (false).toString (), this.measurementPending.getValue ());
+if (this.measurementPending.count > 1) this.viewer.setStatusMeasuring ("measurePending", this.measurementPending.count, this.measurementPending.toVector (false).toString (), this.measurementPending.value);
 return;
 }var isRefresh;
 if ((isRefresh = ("refresh" === propertyName)) || "refreshTrajectories" === propertyName) {
-for (var i = this.measurements.size (); --i >= 0; ) if ((mt = this.measurements.get (i)) != null && (isRefresh || mt.isTrajectory)) mt.refresh ();
+for (var i = this.measurements.size (); --i >= 0; ) if ((mt = this.measurements.get (i)) != null && (isRefresh || mt.isTrajectory)) mt.refresh (null);
 
 return;
 }if ("select" === propertyName) {
@@ -159,7 +159,7 @@ var nAtomsDeleted = ((value)[2])[2];
 var atomMax = firstAtomDeleted + nAtomsDeleted;
 for (var i = this.measurementCount; --i >= 0; ) {
 mt = this.measurements.get (i);
-var indices = mt.getCountPlusIndices ();
+var indices = mt.countPlusIndices;
 for (var j = 1; j <= indices[0]; j++) {
 var iAtom = indices[j];
 if (iAtom >= firstAtomDeleted) {
@@ -226,7 +226,7 @@ $_V(c$, "getProperty",
 function (property, index) {
 if ("pending".equals (property)) return this.measurementPending;
 if ("count".equals (property)) return Integer.$valueOf (this.measurementCount);
-if ("countPlusIndices".equals (property)) return (index < this.measurementCount ? this.measurements.get (index).getCountPlusIndices () : null);
+if ("countPlusIndices".equals (property)) return (index < this.measurementCount ? this.measurements.get (index).countPlusIndices : null);
 if ("stringValue".equals (property)) return (index < this.measurementCount ? this.measurements.get (index).getString () : null);
 if ("pointInfo".equals (property)) return this.measurements.get (Clazz.doubleToInt (index / 10)).getLabel (index % 10, false, false);
 if ("info".equals (property)) return this.getAllInfo ();
@@ -315,7 +315,7 @@ return;
 this.defineAll (iPt, m, true, false, false);
 if (isDelete) return;
 }var points =  new JU.List ();
-var nPoints = m.getCount ();
+var nPoints = m.count;
 for (var i = 1; i <= nPoints; i++) {
 var atomIndex = m.getAtomIndex (i);
 points.addLast (atomIndex >= 0 ? this.viewer.getAtomBits (1095763969, Integer.$valueOf (this.atoms[atomIndex].getAtomNumber ())) : m.getAtom (i));
@@ -352,7 +352,7 @@ this.defineMeasurement (-1, m, true);
 }}, "J.modelset.Measurement");
 $_M(c$, "defineMeasurement", 
 ($fz = function (i, m, doSelect) {
-var value = m.getMeasurement ();
+var value = m.getMeasurement (null);
 if (this.htMin != null && !m.isMin (this.htMin) || this.radiusData != null && !m.isInRange (this.radiusData, value)) return;
 if (i == -2147483648) i = this.find (m);
 if (i >= 0) {
@@ -362,7 +362,7 @@ return;
 }var measureNew =  new J.modelset.Measurement ().setM (this.modelSet, m, value, (m.colix == 0 ? this.colix : m.colix), this.strFormat, this.measurementCount);
 if (!measureNew.$isValid) return;
 this.measurements.addLast (measureNew);
-this.viewer.setStatusMeasuring ("measureCompleted", this.measurementCount++, measureNew.toVector (false).toString (), measureNew.getValue ());
+this.viewer.setStatusMeasuring ("measureCompleted", this.measurementCount++, measureNew.toVector (false).toString (), measureNew.value);
 }, $fz.isPrivate = true, $fz), "~N,J.modelset.Measurement,~B");
 $_M(c$, "deleteI", 
 ($fz = function (i) {
@@ -427,13 +427,13 @@ return info;
 $_M(c$, "getInfo", 
 ($fz = function (index) {
 var m = this.measurements.get (index);
-var count = m.getCount ();
+var count = m.count;
 var info =  new java.util.Hashtable ();
 info.put ("index", Integer.$valueOf (index));
 info.put ("type", (count == 2 ? "distance" : count == 3 ? "angle" : "dihedral"));
 info.put ("strMeasurement", m.getString ());
 info.put ("count", Integer.$valueOf (count));
-info.put ("value", Float.$valueOf (m.getValue ()));
+info.put ("value", Float.$valueOf (m.value));
 var tickInfo = m.tickInfo;
 if (tickInfo != null) {
 info.put ("ticks", tickInfo.ticks);
@@ -464,7 +464,7 @@ out : for (var i = this.measurementCount; --i >= 0; ) {
 var m = this.measurements.get (i);
 m.isVisible = false;
 if (this.mad == 0 || m.isHidden) continue;
-for (var iAtom = m.getCount (); iAtom > 0; iAtom--) {
+for (var iAtom = m.count; iAtom > 0; iAtom--) {
 var atomIndex = m.getAtomIndex (iAtom);
 if (atomIndex >= 0) {
 if (!this.modelSet.atoms[atomIndex].isClickable ()) continue out;

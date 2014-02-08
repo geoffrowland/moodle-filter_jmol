@@ -64,4 +64,8 @@ break;
 this.doCheck = false;
 return (this.pt < this.len);
 });
+$_M(c$, "getRemainingScript", 
+function () {
+return this.str.substring (this.pt);
+});
 });

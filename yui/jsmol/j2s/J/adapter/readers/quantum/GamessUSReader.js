@@ -65,7 +65,7 @@ Clazz.superCall (this, J.adapter.readers.quantum.GamessUSReader, "readMolecularO
 }, "~N");
 $_M(c$, "readEFPInBohrCoordinates", 
 function () {
-var atomCountInFirstModel = this.atomSetCollection.getAtomCount ();
+var atomCountInFirstModel = this.atomSetCollection.atomCount;
 this.discardLinesUntilContains ("MULTIPOLE COORDINATES");
 this.readLine ();
 this.readLine ();
@@ -152,9 +152,9 @@ var poploc = 0;
 for (; ++poploc < tokens.length; ) if (searchstr.equals (tokens[poploc])) break;
 
 if (++poploc >= tokens.length || !"CHARGE".equals (tokens[poploc++])) return;
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 var startAtom = this.atomSetCollection.getLastAtomSetAtomIndex ();
-var endAtom = this.atomSetCollection.getAtomCount ();
+var endAtom = this.atomSetCollection.atomCount;
 for (var i = startAtom; i < endAtom && this.readLine () != null; ++i) atoms[i].partialCharge = this.parseFloatStr (J.adapter.smarter.AtomSetCollectionReader.getTokensStr (this.prevline)[poploc]);
 
 });
@@ -170,7 +170,7 @@ if (tokens.length != 5) return;
 if ("DX".equals (tokens[0]) && "DY".equals (tokens[1]) && "DZ".equals (tokens[2])) {
 tokens = J.adapter.smarter.AtomSetCollectionReader.getTokensStr (this.readLine ());
 var dipole = JU.V3.new3 (this.parseFloatStr (tokens[0]), this.parseFloatStr (tokens[1]), this.parseFloatStr (tokens[2]));
-J.util.Logger.info ("Molecular dipole for model " + this.atomSetCollection.getAtomSetCount () + " = " + dipole);
+J.util.Logger.info ("Molecular dipole for model " + this.atomSetCollection.atomSetCount + " = " + dipole);
 this.atomSetCollection.setAtomSetAuxiliaryInfo ("dipole", dipole);
 }});
 });

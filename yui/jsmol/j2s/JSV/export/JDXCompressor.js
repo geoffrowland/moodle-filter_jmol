@@ -1,12 +1,12 @@
 Clazz.declarePackage ("JSV.export");
-Clazz.load (null, "JSV.export.JDXCompressor", ["JU.SB", "JSV.util.JSVTxt", "J.util.Logger"], function () {
+Clazz.load (null, "JSV.export.JDXCompressor", ["JU.DF", "$.SB", "JSV.export.Exporter", "J.util.Logger"], function () {
 c$ = Clazz.declareType (JSV["export"], "JDXCompressor");
 c$.compressDIF = $_M(c$, "compressDIF", 
 function (xyCoords, startIndex, endIndex, step, xFactor, yFactor, isDIFDUP) {
 var yStr =  new JU.SB ();
 var buffer =  new JU.SB ();
 for (var i = startIndex; i != endIndex; ) {
-buffer.append (JSV.util.JSVTxt.fixIntNoExponent (xyCoords[i].getXVal () / xFactor));
+buffer.append (JSV["export"].JDXCompressor.fixIntNoExponent (xyCoords[i].getXVal () / xFactor));
 yStr.setLength (0);
 if (J.util.Logger.debugging) J.util.Logger.info ("" + i + '\t' + xyCoords[i].getXVal () + '\t' + xyCoords[i].getYVal ());
 var y1 = Math.round (xyCoords[i].getYVal () / yFactor);
@@ -35,11 +35,11 @@ i += step;
 if (nDif > 0) yStr.append (JSV["export"].JDXCompressor.makeDUP (nDif + 1));
 yStr.append (JSV["export"].JDXCompressor.makeSQZ (xyCoords[i], yFactor));
 if (J.util.Logger.debugging) J.util.Logger.info ("" + i + '\t' + xyCoords[i].getXVal () + '\t' + xyCoords[i].getYVal () + '\t' + nDif + '\t' + yStr);
-}buffer.append (yStr.toString ()).append (JSV.util.JSVTxt.newLine);
+}buffer.append (yStr.toString ()).append (JSV.export.Exporter.newLine);
 i += step;
 }
-buffer.append (JSV.util.JSVTxt.fixIntNoExponent (xyCoords[endIndex].getXVal () / xFactor)).append (JSV["export"].JDXCompressor.makeSQZ (xyCoords[endIndex], yFactor));
-buffer.append ("  $$checkpoint").append (JSV.util.JSVTxt.newLine);
+buffer.append (JSV["export"].JDXCompressor.fixIntNoExponent (xyCoords[endIndex].getXVal () / xFactor)).append (JSV["export"].JDXCompressor.makeSQZ (xyCoords[endIndex], yFactor));
+buffer.append ("  $$checkpoint").append (JSV.export.Exporter.newLine);
 return buffer.toString ();
 }, "~A,~N,~N,~N,~N,~N,~B");
 c$.compressFIX = $_M(c$, "compressFIX", 
@@ -47,13 +47,13 @@ function (xyCoords, startIndex, endIndex, step, xFactor, yFactor) {
 endIndex += step;
 var buffer =  new JU.SB ();
 for (var i = startIndex; i != endIndex; ) {
-JSV["export"].JDXCompressor.leftJustify (buffer, "              ", JSV.util.JSVTxt.fixIntNoExponent (xyCoords[i].getXVal () / xFactor));
+JSV["export"].JDXCompressor.leftJustify (buffer, "              ", JSV["export"].JDXCompressor.fixIntNoExponent (xyCoords[i].getXVal () / xFactor));
 for (var j = 0; j < 6 && i != endIndex; j++) {
 JSV["export"].JDXCompressor.rightJustify (buffer, "          ", "" + Math.round (xyCoords[i].getYVal () / yFactor));
 buffer.append (" ");
 i += step;
 }
-buffer.append (JSV.util.JSVTxt.newLine);
+buffer.append (JSV.export.Exporter.newLine);
 }
 return buffer.toString ();
 }, "~A,~N,~N,~N,~N,~N");
@@ -75,7 +75,7 @@ var yStr =  new JU.SB ();
 endIndex += step;
 var buffer =  new JU.SB ();
 for (var i = startIndex; i == startIndex || i != endIndex; ) {
-buffer.append (JSV.util.JSVTxt.fixIntNoExponent (xyCoords[i].getXVal () / xFactor));
+buffer.append (JSV["export"].JDXCompressor.fixIntNoExponent (xyCoords[i].getXVal () / xFactor));
 yStr.setLength (0);
 yStr.append (JSV["export"].JDXCompressor.makeSQZ (xyCoords[i], yFactor));
 i += step;
@@ -83,7 +83,7 @@ while ((yStr.length () < 60) && i != endIndex) {
 yStr.append (JSV["export"].JDXCompressor.makeSQZ (xyCoords[i], yFactor));
 i += step;
 }
-buffer.append (yStr.toString ()).append (JSV.util.JSVTxt.newLine);
+buffer.append (yStr.toString ()).append (JSV.export.Exporter.newLine);
 }
 return buffer.toString ();
 }, "~A,~N,~N,~N,~N,~N");
@@ -92,19 +92,19 @@ function (xyCoords, startIndex, endIndex, step, xFactor, yFactor) {
 var buffer =  new JU.SB ();
 endIndex += step;
 for (var i = startIndex; i != endIndex; ) {
-buffer.append (JSV.util.JSVTxt.fixIntNoExponent (xyCoords[i].getXVal () / xFactor)).append (JSV["export"].JDXCompressor.fixPacY (xyCoords[i].getYVal () / yFactor));
+buffer.append (JSV["export"].JDXCompressor.fixIntNoExponent (xyCoords[i].getXVal () / xFactor)).append (JSV["export"].JDXCompressor.fixPacY (xyCoords[i].getYVal () / yFactor));
 i += step;
 for (var j = 0; j < 4 && i != endIndex; j++) {
 buffer.append (JSV["export"].JDXCompressor.fixPacY (xyCoords[i].getYVal () / yFactor));
 i += step;
 }
-buffer.append (JSV.util.JSVTxt.newLine);
+buffer.append (JSV.export.Exporter.newLine);
 }
 return buffer.toString ();
 }, "~A,~N,~N,~N,~N,~N");
 c$.fixPacY = $_M(c$, "fixPacY", 
 ($fz = function (y) {
-return (y < 0 ? "" : " ") + JSV.util.JSVTxt.fixIntNoExponent (y);
+return (y < 0 ? "" : " ") + JSV["export"].JDXCompressor.fixIntNoExponent (y);
 }, $fz.isPrivate = true, $fz), "~N");
 c$.makeSQZ = $_M(c$, "makeSQZ", 
 ($fz = function (pt, yFactor) {
@@ -141,10 +141,14 @@ endIndex += step;
 var buffer =  new JU.SB ();
 for (var i = startIndex; i != endIndex; i += step) {
 var point = xyCoords[i];
-buffer.append (JSV.util.JSVTxt.fixIntNoExponent (point.getXVal ())).append (", ").append (JSV.util.JSVTxt.fixIntNoExponent (point.getYVal ())).append (JSV.util.JSVTxt.newLine);
+buffer.append (JSV["export"].JDXCompressor.fixIntNoExponent (point.getXVal ())).append (", ").append (JSV["export"].JDXCompressor.fixIntNoExponent (point.getYVal ())).append (JSV.export.Exporter.newLine);
 }
 return buffer.toString ();
 }, "~A,~N,~N,~N");
+c$.fixIntNoExponent = $_M(c$, "fixIntNoExponent", 
+($fz = function (x) {
+return (x == Math.floor (x) ? String.valueOf (Clazz.doubleToInt (x)) : JU.DF.formatDecimalTrimmed (x, 10));
+}, $fz.isPrivate = true, $fz), "~N");
 Clazz.defineStatics (c$,
 "spaces", "                    ");
 });

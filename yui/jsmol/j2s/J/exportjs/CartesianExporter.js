@@ -94,17 +94,13 @@ this.outputCircle (this.tempP1, this.tempP3, radius, colix, doFill);
 }, "~N,~N,~N,~N,~N,~B");
 $_V(c$, "drawEllipse", 
 function (ptCenter, ptX, ptY, colix, doFill) {
-this.tempV1.setT (ptX);
-this.tempV1.sub (ptCenter);
-this.tempV2.setT (ptY);
-this.tempV2.sub (ptCenter);
+this.tempV1.sub2 (ptX, ptCenter);
+this.tempV2.sub2 (ptY, ptCenter);
 this.tempV2.cross (this.tempV1, this.tempV2);
 this.tempV2.normalize ();
 this.tempV2.scale (doFill ? 0.002 : 0.005);
-this.tempP1.setT (ptCenter);
-this.tempP1.sub (this.tempV2);
-this.tempP2.setT (ptCenter);
-this.tempP2.add (this.tempV2);
+this.tempP1.sub2 (ptCenter, this.tempV2);
+this.tempP2.add2 (ptCenter, this.tempV2);
 return this.outputCylinder (ptCenter, this.tempP1, this.tempP2, colix, doFill ? 2 : 0, 1.01, ptX, ptY, true);
 }, "JU.P3,JU.P3,JU.P3,~N,~B");
 $_V(c$, "drawPixel", 
@@ -128,9 +124,7 @@ var radius = mad / 2000;
 if (colix1 == colix2) {
 this.outputCylinder (null, this.tempP1, this.tempP2, colix1, endcaps, radius, null, null, bondOrder != -1);
 } else {
-this.tempV2.setT (this.tempP2);
-this.tempV2.add (this.tempP1);
-this.tempV2.scale (0.5);
+this.tempV2.ave (this.tempP2, this.tempP1);
 this.tempP3.setT (this.tempV2);
 this.outputCylinder (null, this.tempP1, this.tempP3, colix1, (endcaps == 3 ? 0 : endcaps), radius, null, null, true);
 this.outputCylinder (null, this.tempP3, this.tempP2, colix2, (endcaps == 3 ? 0 : endcaps), radius, null, null, true);

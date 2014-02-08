@@ -246,7 +246,7 @@ return sb.toString ();
 $_M(c$, "dumpTags", 
 ($fz = function (ap, lines, bsBad, mode) {
 var prefix = ap.monomers[0].getLeadAtom ().getChainID () + "." + (ap.bioPolymerIndexInModel + 1);
-lines = JU.PT.simpleReplace (lines, "$", prefix);
+lines = JU.PT.rep (lines, "$", prefix);
 var iFirst = ap.monomers[0].getResno ();
 var pre = "\n" + prefix;
 var sb =  new JU.SB ();

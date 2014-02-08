@@ -305,20 +305,20 @@ $_M(c$, "transformPt",
 function (pt) {
 if (this.mat == null) this.setMatrix ();
 var ptNew = JU.P3.newP (pt);
-this.mat.transform (ptNew);
+this.mat.rotate (ptNew);
 return ptNew;
 }, "JU.P3");
 $_M(c$, "transformP2", 
 function (pt, ptNew) {
 if (this.mat == null) this.setMatrix ();
-this.mat.transform2 (pt, ptNew);
+this.mat.rotate2 (pt, ptNew);
 return ptNew;
 }, "JU.T3,JU.T3");
 $_M(c$, "transform", 
 function (v) {
 if (this.mat == null) this.setMatrix ();
 var vNew = JU.V3.newV (v);
-this.mat.transform (vNew);
+this.mat.rotate (vNew);
 return vNew;
 }, "JU.V3");
 $_M(c$, "leftDifference", 

@@ -86,7 +86,7 @@ verticesTemp = (needNormals ?  new Array (this.vertexCount) : null);
 for (var i = this.vertexCount; --i >= 0; ) {
 vTemp.setT (this.vertices[i]);
 unitcell.toFractional (vTemp, true);
-m.transform (vTemp);
+m.rotTrans (vTemp);
 unitcell.toCartesian (vTemp, true);
 this.viewer.transformPtScr (vTemp, this.screens[i]);
 if (needNormals) {
@@ -107,8 +107,7 @@ for (var tx = minXYZ.x; tx < maxXYZ.x; tx++) for (var ty = minXYZ.y; ty < maxXYZ
 this.latticeOffset.set (tx, ty, tz);
 unitcell.toCartesian (this.latticeOffset, false);
 for (var i = this.vertexCount; --i >= 0; ) {
-vTemp.setT (this.vertices[i]);
-vTemp.add (this.latticeOffset);
+vTemp.add2 (this.vertices[i], this.latticeOffset);
 this.viewer.transformPtScr (vTemp, this.screens[i]);
 }
 this.render2 (this.isExport);
@@ -129,6 +128,7 @@ if (this.isTranslucent || this.volumeRender || this.mesh.bsSlabGhost != null) th
 this.doRender = (this.setColix (this.mesh.colix) || this.mesh.showContourLines);
 if (!this.doRender || this.isGhostPass && !(this.doRender = this.g3d.setColix (this.mesh.slabColix))) {
 this.vertices = this.mesh.vertices;
+if (this.needTranslucent) this.g3d.setColix (J.util.C.getColixTranslucent3 (4, true, 0.5));
 return true;
 }this.vertices = (this.mesh.scale3d == 0 && this.mesh.mat4 == null ? this.mesh.vertices : this.mesh.getOffsetVertices (this.thePlane));
 if (this.mesh.lineData == null) {
@@ -289,9 +289,7 @@ var endCap = (iA != iB && !fill ? 0 : this.width < 0 || this.width == -0.0 || iA
 if (this.width == 0) {
 if (this.diameter == 0) this.diameter = (this.mesh.diameter > 0 ? this.mesh.diameter : iA == iB ? 7 : 3);
 if (this.exportType == 1) {
-this.pt1f.setT (vA);
-this.pt1f.add (vB);
-this.pt1f.scale (0.5);
+this.pt1f.ave (vA, vB);
 this.viewer.transformPtScr (this.pt1f, this.pt1i);
 this.diameter = Clazz.doubleToInt (Math.floor (this.viewer.unscaleToScreen (this.pt1i.z, this.diameter) * 1000));
 }if (iA == iB) {
@@ -299,9 +297,7 @@ this.g3d.fillSphereI (this.diameter, sA);
 } else {
 this.g3d.fillCylinder (endCap, this.diameter, sA, sB);
 }} else {
-this.pt1f.setT (vA);
-this.pt1f.add (vB);
-this.pt1f.scale (0.5);
+this.pt1f.ave (vA, vB);
 this.viewer.transformPtScr (this.pt1f, this.pt1i);
 var mad = Clazz.doubleToInt (Math.floor (Math.abs (this.width) * 1000));
 this.diameter = Clazz.floatToInt (this.exportType == 1 ? mad : this.viewer.scaleToScreen (this.pt1i.z, mad));

@@ -59,7 +59,7 @@ n++;
 }
 if (n > 0 && (i == iModel || i == 0)) {
 center.scale (1.0 / n);
-if (this.mat4 != null) this.mat4.transform (center);
+if (this.mat4 != null) this.mat4.rotTrans (center);
 break;
 }}
 if (iModel < 0) {

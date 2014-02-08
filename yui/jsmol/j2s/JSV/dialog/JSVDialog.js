@@ -339,6 +339,7 @@ break;
 case JSV.common.Annotation.AType.OverlayLegend:
 break;
 case JSV.common.Annotation.AType.Views:
+this.viewer.parameters.viewOffset = Double.parseDouble (objects[0]);
 break;
 }
 this.loadData ();

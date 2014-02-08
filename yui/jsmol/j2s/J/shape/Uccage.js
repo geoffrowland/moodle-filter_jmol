@@ -7,7 +7,13 @@ this.setPropFLS (propertyName, value);
 }, "~S,~O,JU.BS");
 $_M(c$, "getShapeState", 
 function () {
-return (this.modelSet.haveUnitCells ? Clazz.superCall (this, J.shape.Uccage, "getShapeState", []) : "");
+if (!this.modelSet.haveUnitCells) return "";
+var s = Clazz.superCall (this, J.shape.Uccage, "getShapeState", []);
+var iAtom = this.viewer.getCurrentAtom ();
+if (iAtom >= 0) s += "  unitcell ({" + iAtom + "});\n";
+var uc = this.viewer.getCurrentUnitCell ();
+if (uc != null) s += uc.getUnitCellState ();
+return s;
 });
 $_M(c$, "initShape", 
 function () {

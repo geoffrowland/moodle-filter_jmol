@@ -28,14 +28,14 @@ J.util.Logger.warn ("REVERSE keyword ignored");
 this.reverseModels = false;
 }this.selectedModel = this.desiredModelNumber;
 this.desiredModelNumber = -2147483648;
-this.peakFilePath = J.util.Escape.eS (this.filePath);
+this.peakFilePath = JU.PT.esc (this.filePath);
 this.htParams.remove ("modelNumber");
 if (this.htParams.containsKey ("zipSet")) {
 this.peakIndex = this.htParams.get ("peakIndex");
 if (this.peakIndex == null) {
 this.peakIndex =  Clazz.newIntArray (1, 0);
 this.htParams.put ("peakIndex", this.peakIndex);
-}if (!this.htParams.containsKey ("subFileName")) this.peakFilePath = J.util.Escape.eS (JU.PT.split (this.filePath, "|")[0]);
+}if (!this.htParams.containsKey ("subFileName")) this.peakFilePath = JU.PT.esc (JU.PT.split (this.filePath, "|")[0]);
 } else {
 this.peakIndex =  Clazz.newIntArray (1, 0);
 }if (!this.checkFilterKey ("NOSYNC")) this.addJmolScript ("sync on");
@@ -57,7 +57,7 @@ this.finalizeReaderMR ();
 });
 $_M(c$, "findModelById", 
 ($fz = function (modelID) {
-for (var i = this.atomSetCollection.getAtomSetCount (); --i >= 0; ) if (modelID.equals (this.atomSetCollection.getAtomSetAuxiliaryInfoValue (i, "modelID"))) return i;
+for (var i = this.atomSetCollection.atomSetCount; --i >= 0; ) if (modelID.equals (this.atomSetCollection.getAtomSetAuxiliaryInfoValue (i, "modelID"))) return i;
 
 return -1;
 }, $fz.isPrivate = true, $fz), "~S");
@@ -71,7 +71,7 @@ this.line = "";
 this.thisModelID = "";
 var isFirst = true;
 while (true) {
-var model0 = this.atomSetCollection.getCurrentAtomSetIndex ();
+var model0 = this.atomSetCollection.currentAtomSetIndex;
 this.discardLinesUntilNonBlank ();
 if (this.line == null || !this.line.contains ("<ModelData")) break;
 this.models = this.getModelAtomSetCollection ();
@@ -84,7 +84,7 @@ return true;
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "updateModelIDs", 
 ($fz = function (model0, isFirst) {
-var n = this.atomSetCollection.getAtomSetCount ();
+var n = this.atomSetCollection.atomSetCount;
 if (isFirst && n == model0 + 2) {
 this.atomSetCollection.setAtomSetAuxiliaryInfo ("modelID", this.thisModelID);
 return;
@@ -129,31 +129,31 @@ if (baseModel.length != 0) {
 var ibase = this.findModelById (baseModel);
 if (ibase >= 0) {
 this.atomSetCollection.setAtomSetAuxiliaryInfoForSet ("jdxModelID", baseModel, ibase);
-for (var i = a.getAtomSetCount (); --i >= 0; ) a.setAtomSetAuxiliaryInfoForSet ("jdxBaseModel", baseModel, i);
+for (var i = a.atomSetCount; --i >= 0; ) a.setAtomSetAuxiliaryInfoForSet ("jdxBaseModel", baseModel, i);
 
-if (a.getBondCount () == 0) this.setBonding (a, ibase);
+if (a.bondCount == 0) this.setBonding (a, ibase);
 }}if (!Float.isNaN (vibScale)) {
-J.util.Logger.info ("jdx applying vibrationScale of " + vibScale + " to " + a.getAtomCount () + " atoms");
-var atoms = a.getAtoms ();
-for (var i = a.getAtomCount (); --i >= 0; ) atoms[i].scaleVector (vibScale);
+J.util.Logger.info ("jdx applying vibrationScale of " + vibScale + " to " + a.atomCount + " atoms");
+var atoms = a.atoms;
+for (var i = a.atomCount; --i >= 0; ) atoms[i].scaleVector (vibScale);
 
-}J.util.Logger.info ("jdx model=" + this.thisModelID + " type=" + a.getFileTypeName ());
+}J.util.Logger.info ("jdx model=" + this.thisModelID + " type=" + a.fileTypeName);
 return a;
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "setBonding", 
 ($fz = function (a, ibase) {
 var n0 = this.atomSetCollection.getAtomSetAtomCount (ibase);
-var n = a.getAtomCount ();
+var n = a.atomCount;
 if (n % n0 != 0) {
 J.util.Logger.warn ("atom count in secondary model (" + n + ") is not a multiple of " + n0 + " -- bonding ignored");
 return;
-}var bonds = this.atomSetCollection.getBonds ();
+}var bonds = this.atomSetCollection.bonds;
 var b0 = 0;
 for (var i = 0; i < ibase; i++) b0 += this.atomSetCollection.getAtomSetBondCount (i);
 
 var b1 = b0 + this.atomSetCollection.getAtomSetBondCount (ibase);
 var ii0 = this.atomSetCollection.getAtomSetAtomIndex (ibase);
-var nModels = a.getAtomSetCount ();
+var nModels = a.atomSetCount;
 for (var j = 0; j < nModels; j++) {
 var i0 = a.getAtomSetAtomIndex (j) - ii0;
 if (a.getAtomSetAtomCount (j) != n0) {
@@ -247,11 +247,11 @@ return J.util.Escape.uB (s);
 }, $fz.isPrivate = true, $fz), "~S");
 $_M(c$, "simpleReplace", 
 ($fz = function (s, sfrom, sto) {
-return JU.PT.simpleReplace (s, sfrom, sto);
+return JU.PT.rep (s, sfrom, sto);
 }, $fz.isPrivate = true, $fz), "~S,~S,~S");
 $_M(c$, "escape", 
 ($fz = function (s) {
-return J.util.Escape.eS (s);
+return JU.PT.esc (s);
 }, $fz.isPrivate = true, $fz), "~S");
 $_M(c$, "getQuotedAttribute", 
 ($fz = function (s, attr) {
@@ -266,7 +266,7 @@ peakData.addLast (info);
 }, $fz.isPrivate = true, $fz), "JU.List,~S");
 $_M(c$, "getPeakFilePath", 
 ($fz = function () {
-return " file=" + J.util.Escape.eS (this.peakFilePath);
+return " file=" + JU.PT.esc (this.peakFilePath);
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "discardUntil", 
 ($fz = function (ignored, tag) {
@@ -308,7 +308,7 @@ s = "model: ";
 s = "ignored: ";
 }J.util.Logger.info (s + this.line);
 }
-n = this.atomSetCollection.getAtomSetCount ();
+n = this.atomSetCollection.atomSetCount;
 for (var i = n; --i >= 0; ) {
 this.thisModelID = this.atomSetCollection.getAtomSetAuxiliaryInfoValue (i, "modelID");
 if (havePeaks && !bsModels.get (i) && this.thisModelID.indexOf (".") >= 0) {
@@ -319,10 +319,10 @@ if (this.selectedModel == -2147483648) {
 if (this.allTypes != null) this.appendLoadNote (this.allTypes);
 } else {
 if (this.selectedModel == 0) this.selectedModel = n - 1;
-for (var i = this.atomSetCollection.getAtomSetCount (); --i >= 0; ) if (i + 1 != this.selectedModel) this.atomSetCollection.removeAtomSet (i);
+for (var i = this.atomSetCollection.atomSetCount; --i >= 0; ) if (i + 1 != this.selectedModel) this.atomSetCollection.removeAtomSet (i);
 
 if (n > 0) this.appendLoadNote (this.atomSetCollection.getAtomSetAuxiliaryInfoValue (0, "name"));
-}for (var i = this.atomSetCollection.getAtomSetCount (); --i >= 0; ) this.atomSetCollection.setAtomSetNumber (i, i + 1);
+}for (var i = this.atomSetCollection.atomSetCount; --i >= 0; ) this.atomSetCollection.setAtomSetNumber (i, i + 1);
 
 this.atomSetCollection.centralize ();
 }, $fz.isPrivate = true, $fz));

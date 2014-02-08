@@ -12,7 +12,7 @@ for (var t, $t = echo.objects.values ().iterator (); $t.hasNext () && ((t = $t.n
 if (!t.visible || t.hidden) {
 continue;
 }if (Clazz.instanceOf (t.pointerPt, J.modelset.Atom)) {
-if (!(t.pointerPt).isVisible (-1)) continue;
+if (!(t.pointerPt).checkVisible ()) continue;
 }if (t.valign == 4) {
 this.viewer.transformPtScr (t.xyz, this.pt0i);
 t.setXYZs (this.pt0i.x, this.pt0i.y, this.pt0i.z, this.pt0i.z);

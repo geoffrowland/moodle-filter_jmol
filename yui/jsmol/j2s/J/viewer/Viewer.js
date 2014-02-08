@@ -336,8 +336,8 @@ this.fileManager.setAppletContext (this.appletDocumentBase);
 var appletProxy = info.get ("appletProxy");
 if (appletProxy != null) this.setStringProperty ("appletProxy", appletProxy);
 if (this.$isSignedApplet) {
-this.logFilePath = JU.PT.simpleReplace (this.appletCodeBase, "file://", "");
-this.logFilePath = JU.PT.simpleReplace (this.logFilePath, "file:/", "");
+this.logFilePath = JU.PT.rep (this.appletCodeBase, "file://", "");
+this.logFilePath = JU.PT.rep (this.logFilePath, "file:/", "");
 if (this.logFilePath.indexOf ("//") >= 0) this.logFilePath = null;
  else this.isSignedAppletLocal = true;
 } else if (!this.isJS) {
@@ -926,7 +926,7 @@ this.transformManager.transformPointScr (pointAngstroms, pointScreen);
 }, "JU.P3,JU.P3i");
 $_M(c$, "transformPtNoClip", 
 function (pointAngstroms, pt) {
-this.transformManager.transformPointNoClip2 (pointAngstroms, pt);
+this.transformManager.transformPointNoClip (pointAngstroms, pt);
 }, "JU.P3,JU.P3");
 $_M(c$, "transformPt3f", 
 function (pointAngstroms, pointScreen) {
@@ -1021,12 +1021,12 @@ this.transformManager.setNavXYZ (Clazz.floatToInt (x), Clazz.floatToInt (y), Cla
 $_M(c$, "getOrientationText", 
 function (type, name) {
 switch (type) {
-case 1313866247:
+case 1313866249:
 case 1073741863:
 case 1112541205:
 case 1112541206:
 case 1112541207:
-case 135270417:
+case 135270418:
 return this.modelSet.getBoundBoxOrientation (type, this.getSelectionSet (false));
 case 1073742035:
 return this.stateManager.getSavedOrientationText (name);
@@ -1408,7 +1408,7 @@ $_M(c$, "setLoadParameters",
 if (htParams == null) htParams =  new java.util.Hashtable ();
 htParams.put ("viewer", this);
 if (this.global.atomTypes.length > 0) htParams.put ("atomTypes", this.global.atomTypes);
-if (!htParams.containsKey ("lattice")) htParams.put ("lattice", this.global.getDefaultLattice ());
+if (!htParams.containsKey ("lattice")) htParams.put ("lattice", this.global.ptDefaultLattice);
 if (this.global.applySymmetryToBonds) htParams.put ("applySymmetryToBonds", Boolean.TRUE);
 if (this.global.pdbGetHeader) htParams.put ("getHeader", Boolean.TRUE);
 if (this.global.pdbSequential) htParams.put ("isSequential", Boolean.TRUE);
@@ -1472,7 +1472,7 @@ var s = loadScript.toString ();
 for (var i = 0; i < fileNames.length; i++) {
 var fname = fileNames[i];
 if (fileTypes != null && fileTypes[i] != null) fname = fileTypes[i] + "::" + fname;
-s = JU.PT.simpleReplace (s, "$FILENAME" + (i + 1) + "$", J.util.Escape.eS (fname.$replace ('\\', '/')));
+s = JU.PT.rep (s, "$FILENAME" + (i + 1) + "$", JU.PT.esc (fname.$replace ('\\', '/')));
 }
 loadScript =  new JU.SB ().append (s);
 } else if (reader == null) {
@@ -1490,7 +1490,7 @@ if (loadScript != null) {
 var fname = htParams.get ("fullPathName");
 if (fname == null) fname = "";
 if (htParams.containsKey ("loadScript")) loadScript = htParams.get ("loadScript");
-htParams.put ("loadScript", loadScript =  new JU.SB ().append (JU.PT.simpleReplace (loadScript.toString (), "$FILENAME$", J.util.Escape.eS (fname.$replace ('\\', '/')))));
+htParams.put ("loadScript", loadScript =  new JU.SB ().append (JU.PT.rep (loadScript.toString (), "$FILENAME$", JU.PT.esc (fname.$replace ('\\', '/')))));
 }return this.createModelSetAndReturnError (atomSetCollection, isAppend, loadScript, htParams);
 }, "~S,~S,~A,~O,~B,java.util.Map,JU.SB,~N");
 $_M(c$, "setLigandModel", 
@@ -1573,7 +1573,7 @@ return this.loadInlineScript (strModel, '\0', isAppend, htParams);
 strModel = this.modelSet.getInlineData (-1);
 if (strModel == null) if (this.global.modelKitMode) strModel = "5\n\nC 0 0 0\nH .63 .63 .63\nH -.63 -.63 .63\nH -.63 .63 -.63\nH .63 -.63 -.63";
  else return "cannot find string data";
-if (loadScript != null) htParams.put ("loadScript", loadScript =  new JU.SB ().append (JU.PT.simpleReplace (loadScript.toString (), "$FILENAME$", "data \"model inline\"\n" + strModel + "end \"model inline\"")));
+if (loadScript != null) htParams.put ("loadScript", loadScript =  new JU.SB ().append (JU.PT.rep (loadScript.toString (), "$FILENAME$", "data \"model inline\"\n" + strModel + "end \"model inline\"")));
 }if (strModel != null) {
 if (!isAppend) this.zap (true, false, false);
 if (!isLoadVariable && (!haveFileData || isString)) this.getStateCreator ().getInlineData (loadScript, strModel, isAppend, this.getDefaultLoadFilter ());
@@ -1658,8 +1658,8 @@ c$.fixInlineString = $_M(c$, "fixInlineString",
 function (strModel, newLine) {
 var i;
 if (strModel.indexOf ("\\/n") >= 0) {
-strModel = JU.PT.simpleReplace (strModel, "\n", "");
-strModel = JU.PT.simpleReplace (strModel, "\\/n", "\n");
+strModel = JU.PT.rep (strModel, "\n", "");
+strModel = JU.PT.rep (strModel, "\\/n", "\n");
 newLine = String.fromCharCode ( 0);
 }if (newLine.charCodeAt (0) != 0 && newLine != '\n') {
 var repEmpty = (strModel.indexOf ('\n') >= 0);
@@ -1667,7 +1667,7 @@ var len = strModel.length;
 for (i = 0; i < len && strModel.charAt (i) == ' '; ++i) {
 }
 if (i < len && strModel.charAt (i) == newLine) strModel = strModel.substring (i + 1);
-if (repEmpty) strModel = JU.PT.simpleReplace (strModel, "" + newLine, "");
+if (repEmpty) strModel = JU.PT.rep (strModel, "" + newLine, "");
  else strModel = strModel.$replace (newLine, '\n');
 }return strModel;
 }, "~S,~S");
@@ -1704,7 +1704,7 @@ return this.global.getParameter ("dataseparator");
 });
 $_M(c$, "createModelSetAndReturnError", 
 ($fz = function (atomSetCollection, isAppend, loadScript, htParams) {
-var fullPathName = this.fileManager.getFullPathName ();
+var fullPathName = this.fileManager.getFullPathName (false);
 var fileName = this.fileManager.getFileName ();
 var errMsg;
 if (loadScript == null) {
@@ -1789,7 +1789,7 @@ return this.fileManager.getFileAsBytes (pathName, out, true);
 }, "~S,JU.OC");
 $_M(c$, "getCurrentFileAsString", 
 function () {
-var filename = this.getFullPathName ();
+var filename = this.getFullPathName (false);
 if (filename.equals ("string") || filename.equals ("Jmol Model Kit")) return this.modelSet.getInlineData (this.getCurrentModelIndex ());
 if (filename.indexOf ("[]") >= 0) return filename;
 if (filename === "JSNode") return "<DOM NODE>";
@@ -1798,9 +1798,9 @@ if (pathName == null) return null;
 return this.getFileAsString4 (pathName, -1, true, false, false);
 });
 $_M(c$, "getFullPathName", 
-function () {
-return this.fileManager.getFullPathName ();
-});
+function (orPrevious) {
+return this.fileManager.getFullPathName (orPrevious);
+}, "~B");
 $_M(c$, "getFileName", 
 function () {
 return this.fileManager.getFileName ();
@@ -2021,7 +2021,8 @@ return this.modelManager.getModelSetFileName ();
 });
 $_M(c$, "getUnitCellInfoText", 
 function () {
-return this.modelSet.getUnitCellInfoText ();
+var c = this.getCurrentUnitCell ();
+return (c == null ? "not applicable" : c.getUnitCellInfo ());
 });
 $_M(c$, "getUnitCellInfo", 
 function (infoType) {
@@ -2073,6 +2074,10 @@ $_M(c$, "getMoleculeBitSet",
 function (atomIndex) {
 return this.modelSet.getMoleculeBitSetForAtom (atomIndex);
 }, "~N");
+$_M(c$, "getAllAtoms", 
+function () {
+return this.getModelUndeletedAtomsBitSet (-1);
+});
 $_M(c$, "getModelUndeletedAtomsBitSet", 
 function (modelIndex) {
 var bs = this.modelSet.getModelAtomBitSetIncludingDeleted (modelIndex, true);
@@ -2325,16 +2330,12 @@ this.modelSet.setModelCage (this.getCurrentModelIndex (), data[1]);
 }, "~S");
 $_M(c$, "setCurrentCagePts", 
 function (points) {
-this.modelSet.setModelCage (this.getCurrentModelIndex (), this.getSymmetry ().getUnitCell (points));
+this.modelSet.setModelCage (this.getCurrentModelIndex (), this.getSymmetry ().getUnitCell (points, true));
 }, "~A");
 $_M(c$, "setCurrentUnitCellOffset", 
-function (ijk) {
-this.modelSet.setUnitCellOffset (this.animationManager.currentModelIndex, null, ijk);
-}, "~N");
-$_M(c$, "setCurrentUnitCellOffsetPt", 
-function (pt) {
-this.modelSet.setUnitCellOffset (this.animationManager.currentModelIndex, pt, 0);
-}, "JU.P3");
+function (pt, ijk) {
+this.modelSet.setUnitCellOffset (this.getCurrentUnitCell (), pt, ijk);
+}, "JU.P3,~N");
 $_M(c$, "addUnitCellOffset", 
 function (pt) {
 var unitCell = this.getCurrentUnitCell ();
@@ -2558,6 +2559,7 @@ return this.modelSet.getPartialCharges () != null;
 });
 $_M(c$, "getCurrentUnitCell", 
 function () {
+if (this.animationManager.currentAtomIndex >= 0) return this.modelSet.getUnitCellForAtom (this.animationManager.currentAtomIndex);
 if (this.animationManager.currentModelIndex >= 0) return this.modelSet.getUnitCell (this.animationManager.currentModelIndex);
 var models = this.getVisibleFramesBitSet ();
 var ucLast = null;
@@ -2957,6 +2959,7 @@ this.getScreenImageBuffer (gLeft, false);
 this.render1 (gRight, this.getImage (true, false), 0, 0);
 this.render1 (gLeft, this.getImage (false, false), 0, 0);
 }}if (this.captureParams != null && Boolean.FALSE !== this.captureParams.get ("captureEnabled")) {
+if (System.currentTimeMillis () + 50 > (this.captureParams.get ("endTime")).longValue ()) this.captureParams.put ("captureMode", Integer.$valueOf (1150985));
 this.processWriteOrCapture (this.captureParams);
 }this.notifyViewerRepaintDone ();
 }, "~O,~O,~N,~N");
@@ -3023,8 +3026,7 @@ $_M(c$, "render",
 if (this.modelSet == null || !this.mustRender || !this.refreshing && !this.creatingImage || this.repaintManager == null) return;
 var antialias2 = this.antialiasDisplay && this.global.antialiasTranslucent;
 this.finalizeTransformParameters ();
-this.shapeManager.finalizeAtoms (this.transformManager.bsSelectedAtoms, this.transformManager.ptOffset);
-var minMax = this.shapeManager.transformAtoms ();
+var minMax = this.shapeManager.finalizeAtoms (this.transformManager.bsSelectedAtoms, this.transformManager.ptOffset);
 this.transformManager.bsSelectedAtoms = null;
 if (this.isWebGL) {
 this.repaintManager.renderExport (this.gdata, this.modelSet, this.jsParams);
@@ -3265,7 +3267,7 @@ f = "name/" + JU.PT.escapeUrl (f);
 case '$':
 if (name.startsWith ("$$")) {
 f = f.substring (1);
-format = JU.PT.simpleReplace (this.global.smilesUrlFormat, "&get3d=True", "");
+format = JU.PT.rep (this.global.smilesUrlFormat, "&get3d=True", "");
 return J.util.Txt.formatStringS (format, "FILE", JU.PT.escapeUrl (f));
 }case 'N':
 case '2':
@@ -3352,7 +3354,7 @@ return;
 }if (this.eval != null && this.isScriptExecuting () || atomIndex == this.hoverAtomIndex || this.global.hoverDelayMs == 0) return;
 if (!this.isInSelectionSubset (atomIndex)) return;
 this.loadShape (34);
-if (isLabel && this.modelSet.atoms[atomIndex].isShapeVisible (J.viewer.JC.getShapeVisibilityFlag (5))) {
+if (isLabel && this.modelSet.atoms[atomIndex].isVisible (512)) {
 this.setShapeProperty (34, "specialLabel", J.i18n.GT._ ("Drag to move label"));
 }this.setShapeProperty (34, "text", null);
 this.setShapeProperty (34, "target", Integer.$valueOf (atomIndex));
@@ -3718,7 +3720,7 @@ function (urlString) {
 if (urlString == null) return;
 if (urlString.indexOf (":") < 0) {
 var base = this.fileManager.getAppletDocumentBase ();
-if (base === "") base = this.fileManager.getFullPathName ();
+if (base === "") base = this.fileManager.getFullPathName (false);
 if (base.indexOf ("/") >= 0) {
 base = base.substring (0, base.lastIndexOf ("/") + 1);
 } else if (base.indexOf ("\\") >= 0) {
@@ -3820,8 +3822,6 @@ case 553648154:
 return this.global.percentVdwAtom;
 case 553648157:
 return this.global.pickingSpinRate;
-case 553648158:
-return this.global.platformSpeed;
 case 553648166:
 return this.global.ribbonAspectRatio;
 case 536870922:
@@ -3895,8 +3895,6 @@ case 603979829:
 return this.global.dotsSelectedOnly;
 case 603979833:
 return this.global.drawPicking;
-case 603979835:
-return this.global.dynamicMeasurements;
 case 603979844:
 return this.global.fontCaching;
 case 603979845:
@@ -4036,9 +4034,11 @@ case 570425363:
 return this.global.loadAtomDataTolerance;
 case 570425364:
 return this.global.minBondDistance;
-case 570425369:
+case 1276121113:
+return this.global.modulationScale;
+case 570425370:
 return this.global.multipleBondSpacing;
-case 570425368:
+case 570425369:
 return this.global.multipleBondRadiusFactor;
 case 570425374:
 return this.global.navigationSpeed;
@@ -4075,10 +4075,10 @@ return;
 }var tok = J.script.T.getTokFromName (key);
 switch (J.script.T.getParamType (tok)) {
 case 603979776:
-this.setBooleanPropertyTok (key, tok, J.script.SV.newVariable (4, value).asBoolean ());
+this.setBooleanPropertyTok (key, tok, J.script.SV.newV (4, value).asBoolean ());
 break;
 case 553648128:
-this.setIntPropertyTok (key, tok, J.script.SV.newVariable (4, value).asInt ());
+this.setIntPropertyTok (key, tok, J.script.SV.newV (4, value).asInt ());
 break;
 case 570425344:
 this.setFloatPropertyTok (key, tok, JU.PT.parseFloat (value));
@@ -4231,7 +4231,7 @@ if (key.toLowerCase ().endsWith ("callback")) {
 this.statusManager.setCallbackFunction (key, (value.length == 0 || value.equalsIgnoreCase ("none") ? null : value));
 break;
 }if (!this.global.htNonbooleanParameterValues.containsKey (key.toLowerCase ())) {
-this.global.setUserVariable (key, J.script.SV.newVariable (4, value));
+this.global.setUserVariable (key, J.script.SV.newV (4, value));
 return;
 }break;
 }
@@ -4261,6 +4261,11 @@ this.setFloatPropertyTok (key, tok, value);
 $_M(c$, "setFloatPropertyTok", 
 ($fz = function (key, tok, value) {
 switch (tok) {
+case 570425366:
+this.modelSet.setModulation (null, false, null, false);
+this.global.modulationScale = Math.max (1, value);
+this.modelSet.setModulation (null, true, null, false);
+break;
 case 570425381:
 this.global.particleRadius = Math.abs (value);
 break;
@@ -4273,10 +4278,10 @@ break;
 case 570425403:
 this.global.starScale = value;
 break;
-case 570425368:
+case 570425369:
 this.global.multipleBondRadiusFactor = value;
 break;
-case 570425369:
+case 570425370:
 this.global.multipleBondSpacing = value;
 break;
 case 570425393:
@@ -4288,10 +4293,10 @@ break;
 case 570425359:
 if (this.haveDisplay) this.actionManager.setGestureSwipeFactor (value);
 break;
-case 570425366:
+case 570425367:
 if (this.haveDisplay) this.actionManager.setMouseDragFactor (value);
 break;
-case 570425367:
+case 570425368:
 if (this.haveDisplay) this.actionManager.setMouseWheelFactor (value);
 break;
 case 570425408:
@@ -4309,7 +4314,7 @@ break;
 case 570425380:
 this.setSpin ("Z", Clazz.floatToInt (value));
 break;
-case 570425370:
+case 570425371:
 if (Float.isNaN (value)) return;
 this.setSpin ("FPS", Clazz.floatToInt (value));
 break;
@@ -4356,13 +4361,13 @@ case 570425416:
 this.transformManager.setVisualRange (value);
 this.refresh (1, "set visualRange");
 break;
-case 570425371:
+case 570425372:
 this.setNavigationDepthPercent (value);
 break;
 case 570425374:
 this.global.navigationSpeed = value;
 break;
-case 570425372:
+case 570425373:
 this.transformManager.setNavigationSlabOffsetPercent (value);
 break;
 case 570425350:
@@ -4409,7 +4414,7 @@ this.global.solventProbeRadius = value;
 break;
 default:
 if (!this.global.htNonbooleanParameterValues.containsKey (key.toLowerCase ())) {
-this.global.setUserVariable (key, J.script.SV.newVariable (3, Float.$valueOf (value)));
+this.global.setUserVariable (key, J.script.SV.newV (3, Float.$valueOf (value)));
 return;
 }}
 this.global.setF (key, value);
@@ -4585,7 +4590,7 @@ case 553648164:
 break;
 default:
 if (!this.global.htNonbooleanParameterValues.containsKey (key)) {
-this.global.setUserVariable (key, J.script.SV.newScriptVariableInt (value));
+this.global.setUserVariable (key, J.script.SV.newI (value));
 return;
 }}
 this.global.setI (key, value);
@@ -4837,9 +4842,6 @@ this.global.solventOn = value;
 break;
 case 603979948:
 this.global.solventOn = value;
-break;
-case 603979835:
-this.setDynamicMeasurements (value);
 break;
 case 603979785:
 this.global.allowRotateSelected = value;
@@ -5426,7 +5428,7 @@ return;
 }, $fz.isPrivate = true, $fz), "~S");
 $_M(c$, "setDefaults", 
 ($fz = function () {
-this.setShapeSizeRD (0, this.rd, this.getModelUndeletedAtomsBitSet (-1));
+this.setShapeSizeRD (0, this.rd, this.getAllAtoms ());
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "setAntialias", 
 ($fz = function (tok, TF) {
@@ -5478,10 +5480,10 @@ if ((i = text0.indexOf ("@{")) < 0 && (i = text0.indexOf ("%{")) < 0) return tex
 var text = text0;
 var isEscaped = (text.indexOf ("\\") >= 0);
 if (isEscaped) {
-text = JU.PT.simpleReplace (text, "\\%", "\1");
-text = JU.PT.simpleReplace (text, "\\@", "\2");
+text = JU.PT.rep (text, "\\%", "\1");
+text = JU.PT.rep (text, "\\@", "\2");
 isEscaped = !text.equals (text0);
-}text = JU.PT.simpleReplace (text, "%{", "@{");
+}text = JU.PT.rep (text, "%{", "@{");
 var name;
 while ((i = text.indexOf ("@{")) >= 0) {
 i++;
@@ -5496,8 +5498,8 @@ if (Clazz.instanceOf (v, JU.P3)) v = J.util.Escape.eP (v);
 text = text.substring (0, i0 - 2) + v.toString () + text.substring (i + 1);
 }
 if (isEscaped) {
-text = JU.PT.simpleReplace (text, "\2", "@");
-text = JU.PT.simpleReplace (text, "\1", "%");
+text = JU.PT.rep (text, "\2", "@");
+text = JU.PT.rep (text, "\1", "%");
 }return text;
 }, "~S");
 $_M(c$, "getElementSymbol", 
@@ -5748,7 +5750,7 @@ this.global.setS ("defaultLattice", J.util.Escape.eP (ptLattice));
 }, "JU.P3");
 $_M(c$, "getDefaultLattice", 
 function () {
-return this.global.getDefaultLattice ();
+return this.global.ptDefaultLattice;
 });
 $_M(c$, "getTaintedAtoms", 
 function (type) {
@@ -5768,7 +5770,7 @@ if (type.toLowerCase ().indexOf ("property_") == 0) exp = "{selected}.label(\"%{
  else if (type.equalsIgnoreCase ("XYZRN")) exp = "\"\" + {selected}.size + \"\n\n\"+{selected}.label(\"%-2e %8.3x %8.3y %8.3z %4.2[vdw] 1 [%n]%r.%a#%i\").lines";
  else if (type.startsWith ("USER:")) exp = "{selected}.label(\"" + type.substring (5) + "\").lines";
  else exp = "\"\" + {selected}.size + \"\n\n\"+{selected}.label(\"%-2e %10.5x %10.5y %10.5z\").lines";
-if (!atomExpression.equals ("selected")) exp = JU.PT.simpleReplace (exp, "selected", atomExpression);
+if (!atomExpression.equals ("selected")) exp = JU.PT.rep (exp, "selected", atomExpression);
 return this.evaluateExpression (exp);
 }, "~S,~S");
 $_M(c$, "getModelCml", 
@@ -5977,7 +5979,7 @@ var b = this.modelSet.bonds[this.rotateBondIndex];
 atom1 = b.getAtom1 ();
 atom2 = b.getAtom2 ();
 this.undoMoveActionClear (atom1.index, 2, true);
-var pt = JU.P3.new3 (x, y, Clazz.doubleToInt ((atom1.screenZ + atom2.screenZ) / 2));
+var pt = JU.P3.new3 (x, y, Clazz.doubleToInt ((atom1.sZ + atom2.sZ) / 2));
 this.transformManager.unTransformPoint (pt, pt);
 if (atom2.getCovalentBondCount () == 1 || pt.distance (atom1) < pt.distance (atom2) && atom1.getCovalentBondCount () != 1) {
 var a = atom1;
@@ -5998,7 +6000,7 @@ this.rotatePrev2 = atom2.index;
 } else {
 atom1 = this.modelSet.atoms[this.rotatePrev1];
 atom2 = this.modelSet.atoms[this.rotatePrev2];
-}var v1 = JU.V3.new3 (atom2.screenX - atom1.screenX, atom2.screenY - atom1.screenY, 0);
+}var v1 = JU.V3.new3 (atom2.sX - atom1.sX, atom2.sY - atom1.sY, 0);
 var v2 = JU.V3.new3 (deltaX, deltaY, 0);
 v1.cross (v1, v2);
 var degrees = (v1.z > 0 ? 1 : -1) * v2.length ();
@@ -6010,10 +6012,6 @@ $_M(c$, "refreshMeasures",
 function (andStopMinimization) {
 this.setShapeProperty (6, "refresh", null);
 if (andStopMinimization) this.stopMinimization ();
-}, "~B");
-$_M(c$, "setDynamicMeasurements", 
-function (TF) {
-this.global.dynamicMeasurements = TF;
 }, "~B");
 $_M(c$, "functionXY", 
 function (functionName, nX, nY) {
@@ -6083,7 +6081,7 @@ return this.getFileAsString (url);
 $_M(c$, "getHelp", 
 function (what) {
 if (this.global.helpPath.indexOf ("?") < 0) {
-if (what.length > 0 && what.indexOf ("?") != 0) what = "?search=" + JU.PT.simpleReplace (what, " ", "%20");
+if (what.length > 0 && what.indexOf ("?") != 0) what = "?search=" + JU.PT.rep (what, " ", "%20");
 what += (what.length == 0 ? "?ver=" : "&ver=") + J.viewer.JC.version;
 } else {
 what = "&" + what;
@@ -6096,7 +6094,7 @@ this.showUrl (this.setLoadFormat ("_" + smiles, '2', false));
 $_M(c$, "getChemicalInfo", 
 function (smiles, type, info) {
 var s = this.setLoadFormat ("_" + smiles, type, false);
-if (type == '/') s += JU.PT.simpleReplace (info, " ", "%20");
+if (type == '/') s += JU.PT.rep (info, " ", "%20");
 return this.getFileAsString4 (s, -1, false, false, false);
 }, "~S,~S,~S");
 $_M(c$, "addCommand", 
@@ -6491,7 +6489,7 @@ return this.transformManager.getFrontPlane ();
 });
 $_M(c$, "getPlaneIntersection", 
 function (type, plane, scale, flags) {
-return this.modelSet.getPlaneIntersection (type, plane, scale, flags, this.animationManager.currentModelIndex);
+return this.modelSet.getPlaneIntersection (type, plane, scale, flags, type == 1614417948 ? this.getCurrentUnitCell () : null);
 }, "~N,JU.P4,~N,~N");
 $_M(c$, "calculateStruts", 
 function (bs1, bs2) {
@@ -6537,7 +6535,7 @@ $_M(c$, "checkMinimization",
 ($fz = function () {
 this.refreshMeasures (true);
 if (!this.global.monitorEnergy) return;
-this.minimize (0, 0, this.getModelUndeletedAtomsBitSet (-1), null, 0, false, false, true, false);
+this.minimize (0, 0, this.getAllAtoms (), null, 0, false, false, true, false);
 this.echoMessage (this.getParameter ("_minimizationForceField") + " Energy = " + this.getParameter ("_minimizationEnergy"));
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "minimize", 
@@ -7333,20 +7331,11 @@ function () {
 return (!this.getTestFlag (1));
 });
 $_M(c$, "setModulation", 
-function (isOn, t1, t2, isThread) {
-var t = (t1 == null ? 2147483647 : t1[0]);
-if (t2 == 2147483647) {
-if (!isThread) this.animationManager.setModulationPlay (2147483647, 0);
-if (t1 != null) this.global.setI ("_modt", t1[0]);
-this.modelSet.setModulation (this.getSelectionSet (false), isOn, t);
-} else {
-this.animationManager.setModulationPlay (t, t2);
-}this.refreshMeasures (true);
-}, "~B,~A,~N,~B");
-$_M(c$, "setModulationFps", 
-function (fps) {
-this.animationManager.setModulationFps (fps);
-}, "~N");
+function (bs, isOn, t1, isQ) {
+if (isQ) this.global.setS ("_modt", J.util.Escape.eP (t1));
+this.modelSet.setModulation (bs == null ? this.getAllAtoms () : bs, isOn, t1, isQ);
+this.refreshMeasures (true);
+}, "JU.BS,~B,JU.P3,~B");
 $_M(c$, "checkInMotion", 
 function (state) {
 switch (state) {
@@ -7422,9 +7411,21 @@ function () {
 return this.applet;
 });
 $_M(c$, "getModulationList", 
-function (bs, type, t) {
-return this.modelSet.getModulationList (bs, type, t);
-}, "JU.BS,~S,~N");
+function (bs, type, t456) {
+return this.modelSet.getModulationList (bs, type, t456);
+}, "JU.BS,~S,JU.P3");
+$_M(c$, "getVibrationPoint", 
+function (vibration, pt) {
+return this.transformManager.getVibrationPoint (vibration, pt);
+}, "J.util.Vibration,J.util.Point3fi");
+$_M(c$, "setCurrentAtom", 
+function (iAtom) {
+this.animationManager.currentAtomIndex = iAtom;
+}, "~N");
+$_M(c$, "getCurrentAtom", 
+function () {
+return this.animationManager.currentAtomIndex;
+});
 Clazz.pu$h ();
 c$ = Clazz.declareType (J.viewer.Viewer, "ACCESS", Enum);
 Clazz.defineEnumConstant (c$, "NONE", 0, []);

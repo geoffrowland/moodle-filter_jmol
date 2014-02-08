@@ -181,7 +181,7 @@ this.setPropI ("thisID", id, null);
 this.setPropI ("modelIndex", Integer.$valueOf (imodel), null);
 this.setPropI ("fileName", "cache://isosurface_" + id, null);
 this.setPropI ("readFile", null, null);
-this.setPropI ("finalize", "isosurface ID " + J.util.Escape.eS (id) + (imodel >= 0 ? " modelIndex " + imodel : "") + " /*file*/" + J.util.Escape.eS ("cache://isosurface_" + id), null);
+this.setPropI ("finalize", "isosurface ID " + JU.PT.esc (id) + (imodel >= 0 ? " modelIndex " + imodel : "") + " /*file*/" + JU.PT.esc ("cache://isosurface_" + id), null);
 this.setPropI ("clear", null, null);
 return;
 }if ("delete" === propertyName) {
@@ -551,7 +551,7 @@ var d =  new Array (2);
 d[0] = JU.P3.newP (m.jvxlData.boundingBox[0]);
 d[1] = JU.P3.newP (m.jvxlData.boundingBox[1]);
 var v =  new JU.V3 ();
-m.mat4.get (v);
+m.mat4.getTranslation (v);
 d[0].add (v);
 d[1].add (v);
 data[2] = d;
@@ -570,7 +570,7 @@ p.add (m.jvxlData.boundingBox[1]);
 p.scale (0.5);
 if (m.mat4 != null) {
 var v =  new JU.V3 ();
-m.mat4.get (v);
+m.mat4.getTranslation (v);
 p.add (v);
 }data[2] = p;
 return true;
@@ -677,10 +677,10 @@ if (imesh == null || imesh.scriptCommand == null) return;
 var cmd = imesh.scriptCommand;
 var modelCount = this.viewer.getModelCount ();
 if (modelCount > 1) J.shape.Shape.appendCmd (sb, "frame " + this.viewer.getModelNumberDotted (imesh.modelIndex));
-cmd = JU.PT.simpleReplace (cmd, ";; isosurface map", " map");
-cmd = JU.PT.simpleReplace (cmd, "; isosurface map", " map");
+cmd = JU.PT.rep (cmd, ";; isosurface map", " map");
+cmd = JU.PT.rep (cmd, "; isosurface map", " map");
 cmd = cmd.$replace ('\t', ' ');
-cmd = JU.PT.simpleReplace (cmd, ";#", "; #");
+cmd = JU.PT.rep (cmd, ";#", "; #");
 var pt = cmd.indexOf ("; #");
 if (pt >= 0) cmd = cmd.substring (0, pt);
 if (imesh.connections != null) cmd += " connect " + J.util.Escape.eAI (imesh.connections);
@@ -688,7 +688,7 @@ cmd = JU.PT.trim (cmd, ";");
 if (imesh.linkedMesh != null) cmd += " LINK";
 if (this.myType === "lcaoCartoon" && imesh.atomIndex >= 0) cmd += " ATOMINDEX " + imesh.atomIndex;
 J.shape.Shape.appendCmd (sb, cmd);
-var id = this.myType + " ID " + J.util.Escape.eS (imesh.thisID);
+var id = this.myType + " ID " + JU.PT.esc (imesh.thisID);
 if (imesh.jvxlData.thisSet >= 0) J.shape.Shape.appendCmd (sb, id + " set " + (imesh.jvxlData.thisSet + 1));
 if (imesh.mat4 != null) J.shape.Shape.appendCmd (sb, id + " move " + J.util.Escape.matrixToScript (imesh.mat4));
 if (imesh.scale3d != 0) J.shape.Shape.appendCmd (sb, id + " scale3d " + imesh.scale3d);
@@ -820,9 +820,9 @@ if (rotAxis.x != 0) a.setVA (x, rotRadians);
  else a.setVA (z, rotRadians);
 var m =  new JU.M3 ();
 m.setAA (a);
-m.transform (x);
-m.transform (y);
-m.transform (z);
+m.rotate (x);
+m.rotate (y);
+m.rotate (z);
 }if (this.thisMesh == null && this.nLCAO == 0) this.nLCAO = this.meshCount;
 var id = (this.thisMesh == null ? (nElectrons > 0 ? "lp" : "lcao") + (++this.nLCAO) + "_" + lcaoCartoon : this.thisMesh.thisID);
 if (this.thisMesh == null) this.allocMesh (id, null);
@@ -1041,7 +1041,7 @@ this.thisMesh.dataType = this.sg.getParams ().dataType;
 this.thisMesh.scale3d = this.sg.getParams ().scale3d;
 if (script != null) {
 if (script.charAt (0) == ' ') {
-script = this.myType + " ID " + J.util.Escape.eS (this.thisMesh.thisID) + script;
+script = this.myType + " ID " + JU.PT.esc (this.thisMesh.thisID) + script;
 pt = script.indexOf ("; isosurface map");
 }}if (pt > 0 && this.scriptAppendix.length > 0) this.thisMesh.scriptCommand = script.substring (0, pt) + this.scriptAppendix + script.substring (pt);
  else this.thisMesh.scriptCommand = script + this.scriptAppendix;
@@ -1350,7 +1350,7 @@ c$.jvxlSetCompressionRatio = $_M(c$, "jvxlSetCompressionRatio",
 function (data, jvxlData, len) {
 var s = data.toString ();
 var r = Clazz_floatToInt (jvxlData.nBytes > 0 ? (jvxlData.nBytes) / len : ((jvxlData.nPointsX * jvxlData.nPointsY * jvxlData.nPointsZ * 13)) / len);
-return JU.PT.simpleReplace (s, "\"not calculated\"", (r > 0 ? "\"" + r + ":1\"" : "\"?\""));
+return JU.PT.rep (s, "\"not calculated\"", (r > 0 ? "\"" + r + ":1\"" : "\"?\""));
 }, "JU.SB,J.jvxl.data.JvxlData,~N");
 c$.appendXmlEdgeData = $_M(c$, "appendXmlEdgeData", 
 function (sb, jvxlData) {
@@ -1524,10 +1524,8 @@ v.addLast (J.jvxl.data.JvxlCoder.getContourPoint (vertices, i3, i4, f2));
 c$.getContourPoint = $_M(c$, "getContourPoint", 
 function (vertices, i, j, f) {
 var pt =  new JU.P3 ();
-pt.setT (vertices[j]);
-pt.sub (vertices[i]);
-pt.scale (f);
-pt.add (vertices[i]);
+pt.sub2 (vertices[j], vertices[i]);
+pt.scaleAdd2 (f, pt, vertices[i]);
 return pt;
 }, "~A,~N,~N,~N");
 c$.appendContourTriangleIntersection = $_M(c$, "appendContourTriangleIntersection", 
@@ -2129,7 +2127,7 @@ return true;
 });
 $_V(c$, "transform", 
 function (v1, v2) {
-this.volumetricMatrix.transform2 (v1, v2);
+this.volumetricMatrix.rotate2 (v1, v2);
 }, "JU.V3,JU.V3");
 $_V(c$, "setPlaneParameters", 
 function (plane) {
@@ -2188,7 +2186,7 @@ $_V(c$, "xyzToVoxelPt",
 function (x, y, z, pt3i) {
 this.ptXyzTemp.set (x, y, z);
 this.ptXyzTemp.sub (this.volumetricOrigin);
-this.inverseMatrix.transform (this.ptXyzTemp);
+this.inverseMatrix.rotate (this.ptXyzTemp);
 pt3i.set (Math.round (this.ptXyzTemp.x), Math.round (this.ptXyzTemp.y), Math.round (this.ptXyzTemp.z));
 }, "~N,~N,~N,JU.P3i");
 $_V(c$, "lookupInterpolatedVoxelValue", 
@@ -2198,7 +2196,7 @@ if (this.sr != null) {
 var v = this.sr.getValueAtPoint (point, getSource);
 return (this.isSquared ? v * v : v);
 }this.ptXyzTemp.sub2 (point, this.volumetricOrigin);
-this.inverseMatrix.transform (this.ptXyzTemp);
+this.inverseMatrix.rotate (this.ptXyzTemp);
 var iMax;
 var xLower = this.indexLower (this.ptXyzTemp.x, iMax = this.voxelCounts[0] - 1);
 var xUpper = this.indexUpper (this.ptXyzTemp.x, xLower, iMax);
@@ -3003,7 +3001,7 @@ this.params = value;
 } else {
 this.params.script = value;
 if (this.params.script != null && this.params.script.indexOf (";#") >= 0) {
-this.params.script = JU.PT.simpleReplace (this.params.script, ";#", "; #");
+this.params.script = JU.PT.rep (this.params.script, ";#", "; #");
 }}return false;
 }if ("map" === propertyName) {
 this.params.resetForMapping ((value).booleanValue ());
@@ -4040,7 +4038,7 @@ var z = JU.V3.new3 (0, 0, 1);
 ecc.add (z);
 ecc.normalize ();
 if (Float.isNaN (ecc.x)) ecc.set (1, 0, 0);
-this.eccentricityMatrix = JU.M3.newM (null);
+this.eccentricityMatrix = JU.M3.newM3 (null);
 this.eccentricityMatrix.setAA (JU.A4.newVA (ecc, 3.141592653589793));
 this.eccentricityMatrixInverse =  new JU.M3 ();
 this.eccentricityMatrixInverse.invertM (this.eccentricityMatrix);
@@ -4305,7 +4303,7 @@ this.points = null;
 this.origin = null;
 this.steps = null;
 this.volumeData = null;
-this.center = null;
+this.center.x = 3.4028235E38;
 this.isAnisotropic = false;
 }, "~B");
 $_M(c$, "addSlabInfo", 
@@ -5743,8 +5741,7 @@ this.centers =  new Array (this.polygonCount);
 for (var i = 0; i < this.polygonCount; i++) {
 var pi = this.polygonIndexes[i];
 if (pi == null) continue;
-var pt = this.centers[i] =  new JU.P3 ();
-pt.add (this.vertices[pi[0]]);
+var pt = this.centers[i] = JU.P3.newP (this.vertices[pi[0]]);
 pt.add (this.vertices[pi[1]]);
 pt.add (this.vertices[pi[2]]);
 pt.scale (0.33333334);
@@ -5863,10 +5860,8 @@ return (v == (v1 = vertexValues[i]) ? 0 : v == (v2 = vertexValues[j]) ? 1 : (v1 
 c$.getContourPoint = $_M(c$, "getContourPoint", 
 function (vertices, i, j, f) {
 var pt =  new JU.P3 ();
-pt.setT (vertices[j]);
-pt.sub (vertices[i]);
-pt.scale (f);
-pt.add (vertices[i]);
+pt.sub2 (vertices[j], vertices[i]);
+pt.scaleAdd2 (f, pt, vertices[i]);
 return pt;
 }, "~A,~N,~N,~N");
 $_M(c$, "setDiscreteColixes", 
@@ -5961,8 +5956,7 @@ var bsVertices = (isAtoms ?  new JU.BS () : bs);
 this.checkAllocColixes ();
 if (isAtoms) for (var i = 0; i < this.vertexCount; i++) {
 var pt = this.vertexSource[i];
-if (pt < 0) continue;
-if (bs.get (pt)) {
+if (pt >= 0 && bs.get (pt)) {
 this.vertexColixes[i] = colix;
 if (bsVertices != null) bsVertices.set (i);
 }}
@@ -6088,7 +6082,7 @@ this.jvxlData.nVertexColors = this.vertexCount;
 var atoms = viewer.getModelSet ().atoms;
 for (var i = this.mergeVertexCount0; i < this.vertexCount; i++) {
 var pt = this.vertexSource[i];
-if (pt < atoms.length) this.jvxlData.vertexColors[i] = viewer.getColorArgbOrGray (this.vertexColixes[i] = J.util.C.copyColixTranslucency (this.colix, atoms[pt].getColix ()));
+if (pt >= 0 && pt < atoms.length) this.jvxlData.vertexColors[i] = viewer.getColorArgbOrGray (this.vertexColixes[i] = J.util.C.copyColixTranslucency (this.colix, atoms[pt].getColix ()));
 }
 return;
 }this.jvxlData.vertexColors = null;
@@ -6200,7 +6194,7 @@ return ipt;
 }, "J.util.MeshSurface,~N,~N,~A");
 $_V(c$, "getUnitCell", 
 function () {
-return (this.spanningVectors == null ? null : (J.api.Interface.getOptionInterface ("symmetry.Symmetry")).getUnitCell (this.spanningVectors));
+return (this.spanningVectors == null ? null : (J.api.Interface.getOptionInterface ("symmetry.Symmetry")).getUnitCell (this.spanningVectors, true));
 });
 $_V(c$, "slabBrillouin", 
 function (unitCellPoints) {
@@ -6276,7 +6270,7 @@ doUpdate = true;
 break;
 }
 if (!doUpdate) return;
-if (this.mat4 == null) this.mat4 = JU.M4.newM (null);
+if (this.mat4 == null) this.mat4 = JU.M4.newM4 (null);
 this.mat4.mul2 (m, this.mat4);
 this.recalcAltVertices = true;
 }, "JU.M4,JU.BS");
@@ -6423,10 +6417,10 @@ break;
 case 2:
 this.volumetricVectors[2].set (0, 0, d);
 this.volumetricOrigin.z = min;
-if (this.isEccentric) this.eccentricityMatrix.transform (this.volumetricOrigin);
+if (this.isEccentric) this.eccentricityMatrix.rotate (this.volumetricOrigin);
 if (this.center != null && this.center.x != 3.4028235E38) this.volumetricOrigin.add (this.center);
 }
-if (this.isEccentric) this.eccentricityMatrix.transform (this.volumetricVectors[index]);
+if (this.isEccentric) this.eccentricityMatrix.rotate (this.volumetricVectors[index]);
 return this.voxelCounts[index];
 }, "~N,~N,~N,~N,~N,~N");
 $_V(c$, "readSurfaceData", 
@@ -6549,9 +6543,7 @@ function () {
 if (this.useOriginStepsPoints) {
 this.xyzMin = JU.P3.newP (this.params.origin);
 this.xyzMax = JU.P3.newP (this.params.origin);
-this.xyzMax.x += (this.params.points.x - 1) * this.params.steps.x;
-this.xyzMax.y += (this.params.points.y - 1) * this.params.steps.y;
-this.xyzMax.z += (this.params.points.z - 1) * this.params.steps.z;
+this.xyzMax.add3 ((this.params.points.x - 1) * this.params.steps.x, (this.params.points.y - 1) * this.params.steps.y, (this.params.points.z - 1) * this.params.steps.z);
 } else if (this.params.boundingBox == null) {
 this.getAtoms (this.params.bsSelected, false, true, false, false, false, false, this.params.mep_marginAngstroms);
 if (this.xyzMin == null) {
@@ -6639,8 +6631,7 @@ var v = JU.V3.newVsub (this.xyzMax, this.xyzMin);
 v.scale (0.5);
 this.xyzMin.add (v);
 v.scale (this.params.scale);
-this.xyzMax.setT (this.xyzMin);
-this.xyzMax.add (v);
+this.xyzMax.add2 (this.xyzMin, v);
 this.xyzMin.sub (v);
 }if (!addNearbyAtoms || this.myAtomCount == 0) return;
 var pt =  new JU.P3 ();
@@ -7173,18 +7164,15 @@ var dsp2 = (dPS * dPS);
 var cosTheta = (dsp2 + dpT * dpT - dST * dST) / (2 * dPS * dpT);
 if (Math.abs (cosTheta) >= 0.99) return false;
 var vXS = this.vTemp2;
-vXS.setT (this.ptTemp);
-vXS.sub (this.p);
+vXS.sub2 (this.ptTemp, this.p);
 vXS.normalize ();
 this.dPX = (dPS * cosTheta);
 this.ptTemp.scaleAdd2 (this.dPX, vXS, this.p);
 vXS.cross (this.vTemp, vXS);
 vXS.normalize ();
 vXS.scale ((Math.sqrt (1 - cosTheta * cosTheta) * dPS));
-this.ptS1.setT (this.ptTemp);
-this.ptS1.add (vXS);
-this.ptS2.setT (this.ptTemp);
-this.ptS2.sub (vXS);
+this.ptS1.add2 (this.ptTemp, vXS);
+this.ptS2.add2 (this.ptTemp, vXS);
 return true;
 }, "~N,~N,~N");
 $_M(c$, "validateFace", 
@@ -7357,8 +7345,7 @@ var ptA = this.atomXyz[ia];
 var ptB = this.atomXyz[ib];
 var rAS = this.atomRadius[ia] + this.solventRadius;
 var rBS = this.atomRadius[ib] + this.solventRadius;
-this.vTemp.setT (ptB);
-this.vTemp.sub (ptA);
+this.vTemp.sub2 (ptB, ptA);
 var dAB = this.vTemp.length ();
 this.vTemp.normalize ();
 var rAS2 = rAS * rAS;
@@ -8684,7 +8671,7 @@ function () {
 this.setGlobals ();
 for (var i = this.isosurface.meshCount; --i >= 0; ) {
 this.mesh = this.imesh = this.isosurface.meshes[i];
-if (this.imesh.connections != null && !this.viewer.getModelSet ().atoms[this.imesh.connections[0]].isVisible (0)) continue;
+if (this.imesh.connections != null && !this.viewer.getModelSet ().atoms[this.imesh.connections[0]].checkVisible ()) continue;
 this.hasColorRange = false;
 if (this.renderMeshSlab ()) {
 if (!this.isExport) this.renderInfo ();
@@ -8762,7 +8749,7 @@ $_M(c$, "renderMeshSlab",
 function () {
 this.volumeRender = (this.imesh.jvxlData.colorDensity && this.imesh.jvxlData.allowVolumeRender);
 var thisSlabValue = this.mySlabValue;
-this.frontOnly = this.mesh.frontOnly;
+this.frontOnly = this.mesh.frontOnly || this.shapeID == 26;
 if (!this.isNavigationMode) {
 this.meshSlabValue = this.imesh.jvxlData.slabValue;
 if (this.meshSlabValue != -2147483648 && this.imesh.jvxlData.isSlabbable) {
@@ -8826,8 +8813,7 @@ v2.cross (v2, v1);
 v2.normalize ();
 var f = this.viewer.scaleToScreen (Clazz_floatToInt (this.pt1f.z), 100);
 v2.scale (f);
-this.pt1f.setT (this.pt2f);
-this.pt1f.add (v2);
+this.pt1f.add2 (this.pt2f, v2);
 this.pt2f.sub (v2);
 this.screens[0].set (Math.round (this.pt1f.x), Math.round (this.pt1f.y), Math.round (this.pt1f.z));
 this.g3d.fillSphereI (r, this.screens[0]);
@@ -9015,9 +9001,7 @@ if (i > 100) continue;
 this.ptTemp.setT (this.vertices[i]);
 var n = this.mesh.normixes[i];
 if (n >= 0) {
-this.ptTemp.add (vertexVectors[n]);
-this.ptTemp.add (vertexVectors[n]);
-this.ptTemp.add (vertexVectors[n]);
+this.ptTemp.scaleAdd2 (3, vertexVectors[n], this.ptTemp);
 this.viewer.transformPtScr (this.ptTemp, this.ptTempi);
 this.g3d.drawLineAB (this.screens[i], this.ptTempi);
 }}

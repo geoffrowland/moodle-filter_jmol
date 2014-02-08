@@ -87,10 +87,10 @@ c$.newInstanceO = $_M(c$, "newInstanceO",
 return new Array(n);
 }}, $fz.isPrivate = true, $fz), "~O,~N");
 c$.getLength = $_M(c$, "getLength", 
-($fz = function (array) {
+function (array) {
 {
 return array.length
-}}, $fz.isPrivate = true, $fz), "~O");
+}}, "~O");
 c$.arrayCopyS = $_M(c$, "arrayCopyS", 
 function (array, newLength) {
 if (newLength < 0) newLength = array.length;

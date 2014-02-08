@@ -136,7 +136,7 @@ break;
 }
 scaleMatrix[i] = parameters[6 + i] * f;
 }
-this.matrixCartesianToFractional = JU.M4.newA (scaleMatrix);
+this.matrixCartesianToFractional = JU.M4.newA16 (scaleMatrix);
 this.matrixFractionalToCartesian =  new JU.M4 ();
 this.matrixFractionalToCartesian.invertM (this.matrixCartesianToFractional);
 } else if (parameters.length > 14 && !Float.isNaN (parameters[14])) {
@@ -167,12 +167,12 @@ return fpt;
 }, "JU.P3");
 $_M(c$, "toCartesian", 
 function (pt, isAbsolute) {
-if (this.matrixFractionalToCartesian != null) (isAbsolute ? this.matrixFtoCAbsolute : this.matrixFractionalToCartesian).transform (pt);
+if (this.matrixFractionalToCartesian != null) (isAbsolute ? this.matrixFtoCAbsolute : this.matrixFractionalToCartesian).rotTrans (pt);
 }, "JU.T3,~B");
 $_M(c$, "toFractional", 
 function (pt, isAbsolute) {
 if (this.matrixCartesianToFractional == null) return;
-(isAbsolute ? this.matrixCtoFAbsolute : this.matrixCartesianToFractional).transform (pt);
+(isAbsolute ? this.matrixCtoFAbsolute : this.matrixCartesianToFractional).rotTrans (pt);
 }, "JU.T3,~B");
 $_M(c$, "isPolymer", 
 function () {
@@ -212,11 +212,13 @@ return this.dimension;
 return NaN;
 }, "~N");
 c$.ijkToPoint3f = $_M(c$, "ijkToPoint3f", 
-function (nnn, cell, c) {
-c -= 5;
-cell.x = Clazz.doubleToInt (nnn / 100) + c;
-cell.y = Clazz.doubleToInt ((nnn % 100) / 10) + c;
-cell.z = (nnn % 10) + c;
+function (nnn, cell, offset) {
+var f = (nnn > 1000000000 ? 1000 : nnn > 1000000 ? 100 : 10);
+var f2 = f * f;
+offset -= (offset >= 0 ? Clazz.doubleToInt (5 * f / 10) : offset);
+cell.x = ((Clazz.doubleToInt (nnn / f2)) % f) + offset;
+cell.y = Clazz.doubleToInt ((nnn % f2) / f) + offset;
+cell.z = (nnn % f) + offset;
 }, "~N,JU.P3,~N");
 Clazz.defineStatics (c$,
 "toRadians", 0.017453292,

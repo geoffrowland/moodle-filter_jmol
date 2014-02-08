@@ -7,7 +7,7 @@ Clazz.instantialize (this, arguments);
 }, J.script, "ContextToken", J.script.T);
 c$.newContext = $_M(c$, "newContext", 
 function (isOpen) {
-var ct = (isOpen ? J.script.ContextToken.newCmd (266280, "{") : J.script.ContextToken.newCmd (266278, "}"));
+var ct = (isOpen ? J.script.ContextToken.newCmd (1276383749, "{") : J.script.ContextToken.newCmd (1276383249, "}"));
 ct.intValue = 0;
 return ct;
 }, "~B");
@@ -21,6 +21,6 @@ return ct;
 $_M(c$, "addName", 
 function (name) {
 if (this.contextVariables == null) this.contextVariables =  new java.util.Hashtable ();
-this.contextVariables.put (name, J.script.SV.newVariable (4, "").setName (name));
+this.contextVariables.put (name, J.script.SV.newS ("").setName (name));
 }, "~S");
 });

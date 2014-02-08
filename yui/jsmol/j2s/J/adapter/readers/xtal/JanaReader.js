@@ -1,9 +1,8 @@
 Clazz.declarePackage ("J.adapter.readers.xtal");
-Clazz.load (["J.adapter.smarter.AtomSetCollectionReader"], "J.adapter.readers.xtal.JanaReader", ["java.util.Hashtable", "JU.BS", "$.List", "$.M4", "$.P3", "$.PT", "J.adapter.smarter.Atom", "J.api.Interface", "J.io.JmolBinary", "J.util.Logger"], function () {
+Clazz.load (["J.adapter.smarter.AtomSetCollectionReader"], "J.adapter.readers.xtal.JanaReader", ["java.lang.Float", "java.util.Hashtable", "JU.BS", "$.List", "$.Matrix", "$.PT", "J.adapter.smarter.Atom", "J.api.Interface", "J.io.JmolBinary", "J.util.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.lattvecs = null;
 this.thisSub = 0;
-this.mr = null;
 this.modAverage = false;
 this.modAxes = null;
 this.modDim = 0;
@@ -54,15 +53,19 @@ case 35:
 this.continuing = false;
 break;
 case 40:
-var m =  new JU.M4 ();
+var n = 3 + this.modDim;
+var m;
 if (this.thisSub++ == 0) {
-m.setIdentity ();
-this.mr.addSubsystem ("1", m, null);
-m =  new JU.M4 ();
-}var data =  Clazz.newFloatArray (16, 0);
+m = JU.Matrix.identity (n, n);
+this.ms.addSubsystem ("" + this.thisSub++, m);
+}m =  new JU.Matrix (null, n, n);
+var a = m.getArray ();
+var data =  Clazz.newFloatArray (n * n, 0);
 this.fillFloatArray (null, 0, data);
-m.setA (data, 0);
-this.mr.addSubsystem ("" + this.thisSub, m, null);
+for (var i = 0, pt = 0; i < n; i++) for (var j = 0; j < n; j++, pt++) a[i][j] = data[pt];
+
+
+this.ms.addSubsystem ("" + this.thisSub, m);
 }
 return true;
 });
@@ -70,11 +73,13 @@ $_V(c$, "finalizeReader",
 function () {
 this.readM40Data ();
 if (this.lattvecs != null) this.atomSetCollection.getSymmetry ().addLatticeVectors (this.lattvecs);
-this.applySymmetryAndSetTrajectory ();
+if (this.ms != null) {
+this.ms.setModulation (false);
+}this.applySymmetryAndSetTrajectory ();
 this.adjustM40Occupancies ();
-if (this.mr != null) {
-this.mr.setModulation ();
-this.mr.finalizeModulation ();
+if (this.ms != null) {
+this.ms.setModulation (true);
+this.ms.finalizeModulation ();
 }this.finalizeReaderASCR ();
 });
 $_M(c$, "cell", 
@@ -84,26 +89,15 @@ for (var ipt = 0; ipt < 6; ipt++) this.setUnitCellItem (ipt, this.parseFloat ())
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "ndim", 
 ($fz = function () {
-this.mr = J.api.Interface.getInterface ("J.adapter.readers.cif.MSReader");
-this.modDim = this.mr.initialize (this, "" + (this.parseIntStr (this.getTokens ()[1]) - 3));
+this.ms = J.api.Interface.getInterface ("J.adapter.readers.cif.MSReader");
+this.modDim = this.ms.initialize (this, "" + (this.parseIntStr (this.getTokens ()[1]) - 3));
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "qi", 
 ($fz = function () {
-var pt = JU.P3.new3 (this.parseFloat (), this.parseFloat (), this.parseFloat ());
-this.mr.addModulation (null, "W_" + (++this.qicount), pt, -1);
-pt =  new JU.P3 ();
-switch (this.qicount) {
-case 1:
-pt.x = 1;
-break;
-case 2:
-pt.y = 1;
-break;
-case 3:
-pt.z = 1;
-break;
-}
-this.mr.addModulation (null, "F_" + this.qicount + "_q_", pt, -1);
+var pt =  Clazz.newDoubleArray (this.modDim, 0);
+pt[this.qicount] = 1;
+this.ms.addModulation (null, "W_" + (++this.qicount), [this.parseFloat (), this.parseFloat (), this.parseFloat ()], -1);
+this.ms.addModulation (null, "F_" + this.qicount + "_coefs_", pt, -1);
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "lattvec", 
 ($fz = function (data) {
@@ -138,7 +132,7 @@ this.lattvecs.addLast (a);
 }, $fz.isPrivate = true, $fz), "~S");
 $_M(c$, "symmetry", 
 ($fz = function () {
-this.setSymmetryOperator (JU.PT.simpleReplace (this.line.substring (9).trim (), " ", ","));
+this.setSymmetryOperator (JU.PT.rep (this.line.substring (9).trim (), " ", ","));
 }, $fz.isPrivate = true, $fz));
 $_M(c$, "readM40Data", 
 ($fz = function () {
@@ -161,12 +155,12 @@ this.readM40Floats (r);
 if (this.line == null) break;
 nAtoms++;
 var atom =  new J.adapter.smarter.Atom ();
-atom.atomName = this.line.substring (0, 9).trim ();
 J.util.Logger.info (this.line);
+atom.atomName = this.line.substring (0, 9).trim ();
 if (!this.filterAtom (atom, 0)) continue;
 if (iSub > 0) {
 if (newSub.get (nAtoms)) iSub++;
-this.mr.addSubsystem ("" + iSub, null, atom.atomName);
+atom.altLoc = ("" + iSub).charAt (0);
 }var o_site = atom.foccupancy = this.floats[2];
 this.setAtomCoordXYZ (atom, this.floats[3], this.floats[4], this.floats[5]);
 this.atomSetCollection.addAtom (atom);
@@ -179,7 +173,11 @@ var nOcc = this.getInt (65, 68);
 var nDisp = this.getInt (68, 71);
 var nUij = this.getInt (71, 74);
 this.readM40Floats (r);
-var isIso = true;
+var extended = false;
+if (Float.isNaN (this.floats[0])) {
+extended = true;
+this.readM40Floats (r);
+}var isIso = true;
 for (var j = 1; j < 6; j++) if (this.floats[j] != 0) {
 isIso = false;
 break;
@@ -189,10 +187,13 @@ if (this.floats[0] != 0) this.setU (atom, 7, this.floats[0]);
 } else {
 for (var j = 0; j < 6; j++) this.setU (atom, j, this.floats[j]);
 
+}if (extended) {
+r.readLine ();
+r.readLine ();
 }var pt;
 var o_0 = (nOcc > 0 && !haveSpecialOcc ? this.parseFloatStr (r.readLine ()) : 1);
 if (o_0 != 1) {
-this.mr.addModulation (null, "J_O#0;" + atom.atomName, JU.P3.new3 (o_site, o_0, 0), -1);
+this.ms.addModulation (null, "J_O#0;" + atom.atomName, [o_site, o_0, 0], -1);
 }atom.foccupancy = o_0 * o_site;
 var wv = 0;
 var a1;
@@ -208,15 +209,15 @@ this.readM40Floats (r);
 a2 = this.floats[0];
 a1 = this.floats[1];
 }id = "O_" + wv + "#0" + label;
-pt = JU.P3.new3 (a1, a2, 0);
-if (a1 != 0 || a2 != 0) this.mr.addModulation (null, id, pt, -1);
+pt = [a1, a2, 0];
+if (a1 != 0 || a2 != 0) this.ms.addModulation (null, id, pt, -1);
 }
 for (var j = 0; j < nDisp; j++) {
 if (haveSpecialDisp) {
 this.readM40Floats (r);
 var c = this.floats[3];
 var w = this.floats[4];
-for (var k = 0; k < 3; k++) if (this.floats[k] != 0) this.mr.addModulation (null, "D_S#" + "xyz".charAt (k) + label, JU.P3.new3 (c, w, this.floats[k]), -1);
+for (var k = 0; k < 3; k++) if (this.floats[k] != 0) this.ms.addModulation (null, "D_S#" + "xyz".charAt (k) + label, [c, w, this.floats[k]], -1);
 
 } else {
 this.addSinCos (j, "D_", label, r);
@@ -230,7 +231,7 @@ if (haveSpecialUij) {
 J.util.Logger.error ("JanaReader -- not interpreting SpecialUij flag: " + this.line);
 } else {
 var data = this.readM40FloatLines (2, 6, r);
-for (var k = 0, p = 0; k < 6; k++, p += 3) this.mr.addModulation (null, "U_" + (j + 1) + "#" + "U11U22U33U12U13U23UISO".substring (p, p + 3) + label, JU.P3.new3 (data[1][k], data[0][k], 0), -1);
+for (var k = 0, p = 0; k < 6; k++, p += 3) this.ms.addModulation (null, "U_" + (j + 1) + "#" + "U11U22U33U12U13U23UISO".substring (p, p + 3) + label, [data[1][k], data[0][k], 0], -1);
 
 }}}
 }
@@ -252,16 +253,10 @@ $_M(c$, "readM40WaveVectors",
 ($fz = function (r) {
 while (!this.readM40Floats (r).contains ("end")) if (this.line.startsWith ("wave")) {
 var tokens = this.getTokens ();
-var pt =  new JU.P3 ();
-switch (this.modDim) {
-case 3:
-pt.z = this.parseFloatStr (tokens[4]);
-case 2:
-pt.y = this.parseFloatStr (tokens[3]);
-case 1:
-pt.x = this.parseFloatStr (tokens[2]);
-}
-this.mr.addModulation (null, "F_" + this.parseIntStr (tokens[1]) + "_q_", pt, -1);
+var pt =  Clazz.newDoubleArray (this.modDim, 0);
+for (var i = 0; i < this.modDim; i++) pt[i] = this.parseFloatStr (tokens[i + 2]);
+
+this.ms.addModulation (null, "F_" + this.parseIntStr (tokens[1]) + "_coefs_", pt, -1);
 }
 this.readM40Floats (r);
 }, $fz.isPrivate = true, $fz), "java.io.BufferedReader");
@@ -276,17 +271,17 @@ if (csin == 0 && ccos == 0) continue;
 var axis = "" + "xyz".charAt (k % 3);
 if (this.modAxes != null && this.modAxes.indexOf (axis.toUpperCase ()) < 0) continue;
 var id = key + (j + 1) + "#" + axis + label;
-var pt = JU.P3.new3 (ccos, csin, 0);
-this.mr.addModulation (null, id, pt, -1);
+this.ms.addModulation (null, id, [ccos, csin, 0], -1);
 }
 }, $fz.isPrivate = true, $fz), "~N,~S,~S,java.io.BufferedReader");
 $_M(c$, "checkFourier", 
 ($fz = function (j) {
 var pt;
-if (j > 0 && this.mr.getMod ("F_" + (j + 1) + "_q_") == null && (pt = this.mr.getMod ("F_1_q_")) != null) {
-pt = JU.P3.newP (pt);
-pt.scale (j + 1);
-this.mr.addModulation (null, "F_" + (j + 1) + "_q_", pt, -1);
+if (j > 0 && this.ms.getMod ("F_" + (++j) + "_coefs_") == null && (pt = this.ms.getMod ("F_1_coefs_")) != null) {
+var p =  Clazz.newDoubleArray (this.modDim, 0);
+for (var i = this.modDim; --i >= 0; ) p[i] = pt[i] * j;
+
+this.ms.addModulation (null, "F_" + j + "_coefs_", p, -1);
 }}, $fz.isPrivate = true, $fz), "~N");
 $_M(c$, "getInt", 
 ($fz = function (col1, col2) {
@@ -297,7 +292,7 @@ $_M(c$, "readM40Floats",
 ($fz = function (r) {
 if ((this.line = r.readLine ()) == null || this.line.indexOf ("-------") >= 0) return (this.line = null);
 if (J.util.Logger.debugging) J.util.Logger.debug (this.line);
-var ptLast = this.line.length - 10;
+var ptLast = this.line.length - 9;
 for (var i = 0, pt = 0; i < 6 && pt <= ptLast; i++, pt += 9) this.floats[i] = this.parseFloatStr (this.line.substring (pt, pt + 9));
 
 return this.line;
@@ -315,15 +310,19 @@ return data;
 $_M(c$, "adjustM40Occupancies", 
 ($fz = function () {
 var htSiteMult =  new java.util.Hashtable ();
-var atoms = this.atomSetCollection.getAtoms ();
-for (var i = this.atomSetCollection.getAtomCount (); --i >= 0; ) {
+var atoms = this.atomSetCollection.atoms;
+var symmetry = this.atomSetCollection.getSymmetry ();
+for (var i = this.atomSetCollection.atomCount; --i >= 0; ) {
 var a = atoms[i];
 var ii = htSiteMult.get (a.atomName);
-if (ii == null) {
-htSiteMult.put (a.atomName, ii = Integer.$valueOf (this.atomSetCollection.getSymmetry ().getSiteMultiplicity (a)));
-}a.foccupancy *= ii.intValue ();
+if (ii == null) htSiteMult.put (a.atomName, ii = Integer.$valueOf (symmetry.getSiteMultiplicity (a)));
+a.foccupancy *= ii.intValue ();
 }
 }, $fz.isPrivate = true, $fz));
+$_V(c$, "doPreSymmetry", 
+function () {
+if (this.ms != null) this.ms.setModulation (false);
+});
 Clazz.defineStatics (c$,
 "records", "tit  cell ndim qi   lat  sym  spg  end  wma",
 "TITLE", 0,

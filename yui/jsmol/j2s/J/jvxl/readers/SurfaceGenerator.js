@@ -179,7 +179,7 @@ this.params = value;
 } else {
 this.params.script = value;
 if (this.params.script != null && this.params.script.indexOf (";#") >= 0) {
-this.params.script = JU.PT.simpleReplace (this.params.script, ";#", "; #");
+this.params.script = JU.PT.rep (this.params.script, ";#", "; #");
 }}return false;
 }if ("map" === propertyName) {
 this.params.resetForMapping ((value).booleanValue ());

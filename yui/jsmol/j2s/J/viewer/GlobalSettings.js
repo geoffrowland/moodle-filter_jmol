@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.viewer");
-Clazz.load (["java.util.Hashtable", "JU.P3", "J.constant.EnumAxesMode", "$.EnumCallback"], "J.viewer.GlobalSettings", ["java.lang.Boolean", "$.Float", "JU.BS", "$.DF", "J.constant.EnumStructure", "J.script.SV", "J.util.Escape", "$.Logger", "$.Txt", "J.viewer.JC", "$.StateManager", "$.Viewer"], function () {
+Clazz.load (["java.util.Hashtable", "JU.P3", "J.constant.EnumAxesMode", "$.EnumCallback"], "J.viewer.GlobalSettings", ["java.lang.Boolean", "$.Float", "JU.BS", "$.DF", "$.List", "J.constant.EnumStructure", "J.script.SV", "J.util.BSUtil", "$.Escape", "$.Logger", "$.Txt", "J.viewer.JC", "$.StateManager", "$.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.viewer = null;
 this.htNonbooleanParameterValues = null;
@@ -82,7 +82,6 @@ this.dotSurface = true;
 this.dotDensity = 3;
 this.dotScale = 1;
 this.meshScale = 1;
-this.dynamicMeasurements = false;
 this.greyscaleRendering = false;
 this.isosurfaceKey = false;
 this.isosurfacePropertySmoothing = true;
@@ -134,7 +133,6 @@ this.animationFps = 10;
 this.atomPicking = true;
 this.autoFps = false;
 this.axesMode = null;
-this.particleRadius = 20;
 this.axesScale = 2;
 this.starScale = 0.05;
 this.bondPicking = false;
@@ -171,7 +169,9 @@ this.measureDistanceUnits = "nanometers";
 this.measurementLabels = true;
 this.messageStyleChime = false;
 this.monitorEnergy = false;
+this.modulationScale = 1;
 this.multiProcessor = true;
+this.particleRadius = 20;
 this.pickingSpinRate = 10;
 this.pickLabel = "";
 this.pointGroupDistanceTolerance = 0.2;
@@ -424,7 +424,6 @@ this.setB ("drawHover", this.drawHover);
 this.setF ("drawFontSize", this.drawFontSize);
 this.setB ("drawPicking", this.drawPicking);
 this.setB ("dsspCalculateHydrogenAlways", this.dsspCalcHydrogen);
-this.setB ("dynamicMeasurements", this.dynamicMeasurements);
 this.setS ("edsUrlFormat", this.edsUrlFormat);
 this.setS ("edsUrlCutoff", this.edsUrlCutoff);
 this.setB ("ellipsoidArcs", this.ellipsoidArcs);
@@ -480,6 +479,7 @@ this.setB ("minimizationRefresh", this.minimizationRefresh);
 this.setB ("minimizationSilent", this.minimizationSilent);
 this.setF ("minimizationCriterion", this.minimizationCriterion);
 this.setB ("modelKitMode", this.modelKitMode);
+this.setF ("modulationScale", this.modulationScale);
 this.setB ("monitorEnergy", this.monitorEnergy);
 this.setF ("multipleBondRadiusFactor", this.multipleBondRadiusFactor);
 this.setF ("multipleBondSpacing", this.multipleBondSpacing);
@@ -571,13 +571,9 @@ this.setI ("zShadePower", this.zShadePower);
 this.setI ("zSlab", this.zSlab);
 }, "J.viewer.GlobalSettings,~B");
 $_M(c$, "setDefaultLattice", 
-function (ptLattice) {
-this.ptDefaultLattice.setT (ptLattice);
+function (p) {
+if (!Float.isNaN (p.x + p.y + p.z)) this.ptDefaultLattice.setT (p);
 }, "JU.P3");
-$_M(c$, "getDefaultLattice", 
-function () {
-return this.ptDefaultLattice;
-});
 $_M(c$, "setUnits", 
 function (units) {
 var mu = this.measureDistanceUnits;
@@ -681,7 +677,7 @@ $_M(c$, "getOrSetNewVariable",
 function (name, doSet) {
 if (name == null || name.length == 0) name = "x";
 var v = this.getParam (name, true);
-return (v == null && doSet && name.charAt (0) != '_' ? this.setUserVariable (name, J.script.SV.newVariable (4, "")) : J.script.SV.getVariable (v));
+return (v == null && doSet && name.charAt (0) != '_' ? this.setUserVariable (name, J.script.SV.newV (4, "")) : J.script.SV.getVariable (v));
 }, "~S,~B");
 $_M(c$, "getParam", 
 function (name, asVariable) {
@@ -716,13 +712,21 @@ return this.structureList;
 $_M(c$, "setPicked", 
 function (atomIndex) {
 var pickedSet = null;
+var pickedList = null;
 if (atomIndex >= 0) {
 this.setI ("_atompicked", atomIndex);
 pickedSet = this.getParam ("picked", true);
+pickedList = this.getParam ("pickedList", true);
 }if (pickedSet == null || pickedSet.tok != 10) {
-pickedSet = J.script.SV.newVariable (10,  new JU.BS ());
+pickedSet = J.script.SV.newV (10,  new JU.BS ());
+pickedList = J.script.SV.getVariableList ( new JU.List ());
 this.setUserVariable ("picked", pickedSet);
-}if (atomIndex >= 0) J.script.SV.getBitSet (pickedSet, false).set (atomIndex);
+this.setUserVariable ("pickedList", pickedList);
+}if (atomIndex < 0) return;
+J.script.SV.getBitSet (pickedSet, false).set (atomIndex);
+var p = pickedList.pushPop (null);
+if (p.tok == 10) pickedList.pushPop (p);
+if (p.tok != 10 || !(p.value).get (atomIndex)) pickedList.pushPop (J.script.SV.newV (10, J.util.BSUtil.newAndSetBit (atomIndex)));
 }, "~N");
 $_M(c$, "resolveDataBase", 
 function (database, id) {
@@ -773,5 +777,13 @@ throw e;
 }
 return version;
 }, $fz.isPrivate = true, $fz));
+$_M(c$, "getAllVariables", 
+function () {
+var map =  new java.util.Hashtable ();
+map.putAll (this.htBooleanParameterFlags);
+map.putAll (this.htNonbooleanParameterValues);
+map.putAll (this.htUserVariables);
+return map;
+});
 c$.unreportedProperties = c$.prototype.unreportedProperties = (";ambientpercent;animationfps;antialiasdisplay;antialiasimages;antialiastranslucent;appendnew;axescolor;axesposition;axesmolecular;axesorientationrasmol;axesunitcell;axeswindow;axis1color;axis2color;axis3color;backgroundcolor;backgroundmodel;bondsymmetryatoms;boundboxcolor;cameradepth;debug;debugscript;defaultlatttice;defaults;defaultdropscript;diffusepercent;;exportdrivers;exportscale;_filecaching;_filecache;fontcaching;fontscaling;forcefield;language;legacyautobonding;legacyhaddition;loglevel;logfile;loggestures;logcommands;measurestylechime;loadformat;loadligandformat;smilesurlformat;pubchemformat;nihresolverformat;edsurlformat;edsurlcutoff;multiprocessor;navigationmode;;pathforallfiles;perspectivedepth;phongexponent;perspectivemodel;platformspeed;preservestate;refreshing;repaintwaitms;rotationradius;showaxes;showaxis1;showaxis2;showaxis3;showboundbox;showfrank;showtiming;showunitcell;slabenabled;slab;slabrange;depth;zshade;zshadepower;specular;specularexponent;specularpercent;celshading;celshadingpower;specularpower;stateversion;statusreporting;stereo;stereostate;vibrationperiod;unitcellcolor;visualrange;windowcentered;zerobasedxyzrasmol;zoomenabled;mousedragfactor;mousewheelfactor;scriptqueue;scriptreportinglevel;syncscript;syncmouse;syncstereo;;defaultdirectory;currentlocalpath;defaultdirectorylocal;ambient;bonds;colorrasmol;diffuse;frank;hetero;hidenotselected;hoverlabel;hydrogen;languagetranslation;measurementunits;navigationdepth;navigationslab;picking;pickingstyle;propertycolorschemeoverload;radius;rgbblue;rgbgreen;rgbred;scaleangstromsperinch;selectionhalos;showscript;showselections;solvent;strandcount;spinx;spiny;spinz;spinfps;navx;navy;navz;navfps;" + J.constant.EnumCallback.getNameList () + ";undo;bondpicking;modelkitmode;allowgestures;allowkeystrokes;allowmultitouch;allowmodelkit" + ";").toLowerCase ();
 });

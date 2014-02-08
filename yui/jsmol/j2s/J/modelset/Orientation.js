@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.modelset");
-Clazz.load (["JU.M3", "$.P3"], "J.modelset.Orientation", ["J.util.Escape"], function () {
+Clazz.load (["JU.M3", "$.P3"], "J.modelset.Orientation", ["JU.PT", "J.util.Escape"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.saveName = null;
 this.rotationMatrix = null;
@@ -37,8 +37,8 @@ return;
 }viewer.finalizeTransformParameters ();
 if (asDefault) {
 var rotationMatrix = viewer.getModelSetAuxiliaryInfoValue ("defaultOrientationMatrix");
-if (rotationMatrix == null) this.rotationMatrix.setIdentity ();
- else this.rotationMatrix.setM (rotationMatrix);
+if (rotationMatrix == null) this.rotationMatrix.setScale (1);
+ else this.rotationMatrix.setM3 (rotationMatrix);
 } else {
 viewer.getRotation (this.rotationMatrix);
 }this.xTrans = viewer.getTranslationXPercent ();
@@ -61,7 +61,7 @@ this.cameraY = viewer.getCamera ().y;
 }}, "J.viewer.Viewer,~B,~A");
 $_M(c$, "getMoveToText", 
 function (asCommand) {
-return (asCommand ? "   " + this.moveToText + "\n  save orientation " + J.util.Escape.eS (this.saveName.substring (12)) + ";\n" : this.moveToText);
+return (asCommand ? "   " + this.moveToText + "\n  save orientation " + JU.PT.esc (this.saveName.substring (12)) + ";\n" : this.moveToText);
 }, "~B");
 $_M(c$, "restore", 
 function (timeSeconds, isAll) {

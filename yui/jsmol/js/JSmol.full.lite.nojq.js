@@ -192,6 +192,8 @@
 
 // see JSmolApi.js for public user-interface. All these are private functions
 
+// BH 1/13/2014 2:12:38 PM adding "http://www.nmrdb.org/tools/jmol/predict.php":"%URL", to _DirectDatabaseCalls
+// BH 12/21/2013 6:38:35 PM applet sync broken
 // BH 12/6/2013 6:18:32 PM cover.htm and coverImage fix
 // BH 12/4/2013 7:44:26 PM fix for JME independent search box
 // BH 12/3/2013 6:30:08 AM fix for ready function returning Boolean instead of boolean in HTML5 version
@@ -244,9 +246,9 @@
 //    jQuery            -- at least jQuery.1.9
 //    JSmoljQueryext.js -- required for binary file transfer; otherwise standard jQuery should be OK
 //    JSmolCore.js      -- required;
-//    JSmolApplet.js    -- required; internal functions for _Applet and _Image; must be after JmolCore
-//    JSmolControls.js  -- optional; internal functions for buttons, links, menus, etc.; must be after JmolCore
-//    JSmolApi.js       -- required; all user functions; must be after JmolCore
+//    JSmolApplet.js    -- required; internal functions for _Applet and _Image; must be after JSmolCore
+//    JSmolControls.js  -- optional; internal functions for buttons, links, menus, etc.; must be after JSmolCore
+//    JSmolApi.js       -- required; all user functions; must be after JSmolCore
 //    JSmolTHREE.js     -- WebGL library required for JSmolGLmol.js
 //    JSmolGLmol.js     -- WebGL version of JSmol.
 //    JSmolJSV.js       -- optional; for creating and interacting with a JSpecView applet 
@@ -309,6 +311,7 @@ Jmol = (function(document) {
         "cactus.nci.nih.gov": "%URL",
         "www.rcsb.org": "%URL",
         "pubchem.ncbi.nlm.nih.gov":"%URL",
+        "http://www.nmrdb.org/tools/jmol/predict.php":"%URL",
         "$": "http://cactus.nci.nih.gov/chemical/structure/%FILE/file?format=sdf&get3d=True",
         "$$": "http://cactus.nci.nih.gov/chemical/structure/%FILE/file?format=sdf",
         "=": "http://www.rcsb.org/pdb/files/%FILE.pdb",
@@ -321,14 +324,13 @@ Jmol = (function(document) {
     },
     _debugAlert: false,
     _document: document,
-    _execLog: "",
-    _execStack: [],
     _isMsie: (navigator.userAgent.toLowerCase().indexOf("msie") >= 0),
     _isXHTML: false,
     _lastAppletID: null,
     _mousePageX: null,
     _mouseOwner: null,
     _serverUrl: "http://your.server.here/jsmol.php",
+    _syncId: ("" + Math.random()).substring(3),
     _touching: false,
     _XhtmlElement: null,
     _XhtmlAppendChild: false
@@ -540,7 +542,7 @@ Jmol = (function(document) {
     var features = {};
     features.ua = navigator.userAgent.toLowerCase()
     
-    features.os = function(){
+    features.os = (function(){
       var osList = ["linux","unix","mac","win"]
       var i = osList.length;
 
@@ -548,7 +550,7 @@ Jmol = (function(document) {
         if (features.ua.indexOf(osList[i])!=-1) return osList[i]
       }
       return "unknown";
-    }
+    })();
 
     features.browser = function(){
       var ua = features.ua;
@@ -602,7 +604,7 @@ Jmol = (function(document) {
     
   features.compliantBrowser = function() {
     var a = !!document.getElementById;
-    var os = features.os()
+    var os = features.os;
     // known exceptions (old browsers):
     if (features.browserName == "opera" && features.browserVersion <= 7.54 && os == "mac"
       || features.browserName == "webkit" && features.browserVersion < 125.12
@@ -616,10 +618,10 @@ Jmol = (function(document) {
     return features.compliantBrowser() && features.supportsJava();
   }
     
-  features.useIEObject = (features.os() == "win" && features.browserName == "msie" && features.browserVersion >= 5.5);
+  features.useIEObject = (features.os == "win" && features.browserName == "msie" && features.browserVersion >= 5.5);
   features.useHtml4Object = (features.browserName == "mozilla" && features.browserVersion >= 5) ||
     (features.browserName == "opera" && features.browserVersion >= 8) ||
-    (features.browserName == "webkit" && features.browserVersion >= 412.2 && features.browserVersion < 500); // 500 is a guess; required for 536.3
+    (features.browserName == "webkit"/* && features.browserVersion >= 412.2 && features.browserVersion < 500*/); // 500 is a guess; required for 536.3
   
   features.hasFileReader = (window.File && window.FileReader);
   
@@ -909,7 +911,7 @@ Jmol = (function(document) {
     
   Jmol._syncBinaryOK="?";
   
-  Jmol._canSyncBinary = function() {
+  Jmol._canSyncBinary = function(isSilent) {
     if (self.VBArray) return (Jmol._syncBinaryOK = false);
     if (Jmol._syncBinaryOK != "?") return Jmol._syncBinaryOK;
     Jmol._syncBinaryOK = true;
@@ -922,9 +924,9 @@ Jmol = (function(document) {
         xhr.overrideMimeType('text/plain; charset=x-user-defined');
       }
     } catch( e ) {
-      var s = "JmolCore.js: synchronous binary file transfer is requested but not available";
+      var s = "JSmolCore.js: synchronous binary file transfer is requested but not available";
       System.out.println(s);
-      if (Jmol._alertNoBinary)
+      if (Jmol._alertNoBinary && !isSilent)
         alert(s)
       return Jmol._syncBinaryOK = false;
     }
@@ -942,8 +944,9 @@ Jmol = (function(document) {
   Jmol._getFileData = function(fileName) {
     // use host-server PHP relay if not from this host
     var type = (Jmol._isBinaryUrl(fileName) ? "binary" : "text");
-    var asBase64 = ((type == "binary") && !Jmol._canSyncBinary());
-    if (asBase64 && fileName.indexOf("pdb.gz") >= 0 && fileName.indexOf("http://www.rcsb.org/pdb/files/") == 0) {
+    var isPDB = (fileName.indexOf("pdb.gz") >= 0 && fileName.indexOf("http://www.rcsb.org/pdb/files/") == 0);
+    var asBase64 = (type == "binary" && !Jmol._canSyncBinary(isPDB));
+    if (asBase64 && isPDB) {
       // avoid unnecessary binary transfer
       fileName = fileName.replace(/pdb\.gz/,"pdb");
       asBase64 = false;
@@ -1018,10 +1021,10 @@ Jmol = (function(document) {
     return true;
   }
 
-  Jmol._loadFileAsynchronously = function(fileLoadThread, applet, fileName) {
+  Jmol._loadFileAsynchronously = function(fileLoadThread, applet, fileName, appData) {
     // we actually cannot suggest a fileName, I believe.
     if (!Jmol.featureDetection.hasFileReader)
-        return fileLoadThread.setData("Local file reading is not enabled in your browser");
+        return fileLoadThread.setData("Local file reading is not enabled in your browser", null, appData);
     if (!applet._localReader) {
       var div = '<div id="ID" style="z-index:'+Jmol._z.fileOpener + ';position:absolute;background:#E0E0E0;left:10px;top:10px"><div style="margin:5px 5px 5px 5px;"><input type="file" id="ID_files" /><button id="ID_loadfile">load</button><button id="ID_cancel">cancel</button></div><div>'
       Jmol.$after("#" + applet._id + "_appletdiv", div.replace(/ID/g, applet._id + "_localReader"));
@@ -1034,7 +1037,7 @@ Jmol = (function(document) {
       reader.onloadend = function(evt) {
         if (evt.target.readyState == FileReader.DONE) { // DONE == 2
           Jmol.$css(Jmol.$(applet, "localReader"), {display : "none"});
-          fileLoadThread.setData(file.name, Jmol._toBytes(evt.target.result));
+          fileLoadThread.setData(file.name, Jmol._toBytes(evt.target.result), appData);
         }
       };
       reader.readAsArrayBuffer(file);
@@ -1042,7 +1045,7 @@ Jmol = (function(document) {
     Jmol.$appEvent(applet, "localReader_cancel", "click");
     Jmol.$appEvent(applet, "localReader_cancel", "click", function(evt) {
       Jmol.$css(Jmol.$(applet, "localReader"), {display: "none"});
-      fileLoadThread.setData(null, "#CANCELED#");
+      fileLoadThread.setData(null, "#CANCELED#", appData);
     });
     Jmol.$css(Jmol.$(applet, "localReader"), {display : "block"});
   }
@@ -1192,7 +1195,7 @@ Jmol = (function(document) {
         var more = " onclick=\"Jmol.coverApplet(ID, false)\" title=\"" + (applet._coverTitle) + "\"";
         var play = "<image id=\"ID_coverclickgo\" src=\"" + applet._j2sPath + "/img/play_make_live.jpg\" style=\"width:25px;height:25px;position:absolute;bottom:10px;left:10px;"
           + "z-index:" + (Jmol._z.coverImage)+";opacity:0.5;\"" + more + " />"  
-        img = "<div id=\"ID_coverdiv\" style=\"backgoround-color:red;z-index:" + Jmol._z.coverImage+";width:100%;height:100%;display:inline;position:absolute;top:0px;left:0px\"><image id=\"ID_coverimage\" src=\""
+        img = "<div id=\"ID_coverdiv\" style=\"background-color:red;z-index:" + Jmol._z.coverImage+";width:100%;height:100%;display:inline;position:absolute;top:0px;left:0px\"><image id=\"ID_coverimage\" src=\""
          + applet._coverImage + "\" style=\"width:100%;height:100%\"" + more + "/>" + play + "</div>";
       }
       s = "\
@@ -1621,7 +1624,7 @@ Jmol = (function(document) {
       // Webkit or Firefox
       canvas.isDragging = false;
       var oe = ev.originalEvent;
-      var scroll = (oe.detail ? oe.detail : oe.wheelDelta);
+      var scroll = (oe.detail ? oe.detail : (Jmol.featureDetection.os == "mac" ? 1 : -1) * oe.wheelDelta); // Mac and PC are reverse; but 
       var modifiers = Jmol._jsGetMouseModifiers(ev);
       canvas.applet._processEvent(-1,[scroll < 0 ? -1 : 1,0,modifiers]);
       return false;
@@ -1778,13 +1781,13 @@ Jmol.Dialog.dispose = function(dialog) {
 //  var btns = $("#" + dialog.id + " *[id^='J']"); // add descendents with id starting with "J"
 //  for (var i = btns.length; --i >= 0;)
 //    delete Jmol.Dialog.htDialogs[btns[i].id]
-  System.out.println("JmolCore.js: dispose " + dialog.id)
+  System.out.println("JSmolCore.js: dispose " + dialog.id)
 }
  
 Jmol.Dialog.register = function(dialog, type) {
   dialog.id = type + (++Jmol.Dialog.count);
   Jmol.Dialog.htDialogs[dialog.id] = dialog;
-  System.out.println("JmolCore.js: register " + dialog.id)
+  System.out.println("JSmolCore.js: register " + dialog.id)
   
 }
 
@@ -1795,7 +1798,7 @@ Jmol.Dialog.setDialog = function(dialog) {
   var id = dialog.id + "_mover";
   var container = Jmol.$("#" + id);
   var jd;
-  System.out.println("JmolCore.js: setDialog " + dialog.id);
+  System.out.println("JSmolCore.js: setDialog " + dialog.id);
   if (container[0]) {
     container.html(dialog.html);
     jd = container[0].jd;
@@ -1857,14 +1860,19 @@ Jmol.Dialog.click = function(element, keyEvent) {
   }
   var dialog = Jmol.Dialog.htDialogs[Jmol.$getAncestorDiv(element.id, "JDialog").id];
   var key = (component ? component.name :  dialog.registryKey + "/" + element.id);
-  System.out.println("JmolCore.js: click " + key); 
+  System.out.println("JSmolCore.js: click " + key); 
   dialog.manager.actionPerformed(key);
 }
 
 Jmol.Dialog.windowClosing = function(element) {
   var dialog = Jmol.Dialog.htDialogs[Jmol.$getAncestorDiv(element.id, "JDialog").id];
-  System.out.println("JmolCore.js: windowClosing " + dialog.registryKey); 
-  dialog.manager.processWindowClosing(dialog.registryKey);
+  if (dialog.registryKey) {
+    System.out.println("JSmolCore.js: windowClosing " + dialog.registryKey); 
+    dialog.manager.processWindowClosing(dialog.registryKey);
+  } else {
+    System.out.println("JSmolCore.js: windowClosing " + dialog.title); 
+    dialog.dispose();
+  }
 }
 
 Jmol._track = function(applet) {
@@ -1922,7 +1930,7 @@ Jmol.say = function(msg) {
 }
 
 Jmol._TMApplet = function(id, Info, checkOnly){
-		this._syncId = ("" + Math.random()).substring(3);
+		this._uniqueId = ("" + Math.random()).substring(3);
 		this._id = id;
 		this._is2D = true;
     this._isJava = false;

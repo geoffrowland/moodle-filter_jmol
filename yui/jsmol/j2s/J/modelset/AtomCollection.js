@@ -38,6 +38,10 @@ this.aaRet = null;
 if (!Clazz.isClassDefined ("J.modelset.AtomCollection.AtomSorter")) {
 J.modelset.AtomCollection.$AtomCollection$AtomSorter$ ();
 }
+this.bsVisible = null;
+this.bsClickable = null;
+this.haveBSVisible = false;
+this.haveBSClickable = false;
 this.bsModulated = null;
 Clazz.instantialize (this, arguments);
 }, J.modelset, "AtomCollection");
@@ -45,6 +49,8 @@ Clazz.prepareFields (c$, function () {
 this.bsHidden =  new JU.BS ();
 this.bsEmpty =  new JU.BS ();
 this.bsFoundRectangle =  new JU.BS ();
+this.bsVisible =  new JU.BS ();
+this.bsClickable =  new JU.BS ();
 });
 $_M(c$, "releaseModelSet", 
 function () {
@@ -406,9 +412,7 @@ $_M(c$, "setAtomCoordRelative",
 function (atomIndex, x, y, z) {
 if (atomIndex < 0 || atomIndex >= this.atomCount) return;
 var a = this.atoms[atomIndex];
-a.x += x;
-a.y += y;
-a.z += z;
+a.add3 (x, y, z);
 this.fixTrajectory (a);
 this.taintAtom (atomIndex, 2);
 }, "~N,~N,~N,~N");
@@ -826,14 +830,14 @@ closest[0] = champion;
 }, "~N,~N,~A,JU.BS,~N");
 $_M(c$, "isCursorOnTopOf", 
 function (contender, x, y, radius, champion) {
-return contender.screenZ > 1 && !this.g3d.isClippedZ (contender.screenZ) && this.g3d.isInDisplayRange (contender.screenX, contender.screenY) && contender.isCursorOnTopOf (x, y, radius, champion);
+return contender.sZ > 1 && !this.g3d.isClippedZ (contender.sZ) && this.g3d.isInDisplayRange (contender.sX, contender.sY) && contender.isCursorOnTopOf (x, y, radius, champion);
 }, "J.modelset.Atom,~N,~N,~N,J.modelset.Atom");
 $_M(c$, "findAtomsInRectangle", 
 function (rect, bsModels) {
 this.bsFoundRectangle.and (this.bsEmpty);
 for (var i = this.atomCount; --i >= 0; ) {
 var atom = this.atoms[i];
-if (bsModels.get (atom.modelIndex) && atom.isVisible (0) && rect.contains (atom.screenX, atom.screenY)) this.bsFoundRectangle.set (i);
+if (bsModels.get (atom.modelIndex) && atom.checkVisible () && rect.contains (atom.sX, atom.sY)) this.bsFoundRectangle.set (i);
 }
 return this.bsFoundRectangle;
 }, "J.util.Rectangle,JU.BS");
@@ -1073,7 +1077,6 @@ var attached = this.getAttached (atom, 4, hybridizationCompatible);
 var nAttached = attached.length;
 var pt = lcaoType.charCodeAt (lcaoType.length - 1) - 97;
 if (pt < 0 || pt > 6) pt = 0;
-var vTemp =  new JU.V3 ();
 z.set (0, 0, 0);
 x.set (0, 0, 0);
 var v =  new Array (4);
@@ -1084,6 +1087,7 @@ z.add (v[i]);
 }
 if (nAttached > 0) x.setT (v[0]);
 var isPlanar = false;
+var vTemp =  new JU.V3 ();
 if (nAttached >= 3) {
 if (x.angle (v[1]) < 2.984513) vTemp.cross (x, v[1]);
  else vTemp.cross (x, v[2]);
@@ -1196,9 +1200,9 @@ x.scaleAdd2 (2.828, x, z);
 if (pt != 3) {
 x.normalize ();
 var a = JU.A4.new4 (z.x, z.y, z.z, (pt == 2 ? 1 : -1) * 2.09439507);
-var m = JU.M3.newM (null);
+var m = JU.M3.newM3 (null);
 m.setAA (a);
-m.transform (x);
+m.rotate (x);
 }z.setT (x);
 x.cross (vTemp, z);
 break;
@@ -1587,13 +1591,13 @@ case 1073741824:
 return this.getIdentifierOrNull (specInfo);
 case 1048608:
 var atomSpec = (specInfo).toUpperCase ();
-if (atomSpec.indexOf ("\\?") >= 0) atomSpec = JU.PT.simpleReplace (atomSpec, "\\?", "\1");
+if (atomSpec.indexOf ("\\?") >= 0) atomSpec = JU.PT.rep (atomSpec, "\\?", "\1");
 for (i = this.atomCount; --i >= 0; ) if (this.isAtomNameMatch (this.atoms[i], atomSpec, false)) bs.set (i);
 
 break;
 case 1048607:
 var spec = specInfo;
-for (i = this.atomCount; --i >= 0; ) if (this.atoms[i].isAlternateLocationMatch (spec)) bs.set (i);
+for (i = this.atomCount; --i >= 0; ) if (this.atoms[i].isAltLoc (spec)) bs.set (i);
 
 break;
 case 1048612:
@@ -1667,7 +1671,7 @@ return bs;
 $_M(c$, "getIdentifierOrNull", 
 ($fz = function (identifier) {
 var bs = this.getSpecNameOrNull (identifier, false);
-if (identifier.indexOf ("\\?") >= 0) identifier = JU.PT.simpleReplace (identifier, "\\?", "\1");
+if (identifier.indexOf ("\\?") >= 0) identifier = JU.PT.rep (identifier, "\\?", "\1");
 if (bs != null || identifier.indexOf ("?") > 0) return bs;
 if (identifier.indexOf ("*") > 0) return this.getSpecNameOrNull (identifier, true);
 var len = identifier.length;
@@ -1715,7 +1719,7 @@ $_M(c$, "getSpecNameOrNull",
 ($fz = function (name, checkStar) {
 var bs = null;
 name = name.toUpperCase ();
-if (name.indexOf ("\\?") >= 0) name = JU.PT.simpleReplace (name, "\\?", "\1");
+if (name.indexOf ("\\?") >= 0) name = JU.PT.rep (name, "\\?", "\1");
 for (var i = this.atomCount; --i >= 0; ) {
 var g3 = this.atoms[i].getGroup3 (true);
 if (g3 != null && g3.length > 0) {
@@ -1815,19 +1819,31 @@ break;
 }
 return bsResult;
 }, "~N,~A,JU.BS");
+$_M(c$, "getRenderable", 
+function (bsAtoms) {
+bsAtoms.clearAll ();
+this.haveBSVisible = false;
+this.haveBSClickable = false;
+for (var i = this.atomCount; --i >= 0; ) if (this.atoms[i].isVisible (1)) bsAtoms.set (i);
+
+}, "JU.BS");
 $_M(c$, "getVisibleSet", 
 function () {
-var bs =  new JU.BS ();
-for (var i = this.atomCount; --i >= 0; ) if (this.atoms[i].isVisible (0)) bs.set (i);
+if (this.haveBSVisible) return this.bsVisible;
+this.bsVisible.clearAll ();
+for (var i = this.atomCount; --i >= 0; ) if (this.atoms[i].checkVisible ()) this.bsVisible.set (i);
 
-return bs;
+this.haveBSVisible = true;
+return this.bsVisible;
 });
 $_M(c$, "getClickableSet", 
 function () {
-var bs =  new JU.BS ();
-for (var i = this.atomCount; --i >= 0; ) if (this.atoms[i].isClickable ()) bs.set (i);
+if (this.haveBSClickable) return this.bsClickable;
+this.bsClickable.clearAll ();
+for (var i = this.atomCount; --i >= 0; ) if (this.atoms[i].isClickable ()) this.bsClickable.set (i);
 
-return bs;
+this.haveBSClickable = true;
+return this.bsClickable;
 });
 $_M(c$, "isModulated", 
 function (i) {

@@ -708,6 +708,7 @@ if (title == null) title = this.viewTitle;
 } else {
 title = this.jsvp.getTitle ().trim ();
 }if (title.indexOf ("\n") >= 0) title = title.substring (0, title.indexOf ("\n")).trim ();
+ else if (title.startsWith ("$")) title = title.substring (1);
 return title;
 }, "~B");
 $_M(c$, "linkSpectra", 
@@ -1084,7 +1085,7 @@ if (this.coordStr != null) this.repaint ();
 break;
 case 2:
 if (this.checkMod (buttonMods, 4)) {
-this.viewer.showMenu (x, y);
+this.jsvp.showMenu (x, y);
 return;
 }this.ctrlPressed = false;
 this.doMouseClicked (x, y, this.updateControlPressed (buttonMods));
@@ -1118,7 +1119,15 @@ this.thisWidget = null;
 this.isIntegralDrag = false;
 this.integralShiftMode = 0;
 } else {
+try {
 this.jsvp.getFocusNow (false);
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+System.out.println ("pd " + this + " cannot focus");
+} else {
+throw e;
+}
+}
 }}, "~N,~N,~N,~B");
 Clazz.pu$h ();
 c$ = Clazz.declareType (JSV.common.PanelData, "LinkMode", Enum);

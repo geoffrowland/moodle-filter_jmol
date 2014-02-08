@@ -53,7 +53,7 @@ this.minZ[0] = 2147483647;
 var isAntialiased = this.g3d.isAntialiased ();
 for (var i = labelStrings.length; --i >= 0; ) {
 this.atomPt = this.atom = atoms[i];
-if (!this.atom.isVisible (this.myVisibilityFlag)) continue;
+if (!this.isVisibleForMe (this.atom)) continue;
 var label = labelStrings[i];
 if (label == null || label.length == 0 || labels.mads != null && labels.mads[i] < 0) continue;
 this.labelColix = labels.getColix2 (i, this.atom, false);
@@ -67,7 +67,7 @@ this.isExact = ((offsetFull & 128) != 0);
 this.offset = offsetFull >> 8;
 this.textAlign = J.shape.Labels.getAlignment (offsetFull);
 this.pointer = offsetFull & 3;
-this.zSlab = this.atom.screenZ - Clazz.doubleToInt (this.atom.screenDiameter / 2) - 3;
+this.zSlab = this.atom.sZ - Clazz.doubleToInt (this.atom.sD / 2) - 3;
 if (this.zCutoff > 0 && this.zSlab > this.zCutoff) continue;
 if (this.zSlab < 1) this.zSlab = 1;
 this.zBox = this.zSlab;
@@ -98,19 +98,17 @@ function (text, label) {
 var newText = false;
 if (text != null) {
 if (text.font == null) text.setFontFromFid (this.fid);
-text.atomX = this.atomPt.screenX;
-text.atomY = this.atomPt.screenY;
+text.atomX = this.atomPt.sX;
+text.atomY = this.atomPt.sY;
 text.atomZ = this.zSlab;
 if (text.pymolOffset == null) {
-text.setXYZs (this.atomPt.screenX, this.atomPt.screenY, this.zBox, this.zSlab);
+text.setXYZs (this.atomPt.sX, this.atomPt.sY, this.zBox, this.zSlab);
 text.setColix (this.labelColix);
 text.setBgColix (this.bgcolix);
 } else {
 if (text.pymolOffset[0] == 1) this.pTemp.setT (this.atomPt);
  else this.pTemp.set (0, 0, 0);
-this.pTemp.x += text.pymolOffset[4];
-this.pTemp.y += text.pymolOffset[5];
-this.pTemp.z += text.pymolOffset[6];
+this.pTemp.add3 (text.pymolOffset[4], text.pymolOffset[5], text.pymolOffset[6]);
 this.viewer.transformPtScr (this.pTemp, this.screen);
 text.setXYZs (this.screen.x, this.screen.y, this.screen.z, this.zSlab);
 text.setScalePixelsPerMicron (this.sppm);
@@ -127,16 +125,16 @@ this.descent = this.font3d.getDescent ();
 if (isSimple) {
 var doPointer = ((this.pointer & 1) != 0);
 var pointerColix = ((this.pointer & 2) != 0 && this.bgcolix != 0 ? this.bgcolix : this.labelColix);
-this.boxXY[0] = this.atomPt.screenX;
-this.boxXY[1] = this.atomPt.screenY;
+this.boxXY[0] = this.atomPt.sX;
+this.boxXY[1] = this.atomPt.sY;
 J.render.TextRenderer.renderSimpleLabel (this.g3d, this.font3d, label, this.labelColix, this.bgcolix, this.boxXY, this.zBox, this.zSlab, J.viewer.JC.getXOffset (this.offset), J.viewer.JC.getYOffset (this.offset), this.ascent, this.descent, doPointer, pointerColix, this.isExact);
 this.atomPt = null;
 } else {
 text = J.modelset.Text.newLabel (this.g3d.getGData (), this.font3d, label, this.labelColix, this.bgcolix, this.textAlign, 0, null);
-text.atomX = this.atomPt.screenX;
-text.atomY = this.atomPt.screenY;
+text.atomX = this.atomPt.sX;
+text.atomY = this.atomPt.sY;
 text.atomZ = this.zSlab;
-text.setXYZs (this.atomPt.screenX, this.atomPt.screenY, this.zBox, this.zSlab);
+text.setXYZs (this.atomPt.sX, this.atomPt.sY, this.zBox, this.zSlab);
 newText = true;
 }}if (this.atomPt != null) {
 if (text.pymolOffset == null) {

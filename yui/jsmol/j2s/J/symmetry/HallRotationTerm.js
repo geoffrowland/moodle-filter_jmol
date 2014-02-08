@@ -86,9 +86,9 @@ this.translation.vectorShift12ths.add (t.vectorShift12ths);
 }}
 this.primitiveCode = (this.isImproper ? "-" : "") + this.primitiveCode + this.translationString;
 if (this.isImproper) {
-this.seitzMatrix12ths.setM (this.rotation.seitzMatrixInv);
+this.seitzMatrix12ths.setM4 (this.rotation.seitzMatrixInv);
 } else {
-this.seitzMatrix12ths.setM (this.rotation.seitzMatrix);
+this.seitzMatrix12ths.setM4 (this.rotation.seitzMatrix);
 }this.seitzMatrix12ths.m03 = this.translation.vectorShift12ths.x;
 this.seitzMatrix12ths.m13 = this.translation.vectorShift12ths.y;
 this.seitzMatrix12ths.m23 = this.translation.vectorShift12ths.z;
@@ -104,8 +104,8 @@ this.seitzMatrix12ths.m23 += this.translation.rotationShift12ths;
 break;
 }
 if (hallInfo.vectorCode.length > 0) {
-var m1 = JU.M4.newM (null);
-var m2 = JU.M4.newM (null);
+var m1 = JU.M4.newM4 (null);
+var m2 = JU.M4.newM4 (null);
 var v = hallInfo.vector12ths;
 m1.m03 = v.x;
 m1.m13 = v.y;
@@ -114,7 +114,7 @@ m2.m03 = -v.x;
 m2.m13 = -v.y;
 m2.m23 = -v.z;
 this.seitzMatrix12ths.mul2 (m1, this.seitzMatrix12ths);
-this.seitzMatrix12ths.mulM4 (m2);
+this.seitzMatrix12ths.mul (m2);
 }if (J.util.Logger.debugging) {
 J.util.Logger.debug ("code = " + code + "; primitive code =" + this.primitiveCode + "\n Seitz Matrix(12ths):" + this.seitzMatrix12ths);
 }}, "J.symmetry.HallInfo,~S,~N,~S");

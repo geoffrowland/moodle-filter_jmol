@@ -92,9 +92,9 @@
 ){
 var $t$;
 //var c$;
-___JmolDate="$Date: 2013-12-09 16:30:21 -0600 (Mon, 09 Dec 2013) $"
+___JmolDate="$Date: 2014-01-20 21:44:41 -0500 (Mon, 20 Jan 2014) $"
 ___fullJmolProperties="src/org/jmol/viewer/Jmol.properties"
-___JmolVersion="14.0.1_dev_2013.12.09"
+___JmolVersion="14.0.7"
 // JSmolJavaExt.js
 // will be wrapped by anonymous function using ANT in build_03_tojs.xml
 
@@ -10005,6 +10005,8 @@ Clazz_defineStatics (c$,
 Clazz_declarePackage ("javajs.api");
 Clazz_declareInterface (javajs.api, "JSInterface");
 Clazz_declarePackage ("javajs.api");
+Clazz_declareInterface (javajs.api, "JSONEncodable");
+Clazz_declarePackage ("javajs.api");
 Clazz_declareInterface (javajs.api, "PlatformViewer");
 Clazz_declarePackage ("javajs.api");
 Clazz_declareInterface (javajs.api, "ZInputStream");
@@ -10217,14 +10219,14 @@ Clazz_defineStatics (c$,
 "fontStyles", ["Plain", "Bold", "Italic", "BoldItalic"]);
 });
 Clazz_declarePackage ("JU");
-Clazz_load (null, "JU.A4", ["JU.T3"], function () {
+Clazz_load (["javajs.api.JSONEncodable"], "JU.A4", ["JU.T3"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.x = 0;
 this.y = 0;
 this.z = 0;
 this.angle = 0;
 Clazz_instantialize (this, arguments);
-}, JU, "A4", null, java.io.Serializable);
+}, JU, "A4", null, [javajs.api.JSONEncodable, java.io.Serializable]);
 Clazz_makeConstructor (c$, 
 function () {
 this.z = 1.0;
@@ -10281,9 +10283,9 @@ this.z = (m10 - m01);
 var sin = 0.5 * Math.sqrt (this.x * this.x + this.y * this.y + this.z * this.z);
 this.angle = Math.atan2 (sin, cos);
 }, "~N,~N,~N,~N,~N,~N,~N,~N,~N");
-$_V(c$, "toString", 
+$_V(c$, "hashCode", 
 function () {
-return "(" + this.x + ", " + this.y + ", " + this.z + ", " + this.angle + ")";
+return JU.T3.floatToIntBits0 (this.x) ^ JU.T3.floatToIntBits0 (this.y) ^ JU.T3.floatToIntBits0 (this.z) ^ JU.T3.floatToIntBits0 (this.angle);
 });
 $_V(c$, "equals", 
 function (o) {
@@ -10291,9 +10293,13 @@ if (!(Clazz_instanceOf (o, JU.A4))) return false;
 var a1 = o;
 return this.x == a1.x && this.y == a1.y && this.z == a1.z && this.angle == a1.angle;
 }, "~O");
-$_V(c$, "hashCode", 
+$_V(c$, "toString", 
 function () {
-return JU.T3.floatToIntBits0 (this.x) ^ JU.T3.floatToIntBits0 (this.y) ^ JU.T3.floatToIntBits0 (this.z) ^ JU.T3.floatToIntBits0 (this.angle);
+return "(" + this.x + ", " + this.y + ", " + this.z + ", " + this.angle + ")";
+});
+$_V(c$, "toJSON", 
+function () {
+return "[" + this.x + "," + this.y + "," + this.z + "," + (this.angle * 180.0 / 3.141592653589793) + "]";
 });
 });
 Clazz_declarePackage ("JU");
@@ -10710,13 +10716,13 @@ Clazz_defineStatics (c$,
 "decode64", [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 62, 0, 62, 0, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0, 0, 0, 0, 63, 0, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 0, 0, 0, 0, 0]);
 });
 Clazz_declarePackage ("JU");
-Clazz_load (null, "JU.BS", ["java.lang.IndexOutOfBoundsException", "$.NegativeArraySizeException", "JU.SB"], function () {
+Clazz_load (["javajs.api.JSONEncodable"], "JU.BS", ["java.lang.IndexOutOfBoundsException", "$.NegativeArraySizeException", "JU.SB"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.words = null;
 this.wordsInUse = 0;
 this.sizeIsSticky = false;
 Clazz_instantialize (this, arguments);
-}, JU, "BS", null, Cloneable);
+}, JU, "BS", null, [Cloneable, javajs.api.JSONEncodable]);
 c$.wordIndex = $_M(c$, "wordIndex", 
 function (bitIndex) {
 return bitIndex >> 5;
@@ -10949,7 +10955,7 @@ $_V(c$, "toString",
 function () {
 var numBits = (this.wordsInUse > 128) ? this.cardinality () : this.wordsInUse * 32;
 var b = JU.SB.newN (6 * numBits + 2);
-b.appendC ('{');
+b.appendC ('[');
 var i = this.nextSetBit (0);
 if (i != -1) {
 b.appendI (i);
@@ -10959,7 +10965,7 @@ do {
 b.append (", ").appendI (i);
 } while (++i < endOfRun);
 }
-}b.appendC ('}');
+}b.appendC (']');
 return b.toString ();
 });
 c$.copy = $_M(c$, "copy", 
@@ -10982,6 +10988,10 @@ for (var i = this.length (); --i >= max; ) if (this.get (i)) n--;
 
 return n;
 }, "~N");
+$_V(c$, "toJSON", 
+function () {
+return this.toString ();
+});
 Clazz_defineStatics (c$,
 "ADDRESS_BITS_PER_WORD", 5,
 "BITS_PER_WORD", 32,
@@ -11200,7 +11210,7 @@ return this.removeObject(v);
 }}, "~O");
 });
 Clazz_declarePackage ("JU");
-Clazz_load (null, "JU.M3", ["java.lang.ArrayIndexOutOfBoundsException", "JU.T3"], function () {
+Clazz_load (null, "JU.M34", ["java.lang.ArrayIndexOutOfBoundsException"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.m00 = 0;
 this.m01 = 0;
@@ -11212,281 +11222,13 @@ this.m20 = 0;
 this.m21 = 0;
 this.m22 = 0;
 Clazz_instantialize (this, arguments);
-}, JU, "M3", null, java.io.Serializable);
-Clazz_makeConstructor (c$, 
-function () {
-});
-c$.newA = $_M(c$, "newA", 
-function (v) {
-var m =  new JU.M3 ();
-m.setA (v);
-return m;
-}, "~A");
-c$.newM = $_M(c$, "newM", 
-function (m1) {
-var m =  new JU.M3 ();
-if (m1 == null) {
-m.setIdentity ();
-return m;
-}m.m00 = m1.m00;
-m.m01 = m1.m01;
-m.m02 = m1.m02;
-m.m10 = m1.m10;
-m.m11 = m1.m11;
-m.m12 = m1.m12;
-m.m20 = m1.m20;
-m.m21 = m1.m21;
-m.m22 = m1.m22;
-return m;
-}, "JU.M3");
-$_V(c$, "toString", 
-function () {
-return "[\n  [" + this.m00 + "\t" + this.m01 + "\t" + this.m02 + "]" + "\n  [" + this.m10 + "\t" + this.m11 + "\t" + this.m12 + "]" + "\n  [" + this.m20 + "\t" + this.m21 + "\t" + this.m22 + "] ]";
-});
-$_M(c$, "setIdentity", 
-function () {
-this.m00 = 1.0;
-this.m01 = 0.0;
-this.m02 = 0.0;
-this.m10 = 0.0;
-this.m11 = 1.0;
-this.m12 = 0.0;
-this.m20 = 0.0;
-this.m21 = 0.0;
-this.m22 = 1.0;
-});
-$_M(c$, "setElement", 
-function (row, column, value) {
-if (row == 0) if (column == 0) this.m00 = value;
- else if (column == 1) this.m01 = value;
- else if (column == 2) this.m02 = value;
- else throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 2 and is " + column);
- else if (row == 1) if (column == 0) this.m10 = value;
- else if (column == 1) this.m11 = value;
- else if (column == 2) this.m12 = value;
- else throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 2 and is " + column);
- else if (row == 2) if (column == 0) this.m20 = value;
- else if (column == 1) this.m21 = value;
- else if (column == 2) this.m22 = value;
- else throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 2 and is " + column);
- else throw  new ArrayIndexOutOfBoundsException ("row must be 0 to 2 and is " + row);
-}, "~N,~N,~N");
-$_M(c$, "getElement", 
-function (row, column) {
-if (row == 0) if (column == 0) return this.m00;
- else if (column == 1) return this.m01;
- else if (column == 2) return this.m02;
- else throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 2 and is " + column);
- else if (row == 1) if (column == 0) return this.m10;
- else if (column == 1) return this.m11;
- else if (column == 2) return this.m12;
- else throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 2 and is " + column);
- else if (row == 2) if (column == 0) return this.m20;
- else if (column == 1) return this.m21;
- else if (column == 2) return this.m22;
- else throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 2 and is " + column);
- else throw  new ArrayIndexOutOfBoundsException ("row must be 0 to 2 and is " + row);
-}, "~N,~N");
-$_M(c$, "setRow", 
-function (row, x, y, z) {
-if (row == 0) {
-this.m00 = x;
-this.m01 = y;
-this.m02 = z;
-} else if (row == 1) {
-this.m10 = x;
-this.m11 = y;
-this.m12 = z;
-} else if (row == 2) {
-this.m20 = x;
-this.m21 = y;
-this.m22 = z;
-} else {
-throw  new ArrayIndexOutOfBoundsException ("row must be 0 to 2 and is " + row);
-}}, "~N,~N,~N,~N");
-$_M(c$, "setRowV", 
-function (row, v) {
-if (row == 0) {
-this.m00 = v.x;
-this.m01 = v.y;
-this.m02 = v.z;
-} else if (row == 1) {
-this.m10 = v.x;
-this.m11 = v.y;
-this.m12 = v.z;
-} else if (row == 2) {
-this.m20 = v.x;
-this.m21 = v.y;
-this.m22 = v.z;
-} else {
-throw  new ArrayIndexOutOfBoundsException ("row must be 0 to 2 and is " + row);
-}}, "~N,JU.T3");
-$_M(c$, "getRow", 
-function (row, v) {
-if (row == 0) {
-v[0] = this.m00;
-v[1] = this.m01;
-v[2] = this.m02;
-} else if (row == 1) {
-v[0] = this.m10;
-v[1] = this.m11;
-v[2] = this.m12;
-} else if (row == 2) {
-v[0] = this.m20;
-v[1] = this.m21;
-v[2] = this.m22;
-} else {
-throw  new ArrayIndexOutOfBoundsException ("row must be 0 to 2 and is " + row);
-}}, "~N,~A");
-$_M(c$, "setRowA", 
-function (row, v) {
-if (row == 0) {
-this.m00 = v[0];
-this.m01 = v[1];
-this.m02 = v[2];
-} else if (row == 1) {
-this.m10 = v[0];
-this.m11 = v[1];
-this.m12 = v[2];
-} else if (row == 2) {
-this.m20 = v[0];
-this.m21 = v[1];
-this.m22 = v[2];
-} else {
-throw  new ArrayIndexOutOfBoundsException ("row must be 0 to 2 and is " + row);
-}}, "~N,~A");
-$_M(c$, "setColumn", 
-function (column, x, y, z) {
-if (column == 0) {
-this.m00 = x;
-this.m10 = y;
-this.m20 = z;
-} else if (column == 1) {
-this.m01 = x;
-this.m11 = y;
-this.m21 = z;
-} else if (column == 2) {
-this.m02 = x;
-this.m12 = y;
-this.m22 = z;
-} else {
-throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 2 and is " + column);
-}}, "~N,~N,~N,~N");
-$_M(c$, "setColumnV", 
-function (column, v) {
-if (column == 0) {
-this.m00 = v.x;
-this.m10 = v.y;
-this.m20 = v.z;
-} else if (column == 1) {
-this.m01 = v.x;
-this.m11 = v.y;
-this.m21 = v.z;
-} else if (column == 2) {
-this.m02 = v.x;
-this.m12 = v.y;
-this.m22 = v.z;
-} else {
-throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 2 and is " + column);
-}}, "~N,JU.V3");
-$_M(c$, "setColumnA", 
-function (column, v) {
-if (column == 0) {
-this.m00 = v[0];
-this.m10 = v[1];
-this.m20 = v[2];
-} else if (column == 1) {
-this.m01 = v[0];
-this.m11 = v[1];
-this.m21 = v[2];
-} else if (column == 2) {
-this.m02 = v[0];
-this.m12 = v[1];
-this.m22 = v[2];
-} else {
-throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 2 and is " + column);
-}}, "~N,~A");
-$_M(c$, "getColumnV", 
-function (column, v) {
-if (column == 0) {
-v.x = this.m00;
-v.y = this.m10;
-v.z = this.m20;
-} else if (column == 1) {
-v.x = this.m01;
-v.y = this.m11;
-v.z = this.m21;
-} else if (column == 2) {
-v.x = this.m02;
-v.y = this.m12;
-v.z = this.m22;
-} else {
-throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 2 and is " + column);
-}}, "~N,JU.V3");
-$_M(c$, "getColumn", 
-function (column, v) {
-if (column == 0) {
-v[0] = this.m00;
-v[1] = this.m10;
-v[2] = this.m20;
-} else if (column == 1) {
-v[0] = this.m01;
-v[1] = this.m11;
-v[2] = this.m21;
-} else if (column == 2) {
-v[0] = this.m02;
-v[1] = this.m12;
-v[2] = this.m22;
-} else {
-throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 2 and is " + column);
-}}, "~N,~A");
-$_M(c$, "add", 
-function (m1) {
-this.m00 += m1.m00;
-this.m01 += m1.m01;
-this.m02 += m1.m02;
-this.m10 += m1.m10;
-this.m11 += m1.m11;
-this.m12 += m1.m12;
-this.m20 += m1.m20;
-this.m21 += m1.m21;
-this.m22 += m1.m22;
-}, "JU.M3");
-$_M(c$, "sub", 
-function (m1) {
-this.m00 -= m1.m00;
-this.m01 -= m1.m01;
-this.m02 -= m1.m02;
-this.m10 -= m1.m10;
-this.m11 -= m1.m11;
-this.m12 -= m1.m12;
-this.m20 -= m1.m20;
-this.m21 -= m1.m21;
-this.m22 -= m1.m22;
-}, "JU.M3");
-$_M(c$, "transpose", 
-function () {
-var tmp = this.m01;
-this.m01 = this.m10;
-this.m10 = tmp;
-tmp = this.m02;
-this.m02 = this.m20;
-this.m20 = tmp;
-tmp = this.m12;
-this.m12 = this.m21;
-this.m21 = tmp;
-});
-$_M(c$, "transposeM", 
-function (m1) {
-this.setM (m1);
-this.transpose ();
-}, "JU.M3");
-$_M(c$, "setAA", 
-function (a1) {
-this.setFromAxisAngle (a1.x, a1.y, a1.z, a1.angle);
-}, "JU.A4");
-$_M(c$, "setFromAxisAngle", 
-function (x, y, z, angle) {
+}, JU, "M34");
+$_M(c$, "setAA33", 
+function (a) {
+var x = a.x;
+var y = a.y;
+var z = a.z;
+var angle = a.angle;
 var n = Math.sqrt (x * x + y * y + z * z);
 n = 1 / n;
 x *= n;
@@ -11510,8 +11252,16 @@ tmp1 = y * z * omc;
 tmp2 = x * s;
 this.m12 = (tmp1 - tmp2);
 this.m21 = (tmp1 + tmp2);
-}, "~N,~N,~N,~N");
-$_M(c$, "setM", 
+}, "JU.A4");
+$_M(c$, "rotate", 
+function (t) {
+this.rotate2 (t, t);
+}, "JU.T3");
+$_M(c$, "rotate2", 
+function (t, result) {
+result.set (this.m00 * t.x + this.m01 * t.y + this.m02 * t.z, this.m10 * t.x + this.m11 * t.y + this.m12 * t.z, this.m20 * t.x + this.m21 * t.y + this.m22 * t.z);
+}, "JU.T3,JU.T3");
+$_M(c$, "setM33", 
 function (m1) {
 this.m00 = m1.m00;
 this.m01 = m1.m01;
@@ -11522,7 +11272,272 @@ this.m12 = m1.m12;
 this.m20 = m1.m20;
 this.m21 = m1.m21;
 this.m22 = m1.m22;
+}, "JU.M34");
+$_M(c$, "clear33", 
+function () {
+this.m00 = this.m01 = this.m02 = this.m10 = this.m11 = this.m12 = this.m20 = this.m21 = this.m22 = 0.0;
+});
+$_M(c$, "set33", 
+function (row, col, v) {
+switch (row) {
+case 0:
+switch (col) {
+case 0:
+this.m00 = v;
+return;
+case 1:
+this.m01 = v;
+return;
+case 2:
+this.m02 = v;
+return;
+}
+break;
+case 1:
+switch (col) {
+case 0:
+this.m10 = v;
+return;
+case 1:
+this.m11 = v;
+return;
+case 2:
+this.m12 = v;
+return;
+}
+break;
+case 2:
+switch (col) {
+case 0:
+this.m20 = v;
+return;
+case 1:
+this.m21 = v;
+return;
+case 2:
+this.m22 = v;
+return;
+}
+break;
+}
+this.err ();
+}, "~N,~N,~N");
+$_M(c$, "get33", 
+function (row, col) {
+switch (row) {
+case 0:
+switch (col) {
+case 0:
+return this.m00;
+case 1:
+return this.m01;
+case 2:
+return this.m02;
+}
+break;
+case 1:
+switch (col) {
+case 0:
+return this.m10;
+case 1:
+return this.m11;
+case 2:
+return this.m12;
+}
+break;
+case 2:
+switch (col) {
+case 0:
+return this.m20;
+case 1:
+return this.m21;
+case 2:
+return this.m22;
+}
+break;
+}
+this.err ();
+return 0;
+}, "~N,~N");
+$_M(c$, "setRow33", 
+function (row, v) {
+switch (row) {
+case 0:
+this.m00 = v[0];
+this.m01 = v[1];
+this.m02 = v[2];
+return;
+case 1:
+this.m10 = v[0];
+this.m11 = v[1];
+this.m12 = v[2];
+return;
+case 2:
+this.m20 = v[0];
+this.m21 = v[1];
+this.m22 = v[2];
+return;
+default:
+this.err ();
+}
+}, "~N,~A");
+$_M(c$, "getRow33", 
+function (row, v) {
+switch (row) {
+case 0:
+v[0] = this.m00;
+v[1] = this.m01;
+v[2] = this.m02;
+return;
+case 1:
+v[0] = this.m10;
+v[1] = this.m11;
+v[2] = this.m12;
+return;
+case 2:
+v[0] = this.m20;
+v[1] = this.m21;
+v[2] = this.m22;
+return;
+}
+this.err ();
+}, "~N,~A");
+$_M(c$, "setColumn33", 
+function (column, v) {
+switch (column) {
+case 0:
+this.m00 = v[0];
+this.m10 = v[1];
+this.m20 = v[2];
+break;
+case 1:
+this.m01 = v[0];
+this.m11 = v[1];
+this.m21 = v[2];
+break;
+case 2:
+this.m02 = v[0];
+this.m12 = v[1];
+this.m22 = v[2];
+break;
+default:
+this.err ();
+}
+}, "~N,~A");
+$_M(c$, "getColumn33", 
+function (column, v) {
+switch (column) {
+case 0:
+v[0] = this.m00;
+v[1] = this.m10;
+v[2] = this.m20;
+break;
+case 1:
+v[0] = this.m01;
+v[1] = this.m11;
+v[2] = this.m21;
+break;
+case 2:
+v[0] = this.m02;
+v[1] = this.m12;
+v[2] = this.m22;
+break;
+default:
+this.err ();
+}
+}, "~N,~A");
+$_M(c$, "add33", 
+function (m1) {
+this.m00 += m1.m00;
+this.m01 += m1.m01;
+this.m02 += m1.m02;
+this.m10 += m1.m10;
+this.m11 += m1.m11;
+this.m12 += m1.m12;
+this.m20 += m1.m20;
+this.m21 += m1.m21;
+this.m22 += m1.m22;
+}, "JU.M34");
+$_M(c$, "sub33", 
+function (m1) {
+this.m00 -= m1.m00;
+this.m01 -= m1.m01;
+this.m02 -= m1.m02;
+this.m10 -= m1.m10;
+this.m11 -= m1.m11;
+this.m12 -= m1.m12;
+this.m20 -= m1.m20;
+this.m21 -= m1.m21;
+this.m22 -= m1.m22;
+}, "JU.M34");
+$_M(c$, "mul33", 
+function (x) {
+this.m00 *= x;
+this.m01 *= x;
+this.m02 *= x;
+this.m10 *= x;
+this.m11 *= x;
+this.m12 *= x;
+this.m20 *= x;
+this.m21 *= x;
+this.m22 *= x;
+}, "~N");
+$_M(c$, "transpose33", 
+function () {
+var tmp = this.m01;
+this.m01 = this.m10;
+this.m10 = tmp;
+tmp = this.m02;
+this.m02 = this.m20;
+this.m20 = tmp;
+tmp = this.m12;
+this.m12 = this.m21;
+this.m21 = tmp;
+});
+$_M(c$, "err", 
+function () {
+throw  new ArrayIndexOutOfBoundsException ("matrix column/row out of bounds");
+});
+});
+Clazz_declarePackage ("JU");
+Clazz_load (["JU.M34"], "JU.M3", ["JU.T3"], function () {
+c$ = Clazz_declareType (JU, "M3", JU.M34, java.io.Serializable);
+Clazz_makeConstructor (c$, 
+function () {
+Clazz_superConstructor (this, JU.M3, []);
+});
+c$.newA9 = $_M(c$, "newA9", 
+function (v) {
+var m =  new JU.M3 ();
+m.setA (v);
+return m;
+}, "~A");
+c$.newM3 = $_M(c$, "newM3", 
+function (m1) {
+var m =  new JU.M3 ();
+if (m1 == null) {
+m.setScale (1);
+return m;
+}m.m00 = m1.m00;
+m.m01 = m1.m01;
+m.m02 = m1.m02;
+m.m10 = m1.m10;
+m.m11 = m1.m11;
+m.m12 = m1.m12;
+m.m20 = m1.m20;
+m.m21 = m1.m21;
+m.m22 = m1.m22;
+return m;
 }, "JU.M3");
+$_M(c$, "setScale", 
+function (scale) {
+this.clear33 ();
+this.m00 = this.m11 = this.m22 = scale;
+}, "~N");
+$_M(c$, "setM3", 
+function (m1) {
+this.setM33 (m1);
+}, "JU.M34");
 $_M(c$, "setA", 
 function (m) {
 this.m00 = m[0];
@@ -11535,9 +11550,160 @@ this.m20 = m[6];
 this.m21 = m[7];
 this.m22 = m[8];
 }, "~A");
+$_M(c$, "setElement", 
+function (row, col, v) {
+this.set33 (row, col, v);
+}, "~N,~N,~N");
+$_M(c$, "getElement", 
+function (row, col) {
+return this.get33 (row, col);
+}, "~N,~N");
+$_M(c$, "setRow", 
+function (row, x, y, z) {
+switch (row) {
+case 0:
+this.m00 = x;
+this.m01 = y;
+this.m02 = z;
+return;
+case 1:
+this.m10 = x;
+this.m11 = y;
+this.m12 = z;
+return;
+case 2:
+this.m20 = x;
+this.m21 = y;
+this.m22 = z;
+return;
+default:
+this.err ();
+}
+}, "~N,~N,~N,~N");
+$_M(c$, "setRowV", 
+function (row, v) {
+switch (row) {
+case 0:
+this.m00 = v.x;
+this.m01 = v.y;
+this.m02 = v.z;
+return;
+case 1:
+this.m10 = v.x;
+this.m11 = v.y;
+this.m12 = v.z;
+return;
+case 2:
+this.m20 = v.x;
+this.m21 = v.y;
+this.m22 = v.z;
+return;
+default:
+this.err ();
+}
+}, "~N,JU.T3");
+$_M(c$, "setRowA", 
+function (row, v) {
+this.setRow33 (row, v);
+}, "~N,~A");
+$_M(c$, "getRow", 
+function (row, v) {
+this.getRow33 (row, v);
+}, "~N,~A");
+$_M(c$, "setColumn3", 
+function (column, x, y, z) {
+switch (column) {
+case 0:
+this.m00 = x;
+this.m10 = y;
+this.m20 = z;
+break;
+case 1:
+this.m01 = x;
+this.m11 = y;
+this.m21 = z;
+break;
+case 2:
+this.m02 = x;
+this.m12 = y;
+this.m22 = z;
+break;
+default:
+this.err ();
+}
+}, "~N,~N,~N,~N");
+$_M(c$, "setColumnV", 
+function (column, v) {
+switch (column) {
+case 0:
+this.m00 = v.x;
+this.m10 = v.y;
+this.m20 = v.z;
+break;
+case 1:
+this.m01 = v.x;
+this.m11 = v.y;
+this.m21 = v.z;
+break;
+case 2:
+this.m02 = v.x;
+this.m12 = v.y;
+this.m22 = v.z;
+break;
+default:
+this.err ();
+}
+}, "~N,JU.T3");
+$_M(c$, "getColumnV", 
+function (column, v) {
+switch (column) {
+case 0:
+v.x = this.m00;
+v.y = this.m10;
+v.z = this.m20;
+break;
+case 1:
+v.x = this.m01;
+v.y = this.m11;
+v.z = this.m21;
+break;
+case 2:
+v.x = this.m02;
+v.y = this.m12;
+v.z = this.m22;
+break;
+default:
+this.err ();
+}
+}, "~N,JU.T3");
+$_M(c$, "setColumnA", 
+function (column, v) {
+this.setColumn33 (column, v);
+}, "~N,~A");
+$_M(c$, "getColumn", 
+function (column, v) {
+this.getColumn33 (column, v);
+}, "~N,~A");
+$_M(c$, "add", 
+function (m1) {
+this.add33 (m1);
+}, "JU.M3");
+$_M(c$, "sub", 
+function (m1) {
+this.sub33 (m1);
+}, "JU.M3");
+$_M(c$, "transpose", 
+function () {
+this.transpose33 ();
+});
+$_M(c$, "transposeM", 
+function (m1) {
+this.setM33 (m1);
+this.transpose33 ();
+}, "JU.M3");
 $_M(c$, "invertM", 
 function (m1) {
-this.setM (m1);
+this.setM33 (m1);
 this.invert ();
 }, "JU.M3");
 $_M(c$, "invert", 
@@ -11545,25 +11711,13 @@ function () {
 var s = this.determinant ();
 if (s == 0.0) return;
 s = 1 / s;
-this.set (this.m11 * this.m22 - this.m12 * this.m21, this.m02 * this.m21 - this.m01 * this.m22, this.m01 * this.m12 - this.m02 * this.m11, this.m12 * this.m20 - this.m10 * this.m22, this.m00 * this.m22 - this.m02 * this.m20, this.m02 * this.m10 - this.m00 * this.m12, this.m10 * this.m21 - this.m11 * this.m20, this.m01 * this.m20 - this.m00 * this.m21, this.m00 * this.m11 - this.m01 * this.m10);
-this.mulf (s);
+this.set9 (this.m11 * this.m22 - this.m12 * this.m21, this.m02 * this.m21 - this.m01 * this.m22, this.m01 * this.m12 - this.m02 * this.m11, this.m12 * this.m20 - this.m10 * this.m22, this.m00 * this.m22 - this.m02 * this.m20, this.m02 * this.m10 - this.m00 * this.m12, this.m10 * this.m21 - this.m11 * this.m20, this.m01 * this.m20 - this.m00 * this.m21, this.m00 * this.m11 - this.m01 * this.m10);
+this.scale (s);
 });
 $_M(c$, "determinant", 
 function () {
 return this.m00 * (this.m11 * this.m22 - this.m21 * this.m12) - this.m01 * (this.m10 * this.m22 - this.m20 * this.m12) + this.m02 * (this.m10 * this.m21 - this.m20 * this.m11);
 });
-$_M(c$, "setScale", 
-function (scale) {
-this.m00 = scale;
-this.m01 = 0.0;
-this.m02 = 0.0;
-this.m10 = 0.0;
-this.m11 = scale;
-this.m12 = 0.0;
-this.m20 = 0.0;
-this.m21 = 0.0;
-this.m22 = scale;
-}, "~N");
 $_M(c$, "rotX", 
 function (angle) {
 var c = Math.cos (angle);
@@ -11606,17 +11760,9 @@ this.m20 = 0.0;
 this.m21 = 0.0;
 this.m22 = 1.0;
 }, "~N");
-$_M(c$, "mulf", 
+$_M(c$, "scale", 
 function (scalar) {
-this.m00 *= scalar;
-this.m01 *= scalar;
-this.m02 *= scalar;
-this.m10 *= scalar;
-this.m11 *= scalar;
-this.m12 *= scalar;
-this.m20 *= scalar;
-this.m21 *= scalar;
-this.m22 *= scalar;
+this.mul33 (scalar);
 }, "~N");
 $_M(c$, "mul", 
 function (m1) {
@@ -11624,7 +11770,7 @@ this.mul2 (this, m1);
 }, "JU.M3");
 $_M(c$, "mul2", 
 function (m1, m2) {
-this.set (m1.m00 * m2.m00 + m1.m01 * m2.m10 + m1.m02 * m2.m20, m1.m00 * m2.m01 + m1.m01 * m2.m11 + m1.m02 * m2.m21, m1.m00 * m2.m02 + m1.m01 * m2.m12 + m1.m02 * m2.m22, m1.m10 * m2.m00 + m1.m11 * m2.m10 + m1.m12 * m2.m20, m1.m10 * m2.m01 + m1.m11 * m2.m11 + m1.m12 * m2.m21, m1.m10 * m2.m02 + m1.m11 * m2.m12 + m1.m12 * m2.m22, m1.m20 * m2.m00 + m1.m21 * m2.m10 + m1.m22 * m2.m20, m1.m20 * m2.m01 + m1.m21 * m2.m11 + m1.m22 * m2.m21, m1.m20 * m2.m02 + m1.m21 * m2.m12 + m1.m22 * m2.m22);
+this.set9 (m1.m00 * m2.m00 + m1.m01 * m2.m10 + m1.m02 * m2.m20, m1.m00 * m2.m01 + m1.m01 * m2.m11 + m1.m02 * m2.m21, m1.m00 * m2.m02 + m1.m01 * m2.m12 + m1.m02 * m2.m22, m1.m10 * m2.m00 + m1.m11 * m2.m10 + m1.m12 * m2.m20, m1.m10 * m2.m01 + m1.m11 * m2.m11 + m1.m12 * m2.m21, m1.m10 * m2.m02 + m1.m11 * m2.m12 + m1.m12 * m2.m22, m1.m20 * m2.m00 + m1.m21 * m2.m10 + m1.m22 * m2.m20, m1.m20 * m2.m01 + m1.m21 * m2.m11 + m1.m22 * m2.m21, m1.m20 * m2.m02 + m1.m21 * m2.m12 + m1.m22 * m2.m22);
 }, "JU.M3,JU.M3");
 $_V(c$, "equals", 
 function (o) {
@@ -11638,25 +11784,9 @@ return JU.T3.floatToIntBits0 (this.m00) ^ JU.T3.floatToIntBits0 (this.m01) ^ JU.
 });
 $_M(c$, "setZero", 
 function () {
-this.m00 = 0.0;
-this.m01 = 0.0;
-this.m02 = 0.0;
-this.m10 = 0.0;
-this.m11 = 0.0;
-this.m12 = 0.0;
-this.m20 = 0.0;
-this.m21 = 0.0;
-this.m22 = 0.0;
+this.clear33 ();
 });
-$_M(c$, "transform", 
-function (t) {
-this.transform2 (t, t);
-}, "JU.T3");
-$_M(c$, "transform2", 
-function (t, result) {
-result.set (this.m00 * t.x + this.m01 * t.y + this.m02 * t.z, this.m10 * t.x + this.m11 * t.y + this.m12 * t.z, this.m20 * t.x + this.m21 * t.y + this.m22 * t.z);
-}, "JU.T3,JU.T3");
-$_M(c$, "set", 
+$_M(c$, "set9", 
 function (m00, m01, m02, m10, m11, m12, m20, m21, m22) {
 this.m00 = m00;
 this.m01 = m01;
@@ -11668,29 +11798,32 @@ this.m20 = m20;
 this.m21 = m21;
 this.m22 = m22;
 }, "~N,~N,~N,~N,~N,~N,~N,~N,~N");
+$_V(c$, "toString", 
+function () {
+return "[\n  [" + this.m00 + "\t" + this.m01 + "\t" + this.m02 + "]" + "\n  [" + this.m10 + "\t" + this.m11 + "\t" + this.m12 + "]" + "\n  [" + this.m20 + "\t" + this.m21 + "\t" + this.m22 + "] ]";
+});
+$_M(c$, "setAA", 
+function (a) {
+this.setAA33 (a);
+}, "JU.A4");
 });
 Clazz_declarePackage ("JU");
-Clazz_load (null, "JU.M4", ["java.lang.ArrayIndexOutOfBoundsException", "JU.T3"], function () {
+Clazz_load (["JU.M34"], "JU.M4", ["JU.T3"], function () {
 c$ = Clazz_decorateAsClass (function () {
-this.m00 = 0;
-this.m01 = 0;
-this.m02 = 0;
 this.m03 = 0;
-this.m10 = 0;
-this.m11 = 0;
-this.m12 = 0;
 this.m13 = 0;
-this.m20 = 0;
-this.m21 = 0;
-this.m22 = 0;
 this.m23 = 0;
 this.m30 = 0;
 this.m31 = 0;
 this.m32 = 0;
 this.m33 = 0;
 Clazz_instantialize (this, arguments);
-}, JU, "M4", null, java.io.Serializable);
-c$.newA = $_M(c$, "newA", 
+}, JU, "M4", JU.M34);
+Clazz_makeConstructor (c$, 
+function () {
+Clazz_superConstructor (this, JU.M4, []);
+});
+c$.newA16 = $_M(c$, "newA16", 
 function (v) {
 var m =  new JU.M4 ();
 m.m00 = v[0];
@@ -11711,23 +11844,15 @@ m.m32 = v[14];
 m.m33 = v[15];
 return m;
 }, "~A");
-c$.newM = $_M(c$, "newM", 
+c$.newM4 = $_M(c$, "newM4", 
 function (m1) {
 var m =  new JU.M4 ();
 if (m1 == null) {
 m.setIdentity ();
 return m;
-}m.m00 = m1.m00;
-m.m01 = m1.m01;
-m.m02 = m1.m02;
+}m.setToM3 (m1);
 m.m03 = m1.m03;
-m.m10 = m1.m10;
-m.m11 = m1.m11;
-m.m12 = m1.m12;
 m.m13 = m1.m13;
-m.m20 = m1.m20;
-m.m21 = m1.m21;
-m.m22 = m1.m22;
 m.m23 = m1.m23;
 m.m30 = m1.m30;
 m.m31 = m1.m31;
@@ -11740,138 +11865,134 @@ function (m1, t) {
 var m =  new JU.M4 ();
 m.setMV (m1, t);
 return m;
-}, "JU.M3,JU.V3");
-$_M(c$, "setMV", 
-function (m1, t) {
-this.setM3 (m1);
-this.setTranslation (t);
-}, "JU.M3,JU.V3");
-$_M(c$, "setAA", 
-function (a1) {
-this.setFromAxisAngle (a1.x, a1.y, a1.z, a1.angle);
-}, "JU.A4");
-$_M(c$, "setFromAxisAngle", 
-function (x, y, z, angle) {
-var n = Math.sqrt (x * x + y * y + z * z);
-n = 1 / n;
-x *= n;
-y *= n;
-z *= n;
-var c = Math.cos (angle);
-var s = Math.sin (angle);
-var omc = 1.0 - c;
-this.m00 = (c + x * x * omc);
-this.m11 = (c + y * y * omc);
-this.m22 = (c + z * z * omc);
-var tmp1 = x * y * omc;
-var tmp2 = z * s;
-this.m01 = (tmp1 - tmp2);
-this.m10 = (tmp1 + tmp2);
-tmp1 = x * z * omc;
-tmp2 = y * s;
-this.m02 = (tmp1 + tmp2);
-this.m20 = (tmp1 - tmp2);
-tmp1 = y * z * omc;
-tmp2 = x * s;
-this.m12 = (tmp1 - tmp2);
-this.m21 = (tmp1 + tmp2);
-}, "~N,~N,~N,~N");
-$_M(c$, "setM", 
+}, "JU.M3,JU.T3");
+$_M(c$, "setZero", 
+function () {
+this.clear33 ();
+this.m03 = this.m13 = this.m23 = this.m30 = this.m31 = this.m32 = this.m33 = 0.0;
+});
+$_M(c$, "setIdentity", 
+function () {
+this.setZero ();
+this.m00 = this.m11 = this.m22 = this.m33 = 1.0;
+});
+$_M(c$, "setM4", 
 function (m1) {
-this.m00 = m1.m00;
-this.m01 = m1.m01;
-this.m02 = m1.m02;
+this.setM33 (m1);
 this.m03 = m1.m03;
-this.m10 = m1.m10;
-this.m11 = m1.m11;
-this.m12 = m1.m12;
 this.m13 = m1.m13;
-this.m20 = m1.m20;
-this.m21 = m1.m21;
-this.m22 = m1.m22;
 this.m23 = m1.m23;
 this.m30 = m1.m30;
 this.m31 = m1.m31;
 this.m32 = m1.m32;
 this.m33 = m1.m33;
 }, "JU.M4");
-$_V(c$, "toString", 
-function () {
-return "[\n  [" + this.m00 + "\t" + this.m01 + "\t" + this.m02 + "\t" + this.m03 + "]" + "\n  [" + this.m10 + "\t" + this.m11 + "\t" + this.m12 + "\t" + this.m13 + "]" + "\n  [" + this.m20 + "\t" + this.m21 + "\t" + this.m22 + "\t" + this.m23 + "]" + "\n  [" + this.m30 + "\t" + this.m31 + "\t" + this.m32 + "\t" + this.m33 + "] ]";
-});
-$_M(c$, "setIdentity", 
-function () {
-this.m00 = 1.0;
-this.m01 = 0.0;
-this.m02 = 0.0;
-this.m03 = 0.0;
-this.m10 = 0.0;
-this.m11 = 1.0;
-this.m12 = 0.0;
-this.m13 = 0.0;
-this.m20 = 0.0;
-this.m21 = 0.0;
-this.m22 = 1.0;
-this.m23 = 0.0;
-this.m30 = 0.0;
-this.m31 = 0.0;
-this.m32 = 0.0;
+$_M(c$, "setMV", 
+function (m1, t) {
+this.setM33 (m1);
+this.setTranslation (t);
+this.m33 = 1;
+}, "JU.M3,JU.T3");
+$_M(c$, "setToM3", 
+function (m1) {
+this.setM33 (m1);
+this.m03 = this.m13 = this.m23 = this.m30 = this.m31 = this.m32 = 0.0;
 this.m33 = 1.0;
-});
+}, "JU.M34");
+$_M(c$, "setToAA", 
+function (a) {
+this.setIdentity ();
+this.setAA33 (a);
+}, "JU.A4");
+$_M(c$, "setA", 
+function (m) {
+this.m00 = m[0];
+this.m01 = m[1];
+this.m02 = m[2];
+this.m03 = m[3];
+this.m10 = m[4];
+this.m11 = m[5];
+this.m12 = m[6];
+this.m13 = m[7];
+this.m20 = m[8];
+this.m21 = m[9];
+this.m22 = m[10];
+this.m23 = m[11];
+this.m30 = m[12];
+this.m31 = m[13];
+this.m32 = m[14];
+this.m33 = m[15];
+}, "~A");
+$_M(c$, "setTranslation", 
+function (trans) {
+this.m03 = trans.x;
+this.m13 = trans.y;
+this.m23 = trans.z;
+}, "JU.T3");
 $_M(c$, "setElement", 
-function (row, column, value) {
-if (row == 0) if (column == 0) this.m00 = value;
- else if (column == 1) this.m01 = value;
- else if (column == 2) this.m02 = value;
- else if (column == 3) this.m03 = value;
- else throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 3 and is " + column);
- else if (row == 1) if (column == 0) this.m10 = value;
- else if (column == 1) this.m11 = value;
- else if (column == 2) this.m12 = value;
- else if (column == 3) this.m13 = value;
- else throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 3 and is " + column);
- else if (row == 2) if (column == 0) this.m20 = value;
- else if (column == 1) this.m21 = value;
- else if (column == 2) this.m22 = value;
- else if (column == 3) this.m23 = value;
- else throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 3 and is " + column);
- else if (row == 3) if (column == 0) this.m30 = value;
- else if (column == 1) this.m31 = value;
- else if (column == 2) this.m32 = value;
- else if (column == 3) this.m33 = value;
- else throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 3 and is " + column);
- else throw  new ArrayIndexOutOfBoundsException ("row must be 0 to 2 and is " + row);
+function (row, col, v) {
+if (row < 3 && col < 3) {
+this.set33 (row, col, v);
+return;
+}if (row > 3 || col > 3) this.err ();
+switch (row) {
+case 0:
+this.m03 = v;
+return;
+case 1:
+this.m13 = v;
+return;
+case 2:
+this.m23 = v;
+return;
+}
+switch (col) {
+case 0:
+this.m30 = v;
+return;
+case 1:
+this.m31 = v;
+return;
+case 2:
+this.m32 = v;
+return;
+case 3:
+this.m33 = v;
+return;
+}
 }, "~N,~N,~N");
 $_M(c$, "getElement", 
-function (row, column) {
-if (row == 0) if (column == 0) return this.m00;
- else if (column == 1) return this.m01;
- else if (column == 2) return this.m02;
- else if (column == 3) return this.m03;
- else throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 3 and is " + column);
- else if (row == 1) if (column == 0) return this.m10;
- else if (column == 1) return this.m11;
- else if (column == 2) return this.m12;
- else if (column == 3) return this.m13;
- else throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 3 and is " + column);
- else if (row == 2) if (column == 0) return this.m20;
- else if (column == 1) return this.m21;
- else if (column == 2) return this.m22;
- else if (column == 3) return this.m23;
- else throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 3 and is " + column);
- else if (row == 3) if (column == 0) return this.m30;
- else if (column == 1) return this.m31;
- else if (column == 2) return this.m32;
- else if (column == 3) return this.m33;
- else throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 3 and is " + column);
- else throw  new ArrayIndexOutOfBoundsException ("row must be 0 to 3 and is " + row);
+function (row, col) {
+if (row < 3 && col < 3) return this.get33 (row, col);
+if (row > 3 || col > 3) {
+this.err ();
+return 0;
+}switch (row) {
+case 0:
+return this.m03;
+case 1:
+return this.m13;
+case 2:
+return this.m23;
+default:
+switch (col) {
+case 0:
+return this.m30;
+case 1:
+return this.m31;
+case 2:
+return this.m32;
+default:
+return this.m33;
+}
+}
 }, "~N,~N");
-$_M(c$, "get", 
+$_M(c$, "getTranslation", 
 function (trans) {
 trans.x = this.m03;
 trans.y = this.m13;
 trans.z = this.m23;
-}, "JU.V3");
+}, "JU.T3");
 $_M(c$, "getRotationScale", 
 function (m1) {
 m1.m00 = this.m00;
@@ -11896,56 +12017,50 @@ this.m20 = m1.m20;
 this.m21 = m1.m21;
 this.m22 = m1.m22;
 }, "JU.M3");
-$_M(c$, "setRow", 
+$_M(c$, "setRowA", 
 function (row, v) {
-if (row == 0) {
-this.m00 = v[0];
-this.m01 = v[1];
-this.m02 = v[2];
+if (row < 3) this.setRow33 (row, v);
+switch (row) {
+case 0:
 this.m03 = v[3];
-} else if (row == 1) {
-this.m10 = v[0];
-this.m11 = v[1];
-this.m12 = v[2];
+return;
+case 1:
 this.m13 = v[3];
-} else if (row == 2) {
-this.m20 = v[0];
-this.m21 = v[1];
-this.m22 = v[2];
+return;
+case 2:
 this.m23 = v[3];
-} else if (row == 3) {
+return;
+case 3:
 this.m30 = v[0];
 this.m31 = v[1];
 this.m32 = v[2];
 this.m33 = v[3];
-} else {
-throw  new ArrayIndexOutOfBoundsException ("row must be 0 to 3 and is " + row);
-}}, "~N,~A");
+return;
+}
+this.err ();
+}, "~N,~A");
 $_M(c$, "getRow", 
 function (row, v) {
-if (row == 0) {
-v[0] = this.m00;
-v[1] = this.m01;
-v[2] = this.m02;
+if (row < 3) this.getRow33 (row, v);
+switch (row) {
+case 0:
 v[3] = this.m03;
-} else if (row == 1) {
-v[0] = this.m10;
-v[1] = this.m11;
-v[2] = this.m12;
+return;
+case 1:
 v[3] = this.m13;
-} else if (row == 2) {
-v[0] = this.m20;
-v[1] = this.m21;
-v[2] = this.m22;
+return;
+case 2:
 v[3] = this.m23;
-} else if (row == 3) {
+return;
+case 3:
 v[0] = this.m30;
 v[1] = this.m31;
 v[2] = this.m32;
 v[3] = this.m33;
-} else {
-throw  new ArrayIndexOutOfBoundsException ("row must be 0 to 3 and is " + row);
-}}, "~N,~A");
+return;
+}
+this.err ();
+}, "~N,~A");
 $_M(c$, "setColumn4", 
 function (column, x, y, z, w) {
 if (column == 0) {
@@ -11969,71 +12084,59 @@ this.m13 = y;
 this.m23 = z;
 this.m33 = w;
 } else {
-throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 3 and is " + column);
+this.err ();
 }}, "~N,~N,~N,~N,~N");
-$_M(c$, "setColumn", 
+$_M(c$, "setColumnA", 
 function (column, v) {
-if (column == 0) {
-this.m00 = v[0];
-this.m10 = v[1];
-this.m20 = v[2];
+if (column < 3) this.setColumn33 (column, v);
+switch (column) {
+case 0:
 this.m30 = v[3];
-} else if (column == 1) {
-this.m01 = v[0];
-this.m11 = v[1];
-this.m21 = v[2];
+return;
+case 1:
 this.m31 = v[3];
-} else if (column == 2) {
-this.m02 = v[0];
-this.m12 = v[1];
-this.m22 = v[2];
+return;
+case 2:
 this.m32 = v[3];
-} else if (column == 3) {
+return;
+case 3:
 this.m03 = v[0];
 this.m13 = v[1];
 this.m23 = v[2];
 this.m33 = v[3];
-} else {
-throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 3 and is " + column);
-}}, "~N,~A");
+return;
+default:
+this.err ();
+}
+}, "~N,~A");
 $_M(c$, "getColumn", 
 function (column, v) {
-if (column == 0) {
-v[0] = this.m00;
-v[1] = this.m10;
-v[2] = this.m20;
+if (column < 3) this.getColumn33 (column, v);
+switch (column) {
+case 0:
 v[3] = this.m30;
-} else if (column == 1) {
-v[0] = this.m01;
-v[1] = this.m11;
-v[2] = this.m21;
+return;
+case 1:
 v[3] = this.m31;
-} else if (column == 2) {
-v[0] = this.m02;
-v[1] = this.m12;
-v[2] = this.m22;
+return;
+case 2:
 v[3] = this.m32;
-} else if (column == 3) {
+return;
+case 3:
 v[0] = this.m03;
 v[1] = this.m13;
 v[2] = this.m23;
 v[3] = this.m33;
-} else {
-throw  new ArrayIndexOutOfBoundsException ("column must be 0 to 3 and is " + column);
-}}, "~N,~A");
+return;
+default:
+this.err ();
+}
+}, "~N,~A");
 $_M(c$, "sub", 
 function (m1) {
-this.m00 -= m1.m00;
-this.m01 -= m1.m01;
-this.m02 -= m1.m02;
+this.sub33 (m1);
 this.m03 -= m1.m03;
-this.m10 -= m1.m10;
-this.m11 -= m1.m11;
-this.m12 -= m1.m12;
 this.m13 -= m1.m13;
-this.m20 -= m1.m20;
-this.m21 -= m1.m21;
-this.m22 -= m1.m22;
 this.m23 -= m1.m23;
 this.m30 -= m1.m30;
 this.m31 -= m1.m31;
@@ -12042,18 +12145,10 @@ this.m33 -= m1.m33;
 }, "JU.M4");
 $_M(c$, "transpose", 
 function () {
-var tmp = this.m01;
-this.m01 = this.m10;
-this.m10 = tmp;
-tmp = this.m02;
-this.m02 = this.m20;
-this.m20 = tmp;
-tmp = this.m03;
+this.transpose33 ();
+var tmp = this.m03;
 this.m03 = this.m30;
 this.m30 = tmp;
-tmp = this.m12;
-this.m12 = this.m21;
-this.m21 = tmp;
 tmp = this.m13;
 this.m13 = this.m31;
 this.m31 = tmp;
@@ -12063,7 +12158,7 @@ this.m32 = tmp;
 });
 $_M(c$, "invertM", 
 function (m1) {
-this.setM (m1);
+this.setM4 (m1);
 this.invert ();
 }, "JU.M4");
 $_M(c$, "invert", 
@@ -12072,224 +12167,7 @@ var s = this.determinant ();
 if (s == 0.0) return;
 s = 1 / s;
 this.set (this.m11 * (this.m22 * this.m33 - this.m23 * this.m32) + this.m12 * (this.m23 * this.m31 - this.m21 * this.m33) + this.m13 * (this.m21 * this.m32 - this.m22 * this.m31), this.m21 * (this.m02 * this.m33 - this.m03 * this.m32) + this.m22 * (this.m03 * this.m31 - this.m01 * this.m33) + this.m23 * (this.m01 * this.m32 - this.m02 * this.m31), this.m31 * (this.m02 * this.m13 - this.m03 * this.m12) + this.m32 * (this.m03 * this.m11 - this.m01 * this.m13) + this.m33 * (this.m01 * this.m12 - this.m02 * this.m11), this.m01 * (this.m13 * this.m22 - this.m12 * this.m23) + this.m02 * (this.m11 * this.m23 - this.m13 * this.m21) + this.m03 * (this.m12 * this.m21 - this.m11 * this.m22), this.m12 * (this.m20 * this.m33 - this.m23 * this.m30) + this.m13 * (this.m22 * this.m30 - this.m20 * this.m32) + this.m10 * (this.m23 * this.m32 - this.m22 * this.m33), this.m22 * (this.m00 * this.m33 - this.m03 * this.m30) + this.m23 * (this.m02 * this.m30 - this.m00 * this.m32) + this.m20 * (this.m03 * this.m32 - this.m02 * this.m33), this.m32 * (this.m00 * this.m13 - this.m03 * this.m10) + this.m33 * (this.m02 * this.m10 - this.m00 * this.m12) + this.m30 * (this.m03 * this.m12 - this.m02 * this.m13), this.m02 * (this.m13 * this.m20 - this.m10 * this.m23) + this.m03 * (this.m10 * this.m22 - this.m12 * this.m20) + this.m00 * (this.m12 * this.m23 - this.m13 * this.m22), this.m13 * (this.m20 * this.m31 - this.m21 * this.m30) + this.m10 * (this.m21 * this.m33 - this.m23 * this.m31) + this.m11 * (this.m23 * this.m30 - this.m20 * this.m33), this.m23 * (this.m00 * this.m31 - this.m01 * this.m30) + this.m20 * (this.m01 * this.m33 - this.m03 * this.m31) + this.m21 * (this.m03 * this.m30 - this.m00 * this.m33), this.m33 * (this.m00 * this.m11 - this.m01 * this.m10) + this.m30 * (this.m01 * this.m13 - this.m03 * this.m11) + this.m31 * (this.m03 * this.m10 - this.m00 * this.m13), this.m03 * (this.m11 * this.m20 - this.m10 * this.m21) + this.m00 * (this.m13 * this.m21 - this.m11 * this.m23) + this.m01 * (this.m10 * this.m23 - this.m13 * this.m20), this.m10 * (this.m22 * this.m31 - this.m21 * this.m32) + this.m11 * (this.m20 * this.m32 - this.m22 * this.m30) + this.m12 * (this.m21 * this.m30 - this.m20 * this.m31), this.m20 * (this.m02 * this.m31 - this.m01 * this.m32) + this.m21 * (this.m00 * this.m32 - this.m02 * this.m30) + this.m22 * (this.m01 * this.m30 - this.m00 * this.m31), this.m30 * (this.m02 * this.m11 - this.m01 * this.m12) + this.m31 * (this.m00 * this.m12 - this.m02 * this.m10) + this.m32 * (this.m01 * this.m10 - this.m00 * this.m11), this.m00 * (this.m11 * this.m22 - this.m12 * this.m21) + this.m01 * (this.m12 * this.m20 - this.m10 * this.m22) + this.m02 * (this.m10 * this.m21 - this.m11 * this.m20));
-this.mul (s);
-});
-$_M(c$, "determinant", 
-function () {
-return (this.m00 * this.m11 - this.m01 * this.m10) * (this.m22 * this.m33 - this.m23 * this.m32) - (this.m00 * this.m12 - this.m02 * this.m10) * (this.m21 * this.m33 - this.m23 * this.m31) + (this.m00 * this.m13 - this.m03 * this.m10) * (this.m21 * this.m32 - this.m22 * this.m31) + (this.m01 * this.m12 - this.m02 * this.m11) * (this.m20 * this.m33 - this.m23 * this.m30) - (this.m01 * this.m13 - this.m03 * this.m11) * (this.m20 * this.m32 - this.m22 * this.m30) + (this.m02 * this.m13 - this.m03 * this.m12) * (this.m20 * this.m31 - this.m21 * this.m30);
-});
-$_M(c$, "setM3", 
-function (m1) {
-this.m00 = m1.m00;
-this.m01 = m1.m01;
-this.m02 = m1.m02;
-this.m03 = 0.0;
-this.m10 = m1.m10;
-this.m11 = m1.m11;
-this.m12 = m1.m12;
-this.m13 = 0.0;
-this.m20 = m1.m20;
-this.m21 = m1.m21;
-this.m22 = m1.m22;
-this.m23 = 0.0;
-this.m30 = 0.0;
-this.m31 = 0.0;
-this.m32 = 0.0;
-this.m33 = 1.0;
-}, "JU.M3");
-$_M(c$, "setA", 
-function (m, i) {
-this.m00 = m[i++];
-this.m01 = m[i++];
-this.m02 = m[i++];
-this.m03 = m[i++];
-this.m10 = m[i++];
-this.m11 = m[i++];
-this.m12 = m[i++];
-this.m13 = m[i++];
-this.m20 = m[i++];
-this.m21 = m[i++];
-this.m22 = m[i++];
-this.m23 = m[i++];
-this.m30 = m[i++];
-this.m31 = m[i++];
-this.m32 = m[i++];
-this.m33 = m[i++];
-}, "~A,~N");
-$_M(c$, "toA", 
-function (m) {
-m[0] = this.m00;
-m[1] = this.m01;
-m[2] = this.m02;
-m[3] = this.m03;
-m[4] = this.m10;
-m[5] = this.m11;
-m[6] = this.m12;
-m[7] = this.m13;
-m[8] = this.m20;
-m[9] = this.m21;
-m[10] = this.m22;
-m[11] = this.m23;
-m[12] = this.m30;
-m[13] = this.m31;
-m[14] = this.m32;
-m[15] = this.m33;
-}, "~A");
-$_M(c$, "setTranslation", 
-function (trans) {
-this.m03 = trans.x;
-this.m13 = trans.y;
-this.m23 = trans.z;
-}, "JU.V3");
-$_M(c$, "rotX", 
-function (angle) {
-var c = Math.cos (angle);
-var s = Math.sin (angle);
-this.m00 = 1.0;
-this.m01 = 0.0;
-this.m02 = 0.0;
-this.m03 = 0.0;
-this.m10 = 0.0;
-this.m11 = c;
-this.m12 = -s;
-this.m13 = 0.0;
-this.m20 = 0.0;
-this.m21 = s;
-this.m22 = c;
-this.m23 = 0.0;
-this.m30 = 0.0;
-this.m31 = 0.0;
-this.m32 = 0.0;
-this.m33 = 1.0;
-}, "~N");
-$_M(c$, "rotY", 
-function (angle) {
-var c = Math.cos (angle);
-var s = Math.sin (angle);
-this.m00 = c;
-this.m01 = 0.0;
-this.m02 = s;
-this.m03 = 0.0;
-this.m10 = 0.0;
-this.m11 = 1.0;
-this.m12 = 0.0;
-this.m13 = 0.0;
-this.m20 = -s;
-this.m21 = 0.0;
-this.m22 = c;
-this.m23 = 0.0;
-this.m30 = 0.0;
-this.m31 = 0.0;
-this.m32 = 0.0;
-this.m33 = 1.0;
-}, "~N");
-$_M(c$, "rotZ", 
-function (angle) {
-var c = Math.cos (angle);
-var s = Math.sin (angle);
-this.m00 = c;
-this.m01 = -s;
-this.m02 = 0.0;
-this.m03 = 0.0;
-this.m10 = s;
-this.m11 = c;
-this.m12 = 0.0;
-this.m13 = 0.0;
-this.m20 = 0.0;
-this.m21 = 0.0;
-this.m22 = 1.0;
-this.m23 = 0.0;
-this.m30 = 0.0;
-this.m31 = 0.0;
-this.m32 = 0.0;
-this.m33 = 1.0;
-}, "~N");
-$_M(c$, "mul", 
-function (scalar) {
-this.m00 *= scalar;
-this.m01 *= scalar;
-this.m02 *= scalar;
-this.m03 *= scalar;
-this.m10 *= scalar;
-this.m11 *= scalar;
-this.m12 *= scalar;
-this.m13 *= scalar;
-this.m20 *= scalar;
-this.m21 *= scalar;
-this.m22 *= scalar;
-this.m23 *= scalar;
-this.m30 *= scalar;
-this.m31 *= scalar;
-this.m32 *= scalar;
-this.m33 *= scalar;
-}, "~N");
-$_M(c$, "mulM4", 
-function (m1) {
-this.mul2 (this, m1);
-}, "JU.M4");
-$_M(c$, "mul2", 
-function (m1, m2) {
-this.set (m1.m00 * m2.m00 + m1.m01 * m2.m10 + m1.m02 * m2.m20 + m1.m03 * m2.m30, m1.m00 * m2.m01 + m1.m01 * m2.m11 + m1.m02 * m2.m21 + m1.m03 * m2.m31, m1.m00 * m2.m02 + m1.m01 * m2.m12 + m1.m02 * m2.m22 + m1.m03 * m2.m32, m1.m00 * m2.m03 + m1.m01 * m2.m13 + m1.m02 * m2.m23 + m1.m03 * m2.m33, m1.m10 * m2.m00 + m1.m11 * m2.m10 + m1.m12 * m2.m20 + m1.m13 * m2.m30, m1.m10 * m2.m01 + m1.m11 * m2.m11 + m1.m12 * m2.m21 + m1.m13 * m2.m31, m1.m10 * m2.m02 + m1.m11 * m2.m12 + m1.m12 * m2.m22 + m1.m13 * m2.m32, m1.m10 * m2.m03 + m1.m11 * m2.m13 + m1.m12 * m2.m23 + m1.m13 * m2.m33, m1.m20 * m2.m00 + m1.m21 * m2.m10 + m1.m22 * m2.m20 + m1.m23 * m2.m30, m1.m20 * m2.m01 + m1.m21 * m2.m11 + m1.m22 * m2.m21 + m1.m23 * m2.m31, m1.m20 * m2.m02 + m1.m21 * m2.m12 + m1.m22 * m2.m22 + m1.m23 * m2.m32, m1.m20 * m2.m03 + m1.m21 * m2.m13 + m1.m22 * m2.m23 + m1.m23 * m2.m33, m1.m30 * m2.m00 + m1.m31 * m2.m10 + m1.m32 * m2.m20 + m1.m33 * m2.m30, m1.m30 * m2.m01 + m1.m31 * m2.m11 + m1.m32 * m2.m21 + m1.m33 * m2.m31, m1.m30 * m2.m02 + m1.m31 * m2.m12 + m1.m32 * m2.m22 + m1.m33 * m2.m32, m1.m30 * m2.m03 + m1.m31 * m2.m13 + m1.m32 * m2.m23 + m1.m33 * m2.m33);
-}, "JU.M4,JU.M4");
-$_V(c$, "equals", 
-function (o) {
-if (!(Clazz_instanceOf (o, JU.M4))) return false;
-var m = o;
-return (this.m00 == m.m00 && this.m01 == m.m01 && this.m02 == m.m02 && this.m03 == m.m03 && this.m10 == m.m10 && this.m11 == m.m11 && this.m12 == m.m12 && this.m13 == m.m13 && this.m20 == m.m20 && this.m21 == m.m21 && this.m22 == m.m22 && this.m23 == m.m23 && this.m30 == m.m30 && this.m31 == m.m31 && this.m32 == m.m32 && this.m33 == m.m33);
-}, "~O");
-$_V(c$, "hashCode", 
-function () {
-return JU.T3.floatToIntBits0 (this.m00) ^ JU.T3.floatToIntBits0 (this.m01) ^ JU.T3.floatToIntBits0 (this.m02) ^ JU.T3.floatToIntBits0 (this.m03) ^ JU.T3.floatToIntBits0 (this.m10) ^ JU.T3.floatToIntBits0 (this.m11) ^ JU.T3.floatToIntBits0 (this.m12) ^ JU.T3.floatToIntBits0 (this.m13) ^ JU.T3.floatToIntBits0 (this.m20) ^ JU.T3.floatToIntBits0 (this.m21) ^ JU.T3.floatToIntBits0 (this.m22) ^ JU.T3.floatToIntBits0 (this.m23) ^ JU.T3.floatToIntBits0 (this.m30) ^ JU.T3.floatToIntBits0 (this.m31) ^ JU.T3.floatToIntBits0 (this.m32) ^ JU.T3.floatToIntBits0 (this.m33);
-});
-$_M(c$, "transformT2", 
-function (vec, vecOut) {
-vecOut.set (this.m00 * vec.x + this.m01 * vec.y + this.m02 * vec.z + this.m03 * vec.w, this.m10 * vec.x + this.m11 * vec.y + this.m12 * vec.z + this.m13 * vec.w, this.m20 * vec.x + this.m21 * vec.y + this.m22 * vec.z + this.m23 * vec.w, this.m30 * vec.x + this.m31 * vec.y + this.m32 * vec.z + this.m33 * vec.w);
-}, "JU.T4,JU.T4");
-$_M(c$, "transform4", 
-function (vec) {
-this.transformT2 (vec, vec);
-}, "JU.T4");
-$_M(c$, "transform2", 
-function (point, pointOut) {
-try {
-pointOut.set (this.m00 * point.x + this.m01 * point.y + this.m02 * point.z + this.m03, this.m10 * point.x + this.m11 * point.y + this.m12 * point.z + this.m13, this.m20 * point.x + this.m21 * point.y + this.m22 * point.z + this.m23);
-} catch (e) {
-if (Clazz_exceptionOf (e, NullPointerException)) {
-} else {
-throw e;
-}
-}
-}, "JU.T3,JU.T3");
-$_M(c$, "transform", 
-function (point) {
-this.transform2 (point, point);
-}, "JU.T3");
-$_M(c$, "transformV2", 
-function (normal, normalOut) {
-normalOut.set (this.m00 * normal.x + this.m01 * normal.y + this.m02 * normal.z, this.m10 * normal.x + this.m11 * normal.y + this.m12 * normal.z, this.m20 * normal.x + this.m21 * normal.y + this.m22 * normal.z);
-}, "JU.V3,JU.V3");
-$_M(c$, "transformV", 
-function (normal) {
-this.transformV2 (normal, normal);
-}, "JU.V3");
-$_M(c$, "setZero", 
-function () {
-this.m00 = 0.0;
-this.m01 = 0.0;
-this.m02 = 0.0;
-this.m03 = 0.0;
-this.m10 = 0.0;
-this.m11 = 0.0;
-this.m12 = 0.0;
-this.m13 = 0.0;
-this.m20 = 0.0;
-this.m21 = 0.0;
-this.m22 = 0.0;
-this.m23 = 0.0;
-this.m30 = 0.0;
-this.m31 = 0.0;
-this.m32 = 0.0;
-this.m33 = 0.0;
+this.scale (s);
 });
 $_M(c$, "set", 
 function (m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33) {
@@ -12310,6 +12188,59 @@ this.m31 = m31;
 this.m32 = m32;
 this.m33 = m33;
 }, "~N,~N,~N,~N,~N,~N,~N,~N,~N,~N,~N,~N,~N,~N,~N,~N");
+$_M(c$, "determinant", 
+function () {
+return (this.m00 * this.m11 - this.m01 * this.m10) * (this.m22 * this.m33 - this.m23 * this.m32) - (this.m00 * this.m12 - this.m02 * this.m10) * (this.m21 * this.m33 - this.m23 * this.m31) + (this.m00 * this.m13 - this.m03 * this.m10) * (this.m21 * this.m32 - this.m22 * this.m31) + (this.m01 * this.m12 - this.m02 * this.m11) * (this.m20 * this.m33 - this.m23 * this.m30) - (this.m01 * this.m13 - this.m03 * this.m11) * (this.m20 * this.m32 - this.m22 * this.m30) + (this.m02 * this.m13 - this.m03 * this.m12) * (this.m20 * this.m31 - this.m21 * this.m30);
+});
+$_M(c$, "scale", 
+function (scalar) {
+this.mul33 (scalar);
+this.m03 *= scalar;
+this.m13 *= scalar;
+this.m23 *= scalar;
+this.m30 *= scalar;
+this.m31 *= scalar;
+this.m32 *= scalar;
+this.m33 *= scalar;
+}, "~N");
+$_M(c$, "mul", 
+function (m1) {
+this.mul2 (this, m1);
+}, "JU.M4");
+$_M(c$, "mul2", 
+function (m1, m2) {
+this.set (m1.m00 * m2.m00 + m1.m01 * m2.m10 + m1.m02 * m2.m20 + m1.m03 * m2.m30, m1.m00 * m2.m01 + m1.m01 * m2.m11 + m1.m02 * m2.m21 + m1.m03 * m2.m31, m1.m00 * m2.m02 + m1.m01 * m2.m12 + m1.m02 * m2.m22 + m1.m03 * m2.m32, m1.m00 * m2.m03 + m1.m01 * m2.m13 + m1.m02 * m2.m23 + m1.m03 * m2.m33, m1.m10 * m2.m00 + m1.m11 * m2.m10 + m1.m12 * m2.m20 + m1.m13 * m2.m30, m1.m10 * m2.m01 + m1.m11 * m2.m11 + m1.m12 * m2.m21 + m1.m13 * m2.m31, m1.m10 * m2.m02 + m1.m11 * m2.m12 + m1.m12 * m2.m22 + m1.m13 * m2.m32, m1.m10 * m2.m03 + m1.m11 * m2.m13 + m1.m12 * m2.m23 + m1.m13 * m2.m33, m1.m20 * m2.m00 + m1.m21 * m2.m10 + m1.m22 * m2.m20 + m1.m23 * m2.m30, m1.m20 * m2.m01 + m1.m21 * m2.m11 + m1.m22 * m2.m21 + m1.m23 * m2.m31, m1.m20 * m2.m02 + m1.m21 * m2.m12 + m1.m22 * m2.m22 + m1.m23 * m2.m32, m1.m20 * m2.m03 + m1.m21 * m2.m13 + m1.m22 * m2.m23 + m1.m23 * m2.m33, m1.m30 * m2.m00 + m1.m31 * m2.m10 + m1.m32 * m2.m20 + m1.m33 * m2.m30, m1.m30 * m2.m01 + m1.m31 * m2.m11 + m1.m32 * m2.m21 + m1.m33 * m2.m31, m1.m30 * m2.m02 + m1.m31 * m2.m12 + m1.m32 * m2.m22 + m1.m33 * m2.m32, m1.m30 * m2.m03 + m1.m31 * m2.m13 + m1.m32 * m2.m23 + m1.m33 * m2.m33);
+}, "JU.M4,JU.M4");
+$_M(c$, "transform", 
+function (vec) {
+this.transform2 (vec, vec);
+}, "JU.T4");
+$_M(c$, "transform2", 
+function (vec, vecOut) {
+vecOut.set (this.m00 * vec.x + this.m01 * vec.y + this.m02 * vec.z + this.m03 * vec.w, this.m10 * vec.x + this.m11 * vec.y + this.m12 * vec.z + this.m13 * vec.w, this.m20 * vec.x + this.m21 * vec.y + this.m22 * vec.z + this.m23 * vec.w, this.m30 * vec.x + this.m31 * vec.y + this.m32 * vec.z + this.m33 * vec.w);
+}, "JU.T4,JU.T4");
+$_M(c$, "rotTrans", 
+function (point) {
+this.rotTrans2 (point, point);
+}, "JU.T3");
+$_M(c$, "rotTrans2", 
+function (point, pointOut) {
+pointOut.set (this.m00 * point.x + this.m01 * point.y + this.m02 * point.z + this.m03, this.m10 * point.x + this.m11 * point.y + this.m12 * point.z + this.m13, this.m20 * point.x + this.m21 * point.y + this.m22 * point.z + this.m23);
+}, "JU.T3,JU.T3");
+$_V(c$, "equals", 
+function (o) {
+if (!(Clazz_instanceOf (o, JU.M4))) return false;
+var m = o;
+return (this.m00 == m.m00 && this.m01 == m.m01 && this.m02 == m.m02 && this.m03 == m.m03 && this.m10 == m.m10 && this.m11 == m.m11 && this.m12 == m.m12 && this.m13 == m.m13 && this.m20 == m.m20 && this.m21 == m.m21 && this.m22 == m.m22 && this.m23 == m.m23 && this.m30 == m.m30 && this.m31 == m.m31 && this.m32 == m.m32 && this.m33 == m.m33);
+}, "~O");
+$_V(c$, "hashCode", 
+function () {
+return JU.T3.floatToIntBits0 (this.m00) ^ JU.T3.floatToIntBits0 (this.m01) ^ JU.T3.floatToIntBits0 (this.m02) ^ JU.T3.floatToIntBits0 (this.m03) ^ JU.T3.floatToIntBits0 (this.m10) ^ JU.T3.floatToIntBits0 (this.m11) ^ JU.T3.floatToIntBits0 (this.m12) ^ JU.T3.floatToIntBits0 (this.m13) ^ JU.T3.floatToIntBits0 (this.m20) ^ JU.T3.floatToIntBits0 (this.m21) ^ JU.T3.floatToIntBits0 (this.m22) ^ JU.T3.floatToIntBits0 (this.m23) ^ JU.T3.floatToIntBits0 (this.m30) ^ JU.T3.floatToIntBits0 (this.m31) ^ JU.T3.floatToIntBits0 (this.m32) ^ JU.T3.floatToIntBits0 (this.m33);
+});
+$_V(c$, "toString", 
+function () {
+return "[\n  [" + this.m00 + "\t" + this.m01 + "\t" + this.m02 + "\t" + this.m03 + "]" + "\n  [" + this.m10 + "\t" + this.m11 + "\t" + this.m12 + "\t" + this.m13 + "]" + "\n  [" + this.m20 + "\t" + this.m21 + "\t" + this.m22 + "\t" + this.m23 + "]" + "\n  [" + this.m30 + "\t" + this.m31 + "\t" + this.m32 + "\t" + this.m33 + "] ]";
+});
 });
 Clazz_declarePackage ("JU");
 Clazz_load (["java.io.OutputStream"], "JU.OC", ["java.io.BufferedWriter", "$.ByteArrayOutputStream", "$.OutputStreamWriter", "JU.SB"], function () {
@@ -12466,17 +12397,6 @@ p.y = y;
 p.z = z;
 return p;
 }, "~N,~N,~N");
-$_M(c$, "distanceSquared", 
-function (p1) {
-var dx = this.x - p1.x;
-var dy = this.y - p1.y;
-var dz = this.z - p1.z;
-return (dx * dx + dy * dy + dz * dz);
-}, "JU.T3");
-$_M(c$, "distance", 
-function (p1) {
-return Math.sqrt (this.distanceSquared (p1));
-}, "JU.T3");
 });
 Clazz_declarePackage ("JU");
 Clazz_load (["JU.T3i"], "JU.P3i", null, function () {
@@ -12515,7 +12435,7 @@ return Math.sqrt (dx * dx + dy * dy + dz * dz + dw * dw);
 }, "JU.P4");
 });
 Clazz_declarePackage ("JU");
-Clazz_load (null, "JU.PT", ["java.lang.Character", "$.Double", "$.Float", "java.util.Map", "JU.A4", "$.DF", "$.List", "$.M3", "$.M4", "$.P4", "$.SB", "$.T3"], function () {
+Clazz_load (null, "JU.PT", ["java.lang.Boolean", "$.Character", "$.Float", "$.Number", "java.util.Map", "javajs.api.JSONEncodable", "JU.AU", "$.DF", "$.List", "$.M34", "$.M4", "$.SB"], function () {
 c$ = Clazz_declareType (JU, "PT");
 c$.parseInt = $_M(c$, "parseInt", 
 function (str) {
@@ -12787,9 +12707,8 @@ return str.substring (ich, ichLast + 1);
 c$.dVal = $_M(c$, "dVal", 
 function (s) {
 {
-if(s==null){
+if(s==null)
 throw new NumberFormatException("null");
-}
 var d=parseFloat(s);
 if(isNaN(d))
 throw new NumberFormatException("Not a Number : "+s);
@@ -12875,7 +12794,7 @@ c$.approx = $_M(c$, "approx",
 function (f, n) {
 return Math.round (f * n) / n;
 }, "~N,~N");
-c$.simpleReplace = $_M(c$, "simpleReplace", 
+c$.rep = $_M(c$, "rep", 
 function (str, strFrom, strTo) {
 if (str == null || strFrom.length == 0 || str.indexOf (strFrom) < 0) return str;
 var isOnce = (strTo.indexOf (strFrom) >= 0);
@@ -12911,11 +12830,18 @@ for (var i = padLength; --i > 0; ) sb.appendC (padChar);
 if (!alignLeft) sb.append (isNeg ? padChar + value.substring (1) : value);
 return sb.toString ();
 }, "~S,~N,~N,~B,~B");
+c$.replaceWithCharacter = $_M(c$, "replaceWithCharacter", 
+function (str, strFrom, chTo) {
+if (str == null) return null;
+for (var i = strFrom.length; --i >= 0; ) str = str.$replace (strFrom.charAt (i), chTo);
+
+return str;
+}, "~S,~S,~S");
 c$.replaceAllCharacters = $_M(c$, "replaceAllCharacters", 
 function (str, strFrom, strTo) {
 for (var i = strFrom.length; --i >= 0; ) {
 var chFrom = strFrom.substring (i, i + 1);
-str = JU.PT.simpleReplace (str, chFrom, strTo);
+str = JU.PT.rep (str, chFrom, strTo);
 }
 return str;
 }, "~S,~S,~S");
@@ -12935,833 +12861,92 @@ c$.trimQuotes = $_M(c$, "trimQuotes",
 function (value) {
 return (value != null && value.length > 1 && value.startsWith ("\"") && value.endsWith ("\"") ? value.substring (1, value.length - 1) : value);
 }, "~S");
-c$.replaceAllCharacter = $_M(c$, "replaceAllCharacter", 
-function (str, strFrom, chTo) {
-if (str == null) return null;
-for (var i = strFrom.length; --i >= 0; ) str = str.$replace (strFrom.charAt (i), chTo);
-
-return str;
-}, "~S,~S,~S");
+c$.isNonStringPrimitive = $_M(c$, "isNonStringPrimitive", 
+function (info) {
+return Clazz_instanceOf (info, Number) || Clazz_instanceOf (info, Boolean);
+}, "~O");
+c$.arrayGet = $_M(c$, "arrayGet", 
+function (info, i) {
+{
+return info[i];
+}}, "~O,~N");
 c$.toJSON = $_M(c$, "toJSON", 
 function (infoType, info) {
-var sb =  new JU.SB ();
-var sep = "";
 if (info == null) return JU.PT.packageJSON (infoType, null);
-if (Clazz_instanceOf (info, Integer) || Clazz_instanceOf (info, Float) || Clazz_instanceOf (info, Double)) return JU.PT.packageJSON (infoType, info.toString ());
-if (Clazz_instanceOf (info, String)) return JU.PT.packageJSON (infoType, JU.PT.fixString (info));
-if (JU.PT.isAS (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.fixString ((info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAI (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).appendI ((info)[i]);
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAF (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).appendF ((info)[i]);
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAD (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).appendD ((info)[i]);
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAP (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep);
-JU.PT.addJsonTuple (sb, (info)[i]);
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isASS (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAII (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAFF (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAFFF (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz_instanceOf (info, JU.List)) {
-sb.append ("[ ");
-var imax = (info).size ();
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info).get (i)));
-sep = ",";
-}
-sb.append (" ]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz_instanceOf (info, JU.M4)) {
-var x =  Clazz_newFloatArray (4, 0);
-var m4 = info;
-sb.appendC ('[');
-for (var i = 0; i < 4; i++) {
-if (i > 0) sb.appendC (',');
-m4.getRow (i, x);
-sb.append (JU.PT.toJSON (null, x));
-}
-sb.appendC (']');
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz_instanceOf (info, JU.M3)) {
-var x =  Clazz_newFloatArray (3, 0);
-var m3 = info;
-sb.appendC ('[');
-for (var i = 0; i < 3; i++) {
-if (i > 0) sb.appendC (',');
-m3.getRow (i, x);
-sb.append (JU.PT.toJSON (null, x));
-}
-sb.appendC (']');
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz_instanceOf (info, JU.T3)) {
-JU.PT.addJsonTuple (sb, info);
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz_instanceOf (info, JU.A4)) {
-sb.append ("[").appendF ((info).x).append (",").appendF ((info).y).append (",").appendF ((info).z).append (",").appendF (((info).angle * 180 / 3.141592653589793)).append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz_instanceOf (info, JU.P4)) {
-sb.append ("[").appendF ((info).x).append (",").appendF ((info).y).append (",").appendF ((info).z).append (",").appendF ((info).w).append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz_instanceOf (info, java.util.Map)) {
-sb.append ("{ ");
-for (var key, $key = (info).keySet ().iterator (); $key.hasNext () && ((key = $key.next ()) || true);) {
-sb.append (sep).append (JU.PT.packageJSON (key, JU.PT.toJSON (null, (info).get (key))));
-sep = ",";
-}
-sb.append (" }");
-return JU.PT.packageJSONSb (infoType, sb);
-}return JU.PT.packageJSON (infoType, JU.PT.fixString (info.toString ()));
-}, "~S,~O");
-c$.packageJSONSb = $_M(c$, "packageJSONSb", 
-function (infoType, sb) {
-return JU.PT.packageJSON (infoType, sb.toString ());
-}, "~S,JU.SB");
-c$.packageJSON = $_M(c$, "packageJSON", 
-function (infoType, info) {
-if (infoType == null) return info;
-return "\"" + infoType + "\": " + info;
-}, "~S,~S");
-c$.fixString = $_M(c$, "fixString", 
-function (s) {
-{
-if (typeof s == "undefined") return "null"
-}if (s == null || s.indexOf ("{\"") == 0) return s;
-s = JU.PT.simpleReplace (s, "\"", "''");
-s = JU.PT.simpleReplace (s, "\n", " | ");
-return "\"" + s + "\"";
-}, "~S");
-c$.addJsonTuple = $_M(c$, "addJsonTuple", 
-function (sb, pt) {
-sb.append ("[").appendF (pt.x).append (",").appendF (pt.y).append (",").appendF (pt.z).append ("]");
-}, "JU.SB,JU.T3");
-c$.isAS = $_M(c$, "isAS", 
-function (x) {
-{
-return Clazz_isAS(x);
-}}, "~O");
-c$.isASS = $_M(c$, "isASS", 
-function (x) {
-{
-return Clazz_isASS(x);
-}}, "~O");
-c$.isAP = $_M(c$, "isAP", 
-function (x) {
-{
-return Clazz_isAP(x);
-}}, "~O");
-c$.isAF = $_M(c$, "isAF", 
-function (x) {
-{
-return Clazz_isAF(x);
-}}, "~O");
-c$.isAFloat = $_M(c$, "isAFloat", 
-function (x) {
-{
-return Clazz_isAFloat(x);
-}}, "~O");
-c$.isAD = $_M(c$, "isAD", 
-function (x) {
-{
-return Clazz_isAF(x);
-}}, "~O");
-c$.isAB = $_M(c$, "isAB", 
-function (x) {
-{
-return Clazz_isAI(x);
-}}, "~O");
-c$.isAI = $_M(c$, "isAI", 
-function (x) {
-{
-return Clazz_isAI(x);
-}}, "~O");
-c$.isAII = $_M(c$, "isAII", 
-function (x) {
-{
-return Clazz_isAII(x);
-}}, "~O");
-c$.isAFF = $_M(c$, "isAFF", 
-function (x) {
-{
-return Clazz_isAFF(x);
-}}, "~O");
-c$.isAFFF = $_M(c$, "isAFFF", 
-function (x) {
-{
-return Clazz_isAFFF(x);
-}}, "~O");
-c$.escapeUrl = $_M(c$, "escapeUrl", 
-function (url) {
-url = JU.PT.simpleReplace (url, "\n", "");
-url = JU.PT.simpleReplace (url, "%", "%25");
-url = JU.PT.simpleReplace (url, "#", "%23");
-url = JU.PT.simpleReplace (url, "[", "%5B");
-url = JU.PT.simpleReplace (url, "]", "%5D");
-url = JU.PT.simpleReplace (url, " ", "%20");
-return url;
-}, "~S");
-Clazz_defineStatics (c$,
-"tensScale", [10, 100, 1000, 10000, 100000, 1000000],
-"decimalScale", [0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001, 0.000000001],
-"FLOAT_MIN_SAFE", 2E-45);
-});
-Clazz_declarePackage ("JU");
-Clazz_load (null, "JU.PT", ["java.lang.Character", "$.Double", "$.Float", "java.util.Map", "JU.A4", "$.DF", "$.List", "$.M3", "$.M4", "$.P4", "$.SB", "$.T3"], function () {
-c$ = Clazz_declareType (JU, "PT");
-c$.parseInt = $_M(c$, "parseInt", 
-function (str) {
-return JU.PT.parseIntNext (str, [0]);
-}, "~S");
-c$.parseIntNext = $_M(c$, "parseIntNext", 
-function (str, next) {
-var cch = str.length;
-if (next[0] < 0 || next[0] >= cch) return -2147483648;
-return JU.PT.parseIntChecked (str, cch, next);
-}, "~S,~A");
-c$.parseIntChecked = $_M(c$, "parseIntChecked", 
-function (str, ichMax, next) {
-var digitSeen = false;
-var value = 0;
-var ich = next[0];
-if (ich < 0) return -2147483648;
-var ch;
-while (ich < ichMax && JU.PT.isWhiteSpace (str, ich)) ++ich;
-
-var negative = false;
-if (ich < ichMax && str.charCodeAt (ich) == 45) {
-negative = true;
-++ich;
-}while (ich < ichMax && (ch = str.charCodeAt (ich)) >= 48 && ch <= 57) {
-value = value * 10 + (ch - 48);
-digitSeen = true;
-++ich;
-}
-if (!digitSeen) value = -2147483648;
- else if (negative) value = -value;
-next[0] = ich;
-return value;
-}, "~S,~N,~A");
-c$.isWhiteSpace = $_M(c$, "isWhiteSpace", 
-function (str, ich) {
-var ch;
-return (ich >= 0 && ((ch = str.charAt (ich)) == ' ' || ch == '\t' || ch == '\n'));
-}, "~S,~N");
-c$.parseFloatChecked = $_M(c$, "parseFloatChecked", 
-function (str, ichMax, next, isStrict) {
-var digitSeen = false;
-var ich = next[0];
-if (isStrict && str.indexOf ('\n') != str.lastIndexOf ('\n')) return NaN;
-while (ich < ichMax && JU.PT.isWhiteSpace (str, ich)) ++ich;
-
-var negative = false;
-if (ich < ichMax && str.charAt (ich) == '-') {
-++ich;
-negative = true;
-}var ch = 0;
-var ival = 0;
-var ival2 = 0;
-while (ich < ichMax && (ch = str.charCodeAt (ich)) >= 48 && ch <= 57) {
-ival = (ival * 10) + (ch - 48) * 1;
-++ich;
-digitSeen = true;
-}
-var isDecimal = false;
-var iscale = 0;
-var nzero = (ival == 0 ? -1 : 0);
-if (ch == 46) {
-isDecimal = true;
-while (++ich < ichMax && (ch = str.charCodeAt (ich)) >= 48 && ch <= 57) {
-digitSeen = true;
-if (nzero < 0) {
-if (ch == 48) {
-nzero--;
-continue;
-}nzero = -nzero;
-}if (iscale < JU.PT.decimalScale.length) {
-ival2 = (ival2 * 10) + (ch - 48) * 1;
-iscale++;
-}}
-}var value;
-if (!digitSeen) {
-value = NaN;
-} else if (ival2 > 0) {
-value = ival2 * JU.PT.decimalScale[iscale - 1];
-if (nzero > 1) {
-if (nzero - 2 < JU.PT.decimalScale.length) {
-value *= JU.PT.decimalScale[nzero - 2];
-} else {
-value *= Math.pow (10, 1 - nzero);
-}} else {
-value += ival;
-}} else {
-value = ival;
-}var isExponent = false;
-if (ich < ichMax && (ch == 69 || ch == 101 || ch == 68)) {
-isExponent = true;
-if (++ich >= ichMax) return NaN;
-ch = str.charCodeAt (ich);
-if ((ch == 43) && (++ich >= ichMax)) return NaN;
-next[0] = ich;
-var exponent = JU.PT.parseIntChecked (str, ichMax, next);
-if (exponent == -2147483648) return NaN;
-if (exponent > 0 && exponent <= JU.PT.tensScale.length) value *= JU.PT.tensScale[exponent - 1];
- else if (exponent < 0 && -exponent <= JU.PT.decimalScale.length) value *= JU.PT.decimalScale[-exponent - 1];
- else if (exponent != 0) value *= Math.pow (10, exponent);
-} else {
-next[0] = ich;
-}if (negative) value = -value;
-if (value == Infinity) value = 3.4028235E38;
-return (!isStrict || (!isExponent || isDecimal) && JU.PT.checkTrailingText (str, next[0], ichMax) ? value : NaN);
-}, "~S,~N,~A,~B");
-c$.checkTrailingText = $_M(c$, "checkTrailingText", 
-function (str, ich, ichMax) {
-var ch;
-while (ich < ichMax && (Character.isWhitespace (ch = str.charAt (ich)) || ch == ';')) ++ich;
-
-return (ich == ichMax);
-}, "~S,~N,~N");
-c$.parseFloatArray = $_M(c$, "parseFloatArray", 
-function (str) {
-return JU.PT.parseFloatArrayNext (str,  Clazz_newIntArray (1, 0), null, null, null);
-}, "~S");
-c$.parseFloatArrayInfested = $_M(c$, "parseFloatArrayInfested", 
-function (tokens, data) {
-var len = data.length;
-var nTokens = tokens.length;
-var n = 0;
-var max = 0;
-for (var i = 0; i >= 0 && i < len && n < nTokens; i++) {
-var f;
-while (Float.isNaN (f = JU.PT.parseFloat (tokens[n++])) && n < nTokens) {
-}
-if (!Float.isNaN (f)) data[(max = i)] = f;
-if (n == nTokens) break;
-}
-return max + 1;
-}, "~A,~A");
-c$.parseFloatArrayNext = $_M(c$, "parseFloatArrayNext", 
-function (str, next, f, strStart, strEnd) {
-var n = 0;
-var pt = next[0];
-if (pt >= 0) {
-if (strStart != null) {
-var p = str.indexOf (strStart, pt);
-if (p >= 0) next[0] = p + strStart.length;
-}str = str.substring (next[0]);
-pt = (strEnd == null ? -1 : str.indexOf (strEnd));
-if (pt < 0) pt = str.length;
- else str = str.substring (0, pt);
-next[0] += pt + 1;
-var tokens = JU.PT.getTokens (str);
-if (f == null) f =  Clazz_newFloatArray (tokens.length, 0);
-n = JU.PT.parseFloatArrayInfested (tokens, f);
-}if (f == null) return  Clazz_newFloatArray (0, 0);
-for (var i = n; i < f.length; i++) f[i] = NaN;
-
-return f;
-}, "~S,~A,~A,~S,~S");
-c$.parseFloatRange = $_M(c$, "parseFloatRange", 
-function (str, ichMax, next) {
-var cch = str.length;
-if (ichMax > cch) ichMax = cch;
-if (next[0] < 0 || next[0] >= ichMax) return NaN;
-return JU.PT.parseFloatChecked (str, ichMax, next, false);
-}, "~S,~N,~A");
-c$.parseFloatNext = $_M(c$, "parseFloatNext", 
-function (str, next) {
-var cch = (str == null ? -1 : str.length);
-if (next[0] < 0 || next[0] >= cch) return NaN;
-return JU.PT.parseFloatChecked (str, cch, next, false);
-}, "~S,~A");
-c$.parseFloatStrict = $_M(c$, "parseFloatStrict", 
-function (str) {
-var cch = str.length;
-if (cch == 0) return NaN;
-return JU.PT.parseFloatChecked (str, cch, [0], true);
-}, "~S");
-c$.parseFloat = $_M(c$, "parseFloat", 
-function (str) {
-return JU.PT.parseFloatNext (str, [0]);
-}, "~S");
-c$.parseIntRadix = $_M(c$, "parseIntRadix", 
-function (s, i) {
-{
-return Integer.parseIntRadix(s, i);
-}}, "~S,~N");
-c$.getTokens = $_M(c$, "getTokens", 
-function (line) {
-return JU.PT.getTokensAt (line, 0);
-}, "~S");
-c$.parseToken = $_M(c$, "parseToken", 
-function (str) {
-return JU.PT.parseTokenNext (str, [0]);
-}, "~S");
-c$.parseTrimmed = $_M(c$, "parseTrimmed", 
-function (str) {
-return JU.PT.parseTrimmedRange (str, 0, str.length);
-}, "~S");
-c$.parseTrimmedAt = $_M(c$, "parseTrimmedAt", 
-function (str, ichStart) {
-return JU.PT.parseTrimmedRange (str, ichStart, str.length);
-}, "~S,~N");
-c$.parseTrimmedRange = $_M(c$, "parseTrimmedRange", 
-function (str, ichStart, ichMax) {
-var cch = str.length;
-if (ichMax < cch) cch = ichMax;
-if (cch < ichStart) return "";
-return JU.PT.parseTrimmedChecked (str, ichStart, cch);
-}, "~S,~N,~N");
-c$.getTokensAt = $_M(c$, "getTokensAt", 
-function (line, ich) {
-if (line == null) return null;
-var cchLine = line.length;
-if (ich < 0 || ich > cchLine) return null;
-var tokenCount = JU.PT.countTokens (line, ich);
-var tokens =  new Array (tokenCount);
-var next =  Clazz_newIntArray (1, 0);
-next[0] = ich;
-for (var i = 0; i < tokenCount; ++i) tokens[i] = JU.PT.parseTokenChecked (line, cchLine, next);
-
-return tokens;
-}, "~S,~N");
-c$.countTokens = $_M(c$, "countTokens", 
-function (line, ich) {
-var tokenCount = 0;
-if (line != null) {
-var ichMax = line.length;
+if (JU.PT.isNonStringPrimitive (info)) return JU.PT.packageJSON (infoType, info.toString ());
+var s = null;
+var sb = null;
 while (true) {
-while (ich < ichMax && JU.PT.isWhiteSpace (line, ich)) ++ich;
-
-if (ich == ichMax) break;
-++tokenCount;
-do {
-++ich;
-} while (ich < ichMax && !JU.PT.isWhiteSpace (line, ich));
-}
-}return tokenCount;
-}, "~S,~N");
-c$.parseTokenNext = $_M(c$, "parseTokenNext", 
-function (str, next) {
-var cch = str.length;
-if (next[0] < 0 || next[0] >= cch) return null;
-return JU.PT.parseTokenChecked (str, cch, next);
-}, "~S,~A");
-c$.parseTokenRange = $_M(c$, "parseTokenRange", 
-function (str, ichMax, next) {
-var cch = str.length;
-if (ichMax > cch) ichMax = cch;
-if (next[0] < 0 || next[0] >= ichMax) return null;
-return JU.PT.parseTokenChecked (str, ichMax, next);
-}, "~S,~N,~A");
-c$.parseTokenChecked = $_M(c$, "parseTokenChecked", 
-function (str, ichMax, next) {
-var ich = next[0];
-while (ich < ichMax && JU.PT.isWhiteSpace (str, ich)) ++ich;
-
-var ichNonWhite = ich;
-while (ich < ichMax && !JU.PT.isWhiteSpace (str, ich)) ++ich;
-
-next[0] = ich;
-if (ichNonWhite == ich) return null;
-return str.substring (ichNonWhite, ich);
-}, "~S,~N,~A");
-c$.parseTrimmedChecked = $_M(c$, "parseTrimmedChecked", 
-function (str, ich, ichMax) {
-while (ich < ichMax && JU.PT.isWhiteSpace (str, ich)) ++ich;
-
-var ichLast = ichMax - 1;
-while (ichLast >= ich && JU.PT.isWhiteSpace (str, ichLast)) --ichLast;
-
-if (ichLast < ich) return "";
-return str.substring (ich, ichLast + 1);
-}, "~S,~N,~N");
-c$.dVal = $_M(c$, "dVal", 
-function (s) {
-{
-if(s==null){
-throw new NumberFormatException("null");
-}
-var d=parseFloat(s);
-if(isNaN(d))
-throw new NumberFormatException("Not a Number : "+s);
-return d
-}}, "~S");
-c$.fVal = $_M(c$, "fVal", 
-function (s) {
-{
-return this.dVal(s);
-}}, "~S");
-c$.parseIntRange = $_M(c$, "parseIntRange", 
-function (str, ichMax, next) {
-var cch = str.length;
-if (ichMax > cch) ichMax = cch;
-if (next[0] < 0 || next[0] >= ichMax) return -2147483648;
-return JU.PT.parseIntChecked (str, ichMax, next);
-}, "~S,~N,~A");
-c$.parseFloatArrayData = $_M(c$, "parseFloatArrayData", 
-function (tokens, data) {
-JU.PT.parseFloatArrayDataN (tokens, data, data.length);
-}, "~A,~A");
-c$.parseFloatArrayDataN = $_M(c$, "parseFloatArrayDataN", 
-function (tokens, data, nData) {
-for (var i = nData; --i >= 0; ) data[i] = (i >= tokens.length ? NaN : JU.PT.parseFloat (tokens[i]));
-
-}, "~A,~A,~N");
-c$.split = $_M(c$, "split", 
-function (text, run) {
-if (text.length == 0) return  new Array (0);
-var n = 1;
-var i = text.indexOf (run);
-var lines;
-var runLen = run.length;
-if (i < 0 || runLen == 0) {
-lines =  new Array (1);
-lines[0] = text;
-return lines;
-}var len = text.length - runLen;
-for (; i >= 0 && i < len; n++) i = text.indexOf (run, i + runLen);
-
-lines =  new Array (n);
-i = 0;
-var ipt = 0;
-var pt = 0;
-for (; (ipt = text.indexOf (run, i)) >= 0 && pt + 1 < n; ) {
-lines[pt++] = text.substring (i, ipt);
-i = ipt + runLen;
-}
-if (text.indexOf (run, len) != len) len += runLen;
-lines[pt] = text.substring (i, len);
-return lines;
-}, "~S,~S");
-c$.getQuotedStringAt = $_M(c$, "getQuotedStringAt", 
-function (line, ipt0) {
-var next = [ipt0];
-return JU.PT.getQuotedStringNext (line, next);
-}, "~S,~N");
-c$.getQuotedStringNext = $_M(c$, "getQuotedStringNext", 
-function (line, next) {
-var value = line;
-var i = next[0];
-if (i < 0 || (i = value.indexOf ("\"", i)) < 0) return "";
-next[0] = ++i;
-value = value.substring (i);
-i = -1;
-while (++i < value.length && value.charAt (i) != '"') if (value.charAt (i) == '\\') i++;
-
-next[0] += i + 1;
-return value.substring (0, i);
-}, "~S,~A");
-c$.isOneOf = $_M(c$, "isOneOf", 
-function (key, semiList) {
-if (semiList.length == 0) return false;
-if (semiList.charAt (0) != ';') semiList = ";" + semiList + ";";
-return key.indexOf (";") < 0 && semiList.indexOf (';' + key + ';') >= 0;
-}, "~S,~S");
-c$.getQuotedAttribute = $_M(c$, "getQuotedAttribute", 
-function (info, name) {
-var i = info.indexOf (name + "=");
-return (i < 0 ? null : JU.PT.getQuotedStringAt (info, i));
-}, "~S,~S");
-c$.approx = $_M(c$, "approx", 
-function (f, n) {
-return Math.round (f * n) / n;
-}, "~N,~N");
-c$.simpleReplace = $_M(c$, "simpleReplace", 
-function (str, strFrom, strTo) {
-if (str == null || strFrom.length == 0 || str.indexOf (strFrom) < 0) return str;
-var isOnce = (strTo.indexOf (strFrom) >= 0);
-do {
-str = str.$replace (strFrom, strTo);
-} while (!isOnce && str.indexOf (strFrom) >= 0);
-return str;
-}, "~S,~S,~S");
-c$.formatF = $_M(c$, "formatF", 
-function (value, width, precision, alignLeft, zeroPad) {
-return JU.PT.formatS (JU.DF.formatDecimal (value, precision), width, 0, alignLeft, zeroPad);
-}, "~N,~N,~N,~B,~B");
-c$.formatD = $_M(c$, "formatD", 
-function (value, width, precision, alignLeft, zeroPad, allowOverflow) {
-return JU.PT.formatS (JU.DF.formatDecimal (value, -1 - precision), width, 0, alignLeft, zeroPad);
-}, "~N,~N,~N,~B,~B,~B");
-c$.formatS = $_M(c$, "formatS", 
-function (value, width, precision, alignLeft, zeroPad) {
-if (value == null) return "";
-var len = value.length;
-if (precision != 2147483647 && precision > 0 && precision < len) value = value.substring (0, precision);
- else if (precision < 0 && len + precision >= 0) value = value.substring (len + precision + 1);
-var padLength = width - value.length;
-if (padLength <= 0) return value;
-var isNeg = (zeroPad && !alignLeft && value.charAt (0) == '-');
-var padChar = (zeroPad ? '0' : ' ');
-var padChar0 = (isNeg ? '-' : padChar);
-var sb =  new JU.SB ();
-if (alignLeft) sb.append (value);
-sb.appendC (padChar0);
-for (var i = padLength; --i > 0; ) sb.appendC (padChar);
-
-if (!alignLeft) sb.append (isNeg ? padChar + value.substring (1) : value);
-return sb.toString ();
-}, "~S,~N,~N,~B,~B");
-c$.replaceAllCharacters = $_M(c$, "replaceAllCharacters", 
-function (str, strFrom, strTo) {
-for (var i = strFrom.length; --i >= 0; ) {
-var chFrom = strFrom.substring (i, i + 1);
-str = JU.PT.simpleReplace (str, chFrom, strTo);
-}
-return str;
-}, "~S,~S,~S");
-c$.trim = $_M(c$, "trim", 
-function (str, chars) {
-if (chars.length == 0) return str.trim ();
-var len = str.length;
-var k = 0;
-while (k < len && chars.indexOf (str.charAt (k)) >= 0) k++;
-
-var m = str.length - 1;
-while (m > k && chars.indexOf (str.charAt (m)) >= 0) m--;
-
-return str.substring (k, m + 1);
-}, "~S,~S");
-c$.trimQuotes = $_M(c$, "trimQuotes", 
-function (value) {
-return (value != null && value.length > 1 && value.startsWith ("\"") && value.endsWith ("\"") ? value.substring (1, value.length - 1) : value);
-}, "~S");
-c$.replaceAllCharacter = $_M(c$, "replaceAllCharacter", 
-function (str, strFrom, chTo) {
-if (str == null) return null;
-for (var i = strFrom.length; --i >= 0; ) str = str.$replace (strFrom.charAt (i), chTo);
-
-return str;
-}, "~S,~S,~S");
-c$.toJSON = $_M(c$, "toJSON", 
-function (infoType, info) {
-var sb =  new JU.SB ();
-var sep = "";
-if (info == null) return JU.PT.packageJSON (infoType, null);
-if (Clazz_instanceOf (info, Integer) || Clazz_instanceOf (info, Float) || Clazz_instanceOf (info, Double)) return JU.PT.packageJSON (infoType, info.toString ());
-if (Clazz_instanceOf (info, String)) return JU.PT.packageJSON (infoType, JU.PT.fixString (info));
-if (JU.PT.isAS (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.fixString ((info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAI (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).appendI ((info)[i]);
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAF (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).appendF ((info)[i]);
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAD (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).appendD ((info)[i]);
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAP (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep);
-JU.PT.addJsonTuple (sb, (info)[i]);
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isASS (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAII (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAFF (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (JU.PT.isAFFF (info)) {
-sb.append ("[");
-var imax = (info).length;
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info)[i]));
-sep = ",";
-}
-sb.append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz_instanceOf (info, JU.List)) {
-sb.append ("[ ");
-var imax = (info).size ();
-for (var i = 0; i < imax; i++) {
-sb.append (sep).append (JU.PT.toJSON (null, (info).get (i)));
-sep = ",";
-}
-sb.append (" ]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz_instanceOf (info, JU.M4)) {
-var x =  Clazz_newFloatArray (4, 0);
-var m4 = info;
-sb.appendC ('[');
-for (var i = 0; i < 4; i++) {
-if (i > 0) sb.appendC (',');
-m4.getRow (i, x);
-sb.append (JU.PT.toJSON (null, x));
-}
-sb.appendC (']');
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz_instanceOf (info, JU.M3)) {
-var x =  Clazz_newFloatArray (3, 0);
-var m3 = info;
-sb.appendC ('[');
-for (var i = 0; i < 3; i++) {
-if (i > 0) sb.appendC (',');
-m3.getRow (i, x);
-sb.append (JU.PT.toJSON (null, x));
-}
-sb.appendC (']');
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz_instanceOf (info, JU.T3)) {
-JU.PT.addJsonTuple (sb, info);
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz_instanceOf (info, JU.A4)) {
-sb.append ("[").appendF ((info).x).append (",").appendF ((info).y).append (",").appendF ((info).z).append (",").appendF (((info).angle * 180 / 3.141592653589793)).append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz_instanceOf (info, JU.P4)) {
-sb.append ("[").appendF ((info).x).append (",").appendF ((info).y).append (",").appendF ((info).z).append (",").appendF ((info).w).append ("]");
-return JU.PT.packageJSONSb (infoType, sb);
-}if (Clazz_instanceOf (info, java.util.Map)) {
+if (Clazz_instanceOf (info, String)) {
+s = JU.PT.fixString (info);
+break;
+}if (Clazz_instanceOf (info, javajs.api.JSONEncodable)) {
+s = (info).toJSON ();
+break;
+}sb =  new JU.SB ();
+if (Clazz_instanceOf (info, java.util.Map)) {
 sb.append ("{ ");
+var sep = "";
 for (var key, $key = (info).keySet ().iterator (); $key.hasNext () && ((key = $key.next ()) || true);) {
 sb.append (sep).append (JU.PT.packageJSON (key, JU.PT.toJSON (null, (info).get (key))));
 sep = ",";
 }
 sb.append (" }");
-return JU.PT.packageJSONSb (infoType, sb);
-}return JU.PT.packageJSON (infoType, JU.PT.fixString (info.toString ()));
+break;
+}if (Clazz_instanceOf (info, JU.List)) {
+sb.append ("[ ");
+var n = (info).size ();
+for (var i = 0; i < n; i++) {
+if (i > 0) sb.appendC (',');
+sb.append (JU.PT.toJSON (null, (info).get (i)));
+}
+sb.append (" ]");
+break;
+}if (Clazz_instanceOf (info, JU.M34)) {
+var len = (Clazz_instanceOf (info, JU.M4) ? 4 : 3);
+var x =  Clazz_newFloatArray (len, 0);
+var m = info;
+sb.appendC ('[');
+for (var i = 0; i < len; i++) {
+if (i > 0) sb.appendC (',');
+m.getRow (i, x);
+sb.append (JU.PT.toJSON (null, x));
+}
+sb.appendC (']');
+break;
+}s = JU.PT.nonArrayString (info);
+if (s == null) {
+sb.append ("[");
+var n = JU.AU.getLength (info);
+for (var i = 0; i < n; i++) {
+if (i > 0) sb.appendC (',');
+sb.append (JU.PT.toJSON (null, JU.PT.arrayGet (info, i)));
+}
+sb.append ("]");
+break;
+}info = info.toString ();
+}
+return JU.PT.packageJSON (infoType, (s == null ? sb.toString () : s));
 }, "~S,~O");
-c$.packageJSONSb = $_M(c$, "packageJSONSb", 
-function (infoType, sb) {
-return JU.PT.packageJSON (infoType, sb.toString ());
-}, "~S,JU.SB");
+c$.nonArrayString = $_M(c$, "nonArrayString", 
+function (x) {
+{
+var s = x.toString(); return (s.startsWith("[object") &&
+s.endsWith("Array]") ? null : s);
+}}, "~O");
 c$.packageJSON = $_M(c$, "packageJSON", 
 function (infoType, info) {
-if (infoType == null) return info;
-return "\"" + infoType + "\": " + info;
+return (infoType == null ? info : "\"" + infoType + "\": " + info);
 }, "~S,~S");
 c$.fixString = $_M(c$, "fixString", 
 function (s) {
 {
 if (typeof s == "undefined") return "null"
 }if (s == null || s.indexOf ("{\"") == 0) return s;
-s = JU.PT.simpleReplace (s, "\"", "''");
-s = JU.PT.simpleReplace (s, "\n", " | ");
+s = JU.PT.rep (s, "\"", "\\\"");
+s = JU.PT.rep (s, "\n", "\\n");
 return "\"" + s + "\"";
 }, "~S");
-c$.addJsonTuple = $_M(c$, "addJsonTuple", 
-function (sb, pt) {
-sb.append ("[").appendF (pt.x).append (",").appendF (pt.y).append (",").appendF (pt.z).append ("]");
-}, "JU.SB,JU.T3");
 c$.isAS = $_M(c$, "isAS", 
 function (x) {
 {
@@ -13792,6 +12977,11 @@ function (x) {
 {
 return Clazz_isAF(x);
 }}, "~O");
+c$.isADD = $_M(c$, "isADD", 
+function (x) {
+{
+return Clazz_isAFF(x);
+}}, "~O");
 c$.isAB = $_M(c$, "isAB", 
 function (x) {
 {
@@ -13819,18 +13009,47 @@ return Clazz_isAFFF(x);
 }}, "~O");
 c$.escapeUrl = $_M(c$, "escapeUrl", 
 function (url) {
-url = JU.PT.simpleReplace (url, "\n", "");
-url = JU.PT.simpleReplace (url, "%", "%25");
-url = JU.PT.simpleReplace (url, "#", "%23");
-url = JU.PT.simpleReplace (url, "[", "%5B");
-url = JU.PT.simpleReplace (url, "]", "%5D");
-url = JU.PT.simpleReplace (url, " ", "%20");
+url = JU.PT.rep (url, "\n", "");
+url = JU.PT.rep (url, "%", "%25");
+url = JU.PT.rep (url, "#", "%23");
+url = JU.PT.rep (url, "[", "%5B");
+url = JU.PT.rep (url, "]", "%5D");
+url = JU.PT.rep (url, " ", "%20");
 return url;
+}, "~S");
+c$.esc = $_M(c$, "esc", 
+function (str) {
+if (str == null || str.length == 0) return "\"\"";
+var haveEscape = false;
+var i = 0;
+for (; i < "\\\\\tt\rr\nn\"\"".length; i += 2) if (str.indexOf ("\\\\\tt\rr\nn\"\"".charAt (i)) >= 0) {
+haveEscape = true;
+break;
+}
+if (haveEscape) while (i < "\\\\\tt\rr\nn\"\"".length) {
+var pt = -1;
+var ch = "\\\\\tt\rr\nn\"\"".charAt (i++);
+var ch2 = "\\\\\tt\rr\nn\"\"".charAt (i++);
+var sb =  new JU.SB ();
+var pt0 = 0;
+while ((pt = str.indexOf (ch, pt + 1)) >= 0) {
+sb.append (str.substring (pt0, pt)).appendC ('\\').appendC (ch2);
+pt0 = pt + 1;
+}
+sb.append (str.substring (pt0, str.length));
+str = sb.toString ();
+}
+for (i = str.length; --i >= 0; ) if (str.charCodeAt (i) > 0x7F) {
+var s = "0000" + Integer.toHexString (str.charCodeAt (i));
+str = str.substring (0, i) + "\\u" + s.substring (s.length - 4) + str.substring (i + 1);
+}
+return "\"" + str + "\"";
 }, "~S");
 Clazz_defineStatics (c$,
 "tensScale", [10, 100, 1000, 10000, 100000, 1000000],
 "decimalScale", [0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001, 0.00000001, 0.000000001],
-"FLOAT_MIN_SAFE", 2E-45);
+"FLOAT_MIN_SAFE", 2E-45,
+"escapable", "\\\\\tt\rr\nn\"\"");
 });
 Clazz_declarePackage ("JU");
 c$ = Clazz_decorateAsClass (function () {
@@ -13905,9 +13124,10 @@ this.s += buf.s;
 }, "JU.SB");
 $_M(c$, "appendO", 
 function (data) {
+if (data != null) {
 {
 this.s += data.toString();
-}return this;
+}}return this;
 }, "~O");
 $_M(c$, "appendCB", 
 function (cb, off, len) {
@@ -13969,13 +13189,13 @@ for (var i = off + len, j = i - off; --i >= off; ) b[--j] = (this.charAt (i)).ch
 return b;
 }, "~N,~N");
 Clazz_declarePackage ("JU");
-Clazz_load (null, "JU.T3", ["java.lang.Float"], function () {
+Clazz_load (["javajs.api.JSONEncodable"], "JU.T3", ["java.lang.Float"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.x = 0;
 this.y = 0;
 this.z = 0;
 Clazz_instantialize (this, arguments);
-}, JU, "T3", null, java.io.Serializable);
+}, JU, "T3", null, [javajs.api.JSONEncodable, java.io.Serializable]);
 Clazz_makeConstructor (c$, 
 function () {
 });
@@ -14009,6 +13229,17 @@ this.x += t1.x;
 this.y += t1.y;
 this.z += t1.z;
 }, "JU.T3");
+$_M(c$, "distanceSquared", 
+function (p1) {
+var dx = this.x - p1.x;
+var dy = this.y - p1.y;
+var dz = this.z - p1.z;
+return (dx * dx + dy * dy + dz * dz);
+}, "JU.T3");
+$_M(c$, "distance", 
+function (p1) {
+return Math.sqrt (this.distanceSquared (p1));
+}, "JU.T3");
 $_M(c$, "sub2", 
 function (t1, t2) {
 this.x = t1.x - t2.x;
@@ -14027,18 +13258,24 @@ this.x *= s;
 this.y *= s;
 this.z *= s;
 }, "~N");
+$_M(c$, "add3", 
+function (a, b, c) {
+this.x += a;
+this.y += b;
+this.z += c;
+}, "~N,~N,~N");
 $_M(c$, "scaleAdd2", 
 function (s, t1, t2) {
 this.x = s * t1.x + t2.x;
 this.y = s * t1.y + t2.y;
 this.z = s * t1.z + t2.z;
 }, "~N,JU.T3,JU.T3");
-$_M(c$, "scaleAdd", 
-function (s, t1) {
-this.x = s * this.x + t1.x;
-this.y = s * this.y + t1.y;
-this.z = s * this.z + t1.z;
-}, "~N,JU.T3");
+$_M(c$, "ave", 
+function (a, b) {
+this.x = (a.x + b.x) / 2;
+this.y = (a.y + b.y) / 2;
+this.z = (a.z + b.z) / 2;
+}, "JU.T3,JU.T3");
 $_M(c$, "dot", 
 function (v) {
 return this.x * v.x + this.y * v.y + this.z * v.z;
@@ -14079,6 +13316,10 @@ return (this.x == t2.x && this.y == t2.y && this.z == t2.z);
 $_V(c$, "toString", 
 function () {
 return "(" + this.x + ", " + this.y + ", " + this.z + ")";
+});
+$_V(c$, "toJSON", 
+function () {
+return "[" + this.x + "," + this.y + "," + this.z + "]";
 });
 });
 Clazz_declarePackage ("JU");
@@ -14130,14 +13371,14 @@ function () {
 return "(" + this.x + ", " + this.y + ", " + this.z + ")";
 });
 Clazz_declarePackage ("JU");
-Clazz_load (null, "JU.T4", ["JU.T3"], function () {
+Clazz_load (["javajs.api.JSONEncodable"], "JU.T4", ["JU.T3"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.x = 0;
 this.y = 0;
 this.z = 0;
 this.w = 0;
 Clazz_instantialize (this, arguments);
-}, JU, "T4", null, java.io.Serializable);
+}, JU, "T4", null, [java.io.Serializable, javajs.api.JSONEncodable]);
 Clazz_makeConstructor (c$, 
 function () {
 });
@@ -14168,6 +13409,10 @@ return (this.x == t.x && this.y == t.y && this.z == t.z && this.w == t.w);
 $_V(c$, "toString", 
 function () {
 return "(" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + ")";
+});
+$_V(c$, "toJSON", 
+function () {
+return "[" + this.x + ", " + this.y + ", " + this.z + ", " + this.w + "]";
 });
 });
 Clazz_declarePackage ("JU");
@@ -14253,7 +13498,7 @@ this.log (System.err, 1, txt, e);
 }, "~S,Throwable");
 });
 Clazz_declarePackage ("J.util");
-Clazz_load (["java.util.Hashtable", "J.util.DefaultLogger"], "J.util.Logger", null, function () {
+Clazz_load (["java.util.Hashtable", "J.util.DefaultLogger"], "J.util.Logger", ["java.lang.Long"], function () {
 c$ = Clazz_declareType (J.util, "Logger");
 c$.getProperty = $_M(c$, "getProperty", 
 function (level, defaultValue) {
@@ -14390,7 +13635,7 @@ J.util.Logger._logger.fatalEx (txt, e);
 }, "~S,Throwable");
 c$.startTimer = $_M(c$, "startTimer", 
 function (msg) {
-if (msg != null) J.util.Logger.htTiming.put (msg, Integer.$valueOf (System.currentTimeMillis ()));
+if (msg != null) J.util.Logger.htTiming.put (msg, Long.$valueOf (System.currentTimeMillis ()));
 }, "~S");
 c$.getTimerMsg = $_M(c$, "getTimerMsg", 
 function (msg, time) {
@@ -14400,7 +13645,7 @@ return "Time for " + msg + ": " + (time) + " ms";
 c$.getTimeFrom = $_M(c$, "getTimeFrom", 
 function (msg) {
 var t;
-return (msg == null || (t = J.util.Logger.htTiming.get (msg)) == null ? -1 : (System.currentTimeMillis () - t.intValue ()));
+return (msg == null || (t = J.util.Logger.htTiming.get (msg)) == null ? -1 : System.currentTimeMillis () - t.longValue ());
 }, "~S");
 c$.checkTimer = $_M(c$, "checkTimer", 
 function (msg, andReset) {
@@ -14459,7 +13704,9 @@ Clazz_declareInterface (JSV.api, "JSVFileHelper");
 Clazz_declarePackage ("JSV.api");
 Clazz_declareInterface (JSV.api, "JSVGraphics");
 Clazz_declarePackage ("JSV.api");
-Clazz_declareInterface (JSV.api, "JSVMainPanel");
+Clazz_load (["JSV.api.JSVViewPanel"], "JSV.api.JSVMainPanel", null, function () {
+Clazz_declareInterface (JSV.api, "JSVMainPanel", JSV.api.JSVViewPanel);
+});
 Clazz_declarePackage ("JSV.api");
 Clazz_load (["JSV.api.JSVViewPanel"], "JSV.api.JSVPanel", null, function () {
 Clazz_declareInterface (JSV.api, "JSVPanel", JSV.api.JSVViewPanel);
@@ -14481,7 +13728,7 @@ Clazz_declareInterface (JSV.api, "ScriptInterface");
 Clazz_declarePackage ("JSV.api");
 Clazz_declareInterface (JSV.api, "XYScaleConverter");
 Clazz_declarePackage ("JSV.app");
-Clazz_load (["JSV.api.JSVAppInterface", "$.PanelListener"], "JSV.app.JSVApp", ["java.lang.Boolean", "$.Double", "JU.List", "$.PT", "JSV.common.Coordinate", "$.JSVFileManager", "$.JSViewer", "$.PanelNode", "$.Parameters", "$.PeakPickEvent", "$.ScriptToken", "$.ScriptTokenizer", "$.SubSpecChangeEvent", "$.ZoomEvent", "JSV.source.FileReader", "JSV.util.JSVEscape", "J.util.Logger"], function () {
+Clazz_load (["JSV.api.JSVAppInterface", "$.PanelListener"], "JSV.app.JSVApp", ["java.lang.Boolean", "$.Double", "JU.List", "$.PT", "JSV.common.Coordinate", "$.JSVFileManager", "$.JSViewer", "$.PanelNode", "$.Parameters", "$.PeakPickEvent", "$.ScriptToken", "$.ScriptTokenizer", "$.SubSpecChangeEvent", "$.ZoomEvent", "JSV.source.FileReader", "J.util.Logger"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.appletFrame = null;
 this.fileCount = 0;
@@ -14511,7 +13758,7 @@ Clazz_makeConstructor (c$,
 function (appletFrame, isJS) {
 this.appletFrame = appletFrame;
 this.initViewer (isJS);
-this.init ();
+this.initParams (appletFrame.getParameter ("script"));
 }, "JSV.api.AppletFrame,~B");
 $_M(c$, "initViewer", 
 function (isJS) {
@@ -14600,7 +13847,7 @@ return this.viewer.$export (type, n);
 }, "~S,~N");
 $_V(c$, "setFilePath", 
 function (tmpFilePath) {
-this.runScript ("load " + JSV.util.JSVEscape.eS (tmpFilePath));
+this.runScript ("load " + JU.PT.esc (tmpFilePath));
 }, "~S");
 $_V(c$, "setSpectrumNumber", 
 function (n) {
@@ -14647,21 +13894,19 @@ $_V(c$, "writeStatus",
 function (msg) {
 J.util.Logger.info (msg);
 }, "~S");
-$_M(c$, "init", 
-function () {
-this.initParams (this.appletFrame.getParameter ("script"));
-});
 $_M(c$, "initParams", 
 function (params) {
 this.parseInitScript (params);
 this.newAppletPanel ();
 this.viewer.setPopupMenu (this.allowMenu, this.viewer.parameters.getBoolean (JSV.common.ScriptToken.ENABLEZOOM));
-this.runScriptNow (params);
+if (this.allowMenu) {
+this.viewer.closeSource (null);
+}this.runScriptNow (params);
 }, "~S");
 $_M(c$, "newAppletPanel", 
 function () {
 J.util.Logger.info ("newAppletPanel");
-this.appletFrame.addNewPanel (this.viewer);
+this.appletFrame.createMainPanel (this.viewer);
 });
 $_V(c$, "siSendPanelChange", 
 function (jsvp) {
@@ -14688,7 +13933,8 @@ function (width, height) {
 }, "~N,~N");
 $_V(c$, "siValidateAndRepaint", 
 function () {
-if (this.viewer.selectedPanel != null) this.viewer.selectedPanel.getPanelData ().taintedAll = true;
+var pd;
+if (this.viewer.selectedPanel != null && (pd = this.viewer.selectedPanel.getPanelData ()) != null) pd.taintedAll = true;
 this.appletFrame.validate ();
 this.repaint ();
 });
@@ -14722,8 +13968,7 @@ break;
 case JSV.common.ScriptToken.UNKNOWN:
 break;
 case JSV.common.ScriptToken.APPLETID:
-this.viewer.appletID = value;
-this.viewer.fullName = this.viewer.appletID + "__" + this.viewer.syncID + "__";
+this.viewer.fullName = this.viewer.appletID + "__" + (this.viewer.appletID = value) + "__";
 {
 if(typeof Jmol != "undefined") this.viewer.applet =
 Jmol._applets[value];
@@ -14762,8 +14007,7 @@ case JSV.common.ScriptToken.STARTINDEX:
 this.initialStartIndex = Integer.parseInt (value);
 break;
 case JSV.common.ScriptToken.SYNCID:
-this.viewer.syncID = value;
-this.viewer.fullName = this.viewer.appletID + "__" + this.viewer.syncID + "__";
+this.viewer.fullName = this.viewer.appletID + "__" + (this.viewer.syncID = value) + "__";
 break;
 }
 } catch (e) {
@@ -14776,12 +14020,16 @@ throw e;
 }, "~S");
 $_V(c$, "siOpenDataOrFile", 
 function (data, name, specs, url, firstSpec, lastSpec, isAppend) {
-var status = this.viewer.openDataOrFile (data, name, specs, url, firstSpec, lastSpec, isAppend);
-if (status == -1) return;
-if (status != 0) {
+switch (this.viewer.openDataOrFile (data, name, specs, url, firstSpec, lastSpec, isAppend)) {
+case 0:
+break;
+case -1:
+return;
+default:
 this.siSetSelectedPanel (null);
 return;
-}if (this.viewer.jsvpPopupMenu != null) this.viewer.jsvpPopupMenu.setCompoundMenu (this.viewer.panelNodes, this.allowCompoundMenu);
+}
+if (this.viewer.jsvpPopupMenu != null) this.viewer.jsvpPopupMenu.setCompoundMenu (this.viewer.panelNodes, this.allowCompoundMenu);
 J.util.Logger.info (this.appletFrame.getAppletInfo () + " File " + this.viewer.currentSource.getFilePath () + " Loaded Successfully");
 }, "~S,~S,JU.List,~S,~N,~N,~B");
 $_V(c$, "siProcessCommand", 
@@ -14798,16 +14046,19 @@ if (this.coordCallbackFunctionName == null && this.peakCallbackFunctionName == n
 var coord =  new JSV.common.Coordinate ();
 var actualCoord = (this.peakCallbackFunctionName == null ? null :  new JSV.common.Coordinate ());
 if (!this.viewer.selectedPanel.getPanelData ().getPickedCoordinates (coord, actualCoord)) return;
-var iSpec = this.viewer.viewPanel.getCurrentPanelIndex ();
+var iSpec = this.viewer.mainPanel.getCurrentPanelIndex ();
 if (actualCoord == null) this.appletFrame.callToJavaScript (this.coordCallbackFunctionName, [Double.$valueOf (coord.getXVal ()), Double.$valueOf (coord.getYVal ()), Integer.$valueOf (iSpec + 1)]);
  else this.appletFrame.callToJavaScript (this.peakCallbackFunctionName, [Double.$valueOf (coord.getXVal ()), Double.$valueOf (coord.getYVal ()), Double.$valueOf (actualCoord.getXVal ()), Double.$valueOf (actualCoord.getYVal ()), Integer.$valueOf (iSpec + 1)]);
 });
 $_V(c$, "siSetSelectedPanel", 
 function (jsvp) {
-this.viewer.viewPanel.setSelectedPanel (jsvp, this.viewer.panelNodes);
+this.viewer.mainPanel.setSelectedPanel (this.viewer, jsvp, this.viewer.panelNodes);
 this.viewer.selectedPanel = jsvp;
 this.viewer.spectraTree.setSelectedPanel (this, jsvp);
-this.appletFrame.validate ();
+if (jsvp == null) {
+this.viewer.selectedPanel = jsvp = this.appletFrame.getJSVPanel (this.viewer, null, -1, -1);
+this.viewer.mainPanel.setSelectedPanel (this.viewer, jsvp, null);
+}this.appletFrame.validate ();
 if (jsvp != null) {
 jsvp.setEnabled (true);
 jsvp.setFocusable (true);
@@ -14851,12 +14102,12 @@ this.viewer.close (value);
 if (!fromScript) this.siValidateAndRepaint ();
 }, "~S");
 $_V(c$, "siExecLoad", 
-function (value) {
-this.viewer.load (value);
+function (value, script) {
+this.viewer.load (value, script);
 if (this.viewer.selectedPanel == null) return null;
 if (this.loadFileCallbackFunctionName != null) this.appletFrame.callToJavaScript (this.loadFileCallbackFunctionName, [this.viewer.appletID, value]);
 return null;
-}, "~S");
+}, "~S,~S");
 $_V(c$, "siExecHidden", 
 function (b) {
 }, "~B");
@@ -14866,6 +14117,7 @@ this.interfaceOverlaid = (value.equalsIgnoreCase ("single") || value.equalsIgnor
 }, "~S");
 $_V(c$, "siExecScriptComplete", 
 function (msg, isOK) {
+this.viewer.showMessage (msg);
 this.siValidateAndRepaint ();
 }, "~S,~B");
 $_V(c$, "siExecSetAutoIntegrate", 
@@ -14914,7 +14166,10 @@ return JSV.source.FileReader.createJDXSource (JSV.common.JSVFileManager.getBuffe
 }, "~S,~S,~N,~N");
 $_V(c$, "siGetNewJSVPanel2", 
 function (specs) {
-var jsvp = this.appletFrame.getJSVPanel (this.viewer, specs, this.initialStartIndex, this.initialEndIndex);
+if (specs == null) {
+this.initialEndIndex = this.initialStartIndex = -1;
+return this.appletFrame.getJSVPanel (this.viewer, null, -1, -1);
+}var jsvp = this.appletFrame.getJSVPanel (this.viewer, specs, this.initialStartIndex, this.initialEndIndex);
 this.initialEndIndex = this.initialStartIndex = -1;
 jsvp.getPanelData ().addListener (this);
 this.viewer.parameters.setFor (jsvp, null, true);
@@ -14958,9 +14213,6 @@ function (fileName, filePath) {
 $_V(c$, "siSetMenuEnables", 
 function (node, isSplit) {
 }, "JSV.common.PanelNode,~B");
-$_V(c$, "siSetRecentURL", 
-function (filePath) {
-}, "~S");
 $_V(c$, "siUpdateRecentMenus", 
 function (filePath) {
 }, "~S");
@@ -14991,7 +14243,7 @@ return this.viewer.scriptQueue;
 });
 });
 Clazz_declarePackage ("JSV.appletjs");
-Clazz_load (["JSV.api.AppletFrame", "$.JSVAppletInterface"], "JSV.appletjs.JSVApplet", ["java.lang.Boolean", "java.net.URL", "java.util.Hashtable", "JU.PT", "JSV.app.JSVApp", "JSV.common.JSVersion", "JSV.js2d.JsPanel", "$.JsViewPanel", "J.util.Logger"], function () {
+Clazz_load (["JSV.api.AppletFrame", "$.JSVAppletInterface"], "JSV.appletjs.JSVApplet", ["java.lang.Boolean", "java.net.URL", "java.util.Hashtable", "JU.PT", "JSV.app.JSVApp", "JSV.common.JSVersion", "JSV.js2d.JsMainPanel", "$.JsPanel", "J.util.Logger"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.app = null;
 this.viewer = null;
@@ -15164,9 +14416,9 @@ function (isSigned, viewer) {
 $_V(c$, "validateContent", 
 function (mode) {
 }, "~N");
-$_V(c$, "addNewPanel", 
+$_V(c$, "createMainPanel", 
 function (viewer) {
-viewer.viewPanel =  new JSV.js2d.JsViewPanel ();
+viewer.mainPanel =  new JSV.js2d.JsMainPanel ();
 }, "JSV.common.JSViewer");
 $_V(c$, "newWindow", 
 function (isSelected) {
@@ -15190,7 +14442,7 @@ function (b) {
 }, "~B");
 $_V(c$, "getJSVPanel", 
 function (viewer, specs, initialStartIndex, initialEndIndex) {
-return JSV.js2d.JsPanel.getPanelMany (viewer, specs, initialStartIndex, initialEndIndex);
+return (specs == null ? JSV.js2d.JsPanel.getEmptyPanel (viewer) : JSV.js2d.JsPanel.getPanelMany (viewer, specs, initialStartIndex, initialEndIndex));
 }, "JSV.common.JSViewer,JU.List,~N,~N");
 $_V(c$, "setVisible", 
 function (b) {
@@ -17052,8 +16304,9 @@ this.setColorFromToken (g, JSV.common.ScriptToken.INTEGRALPLOTCOLOR);
 this.g2d.drawLine (g, x1, y0, x1, y1);
 this.setPlotColor (g, iColor);
 continue;
-}if (y1 == y2 && (y1 == this.yPixel0 || y1 == this.yPixel1)) continue;
-if (bsDraw != null && bsDraw.get (i) != plotOn) {
+}if (y1 == y2 && (y1 == this.yPixel0)) {
+continue;
+}if (bsDraw != null && bsDraw.get (i) != plotOn) {
 plotOn = bsDraw.get (i);
 if (!this.pd.isPrinting && this.pd.integralShiftMode != 0) this.setPlotColor (g, 0);
  else if (plotOn) this.setColorFromToken (g, JSV.common.ScriptToken.INTEGRALPLOTCOLOR);
@@ -19044,9 +18297,9 @@ this.get (i).addSpecShift (dx);
 }, "~N");
 $_M(c$, "addMarks", 
 function (ppms) {
-ppms = JU.PT.simpleReplace (" " + ppms, ",", " ");
-ppms = JU.PT.simpleReplace (ppms, " -", " #");
-ppms = JU.PT.simpleReplace (ppms, "--", "-#");
+ppms = JU.PT.rep (" " + ppms, ",", " ");
+ppms = JU.PT.rep (ppms, " -", " #");
+ppms = JU.PT.rep (ppms, "--", "-#");
 ppms = ppms.$replace ('-', '^');
 ppms = ppms.$replace ('#', '-');
 var tokens = JSV.common.ScriptToken.getTokens (ppms);
@@ -19661,7 +18914,7 @@ c$.areXScalesCompatible = $_M(c$, "areXScalesCompatible",
 function (s1, s2, isSubspecCheck, isLinkCheck) {
 var isNMR1 = s1.isNMR ();
 if (isNMR1 != s2.isNMR ()) return false;
-if (!isLinkCheck && !s1.xUnits.equalsIgnoreCase (s2.xUnits)) return false;
+if (!isLinkCheck && !JSV.common.JDXSpectrum.areUnitsCompatible (s1.xUnits, s2.xUnits)) return false;
 if (isSubspecCheck) {
 if (s1.is1D () != s2.is1D ()) return false;
 } else if (isLinkCheck) {
@@ -19670,6 +18923,13 @@ if (!isNMR1) return true;
 return false;
 }return (!isNMR1 || s2.is1D () && s1.parent.nucleusX.equals (s2.parent.nucleusX));
 }, "JSV.common.JDXSpectrum,JSV.common.JDXSpectrum,~B,~B");
+c$.areUnitsCompatible = $_M(c$, "areUnitsCompatible", 
+function (u1, u2) {
+if (u1.equalsIgnoreCase (u2)) return true;
+u1 = u1.toUpperCase ();
+u2 = u2.toUpperCase ();
+return (u1.equals ("HZ") && u2.equals ("PPM") || u1.equals ("PPM") && u2.equals ("HZ"));
+}, "~S,~S");
 c$.areLinkableX = $_M(c$, "areLinkableX", 
 function (s1, s2) {
 return (s1.isNMR () && s2.isNMR () && s1.nucleusX.equals (s2.nucleusX));
@@ -19682,6 +18942,10 @@ $_M(c$, "setNHydrogens",
 function (nH) {
 this.nH = nH;
 }, "~N");
+$_M(c$, "doNormalize", 
+function () {
+System.out.println ("OK");
+});
 Clazz_pu$h ();
 c$ = Clazz_declareType (JSV.common.JDXSpectrum, "IRMode", Enum);
 c$.getMode = $_M(c$, "getMode", 
@@ -19705,9 +18969,9 @@ c$ = Clazz_p0p ();
 Clazz_defineStatics (c$,
 "MAXABS", 4);
 });
-___date="$Date: 2013-12-05 10:37:03 -0600 (Thu, 05 Dec 2013) $"
-___svnRev="$LastChangedRevision: 1461 $"
-___version="2.1.0"
+___date="$Date: 2014-01-13 20:50:24 -0500 (Mon, 13 Jan 2014) $"
+___svnRev="$LastChangedRevision: 1467 $"
+___version="2.1.1"
 Clazz_declarePackage ("JSV.common");
 c$ = Clazz_declareType (JSV.common, "JSVersion");
 Clazz_defineStatics (c$,
@@ -19725,7 +18989,7 @@ if (tmpSVN != null) tmpSVN = tmpSVN.substring (22, 27);
 JSV.common.JSVersion.VERSION_SHORT = (tmpVersion != null ? tmpVersion : "(Unknown version)");
 JSV.common.JSVersion.VERSION = JSV.common.JSVersion.VERSION_SHORT + "/SVN" + tmpSVN + "/" + (tmpDate != null ? tmpDate : "(Unknown date)");
 }Clazz_declarePackage ("JSV.common");
-Clazz_load (null, "JSV.common.JSVFileManager", ["java.io.BufferedInputStream", "$.BufferedReader", "$.IOException", "$.InputStreamReader", "$.StringReader", "java.net.URL", "java.util.Hashtable", "JU.AU", "$.Encoding", "$.PT", "$.SB", "JSV.common.JSVersion", "$.JSViewer", "JSV.util.JSVEscape", "J.util.Logger"], function () {
+Clazz_load (null, "JSV.common.JSVFileManager", ["java.io.BufferedInputStream", "$.BufferedReader", "$.InputStreamReader", "$.StringReader", "java.net.URL", "java.util.Hashtable", "JU.AU", "$.Encoding", "$.PT", "$.SB", "JSV.common.JSVersion", "$.JSViewer", "JSV.exception.JSVException", "J.util.Logger"], function () {
 c$ = Clazz_declareType (JSV.common, "JSVFileManager");
 $_M(c$, "isApplet", 
 function () {
@@ -19758,7 +19022,7 @@ function ($in) {
 try {
 return  new java.io.BufferedReader ( new java.io.InputStreamReader ($in, "UTF-8"));
 } catch (e) {
-if (Clazz_exceptionOf (e, java.io.UnsupportedEncodingException)) {
+if (Clazz_exceptionOf (e, Exception)) {
 return null;
 } else {
 throw e;
@@ -19771,14 +19035,15 @@ return (data == null ? null :  new java.io.BufferedReader ( new java.io.StringRe
 }, "~S");
 c$.getBufferedReaderFromName = $_M(c$, "getBufferedReaderFromName", 
 function (name, startCode) {
-if (name == null) throw  new java.io.IOException ("Cannot find " + name);
+if (name == null) throw  new JSV.exception.JSVException ("Cannot find " + name);
 J.util.Logger.info ("JSVFileManager getBufferedReaderFromName " + name);
 var path = JSV.common.JSVFileManager.getFullPathName (name);
-J.util.Logger.info ("JSVFileManager getBufferedReaderFromName " + path);
+if (!path.equals (name)) J.util.Logger.info ("JSVFileManager getBufferedReaderFromName " + path);
 return JSV.common.JSVFileManager.getUnzippedBufferedReaderFromName (path, startCode);
 }, "~S,~S");
 c$.getFullPathName = $_M(c$, "getFullPathName", 
 function (name) {
+try {
 if (JSV.common.JSVFileManager.appletDocumentBase == null) {
 if (JSV.common.JSVFileManager.isURL (name)) {
 var url =  new java.net.URL (Clazz_castNullAs ("java.net.URL"), name, null);
@@ -19787,6 +19052,13 @@ return url.toString ();
 }if (name.indexOf (":\\") == 1 || name.indexOf (":/") == 1) name = "file:///" + name;
 var url =  new java.net.URL (JSV.common.JSVFileManager.appletDocumentBase, name, null);
 return url.toString ();
+} catch (e) {
+if (Clazz_exceptionOf (e, Exception)) {
+throw  new JSV.exception.JSVException ("Cannot create path for " + name);
+} else {
+throw e;
+}
+}
 }, "~S");
 c$.isURL = $_M(c$, "isURL", 
 function (name) {
@@ -19815,20 +19087,22 @@ if (name.indexOf ("|") >= 0) {
 subFileList = JU.PT.split (name, "|");
 if (subFileList != null && subFileList.length > 0) name = subFileList[0];
 }if (name.startsWith ("http://SIMULATION/")) return JSV.common.JSVFileManager.getBufferedReaderForString (JSV.common.JSVFileManager.getNMRSimulationJCampDX (name.substring ("http://SIMULATION/".length)));
-if (JSV.common.JSVFileManager.viewer.isApplet) {
-var ret = JSV.common.JSVFileManager.viewer.apiPlatform.getBufferedURLInputStream ( new java.net.URL (Clazz_castNullAs ("java.net.URL"), name, null), null, null);
-if (Clazz_instanceOf (ret, JU.SB) || Clazz_instanceOf (ret, String)) {
-return  new java.io.BufferedReader ( new java.io.StringReader (ret.toString ()));
-} else if (JSV.common.JSVFileManager.isAB (ret)) {
-return  new java.io.BufferedReader ( new java.io.StringReader ( String.instantialize (ret)));
-} else {
-return  new java.io.BufferedReader ( new java.io.InputStreamReader (ret, "UTF-8"));
-}}var $in = JSV.common.JSVFileManager.getInputStream (name, true, null);
-var bis =  new java.io.BufferedInputStream ($in);
-$in = bis;
+try {
+var ret = JSV.common.JSVFileManager.getInputStream (name, true, null);
+if (Clazz_instanceOf (ret, JU.SB) || Clazz_instanceOf (ret, String)) return  new java.io.BufferedReader ( new java.io.StringReader (ret.toString ()));
+if (JSV.common.JSVFileManager.isAB (ret)) return  new java.io.BufferedReader ( new java.io.StringReader ( String.instantialize (ret)));
+var bis =  new java.io.BufferedInputStream (ret);
+var $in = bis;
 if (JSV.common.JSVFileManager.isZipFile (bis)) return (JSV.common.JSViewer.getInterface ("JSV.util.JSVZipUtil")).newJSVZipFileSequentialReader ($in, subFileList, startCode);
 if (JSV.common.JSVFileManager.isGzip (bis)) $in = (JSV.common.JSViewer.getInterface ("JSV.util.JSVZipUtil")).newGZIPInputStream ($in);
 return  new java.io.BufferedReader ( new java.io.InputStreamReader ($in, "UTF-8"));
+} catch (e) {
+if (Clazz_exceptionOf (e, Exception)) {
+throw  new JSV.exception.JSVException ("Cannot read file " + name + " " + e.getMessage ());
+} else {
+throw e;
+}
+}
 }, "~S,~S");
 c$.isAB = $_M(c$, "isAB", 
 function (x) {
@@ -19837,22 +19111,39 @@ return Clazz_isAI(x);
 }}, "~O");
 c$.isZipFile = $_M(c$, "isZipFile", 
 function (is) {
+try {
 var abMagic =  Clazz_newByteArray (4, 0);
 is.mark (5);
 var countRead = is.read (abMagic, 0, 4);
 is.reset ();
 return (countRead == 4 && abMagic[0] == 0x50 && abMagic[1] == 0x4B && abMagic[2] == 0x03 && abMagic[3] == 0x04);
+} catch (e) {
+if (Clazz_exceptionOf (e, Exception)) {
+throw  new JSV.exception.JSVException (e.toString ());
+} else {
+throw e;
+}
+}
 }, "java.io.InputStream");
 c$.isGzip = $_M(c$, "isGzip", 
 function (is) {
+try {
 var abMagic =  Clazz_newByteArray (4, 0);
 is.mark (5);
 var countRead = is.read (abMagic, 0, 4);
 is.reset ();
 return (countRead == 4 && abMagic[0] == 0x1F && abMagic[1] == 0x8B);
+} catch (e) {
+if (Clazz_exceptionOf (e, Exception)) {
+throw  new JSV.exception.JSVException (e.toString ());
+} else {
+throw e;
+}
+}
 }, "java.io.InputStream");
 c$.getStreamAsBytes = $_M(c$, "getStreamAsBytes", 
 function (bis, out) {
+try {
 var buf =  Clazz_newByteArray (1024, 0);
 var bytes = (out == null ?  Clazz_newByteArray (4096, 0) : null);
 var len = 0;
@@ -19869,6 +19160,13 @@ bis.close ();
 if (out == null) {
 return JU.AU.arrayCopyByte (bytes, totalLen);
 }return totalLen + " bytes";
+} catch (e) {
+if (Clazz_exceptionOf (e, Exception)) {
+throw  new JSV.exception.JSVException (e.toString ());
+} else {
+throw e;
+}
+}
 }, "java.io.BufferedInputStream,JU.OC");
 c$.postByteArray = $_M(c$, "postByteArray", 
 function (fileName, bytes) {
@@ -19877,7 +19175,7 @@ try {
 ret = JSV.common.JSVFileManager.getInputStream (fileName, false, bytes);
 } catch (e) {
 if (Clazz_exceptionOf (e, Exception)) {
-return e.toString ();
+ret = e.toString ();
 } else {
 throw e;
 }
@@ -19886,11 +19184,11 @@ if (Clazz_instanceOf (ret, String)) return ret;
 try {
 ret = JSV.common.JSVFileManager.getStreamAsBytes (ret, null);
 } catch (e) {
-if (Clazz_exceptionOf (e, java.io.IOException)) {
+if (Clazz_exceptionOf (e, JSV.exception.JSVException)) {
 try {
 (ret).close ();
 } catch (e1) {
-if (Clazz_exceptionOf (e1, java.io.IOException)) {
+if (Clazz_exceptionOf (e1, Exception)) {
 } else {
 throw e1;
 }
@@ -19926,8 +19224,8 @@ break;
 }
 return s;
 } catch (e) {
-if (Clazz_exceptionOf (e, java.io.UnsupportedEncodingException)) {
-System.out.println (e);
+if (Clazz_exceptionOf (e, java.io.IOException)) {
+J.util.Logger.error ("fixUTF error " + e);
 } else {
 throw e;
 }
@@ -19945,16 +19243,23 @@ if (isURL && (iurl = name.indexOf ("?POST?")) >= 0) {
 post = name.substring (iurl + 6);
 name = name.substring (0, iurl);
 }if (isApplet || isURL) {
-var url =  new java.net.URL (JSV.common.JSVFileManager.appletDocumentBase, name, null);
+var url;
+try {
+url =  new java.net.URL (JSV.common.JSVFileManager.appletDocumentBase, name, null);
+} catch (e) {
+if (Clazz_exceptionOf (e, Exception)) {
+throw  new JSV.exception.JSVException ("Cannot read " + name);
+} else {
+throw e;
+}
+}
 J.util.Logger.info ("JSVFileManager opening URL " + url + (post == null ? "" : " with POST of " + post.length + " bytes"));
 $in = JSV.common.JSVFileManager.viewer.apiPlatform.getBufferedURLInputStream (url, postBytes, post);
-if (Clazz_instanceOf ($in, String)) {
-J.util.Logger.info ("JSVFileManager could not get this URL:" + $in);
-return null;
-}} else {
+} else {
 if (showMsg) J.util.Logger.info ("JSVFileManager opening file " + name);
 $in = JSV.common.JSVFileManager.viewer.apiPlatform.getBufferedFileInputStream (name);
-}return $in;
+}if (Clazz_instanceOf ($in, String)) throw  new JSV.exception.JSVException ($in);
+return $in;
 }, "~S,~B,~A");
 c$.getNMRSimulationJCampDX = $_M(c$, "getNMRSimulationJCampDX", 
 function (name) {
@@ -19964,20 +19269,20 @@ var jcamp = JSV.common.JSVFileManager.htSimulate.get (key);
 if (jcamp != null) return jcamp;
 var isInline = name.startsWith ("MOL=");
 var molFile;
-if ((molFile = (isInline ? JU.PT.simpleReplace (name.substring (4), "\\n", "\n") : JSV.common.JSVFileManager.getFileAsString (JU.PT.simpleReplace (JSV.common.JSVFileManager.nciResolver, "%FILE", JU.PT.escapeUrl (name.substring (1)))))) == null) J.util.Logger.info ("no data returned");
+if ((molFile = (isInline ? JU.PT.rep (name.substring (4), "\\n", "\n") : JSV.common.JSVFileManager.getFileAsString (JU.PT.rep (JSV.common.JSVFileManager.nciResolver, "%FILE", JU.PT.escapeUrl (name.substring (1)))))) == null) J.util.Logger.info ("no data returned");
 var pt = molFile.indexOf ("\n");
 molFile = "/JSpecView " + JSV.common.JSVersion.VERSION + molFile.substring (pt);
-molFile = JU.PT.simpleReplace (molFile, "?", "_");
+molFile = JU.PT.rep (molFile, "?", "_");
 var json = JSV.common.JSVFileManager.getFileAsString (JSV.common.JSVFileManager.nmrdbServer + molFile);
-System.out.println (json);
-json = JU.PT.simpleReplace (json, "\\r\\n", "\n");
-json = JU.PT.simpleReplace (json, "\\t", "\t");
-json = JU.PT.simpleReplace (json, "\\n", "\n");
+J.util.Logger.debug (json);
+json = JU.PT.rep (json, "\\r\\n", "\n");
+json = JU.PT.rep (json, "\\t", "\t");
+json = JU.PT.rep (json, "\\n", "\n");
 molFile = JSV.common.JSVFileManager.getQuotedJSONAttribute (json, "molfile", null);
 var xml = JSV.common.JSVFileManager.getQuotedJSONAttribute (json, "xml", null);
-xml = JU.PT.simpleReplace (xml, "</", "\n</");
-xml = JU.PT.simpleReplace (xml, "><", ">\n<");
-xml = JU.PT.simpleReplace (xml, "\\\"", "\"");
+xml = JU.PT.rep (xml, "</", "\n</");
+xml = JU.PT.rep (xml, "><", ">\n<");
+xml = JU.PT.rep (xml, "\\\"", "\"");
 jcamp = JSV.common.JSVFileManager.getQuotedJSONAttribute (json, "jcamp", null);
 jcamp = "##TITLE=" + (isInline ? "JMOL SIMULATION" : name) + "\n" + jcamp.substring (jcamp.indexOf ("\n##") + 1);
 J.util.Logger.info (jcamp.substring (0, jcamp.indexOf ("##XYDATA") + 40) + "...");
@@ -19986,7 +19291,7 @@ pt = jcamp.indexOf ("##.");
 var id = name;
 var pt1 = id.indexOf ("id='");
 if (isInline && pt1 > 0) id = id.substring (pt1 + 4, (id + "'").indexOf ("'", pt1 + 4));
-jcamp = jcamp.substring (0, pt) + "##$MODELS=\n<Models>\n" + "<ModelData id=" + JSV.util.JSVEscape.eS (id) + "\n type=\"MOL\">\n" + molFile + "</ModelData>\n</Models>\n" + "##$SIGNALS=\n" + xml + "\n" + jcamp.substring (pt);
+jcamp = jcamp.substring (0, pt) + "##$MODELS=\n<Models>\n" + "<ModelData id=" + JU.PT.esc (id) + "\n type=\"MOL\">\n" + molFile + "</ModelData>\n</Models>\n" + "##$SIGNALS=\n" + xml + "\n" + jcamp.substring (pt);
 JSV.common.JSVFileManager.htSimulate.put (key, jcamp);
 return jcamp;
 }, "~S");
@@ -20033,7 +19338,7 @@ function (filePath) {
 try {
 filePath = JSV.common.JSVFileManager.getFullPathName (filePath);
 } catch (e) {
-if (Clazz_exceptionOf (e, java.net.MalformedURLException)) {
+if (Clazz_exceptionOf (e, JSV.exception.JSVException)) {
 return null;
 } else {
 throw e;
@@ -20050,7 +19355,7 @@ if (fileName.startsWith ("http://SIMULATION/") && fileName.length > 100) return 
 var name = ( new java.net.URL (Clazz_castNullAs ("java.net.URL"), fileName, null)).getFile ();
 return name.substring (name.lastIndexOf ('/') + 1);
 } catch (e) {
-if (Clazz_exceptionOf (e, java.net.MalformedURLException)) {
+if (Clazz_exceptionOf (e, java.io.IOException)) {
 return null;
 } else {
 throw e;
@@ -20086,7 +19391,7 @@ Clazz_defineStatics (c$,
 "stringCount", 0);
 });
 Clazz_declarePackage ("JSV.common");
-Clazz_load (["javajs.api.BytePoster", "$.JSInterface", "$.PlatformViewer", "javajs.awt.Dimension", "JSV.common.JDXSpectrum"], "JSV.common.JSViewer", ["java.lang.Boolean", "$.Double", "$.Float", "$.Thread", "java.net.URL", "java.util.Hashtable", "JU.List", "$.OC", "$.PT", "$.SB", "JSV.common.Annotation", "$.ExportType", "$.JSVFileManager", "$.PanelData", "$.PanelNode", "$.Parameters", "$.PeakInfo", "$.PrintLayout", "$.RepaintManager", "$.ScriptToken", "$.ScriptTokenizer", "JSV.source.JDXSource", "JSV.tree.SimpleTree", "JSV.util.JSVEscape", "J.util.Logger"], function () {
+Clazz_load (["javajs.api.BytePoster", "$.JSInterface", "$.PlatformViewer", "javajs.awt.Dimension", "JSV.common.JDXSpectrum"], "JSV.common.JSViewer", ["java.io.File", "java.lang.Boolean", "$.Double", "$.Float", "$.Thread", "java.net.URL", "java.util.Hashtable", "JU.List", "$.OC", "$.PT", "$.SB", "JSV.common.Annotation", "$.ExportType", "$.JSVFileManager", "$.PanelData", "$.PanelNode", "$.Parameters", "$.PeakInfo", "$.PrintLayout", "$.RepaintManager", "$.ScriptToken", "$.ScriptTokenizer", "JSV.source.JDXSource", "JSV.tree.SimpleTree", "J.util.Logger"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.si = null;
 this.g2d = null;
@@ -20096,7 +19401,7 @@ this.panelNodes = null;
 this.parameters = null;
 this.repaintManager = null;
 this.selectedPanel = null;
-this.viewPanel = null;
+this.mainPanel = null;
 this.properties = null;
 this.scriptQueue = null;
 this.fileHelper = null;
@@ -20124,6 +19429,9 @@ this.overlayLegendVisible = false;
 this.recentStackPercent = 5;
 this.lastPrintLayout = null;
 this.offWindowFrame = null;
+this.recentOpenURL = "http://";
+this.recentURL = null;
+this.recentSimulation = "tylenol";
 Clazz_instantialize (this, arguments);
 }, JSV.common, "JSViewer", null, [javajs.api.PlatformViewer, javajs.api.JSInterface, javajs.api.BytePoster]);
 Clazz_prepareFields (c$, function () {
@@ -20163,6 +19471,7 @@ this.popupZoomEnabled = zoomEnabled;
 }, "~B,~B");
 $_M(c$, "showMenu", 
 function (x, y) {
+if (!this.popupAllowMenu) return;
 if (this.jsvpPopupMenu == null) {
 try {
 this.jsvpPopupMenu = this.getPlatformInterface ("Popup");
@@ -20170,7 +19479,7 @@ this.jsvpPopupMenu.jpiInitialize (this, this.isApplet ? "appletMenu" : "appMenu"
 this.jsvpPopupMenu.setEnabled (this.popupAllowMenu, this.popupZoomEnabled);
 } catch (e) {
 if (Clazz_exceptionOf (e, Exception)) {
-System.out.println (e + " initializing popup menu");
+J.util.Logger.error (e + " initializing popup menu");
 return;
 } else {
 throw e;
@@ -20184,7 +19493,7 @@ this.si.siIncrementViewCount (1);
 if (script == null) script = "";
 script = script.trim ();
 if (script.startsWith ("!")) script = script.substring (1).trim ();
-System.out.println ("RUNSCRIPT " + script);
+J.util.Logger.info ("RUNSCRIPT " + script);
 var isOK = true;
 var nErrorsLeft = 10;
 var commandTokens =  new JSV.common.ScriptTokenizer (script, true);
@@ -20196,7 +19505,6 @@ var key = JSV.common.ScriptToken.getKey (eachParam);
 if (key == null) continue;
 var st = JSV.common.ScriptToken.getScriptToken (key);
 var value = JSV.common.ScriptToken.getValue (st, eachParam, token);
-System.out.println ("KEY-> " + key + " VALUE-> " + value + " : " + st);
 try {
 switch (st) {
 case JSV.common.ScriptToken.UNKNOWN:
@@ -20248,7 +19556,7 @@ case JSV.common.ScriptToken.JSV:
 this.syncScript (JU.PT.trimQuotes (value));
 break;
 case JSV.common.ScriptToken.LOAD:
-msg = this.si.siExecLoad (value);
+msg = this.si.siExecLoad (value, commandTokens.getRemainingScript ());
 break;
 case JSV.common.ScriptToken.LOADIMAGINARY:
 this.si.siSetLoadImaginary (JSV.common.Parameters.isTrue (value));
@@ -20390,8 +19698,9 @@ break;
 }
 } catch (e) {
 if (Clazz_exceptionOf (e, Exception)) {
+msg = e.getMessage ();
+J.util.Logger.error (e.toString ());
 {
-alert(e + "\n" + Clazz_getStackTrace())
 }isOK = false;
 --nErrorsLeft;
 } else {
@@ -20607,7 +19916,7 @@ if (peakScript.indexOf ("#SYNC_PEAKS") >= 0) {
 var source = this.currentSource;
 if (source == null) return;
 try {
-var file = "file=" + JSV.util.JSVEscape.eS (source.getFilePath ());
+var file = "file=" + JU.PT.esc (source.getFilePath ());
 var peaks = source.getSpectra ().get (0).getPeakList ();
 var sb =  new JU.SB ();
 sb.append ("[");
@@ -20615,7 +19924,7 @@ var n = peaks.size ();
 for (var i = 0; i < n; i++) {
 var s = peaks.get (i).toString ();
 s = s + " " + file;
-sb.append (JSV.util.JSVEscape.eS (s));
+sb.append (JU.PT.esc (s));
 if (i > 0) sb.append (",");
 }
 sb.append ("]");
@@ -20627,9 +19936,8 @@ throw e;
 }
 }
 }return;
-}peakScript = JU.PT.simpleReplace (peakScript, "\\\"", "");
+}peakScript = JU.PT.rep (peakScript, "\\\"", "");
 var file = JU.PT.getQuotedAttribute (peakScript, "file");
-System.out.println ("file2=" + file);
 var index = JU.PT.getQuotedAttribute (peakScript, "index");
 if (file == null || index == null) return;
 var model = JU.PT.getQuotedAttribute (peakScript, "model");
@@ -20671,7 +19979,6 @@ for (var i = this.panelNodes.size (); --i >= 0; ) this.panelNodes.get (i).jsvp.g
 
 var jsvp = this.selectedPanel;
 pi = jsvp.getPanelData ().selectPeakByFileIndex (file, index);
-System.out.println (Thread.currentThread () + "JSViewer selectPanelByPeak pi = " + pi);
 if (pi != null) {
 this.setNode (JSV.common.PanelNode.findNode (jsvp, this.panelNodes), false);
 } else {
@@ -20736,7 +20043,6 @@ script = "vibration OFF; selectionhalos ON;";
 } else {
 script = "vibration OFF; selectionhalos OFF;";
 }script = "Select: " + pi + " script=\"" + script;
-System.out.println ("JSViewer.jmolSelect " + script);
 return script;
 }, "JSV.common.PeakInfo");
 $_M(c$, "getPropertyAsJavaObject", 
@@ -20787,8 +20093,8 @@ list = JSV.common.ScriptToken.getTokens (JSV.common.PanelNode.getSpectrumListAsS
 } else if (value.startsWith ("\"")) {
 list = JSV.common.ScriptToken.getTokens (value);
 } else {
-value = JU.PT.simpleReplace (value, "_", " _ ");
-value = JU.PT.simpleReplace (value, "-", " - ");
+value = JU.PT.rep (value, "_", " _ ");
+value = JU.PT.rep (value, "-", " - ");
 list = JSV.common.ScriptToken.getTokens (value);
 list0 = JSV.common.ScriptToken.getTokens (JSV.common.PanelNode.getSpectrumListAsString (this.panelNodes));
 if (list0.size () == 0) return null;
@@ -20875,6 +20181,15 @@ var newPath = null;
 var fileName = null;
 var isView = false;
 if (data != null) {
+try {
+fileName = name;
+newPath = filePath = JSV.common.JSVFileManager.getFullPathName (name);
+} catch (e) {
+if (Clazz_exceptionOf (e, JSV.exception.JSVException)) {
+} else {
+throw e;
+}
+}
 } else if (specs != null) {
 isView = true;
 newPath = fileName = filePath = "View" + this.si.siIncrementViewCount (1);
@@ -20882,14 +20197,14 @@ newPath = fileName = filePath = "View" + this.si.siIncrementViewCount (1);
 try {
 var u =  new java.net.URL (JSV.common.JSVFileManager.appletDocumentBase, strUrl, null);
 filePath = u.toString ();
-this.si.siSetRecentURL (filePath);
+this.recentURL = filePath;
 fileName = JSV.common.JSVFileManager.getName (filePath);
 } catch (e) {
 if (Clazz_exceptionOf (e, java.net.MalformedURLException)) {
 var file = this.apiPlatform.newFile (strUrl);
 fileName = file.getName ();
 newPath = filePath = file.getFullPath ();
-this.si.siSetRecentURL (null);
+this.recentURL = null;
 } else {
 throw e;
 }
@@ -20904,9 +20219,11 @@ this.si.siSetCurrentSource (isView ? JSV.source.JDXSource.createView (specs) : t
 } catch (e) {
 if (Clazz_exceptionOf (e, Exception)) {
 {
-alert(e + "\n" + Clazz_getStackTrace())
+alert(e.getMessage())
 }this.si.setCursor (0);
-return -3;
+if (this.isApplet) {
+this.selectedPanel.showMessage (e.getMessage (), "Error Opening File");
+}return -3;
 } else {
 throw e;
 }
@@ -20961,14 +20278,23 @@ this.si.siCloseSource (source);
 }if (this.selectedPanel == null && this.panelNodes.size () > 0) this.si.siSetSelectedPanel (JSV.common.PanelNode.getLastFileFirstNode (this.panelNodes));
 }, "~S");
 $_M(c$, "load", 
-function (value) {
+function (value, script) {
 var tokens = JSV.common.ScriptToken.getTokens (value);
 var filename = tokens.get (0);
 var pt = 0;
 var isAppend = filename.equalsIgnoreCase ("APPEND");
 var isCheck = filename.equalsIgnoreCase ("CHECK");
 if (isAppend || isCheck) filename = tokens.get (++pt);
-var isSimulation = filename.equalsIgnoreCase ("MOL");
+if (filename.equals ("?")) {
+this.openFileFromDialog (isAppend, false, false, script);
+return;
+}if (filename.equals ("http://?")) {
+this.openFileFromDialog (isAppend, true, false, null);
+return;
+}if (filename.equals ("$?")) {
+this.openFileFromDialog (isAppend, true, true, null);
+return;
+}var isSimulation = filename.equalsIgnoreCase ("MOL");
 if (isSimulation) filename = "http://SIMULATION/" + "MOL=" + JU.PT.trimQuotes (tokens.get (++pt));
 if (!isCheck && !isAppend) {
 if (filename.equals ("\"\"") && this.currentSource != null) filename = this.currentSource.getFilePath ();
@@ -20980,7 +20306,7 @@ filename = "http://SIMULATION/" + filename;
 }var firstSpec = (pt + 1 < tokens.size () ? Integer.$valueOf (tokens.get (++pt)).intValue () : -1);
 var lastSpec = (pt + 1 < tokens.size () ? Integer.$valueOf (tokens.get (++pt)).intValue () : firstSpec);
 this.si.siOpenDataOrFile (null, null, null, filename, firstSpec, lastSpec, isAppend);
-}, "~S");
+}, "~S,~S");
 $_M(c$, "combineSpectra", 
 function (name) {
 var source = this.currentSource;
@@ -21131,9 +20457,14 @@ this.repaintManager.repaintDone ();
 });
 $_M(c$, "checkOverlay", 
 function () {
-if (this.viewPanel != null) this.viewPanel.markSelectedPanels (this.panelNodes);
+if (this.mainPanel != null) this.markSelectedPanels (this.panelNodes, this.mainPanel.getCurrentPanelIndex ());
 this.viewDialog = this.getDialog (JSV.common.Annotation.AType.Views, null);
 });
+$_M(c$, "markSelectedPanels", 
+function (panelNodes, ip) {
+for (var i = panelNodes.size (); --i >= 0; ) panelNodes.get (i).isSelected = (ip == i);
+
+}, "JU.List,~N");
 $_M(c$, "execOverlayOffsetY", 
 function (offset) {
 if (this.selectedPanel == null) return;
@@ -21143,6 +20474,7 @@ var f = JU.PT.parseFloat (soffset);
 if (Float.isNaN (f)) return;
 offset = Clazz_floatToInt (f);
 }this.recentStackPercent = offset;
+this.parameters.viewOffset = offset;
 this.pd ().setYStackOffsetPercent (offset);
 }, "~N");
 $_M(c$, "execScriptInline", 
@@ -21303,7 +20635,7 @@ try {
 return (JSV.common.JSViewer.getInterface ("JSV.export.Exporter")).exportTheSpectrum (this, JSV.common.ExportType.getType (type), null, spec, 0, spec.getXYCoords ().length - 1, null);
 } catch (e) {
 if (Clazz_exceptionOf (e, Exception)) {
-System.out.println (e);
+J.util.Logger.error (e.toString ());
 return null;
 } else {
 throw e;
@@ -21336,6 +20668,51 @@ throw e;
 }
 }
 }, "~S");
+$_M(c$, "showMessage", 
+function (msg) {
+if (this.selectedPanel != null && msg != null) this.selectedPanel.showMessage (msg, null);
+}, "~S");
+$_M(c$, "openFileFromDialog", 
+function (isAppend, isURL, isSimulation, script) {
+var url = null;
+if (isSimulation) {
+url = this.fileHelper.getUrlFromDialog ("Enter the name or identifier of a compound", this.recentSimulation);
+if (url == null) return;
+this.recentSimulation = url;
+this.load ((isAppend ? "APPEND " : "") + "\"$" + url + "\"", script);
+} else if (isURL) {
+url = this.fileHelper.getUrlFromDialog ("Enter the URL of a JCAMP-DX File", this.recentURL == null ? this.recentOpenURL : this.recentURL);
+if (url == null) return;
+this.recentOpenURL = url;
+this.load ((isAppend ? "APPEND " : "") + "\"" + url + "\"", script);
+} else {
+var userData = [Boolean.$valueOf (isAppend), script];
+var file = this.fileHelper.showFileOpenDialog (this.mainPanel, userData);
+if (file != null) this.openFile (file.getFullPath (), !isAppend);
+}}, "~B,~B,~B,~S");
+$_M(c$, "openFile", 
+function (fileName, closeFirst) {
+if (closeFirst && this.panelNodes != null) {
+var source = JSV.common.PanelNode.findSourceByNameOrId (( new java.io.File (fileName)).getAbsolutePath (), this.panelNodes);
+if (source != null) this.si.siCloseSource (source);
+}this.si.siOpenDataOrFile (null, null, null, fileName, -1, -1, true);
+}, "~S,~B");
+$_M(c$, "selectPanel", 
+function (jsvp, panelNodes) {
+var iPanel = -1;
+if (panelNodes != null) {
+for (var i = panelNodes.size (); --i >= 0; ) {
+var j = panelNodes.get (i).jsvp;
+if (j === jsvp) {
+iPanel = i;
+} else {
+j.setEnabled (false);
+j.setFocusable (false);
+j.getPanelData ().closeAllDialogsExcept (JSV.common.Annotation.AType.NONE);
+}}
+this.markSelectedPanels (panelNodes, iPanel);
+}return iPanel;
+}, "JSV.api.JSVPanel,JU.List");
 Clazz_defineStatics (c$,
 "sourceLabel", "Original...",
 "FILE_OPEN_OK", 0,
@@ -22265,6 +21642,7 @@ if (title == null) title = this.viewTitle;
 } else {
 title = this.jsvp.getTitle ().trim ();
 }if (title.indexOf ("\n") >= 0) title = title.substring (0, title.indexOf ("\n")).trim ();
+ else if (title.startsWith ("$")) title = title.substring (1);
 return title;
 }, "~B");
 $_M(c$, "linkSpectra", 
@@ -22641,7 +22019,7 @@ if (this.coordStr != null) this.repaint ();
 break;
 case 2:
 if (this.checkMod (buttonMods, 4)) {
-this.viewer.showMenu (x, y);
+this.jsvp.showMenu (x, y);
 return;
 }this.ctrlPressed = false;
 this.doMouseClicked (x, y, this.updateControlPressed (buttonMods));
@@ -22675,7 +22053,15 @@ this.thisWidget = null;
 this.isIntegralDrag = false;
 this.integralShiftMode = 0;
 } else {
+try {
 this.jsvp.getFocusNow (false);
+} catch (e) {
+if (Clazz_exceptionOf (e, Exception)) {
+System.out.println ("pd " + this + " cannot focus");
+} else {
+throw e;
+}
+}
 }}, "~N,~N,~N,~B");
 Clazz_pu$h ();
 c$ = Clazz_declareType (JSV.common.PanelData, "LinkMode", Enum);
@@ -22772,7 +22158,7 @@ return null;
 }, "~S,JU.List");
 c$.findNodeById = $_M(c$, "findNodeById", 
 function (id, panelNodes) {
-for (var i = panelNodes.size (); --i >= 0; ) if (id.equals (panelNodes.get (i).id)) return panelNodes.get (i);
+if (id != null) for (var i = panelNodes.size (); --i >= 0; ) if (id.equals (panelNodes.get (i).id)) return panelNodes.get (i);
 
 return null;
 }, "~S,JU.List");
@@ -22829,6 +22215,7 @@ this.integralMinY = 0.1;
 this.integralRange = 50.0;
 this.integralOffset = 30.0;
 this.integralDrawAll = false;
+this.viewOffset = 0;
 this.peakListThreshold = NaN;
 this.peakListInterpolation = "parabolic";
 this.precision = 2;
@@ -23299,7 +22686,6 @@ Clazz_declarePackage ("JSV.common");
 c$ = Clazz_decorateAsClass (function () {
 this.repaintPending = false;
 this.viewer = null;
-this.n = 0;
 Clazz_instantialize (this, arguments);
 }, JSV.common, "RepaintManager");
 Clazz_makeConstructor (c$, 
@@ -23308,9 +22694,7 @@ this.viewer = viewer;
 }, "JSV.common.JSViewer");
 $_M(c$, "refresh", 
 function () {
-this.n++;
 if (this.repaintPending) {
-System.out.println ("Repaint " + this.n + " skipped");
 return false;
 }this.repaintPending = true;
 this.viewer.selectedPanel.getPanelData ().taintedAll = true;
@@ -23894,6 +23278,10 @@ break;
 this.doCheck = false;
 return (this.pt < this.len);
 });
+$_M(c$, "getRemainingScript", 
+function () {
+return this.str.substring (this.pt);
+});
 });
 Clazz_declarePackage ("JSV.common");
 c$ = Clazz_decorateAsClass (function () {
@@ -24414,6 +23802,7 @@ break;
 case JSV.common.Annotation.AType.OverlayLegend:
 break;
 case JSV.common.Annotation.AType.Views:
+this.viewer.parameters.viewOffset = Double.parseDouble (objects[0]);
 break;
 }
 this.loadData ();
@@ -24699,12 +24088,8 @@ return (pt < 0 ? null : url.substring (pt + key.length, url.indexOf ("&", pt + 1
 }, "~S,~S");
 });
 Clazz_declarePackage ("JSV.exception");
-Clazz_load (["JSV.exception.JSpecViewException"], "JSV.exception.JDXSourceException", null, function () {
-c$ = Clazz_declareType (JSV.exception, "JDXSourceException", JSV.exception.JSpecViewException);
-});
-Clazz_declarePackage ("JSV.exception");
-Clazz_load (["java.lang.Exception"], "JSV.exception.JSpecViewException", null, function () {
-c$ = Clazz_declareType (JSV.exception, "JSpecViewException", Exception);
+Clazz_load (["java.lang.Exception"], "JSV.exception.JSVException", null, function () {
+c$ = Clazz_declareType (JSV.exception, "JSVException", Exception);
 });
 Clazz_declarePackage ("JSV.js2d");
 c$ = Clazz_declareType (JSV.js2d, "Display");
@@ -24837,7 +24222,7 @@ function (name) {
 this.name = name.$replace ('\\', '/');
 this.fullName = name;
 if (!this.fullName.startsWith ("/") && JSV.common.JSVFileManager.urlTypeIndex (name) < 0) this.fullName = JSV.common.JSVFileManager.jsDocumentBase + "/" + this.fullName;
-this.fullName = JU.PT.simpleReplace (this.fullName, "/./", "/");
+this.fullName = JU.PT.rep (this.fullName, "/./", "/");
 name = name.substring (name.lastIndexOf ("/") + 1);
 }, "~S");
 $_V(c$, "getParentAsFile", 
@@ -24879,12 +24264,16 @@ throw e;
 });
 Clazz_declarePackage ("JSV.js2d");
 Clazz_load (["JSV.api.JSVFileHelper"], "JSV.js2d.JsFileHelper", ["JSV.js2d.JsFile"], function () {
-c$ = Clazz_declareType (JSV.js2d, "JsFileHelper", null, JSV.api.JSVFileHelper);
+c$ = Clazz_decorateAsClass (function () {
+this.viewer = null;
+Clazz_instantialize (this, arguments);
+}, JSV.js2d, "JsFileHelper", null, JSV.api.JSVFileHelper);
 Clazz_makeConstructor (c$, 
 function () {
 });
 $_V(c$, "set", 
 function (viewer) {
+this.viewer = viewer;
 return this;
 }, "JSV.common.JSViewer");
 $_V(c$, "getFile", 
@@ -24901,6 +24290,32 @@ return name;
 $_V(c$, "setFileChooser", 
 function (pdf) {
 }, "JSV.common.ExportType");
+$_V(c$, "showFileOpenDialog", 
+function (panelOrFrame, userData) {
+var applet = this.viewer.applet;
+{
+Jmol._loadFileAsynchronously(this, applet, "", userData);
+}return null;
+}, "~O,~A");
+$_M(c$, "setData", 
+function (fileName, data, userInfo) {
+if (fileName == null) return;
+if (data == null) {
+this.viewer.selectedPanel.showMessage (fileName, "File Open Error");
+return;
+}var script = (userInfo == null ? null : "");
+var isAppend = false;
+{
+isAppend = userInfo[0];
+script = userInfo[1];
+}this.viewer.si.siOpenDataOrFile ( String.instantialize (data), fileName, null, null, -1, -1, isAppend);
+if (script != null) this.viewer.runScript (script);
+}, "~S,~O,~A");
+$_V(c$, "getUrlFromDialog", 
+function (info, msg) {
+{
+return prompt(info, msg);
+}}, "~S,~S");
 });
 Clazz_declarePackage ("JSV.js2d");
 c$ = Clazz_declareType (JSV.js2d, "JsFont");
@@ -25185,12 +24600,12 @@ $_V(c$, "getPanelData",
 function () {
 return this.pd;
 });
-c$.getPanelOne = $_M(c$, "getPanelOne", 
-function (viewer, spectrum) {
+c$.getEmptyPanel = $_M(c$, "getEmptyPanel", 
+function (viewer) {
 var p =  new JSV.js2d.JsPanel (viewer);
-p.pd.initOne (spectrum);
+p.pd = null;
 return p;
-}, "JSV.common.JSViewer,JSV.common.JDXSpectrum");
+}, "JSV.common.JSViewer");
 c$.getPanelMany = $_M(c$, "getPanelMany", 
 function (viewer, spectra, startIndex, endIndex) {
 var p =  new JSV.js2d.JsPanel (viewer);
@@ -25238,7 +24653,12 @@ $_V(c$, "showMessage",
 function (msg, title) {
 J.util.Logger.info (msg);
 {
+if (msg != null) {
+if (title == null)
+Jmol._showStatus(msg);
+else
 alert(msg);
+}
 }this.getFocusNow (true);
 }, "~S,~S");
 $_V(c$, "getFocusNow", 
@@ -25333,6 +24753,10 @@ $_V(c$, "processTwoPointGesture",
 function (touches) {
 this.mouse.processTwoPointGesture (touches);
 }, "~A");
+$_V(c$, "showMenu", 
+function (x, y) {
+this.viewer.showMenu (x, y);
+}, "~N,~N");
 });
 Clazz_declarePackage ("JSV.js2d");
 Clazz_load (["JSV.common.ColorParameters"], "JSV.js2d.JsParameters", ["javajs.awt.Color"], function () {
@@ -25574,7 +24998,7 @@ return null;
 }, "~S");
 });
 Clazz_declarePackage ("JSV.js2d");
-Clazz_load (["JSV.api.JSVMainPanel", "$.JSVViewPanel"], "JSV.js2d.JsViewPanel", ["JSV.common.Annotation"], function () {
+Clazz_load (["JSV.api.JSVMainPanel"], "JSV.js2d.JsMainPanel", null, function () {
 c$ = Clazz_decorateAsClass (function () {
 this.selectedPanel = null;
 this.currentPanelIndex = 0;
@@ -25583,7 +25007,7 @@ this.visible = false;
 this.focusable = false;
 this.enabled = false;
 Clazz_instantialize (this, arguments);
-}, JSV.js2d, "JsViewPanel", null, [JSV.api.JSVViewPanel, JSV.api.JSVMainPanel]);
+}, JSV.js2d, "JsMainPanel", null, JSV.api.JSVMainPanel);
 $_V(c$, "getCurrentPanelIndex", 
 function () {
 return this.currentPanelIndex;
@@ -25600,26 +25024,12 @@ function (title) {
 this.title = title;
 }, "~S");
 $_V(c$, "setSelectedPanel", 
-function (jsvp, panelNodes) {
-if (jsvp !== this.selectedPanel) {
-this.selectedPanel = jsvp;
-}for (var i = panelNodes.size (); --i >= 0; ) {
-var j = panelNodes.get (i).jsvp;
-if (j === jsvp) {
-this.currentPanelIndex = i;
-} else {
-j.setEnabled (false);
-j.setFocusable (false);
-j.getPanelData ().closeAllDialogsExcept (JSV.common.Annotation.AType.NONE);
-}}
-this.markSelectedPanels (panelNodes);
-this.visible = (jsvp != null);
-}, "JSV.api.JSVPanel,JU.List");
-$_V(c$, "markSelectedPanels", 
-function (panelNodes) {
-for (var i = panelNodes.size (); --i >= 0; ) panelNodes.get (i).isSelected = (this.currentPanelIndex == i);
-
-}, "JU.List");
+function (viewer, jsvp, panelNodes) {
+if (jsvp !== this.selectedPanel) this.selectedPanel = jsvp;
+var i = viewer.selectPanel (jsvp, panelNodes);
+if (i >= 0) this.currentPanelIndex = i;
+this.visible = true;
+}, "JSV.common.JSViewer,JSV.api.JSVPanel,JU.List");
 $_M(c$, "getHeight", 
 function () {
 return (this.selectedPanel == null ? 0 : this.selectedPanel.getHeight ());
@@ -25640,11 +25050,11 @@ $_V(c$, "isVisible",
 function () {
 return this.visible;
 });
-$_M(c$, "setEnabled", 
+$_V(c$, "setEnabled", 
 function (b) {
 this.enabled = b;
 }, "~B");
-$_M(c$, "setFocusable", 
+$_V(c$, "setFocusable", 
 function (b) {
 this.focusable = b;
 }, "~B");
@@ -25799,8 +25209,9 @@ function (touches) {
 }, "~A");
 });
 Clazz_declarePackage ("JSV.source");
-Clazz_load (null, "JSV.source.FileReader", ["java.io.BufferedReader", "$.StringReader", "java.lang.Character", "$.Double", "$.Exception", "$.Float", "java.util.Arrays", "$.Hashtable", "$.StringTokenizer", "JU.BS", "$.List", "$.PT", "$.SB", "JSV.api.JSVZipReader", "JSV.common.Coordinate", "$.JDXSpectrum", "$.JSVFileManager", "$.JSViewer", "$.PeakInfo", "JSV.exception.JDXSourceException", "$.JSpecViewException", "JSV.source.JDXDecompressor", "$.JDXSource", "$.JDXSourceStreamTokenizer", "JSV.util.JSVEscape", "J.util.Logger"], function () {
+Clazz_load (null, "JSV.source.FileReader", ["java.io.BufferedReader", "$.StringReader", "java.lang.Character", "$.Double", "$.Float", "java.util.Arrays", "$.Hashtable", "$.StringTokenizer", "JU.BS", "$.List", "$.PT", "$.SB", "JSV.api.JSVZipReader", "JSV.common.Coordinate", "$.JDXSpectrum", "$.JSVFileManager", "$.JSViewer", "$.PeakInfo", "JSV.exception.JSVException", "JSV.source.JDXDecompressor", "$.JDXSource", "$.JDXSourceStreamTokenizer", "J.util.Logger"], function () {
 c$ = Clazz_decorateAsClass (function () {
+this.normalizeY = false;
 this.source = null;
 this.t = null;
 this.errorLog = null;
@@ -25821,8 +25232,8 @@ Clazz_instantialize (this, arguments);
 }, JSV.source, "FileReader");
 Clazz_makeConstructor (c$, 
 function (filePath, obscure, loadImaginary, iSpecFirst, iSpecLast) {
-System.out.println ("FileReader filePath=" + filePath + "<<");
 filePath = JU.PT.trimQuotes (filePath);
+if (filePath != null && filePath.startsWith ("http://SIMULATION/")) this.normalizeY = true;
 this.filePath = (filePath != null && filePath.startsWith ("http://SIMULATION/MOL=") ? "http://SIMULATION/" + "MOL=" + Math.abs (filePath.hashCode ()) : filePath);
 this.obscure = obscure;
 this.firstSpec = iSpecFirst;
@@ -25835,28 +25246,34 @@ return JSV.source.FileReader.createJDXSource (JSV.common.JSVFileManager.getBuffe
 }, "java.io.InputStream,~B,~B");
 c$.createJDXSource = $_M(c$, "createJDXSource", 
 function (br, filePath, obscure, loadImaginary, iSpecFirst, iSpecLast) {
+var header = null;
 try {
 if (br == null) br = JSV.common.JSVFileManager.getBufferedReaderFromName (filePath, "##TITLE");
 br.mark (400);
 var chs =  Clazz_newCharArray (400, '\0');
 br.read (chs, 0, 400);
 br.reset ();
-var header =  String.instantialize (chs);
+header =  String.instantialize (chs);
 var pt1 = header.indexOf ('#');
 var pt2 = header.indexOf ('<');
 if (pt1 < 0 || pt2 >= 0 && pt2 < pt1) {
 var xmlType = header.toLowerCase ();
-if (xmlType.contains ("404")) System.out.println (xmlType);
 xmlType = (xmlType.contains ("<animl") || xmlType.contains ("<!doctype technique") ? "AnIML" : xmlType.contains ("xml-cml") ? "CML" : null);
-var xmlSource = (JSV.common.JSViewer.getInterface ("JSV.source." + xmlType + "Reader")).getSource (filePath, br);
+var xmlSource = null;
+if (xmlType != null) xmlSource = (JSV.common.JSViewer.getInterface ("JSV.source." + xmlType + "Reader")).getSource (filePath, br);
 br.close ();
-if (xmlSource == null) throw  new JSV.exception.JSpecViewException ("File type not recognized");
-return xmlSource;
+if (xmlSource == null) {
+J.util.Logger.error (header + "...");
+throw  new JSV.exception.JSVException ("File type not recognized");
+}return xmlSource;
 }return ( new JSV.source.FileReader (filePath, obscure, loadImaginary, iSpecFirst, iSpecLast)).getJDXSource (br);
 } catch (e) {
-if (Clazz_exceptionOf (e, JSV.exception.JSpecViewException)) {
-br.close ();
-throw  new Exception ("Error reading JDX format: " + e);
+if (Clazz_exceptionOf (e, Exception)) {
+if (br != null) br.close ();
+if (header != null) J.util.Logger.error (header + "...");
+var s = e.getMessage ();
+{
+}throw  new JSV.exception.JSVException ("Error reading data: " + s);
 } else {
 throw e;
 }
@@ -25869,7 +25286,9 @@ this.isZipFile = (Clazz_instanceOf (reader, JSV.api.JSVZipReader));
 this.t =  new JSV.source.JDXSourceStreamTokenizer (reader);
 this.errorLog =  new JU.SB ();
 var label = null;
+var isOK = false;
 while (!this.done && "##TITLE".equals (this.t.peakLabel ())) {
+isOK = true;
 if (label != null && !this.isZipFile) this.errorLog.append ("Warning - file is a concatenation without LINK record -- does not conform to IUPAC standards!\n");
 var spectrum =  new JSV.common.JDXSpectrum ();
 var dataLDRTable =  new JU.List ();
@@ -25884,18 +25303,20 @@ spectrum = null;
 continue;
 }if (java.util.Arrays.binarySearch (JSV.source.FileReader.TABULAR_DATA_LABELS, label) > 0) {
 this.setTabularDataType (spectrum, label);
-if (!this.processTabularData (spectrum, dataLDRTable)) throw  new JSV.exception.JDXSourceException ("Unable to read JDX file");
+if (!this.processTabularData (spectrum, dataLDRTable)) throw  new JSV.exception.JSVException ("Unable to read JDX file");
 this.addSpectrum (spectrum, false);
 spectrum = null;
 continue;
 }if (spectrum == null) spectrum =  new JSV.common.JDXSpectrum ();
-if (JSV.source.FileReader.readDataLabel (spectrum, label, this.t, this.errorLog, this.obscure)) continue;
+if (this.readDataLabel (spectrum, label, this.t, this.errorLog, this.obscure)) continue;
 var value = this.t.getValue ();
 JSV.source.FileReader.addHeader (dataLDRTable, this.t.getRawLabel (), value);
 if (this.checkCustomTags (spectrum, label, value)) continue;
 }
 }
+if (!isOK) throw  new JSV.exception.JSVException ("##TITLE record not found");
 this.source.setErrorLog (this.errorLog.toString ());
+if (this.normalizeY && !this.source.isCompoundSource) this.source.getJDXSpectrum (0).doNormalize ();
 return this.source;
 }, "~O");
 $_M(c$, "isEnd", 
@@ -25931,14 +25352,14 @@ this.t.getValue ();
 var nBlocks = JU.PT.parseInt (this.t.getValue ());
 if (nBlocks > 100 && this.firstSpec <= 0) forceSub = true;
 }}
-if (!"##TITLE".equals (label)) throw  new JSV.exception.JSpecViewException ("Unable to read block source");
+if (!"##TITLE".equals (label)) throw  new JSV.exception.JSVException ("Unable to read block source");
 if (isNew) this.source.setHeaderTable (sourceLDRTable);
 this.source.type = 1;
 this.source.isCompoundSource = true;
 var dataLDRTable;
 var spectrum =  new JSV.common.JDXSpectrum ();
 dataLDRTable =  new JU.List ();
-JSV.source.FileReader.readDataLabel (spectrum, label, this.t, this.errorLog, this.obscure);
+this.readDataLabel (spectrum, label, this.t, this.errorLog, this.obscure);
 try {
 var tmp;
 while ((tmp = this.t.getLabel ()) != null) {
@@ -25948,7 +25369,7 @@ break;
 }label = tmp;
 if (java.util.Arrays.binarySearch (JSV.source.FileReader.TABULAR_DATA_LABELS, label) > 0) {
 this.setTabularDataType (spectrum, label);
-if (!this.processTabularData (spectrum, dataLDRTable)) throw  new JSV.exception.JDXSourceException ("Unable to read Block Source");
+if (!this.processTabularData (spectrum, dataLDRTable)) throw  new JSV.exception.JSVException ("Unable to read Block Source");
 continue;
 }if (label.equals ("##DATATYPE") && this.t.getValue ().toUpperCase ().equals ("LINK")) {
 this.getBlockSpectra (dataLDRTable);
@@ -25973,7 +25394,7 @@ if (label === "") continue;
 if (label == null) {
 label = "##END";
 continue;
-}}if (JSV.source.FileReader.readDataLabel (spectrum, label, this.t, this.errorLog, this.obscure)) continue;
+}}if (this.readDataLabel (spectrum, label, this.t, this.errorLog, this.obscure)) continue;
 if (this.isEnd (label)) {
 if (spectrum.getXYCoords ().length > 0 && !this.addSpectrum (spectrum, forceSub)) return this.source;
 spectrum =  new JSV.common.JDXSpectrum ();
@@ -25988,9 +25409,9 @@ if (this.checkCustomTags (spectrum, label, value)) continue;
 if (Clazz_exceptionOf (e$$, java.util.NoSuchElementException)) {
 var nsee = e$$;
 {
-throw  new JSV.exception.JSpecViewException ("Unable to Read Block Source");
+throw  new JSV.exception.JSVException ("Unable to Read Block Source");
 }
-} else if (Clazz_exceptionOf (e$$, JSV.exception.JSpecViewException)) {
+} else if (Clazz_exceptionOf (e$$, JSV.exception.JSVException)) {
 var jsve = e$$;
 {
 throw jsve;
@@ -26050,7 +25471,7 @@ while (st.hasMoreTokens ()) attrList.addLast (st.nextToken ().trim ());
 nTupleTable.put (label, attrList);
 }
 var symbols = nTupleTable.get ("##SYMBOL");
-if (!label.equals ("##PAGE")) throw  new JSV.exception.JSpecViewException ("Error Reading NTuple Source");
+if (!label.equals ("##PAGE")) throw  new JSV.exception.JSVException ("Error Reading NTuple Source");
 var page = this.t.getValue ();
 var spectrum = null;
 var isFirst = true;
@@ -26089,7 +25510,7 @@ var line = this.t.flushLine ();
 if (line.trim ().indexOf ("PEAKS") > 0) continuous = false;
 var index1 = line.indexOf ('(');
 var index2 = line.lastIndexOf (')');
-if (index1 == -1 || index2 == -1) throw  new JSV.exception.JDXSourceException ("Variable List not Found");
+if (index1 == -1 || index2 == -1) throw  new JSV.exception.JSVException ("Variable List not Found");
 var varList = line.substring (index1, index2 + 1);
 var countSyms = 0;
 for (var i = 0; i < symbols.size (); i++) {
@@ -26099,7 +25520,7 @@ plotSymbols[countSyms++] = sym;
 }if (countSyms == 2) break;
 }
 this.setTabularDataType (spectrum, "##" + (continuous ? "XYDATA" : "PEAKTABLE"));
-if (!this.readNTUPLECoords (spectrum, nTupleTable, plotSymbols, minMaxY)) throw  new JSV.exception.JDXSourceException ("Unable to read Ntuple Source");
+if (!this.readNTUPLECoords (spectrum, nTupleTable, plotSymbols, minMaxY)) throw  new JSV.exception.JSVException ("Unable to read Ntuple Source");
 if (!spectrum.nucleusX.equals ("?")) spectrum0.nucleusX = spectrum.nucleusX;
 spectrum0.nucleusY = spectrum.nucleusY;
 spectrum0.freq2dX = spectrum.freq2dX;
@@ -26125,7 +25546,6 @@ var peakData =  new JU.List ();
 var reader =  new java.io.BufferedReader ( new java.io.StringReader (peakList));
 try {
 var offset = (isSignals ? 1 : 0);
-System.out.println ("offset is " + offset + " isSignals=" + isSignals);
 var tag1 = (isSignals ? "Signals" : "Peaks");
 var tag2 = (isSignals ? "<Signal" : "<PeakData");
 var line = this.discardUntil (reader, tag1);
@@ -26153,7 +25573,7 @@ title = " title=" + this.escape (title);
 title = "";
 }var stringInfo = "<PeakData " + file + " index=\"%INDEX%\"" + title + type + (this.getQuotedAttribute (line, "model") == null ? model : "") + " " + line.substring (tag2.length).trim ();
 var atoms = this.getQuotedAttribute (stringInfo, "atoms");
-if (atoms != null) stringInfo = this.simpleReplace (stringInfo, "atoms=\"" + atoms + "\"", "atoms=\"%ATOMS%\"");
+if (atoms != null) stringInfo = this.rep (stringInfo, "atoms=\"" + atoms + "\"", "atoms=\"%ATOMS%\"");
 var key = (Clazz_floatToInt (this.parseFloatStr (this.getQuotedAttribute (line, "xMin")) * 100)) + "_" + (Clazz_floatToInt (this.parseFloatStr (this.getQuotedAttribute (line, "xMax")) * 100));
 var o = htSets.get (key);
 if (o == null) {
@@ -26164,25 +25584,23 @@ list.addLast (o);
 if (atoms != null && bs != null) {
 atoms = atoms.$replace (',', ' ');
 bs.or (this.unescapeBitSet ("({" + atoms + "})"));
-System.out.println ("bs is  " + bs);
 }}}
 var nH = 0;
 var n = list.size ();
 for (var i = 0; i < n; i++) {
 var o = list.get (i);
 var stringInfo = o[0];
-stringInfo = this.simpleReplace (stringInfo, "%INDEX%", "" + this.getPeakIndex ());
+stringInfo = this.rep (stringInfo, "%INDEX%", "" + this.getPeakIndex ());
 var bs = o[1];
 if (bs != null) {
-System.out.println ("bs " + i + " is " + bs);
 var s = "";
 for (var j = bs.nextSetBit (0); j >= 0; j = bs.nextSetBit (j + 1)) s += "," + (j + offset);
 
 var na = bs.cardinality ();
 nH += na;
-stringInfo = this.simpleReplace (stringInfo, "%ATOMS%", s.substring (1));
-stringInfo = this.simpleReplace (stringInfo, "%S%", (na == 1 ? "" : "s"));
-stringInfo = this.simpleReplace (stringInfo, "%NATOMS%", "" + na);
+stringInfo = this.rep (stringInfo, "%ATOMS%", s.substring (1));
+stringInfo = this.rep (stringInfo, "%S%", (na == 1 ? "" : "s"));
+stringInfo = this.rep (stringInfo, "%NATOMS%", "" + na);
 }this.info ("JSpecView using " + stringInfo);
 this.add (peakData, stringInfo);
 }
@@ -26258,13 +25676,13 @@ $_M(c$, "parseFloatStr",
 function (s) {
 return JU.PT.parseFloat (s);
 }, "~S");
-$_M(c$, "simpleReplace", 
+$_M(c$, "rep", 
 function (s, sfrom, sto) {
-return JU.PT.simpleReplace (s, sfrom, sto);
+return JU.PT.rep (s, sfrom, sto);
 }, "~S,~S,~S");
 $_M(c$, "escape", 
 function (s) {
-return JSV.util.JSVEscape.eS (s);
+return JU.PT.esc (s);
 }, "~S");
 $_M(c$, "getQuotedAttribute", 
 function (s, attr) {
@@ -26272,7 +25690,7 @@ return JU.PT.getQuotedAttribute (s, attr);
 }, "~S,~S");
 $_M(c$, "getPeakFilePath", 
 function () {
-return " file=" + JSV.util.JSVEscape.eS (JU.PT.trimQuotes (this.filePath).$replace ('\\', '/'));
+return " file=" + JU.PT.esc (JU.PT.trimQuotes (this.filePath).$replace ('\\', '/'));
 });
 $_M(c$, "setSpectrumPeaks", 
 function (spectrum, peakData, nH) {
@@ -26290,7 +25708,7 @@ $_M(c$, "getPeakIndex",
 function () {
 return ++this.peakIndex;
 });
-c$.readDataLabel = $_M(c$, "readDataLabel", 
+$_M(c$, "readDataLabel", 
 function (spectrum, label, t, errorLog, obscure) {
 if (JSV.source.FileReader.readHeaderLabel (spectrum, label, t, errorLog, obscure)) return true;
 if (label.equals ("##MINX") || label.equals ("##MINY") || label.equals ("##MAXX") || label.equals ("##MAXY") || label.equals ("##FIRSTY") || label.equals ("##DELTAX") || label.equals ("##DATACLASS")) {
@@ -26464,8 +25882,8 @@ list = nTupleTable.get ("##UNITS");
 spec.setXUnits (list.get (index1));
 spec.setYUnits (list.get (index2));
 if (spec.nucleusX == null && (list = nTupleTable.get ("##.NUCLEUS")) != null) {
-spec.setNucleus (list.get (0), false);
-spec.setNucleus (list.get (index1), true);
+spec.setNucleusAndFreq (list.get (0), false);
+spec.setNucleusAndFreq (list.get (index1), true);
 } else {
 if (spec.nucleusX == null) spec.nucleusX = "?";
 }this.decompressData (spec, minMaxY);
@@ -26492,7 +25910,7 @@ var decompressor =  new JSV.source.JDXDecompressor (this.t, spec.fileFirstX, spe
 var firstLastX =  Clazz_newDoubleArray (2, 0);
 var t = System.currentTimeMillis ();
 var xyCoords = decompressor.decompressData (this.errorLog, firstLastX);
-System.out.println ("decompression time = " + (System.currentTimeMillis () - t) + " ms");
+if (J.util.Logger.debugging) J.util.Logger.debug ("decompression time = " + (System.currentTimeMillis () - t) + " ms");
 spec.setXYCoords (xyCoords);
 var d = decompressor.getMinY ();
 if (minMaxY != null) {
@@ -26532,7 +25950,7 @@ Clazz_defineStatics (c$,
 "TABULAR_DATA_LABELS", ["##DATATABLE", "##PEAKASSIGNMENTS", "##PEAKTABLE", "##XYDATA", "##XYPOINTS"]);
 });
 Clazz_declarePackage ("JSV.source");
-Clazz_load (["JSV.source.JDXHeader"], "JSV.source.JDXDataObject", ["java.lang.Character", "$.Double", "JU.DF", "$.PT", "JSV.common.Annotation", "$.Coordinate", "$.Integral", "JSV.exception.JSpecViewException", "J.util.Logger"], function () {
+Clazz_load (["JSV.source.JDXHeader"], "JSV.source.JDXDataObject", ["java.lang.Character", "$.Double", "JU.DF", "$.PT", "JSV.common.Annotation", "$.Coordinate", "$.Integral", "JSV.exception.JSVException", "J.util.Logger"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.filePath = null;
 this.filePathForwardSlash = null;
@@ -26612,11 +26030,11 @@ return this.yFactor;
 });
 $_M(c$, "checkRequiredTokens", 
 function () {
-if (this.fileFirstX == 1.7976931348623157E308) throw  new JSV.exception.JSpecViewException ("Error Reading Data Set: ##FIRST not found");
-if (this.fileLastX == 1.7976931348623157E308) throw  new JSV.exception.JSpecViewException ("Error Reading Data Set: ##LASTX not found");
-if (this.nPointsFile == -1) throw  new JSV.exception.JSpecViewException ("Error Reading Data Set: ##NPOINTS not found");
-if (this.xFactor == 1.7976931348623157E308) throw  new JSV.exception.JSpecViewException ("Error Reading Data Set: ##XFACTOR not found");
-if (this.yFactor == 1.7976931348623157E308) throw  new JSV.exception.JSpecViewException ("Error Reading Data Set: ##YFACTOR not found");
+if (this.fileFirstX == 1.7976931348623157E308) throw  new JSV.exception.JSVException ("Error Reading Data Set: ##FIRST not found");
+if (this.fileLastX == 1.7976931348623157E308) throw  new JSV.exception.JSVException ("Error Reading Data Set: ##LASTX not found");
+if (this.nPointsFile == -1) throw  new JSV.exception.JSVException ("Error Reading Data Set: ##NPOINTS not found");
+if (this.xFactor == 1.7976931348623157E308) throw  new JSV.exception.JSVException ("Error Reading Data Set: ##XFACTOR not found");
+if (this.yFactor == 1.7976931348623157E308) throw  new JSV.exception.JSVException ("Error Reading Data Set: ##YFACTOR not found");
 });
 $_M(c$, "setXUnits", 
 function (xUnits) {
@@ -26628,6 +26046,7 @@ return this.xUnits;
 });
 $_M(c$, "setYUnits", 
 function (yUnits) {
+if (yUnits.equals ("PPM")) yUnits = "ARBITRARY UNITS";
 this.yUnits = yUnits;
 }, "~S");
 $_M(c$, "getYUnits", 
@@ -26645,7 +26064,7 @@ this.yLabel = value;
 $_M(c$, "setObservedNucleus", 
 function (value) {
 this.observedNucl = value;
-if (this.numDim == 1) this.parent.nucleusX = this.nucleusX = JU.PT.trim (value, "[]^<>");
+if (this.numDim == 1) this.parent.nucleusX = this.nucleusX = this.fixNucleus (value);
 }, "~S");
 $_M(c$, "setObservedFreq", 
 function (observedFreq) {
@@ -26677,8 +26096,9 @@ var d = this.y2D;
 if (this.y2DUnits.equals ("HZ")) d /= this.freq2dY;
 return d;
 });
-$_M(c$, "setNucleus", 
+$_M(c$, "setNucleusAndFreq", 
 function (nuc, isX) {
+nuc = this.fixNucleus (nuc);
 if (isX) this.nucleusX = nuc;
  else this.nucleusY = nuc;
 var freq;
@@ -26692,6 +26112,10 @@ freq = this.observedFreq * g2 / g1;
  else this.freq2dY = freq;
 J.util.Logger.info ("Freq for " + nuc + " = " + freq);
 }, "~S,~B");
+$_M(c$, "fixNucleus", 
+function (nuc) {
+return JU.PT.rep (JU.PT.trim (nuc, "[]^<>"), "NUC_", "");
+}, "~S");
 c$.getGyroMagneticRatio = $_M(c$, "getGyroMagneticRatio", 
 function (nuc) {
 var pt = 0;
@@ -27877,43 +27301,6 @@ $_V(c$, "getLastPathComponent",
 function () {
 return (this.path == null || this.path.length == 0 ? null : this.path[this.path.length - 1]);
 });
-});
-Clazz_declarePackage ("JSV.util");
-Clazz_load (null, "JSV.util.JSVEscape", ["JU.SB"], function () {
-c$ = Clazz_declareType (JSV.util, "JSVEscape");
-c$.eS = $_M(c$, "eS", 
-function (str) {
-if (str == null) return "\"\"";
-var haveEscape = false;
-var i = 0;
-for (; i < "\\\\\tt\rr\nn\"\"".length; i += 2) if (str.indexOf ("\\\\\tt\rr\nn\"\"".charAt (i)) >= 0) {
-haveEscape = true;
-break;
-}
-if (haveEscape) while (i < "\\\\\tt\rr\nn\"\"".length) {
-var pt = -1;
-var ch = "\\\\\tt\rr\nn\"\"".charAt (i++);
-var ch2 = "\\\\\tt\rr\nn\"\"".charAt (i++);
-var sb =  new JU.SB ();
-var pt0 = 0;
-while ((pt = str.indexOf (ch, pt + 1)) >= 0) {
-sb.append (str.substring (pt0, pt)).appendC ('\\').appendC (ch2);
-pt0 = pt + 1;
-}
-sb.append (str.substring (pt0, str.length));
-str = sb.toString ();
-}
-for (i = str.length; --i >= 0; ) if (str.charCodeAt (i) > 0x7F) str = str.substring (0, i) + JSV.util.JSVEscape.unicode (str.charAt (i)) + str.substring (i + 1);
-
-return "\"" + str + "\"";
-}, "~S");
-c$.unicode = $_M(c$, "unicode", 
-function (c) {
-var s = "0000" + Integer.toHexString (c.charCodeAt (0));
-return "\\u" + s.substring (s.length - 4);
-}, "~S");
-Clazz_defineStatics (c$,
-"escapable", "\\\\\tt\rr\nn\"\"");
 });
 
 })();

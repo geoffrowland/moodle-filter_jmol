@@ -1,46 +1,75 @@
 Clazz.declarePackage ("J.adapter.readers.cif");
-Clazz.load (["J.adapter.smarter.MSInterface"], "J.adapter.readers.cif.MSReader", ["java.lang.Float", "java.util.Hashtable", "JU.List", "$.M3", "$.M4", "$.P3", "$.SB", "$.V3", "J.util.Escape", "$.Logger", "$.Modulation", "$.ModulationSet"], function () {
+Clazz.load (["J.adapter.smarter.MSInterface"], "J.adapter.readers.cif.MSReader", ["java.lang.Boolean", "$.Float", "java.util.Hashtable", "JU.List", "$.M3", "$.Matrix", "$.P3", "$.SB", "J.adapter.readers.cif.Subsystem", "J.util.BSUtil", "$.BoxInfo", "$.Escape", "$.Logger", "$.Modulation", "$.ModulationSet"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.cr = null;
-this.modVib = false;
+this.modDim = 0;
 this.modAxes = null;
 this.modAverage = false;
+this.isCommensurate = false;
+this.commensurateSection1 = 0;
+this.modPack = false;
+this.modVib = false;
 this.modType = null;
+this.modCell = null;
 this.modDebug = false;
 this.modSelected = -1;
-this.modDim = 0;
+this.modLast = false;
+this.sigma = null;
 this.q1 = null;
 this.q1Norm = null;
 this.htModulation = null;
 this.htAtomMods = null;
-this.htSubsystems = null;
-this.atModel = "@0";
-this.q123 = null;
-this.qlen = null;
-this.haveOccupancy = false;
-this.atoms = null;
-this.qs = null;
 this.iopLast = -1;
 this.gammaE = null;
-this.gammaIS = null;
 this.nOps = 0;
+this.haveOccupancy = false;
+this.atoms = null;
+this.atomCount = 0;
+this.haveAtomMods = false;
+this.modCoord = false;
+this.finalized = false;
+this.atModel = "@0";
+this.modMatrices = null;
+this.qs = null;
+this.modCount = 0;
+this.htSubsystems = null;
+this.minXYZ0 = null;
+this.maxXYZ0 = null;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.cif, "MSReader", null, J.adapter.smarter.MSInterface);
+$_M(c$, "getSigma", 
+function () {
+return this.sigma;
+});
 Clazz.makeConstructor (c$, 
 function () {
 });
 $_V(c$, "initialize", 
 function (r, data) {
 this.cr = r;
+this.modCoord = r.checkFilterKey ("MODCOORD");
 this.modDebug = r.checkFilterKey ("MODDEBUG");
+this.modPack = !r.checkFilterKey ("MODNOPACK");
+this.modLast = r.checkFilterKey ("MODLAST");
 this.modAxes = r.getFilter ("MODAXES=");
 this.modType = r.getFilter ("MODTYPE=");
+this.modCell = r.getFilter ("MODCELL=");
 this.modSelected = r.parseIntStr ("" + r.getFilter ("MOD="));
 this.modVib = r.checkFilterKey ("MODVIB");
 this.modAverage = r.checkFilterKey ("MODAVE");
 this.setModDim (r.parseIntStr (data));
 return this.modDim;
 }, "J.adapter.smarter.AtomSetCollectionReader,~S");
+$_M(c$, "setSubsystemOptions", 
+($fz = function () {
+this.cr.doPackUnitCell = this.modPack;
+if (!this.cr.doApplySymmetry) {
+this.cr.doApplySymmetry = true;
+this.cr.latticeCells[0] = 1;
+this.cr.latticeCells[1] = 1;
+this.cr.latticeCells[2] = 1;
+}if (this.modCell != null) this.cr.addJmolScript ("unitcell {%" + this.modCell + "}");
+}, $fz.isPrivate = true, $fz));
 $_M(c$, "setModDim", 
 function (ndim) {
 if (this.modAverage) return;
@@ -63,33 +92,34 @@ case 'U':
 if (this.modType != null && this.modType.indexOf (ch) < 0 || this.modSelected > 0 && this.modSelected != 1) return;
 break;
 }
-if (this.modSelected > 0 && id.contains ("_q_")) switch (this.modSelected) {
-case 1:
-pt.y = pt.z = 0;
+var isOK = false;
+for (var i = pt.length; --i >= 0; ) {
+if (this.modSelected > 0 && i + 1 != this.modSelected && id.contains ("_coefs_")) {
+pt[i] = 0;
+} else if (pt[i] != 0) {
+isOK = true;
 break;
-case 2:
-pt.x = pt.z = 0;
-break;
-case 3:
-pt.x = pt.y = 0;
-break;
-}
-if (pt.x == 0 && pt.y == 0 && pt.z == 0) return;
+}}
+if (!isOK) return;
 if (map == null) map = this.htModulation;
-id += "@" + (iModel >= 0 ? iModel : this.cr.atomSetCollection.getCurrentAtomSetIndex ());
-J.util.Logger.info ("Adding " + id + " " + pt);
+id += "@" + (iModel >= 0 ? iModel : this.cr.atomSetCollection.currentAtomSetIndex);
+J.util.Logger.info ("Adding " + id + " " + J.util.Escape.e (pt));
 map.put (id, pt);
-}, "java.util.Map,~S,JU.P3,~N");
+}, "java.util.Map,~S,~A,~N");
 $_V(c$, "setModulation", 
-function () {
+function (isPost) {
 if (this.modDim == 0 || this.htModulation == null) return;
 if (this.modDebug) J.util.Logger.debugging = J.util.Logger.debuggingHigh = true;
-this.setModulationForStructure (this.cr.atomSetCollection.getCurrentAtomSetIndex ());
+this.cr.atomSetCollection.setAtomSetCollectionAuxiliaryInfo ("someModelsAreModulated", Boolean.TRUE);
+this.setModulationForStructure (this.cr.atomSetCollection.currentAtomSetIndex, isPost);
 if (this.modDebug) J.util.Logger.debugging = J.util.Logger.debuggingHigh = false;
-});
+}, "~B");
 $_V(c$, "finalizeModulation", 
 function () {
-if (this.modDim > 0 && !this.modVib) this.cr.addJmolScript ("modulation on" + (this.haveOccupancy ? ";display occupancy > 0.5" : ""));
+if (!this.finalized && this.modDim > 0 && !this.modVib) {
+this.cr.atomSetCollection.setAtomSetCollectionAuxiliaryInfo ("modulationOn", Boolean.TRUE);
+this.cr.addJmolScript ((this.haveOccupancy && !this.isCommensurate ? ";display occupancy >= 0.5" : ""));
+}this.finalized = true;
 });
 $_M(c$, "checkKey", 
 ($fz = function (key, checkQ) {
@@ -101,28 +131,47 @@ function (key) {
 return this.htModulation.get (key + this.atModel);
 }, "~S");
 $_M(c$, "setModulationForStructure", 
-($fz = function (iModel) {
+($fz = function (iModel, isPost) {
 this.atModel = "@" + iModel;
-var key;
 if (this.htModulation.containsKey ("X_" + this.atModel)) return;
-this.htModulation.put ("X_" + this.atModel,  new JU.P3 ());
-this.q123 =  new JU.M3 ();
-this.qlen =  Clazz.newDoubleArray (this.modDim, 0);
+if (!isPost) {
+this.initModForStructure (iModel);
+return;
+}this.htModulation.put ("X_" + this.atModel,  Clazz.newDoubleArray (0, 0));
+if (!this.haveAtomMods) return;
+var n = this.cr.atomSetCollection.atomCount;
+this.atoms = this.cr.atomSetCollection.atoms;
+this.cr.symmetry = this.cr.atomSetCollection.getSymmetry ();
+if (this.cr.symmetry != null) this.nOps = this.cr.symmetry.getSpaceGroupOperationCount ();
+this.iopLast = -1;
+var sb =  new JU.SB ();
+for (var i = this.cr.atomSetCollection.getLastAtomSetAtomIndex (); i < n; i++) this.modulateAtom (this.atoms[i], sb);
+
+this.cr.atomSetCollection.setAtomSetAtomProperty ("modt", sb.toString (), -1);
+this.cr.appendLoadNote (this.modCount + " modulations for " + this.atomCount + " atoms");
+this.htAtomMods = null;
+if (this.minXYZ0 != null) this.trimAtomSet ();
+this.htSubsystems = null;
+}, $fz.isPrivate = true, $fz), "~N,~B");
+$_M(c$, "initModForStructure", 
+($fz = function (iModel) {
+var key;
+this.sigma =  new JU.Matrix (null, this.modDim, 3);
 this.qs = null;
+this.modMatrices = [this.sigma, null];
 for (var i = 0; i < this.modDim; i++) {
 var pt = this.getMod ("W_" + (i + 1));
 if (pt == null) {
 J.util.Logger.info ("Not enough cell wave vectors for d=" + this.modDim);
 return;
-}this.cr.appendLoadNote ("W_" + (i + 1) + " = " + pt);
-if (i == 0) this.q1 = JU.P3.newP (pt);
-this.q123.setRowV (i, pt);
-this.qlen[i] = pt.length ();
+}this.cr.appendLoadNote ("W_" + (i + 1) + " = " + J.util.Escape.e (pt));
+this.sigma.getArray ()[i] = [pt[0], pt[1], pt[2]];
 }
-this.q1Norm = JU.V3.new3 (this.q1.x == 0 ? 0 : 1, this.q1.y == 0 ? 0 : 1, this.q1.z == 0 ? 0 : 1);
-var qlist100 = JU.P3.new3 (1, 0, 0);
+this.q1 = this.sigma.getArray ()[0];
+this.q1Norm = JU.P3.new3 (this.q1[0] == 0 ? 0 : 1, this.q1[1] == 0 ? 0 : 1, this.q1[2] == 0 ? 0 : 1);
+var qlist100 =  Clazz.newDoubleArray (this.modDim, 0);
+qlist100[0] = 1;
 var pt;
-var n = this.cr.atomSetCollection.getAtomCount ();
 var map =  new java.util.Hashtable ();
 for (var e, $e = this.htModulation.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) {
 if ((key = this.checkKey (e.getKey (), false)) == null) continue;
@@ -132,41 +181,45 @@ case 'O':
 this.haveOccupancy = true;
 case 'U':
 case 'D':
-if (pt.z == 1 && key.charAt (2) != 'S') {
+if (pt[2] == 1 && key.charAt (2) != 'S') {
 var ipt = key.indexOf ("?");
 if (ipt >= 0) {
 var s = key.substring (ipt + 1);
 pt = this.getMod (key.substring (0, 2) + s + "#*;*");
 if (pt != null) this.addModulation (map, key = key.substring (0, ipt), pt, iModel);
 } else {
-var a = pt.x;
-var d = 2 * 3.141592653589793 * pt.y;
-pt.x = (a * Math.cos (d));
-pt.y = (a * Math.sin (-d));
-pt.z = 0;
-J.util.Logger.info ("msCIF setting " + key + " " + pt);
+var a = pt[0];
+var d = 2 * 3.141592653589793 * pt[1];
+pt[0] = (a * Math.cos (d));
+pt[1] = (a * Math.sin (-d));
+pt[2] = 0;
+J.util.Logger.info ("msCIF setting " + key + " " + J.util.Escape.e (pt));
 }}break;
 case 'W':
 if (this.modDim > 1) {
 continue;
 }case 'F':
-if (key.indexOf ("_q_") >= 0) {
-this.cr.appendLoadNote ("Wave vector " + key + "=" + pt);
+if (key.indexOf ("_coefs_") >= 0) {
+this.cr.appendLoadNote ("Wave vector " + key + "=" + J.util.Escape.e (pt));
 } else {
 var ptHarmonic = this.getQCoefs (pt);
 if (ptHarmonic == null) {
 this.cr.appendLoadNote ("Cannot match atom wave vector " + key + " " + pt + " to a cell wave vector or its harmonic");
 } else {
-var k2 = key + "_q_";
+var k2 = key + "_coefs_";
 if (!this.htModulation.containsKey (k2 + this.atModel)) {
 this.addModulation (map, k2, ptHarmonic, iModel);
-if (key.startsWith ("F_")) this.cr.appendLoadNote ("atom wave vector " + key + " = " + pt + " fn = " + ptHarmonic);
+if (key.startsWith ("F_")) this.cr.appendLoadNote ("atom wave vector " + key + " = " + J.util.Escape.e (pt) + " fn = " + J.util.Escape.e (ptHarmonic));
 }}}break;
 }
 }
 if (!map.isEmpty ()) this.htModulation.putAll (map);
-var haveAtomMods = false;
-for (var e, $e = this.htModulation.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) {
+if (this.htSubsystems == null) {
+this.haveAtomMods = false;
+} else {
+this.haveAtomMods = true;
+this.htAtomMods =  new java.util.Hashtable ();
+}for (var e, $e = this.htModulation.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) {
 if ((key = this.checkKey (e.getKey (), true)) == null) continue;
 var params = e.getValue ();
 var atomName = key.substring (key.indexOf (";") + 1);
@@ -174,8 +227,8 @@ var pt_ = atomName.indexOf ("#=");
 if (pt_ >= 0) {
 params = this.getMod (atomName.substring (pt_ + 2));
 atomName = atomName.substring (0, pt_);
-}if (J.util.Logger.debuggingHigh) J.util.Logger.debug ("SetModulation: " + key + " " + params);
-var type = key.charCodeAt (0);
+}if (J.util.Logger.debuggingHigh) J.util.Logger.debug ("SetModulation: " + key + " " + J.util.Escape.e (params));
+var type = key.charAt (0);
 pt_ = key.indexOf ("#") + 1;
 var utens = null;
 switch (type) {
@@ -185,56 +238,42 @@ case 'O':
 case 'D':
 var id = key.charAt (2);
 var axis = key.charAt (pt_);
-type = (id == 'S' ? 1 : id == '0' ? 3 : type == 79 ? 2 : type == 85 ? 4 : 0);
+type = (id == 'S' ? 's' : id == '0' ? 'c' : type == 'O' ? 'o' : type == 'U' ? 'u' : 'f');
 if (this.htAtomMods == null) this.htAtomMods =  new java.util.Hashtable ();
 var fn = (id == 'S' ? 0 : this.cr.parseIntStr (key.substring (2)));
+var p = [params[0], params[1], params[2]];
 if (fn == 0) {
-this.addAtomModulation (atomName, axis, type, params, utens, qlist100);
+this.addAtomModulation (atomName, axis, type, p, utens, qlist100);
 } else {
-var qlist = this.getMod ("F_" + fn + "_q_");
+var qlist = this.getMod ("F_" + fn + "_coefs_");
 if (qlist == null) {
 J.util.Logger.error ("Missing qlist for F_" + fn);
-this.cr.appendLoadNote ("Missing cell wave vector for atom wave vector " + fn + " for " + key + " " + params);
-} else {
-this.addAtomModulation (atomName, axis, type, params, utens, qlist);
-}}haveAtomMods = true;
+this.cr.appendLoadNote ("Missing cell wave vector for atom wave vector " + fn + " for " + key + " " + J.util.Escape.e (params));
+qlist = this.getMod ("F_1_coefs_");
+}if (qlist != null) {
+this.addAtomModulation (atomName, axis, type, p, utens, qlist);
+}}this.haveAtomMods = true;
 break;
 }
 }
-if (!haveAtomMods) return;
-this.atoms = this.cr.atomSetCollection.getAtoms ();
-this.cr.symmetry = this.cr.atomSetCollection.getSymmetry ();
-this.iopLast = -1;
-var sb =  new JU.SB ();
-for (var i = this.cr.atomSetCollection.getLastAtomSetAtomIndex (); i < n; i++) this.modulateAtom (this.atoms[i], sb);
-
-this.cr.atomSetCollection.setAtomSetAtomProperty ("modt", sb.toString (), -1);
-this.htAtomMods = null;
 }, $fz.isPrivate = true, $fz), "~N");
 $_M(c$, "getQCoefs", 
 ($fz = function (p) {
 if (this.qs == null) {
-this.qs =  new Array (3);
-for (var i = 0; i < 3; i++) this.qs[i] = this.getMod ("W_" + (i + 1));
-
-}var pt =  new JU.P3 ();
-for (var i = 0; i < 3; i++) if (this.qs[i] != null) {
-var fn = p.dot (this.qs[i]) / this.qs[i].dot (this.qs[i]);
+this.qs =  new Array (this.modDim);
+for (var i = 0; i < this.modDim; i++) {
+this.qs[i] = this.toP3 (this.getMod ("W_" + (i + 1)));
+}
+}var pt = this.toP3 (p);
+for (var i = 0; i < this.modDim; i++) if (this.qs[i] != null) {
+var fn = pt.dot (this.qs[i]) / this.qs[i].dot (this.qs[i]);
 var ifn = Math.round (fn);
 if (Math.abs (fn - ifn) < 0.001) {
-switch (i) {
-case 0:
-pt.x = ifn;
-break;
-case 1:
-pt.y = ifn;
-break;
-case 2:
-pt.z = ifn;
-break;
-}
-return pt;
+p =  Clazz.newDoubleArray (this.modDim, 0);
+p[i] = ifn;
+return p;
 }}
+var p3 = this.toP3 (p);
 var jmin = (this.modDim < 2 ? 0 : -3);
 var jmax = (this.modDim < 2 ? 0 : 3);
 var kmin = (this.modDim < 3 ? 0 : -3);
@@ -244,34 +283,43 @@ pt.setT (this.qs[0]);
 pt.scale (i);
 if (this.qs[1] != null) pt.scaleAdd2 (j, this.qs[1], pt);
 if (this.qs[2] != null) pt.scaleAdd2 (k, this.qs[2], pt);
-if (pt.distanceSquared (p) < 0.0001) {
-pt.set (i, j, 0);
-return pt;
+if (pt.distanceSquared (p3) < 0.0001) {
+p =  Clazz.newDoubleArray (this.modDim, 0);
+switch (this.modDim) {
+default:
+p[2] = k;
+case 2:
+p[1] = j;
+case 1:
+p[0] = i;
+break;
+}
+return p;
 }}
 
 
 return null;
-}, $fz.isPrivate = true, $fz), "JU.P3");
+}, $fz.isPrivate = true, $fz), "~A");
+$_M(c$, "toP3", 
+($fz = function (x) {
+return JU.P3.new3 (x[0], x[1], x[2]);
+}, $fz.isPrivate = true, $fz), "~A");
 $_M(c$, "addAtomModulation", 
 ($fz = function (atomName, axis, type, params, utens, qcoefs) {
 var list = this.htAtomMods.get (atomName);
-if (list == null) this.htAtomMods.put (atomName, list =  new JU.List ());
-list.addLast ( new J.util.Modulation (axis, type, params, utens, qcoefs));
-}, $fz.isPrivate = true, $fz), "~S,~S,~N,JU.P3,~S,JU.P3");
-$_M(c$, "setSubsystemMatrix", 
-($fz = function (atomName, q123w) {
-var o;
-if (true || this.htSubsystems == null || (o = this.htSubsystems.get (";" + atomName)) == null) return;
-var subcode = o;
-var wmatrix = this.htSubsystems.get (subcode);
-q123w.mulM4 (wmatrix);
-}, $fz.isPrivate = true, $fz), "~S,JU.M4");
+if (list == null) {
+this.atomCount++;
+this.htAtomMods.put (atomName, list =  new JU.List ());
+}list.addLast ( new J.util.Modulation (axis, type, params, utens, qcoefs));
+this.modCount++;
+}, $fz.isPrivate = true, $fz), "~S,~S,~S,~A,~S,~A");
 $_V(c$, "addSubsystem", 
-function (code, m4, atomName) {
-if (this.htSubsystems == null) this.htSubsystems =  new java.util.Hashtable ();
-if (m4 == null) this.htSubsystems.put (";" + atomName, code);
- else this.htSubsystems.put (code, m4);
-}, "~S,JU.M4,~S");
+function (code, w) {
+if (code == null) return;
+var ss =  new J.adapter.readers.cif.Subsystem (this, code, w);
+this.cr.appendLoadNote ("subsystem " + code + "\n" + w);
+this.setSubsystem (code, ss);
+}, "~S,JU.Matrix");
 $_M(c$, "addUStr", 
 ($fz = function (atom, id, val) {
 var i = Clazz.doubleToInt ("U11U22U33U12U13U23UISO".indexOf (id) / 3);
@@ -280,24 +328,26 @@ if (atom.anisoBorU == null) J.util.Logger.error ("MOD RDR cannot modulate nonexi
  else this.cr.setU (atom, i, val + atom.anisoBorU[i]);
 }, $fz.isPrivate = true, $fz), "J.adapter.smarter.Atom,~S,~N");
 $_M(c$, "modulateAtom", 
-function (a, sb) {
-var list = this.htAtomMods.get (a.atomName);
-if (list == null || this.cr.symmetry == null || a.bsSymmetry == null) return;
-var iop = a.bsSymmetry.nextSetBit (0);
-if (iop < 0) iop = 0;
+($fz = function (a, sb) {
+if (this.modCoord && this.htSubsystems != null) {
+var ptc = JU.P3.newP (a);
+var spt = this.getSymmetry (a);
+spt.toCartesian (ptc, true);
+}var list = this.htAtomMods.get (a.atomName);
+if (list == null && a.altLoc != '\0' && this.htSubsystems != null) {
+list =  new JU.List ();
+}if (list == null || this.cr.symmetry == null || a.bsSymmetry == null) return;
+var iop = Math.max (a.bsSymmetry.nextSetBit (0), 0);
+if (this.modLast) iop = Math.max ((a.bsSymmetry.length () - 1) % this.nOps, iop);
 if (J.util.Logger.debuggingHigh) J.util.Logger.debug ("\nsetModulation: i=" + a.index + " " + a.atomName + " xyz=" + a + " occ=" + a.foccupancy);
 if (iop != this.iopLast) {
 this.iopLast = iop;
 this.gammaE =  new JU.M3 ();
-this.cr.symmetry.getSpaceGroupOperation (iop).getRotationScale (this.gammaE);
-this.gammaIS = this.cr.symmetry.getOperationGammaIS (iop);
-this.nOps = this.cr.symmetry.getSpaceGroupOperationCount ();
+this.getSymmetry (a).getSpaceGroupOperation (iop).getRotationScale (this.gammaE);
 }if (J.util.Logger.debugging) {
 J.util.Logger.debug ("setModulation iop = " + iop + " " + this.cr.symmetry.getSpaceGroupXyz (iop, false) + " " + a.bsSymmetry);
-}var q123w = JU.M4.newMV (this.q123,  new JU.V3 ());
-this.setSubsystemMatrix (a.atomName, q123w);
-var ms =  new J.util.ModulationSet (a.index + " " + a.atomName, JU.P3.newP (a), this.modDim, list, this.gammaE, this.gammaIS, q123w, this.qlen);
-ms.calculate (0);
+}var ms =  new J.util.ModulationSet ().set (a.index + " " + a.atomName, JU.P3.newP (a), this.modDim, list, this.gammaE, this.getMatrices (a), iop, this.getSymmetry (a));
+ms.calculate (null, false);
 if (!Float.isNaN (ms.vOcc)) {
 var pt = this.getMod ("J_O#0;" + a.atomName);
 var occ0 = ms.vOcc0;
@@ -308,10 +358,10 @@ occ = ms.vOcc;
 occ = a.foccupancy + ms.vOcc;
 } else if (a.vib != null) {
 var site_mult = a.vib.x;
-var o_site = a.foccupancy * site_mult / this.nOps / pt.y;
-occ = o_site * (pt.y + ms.vOcc);
+var o_site = a.foccupancy * site_mult / this.nOps / pt[1];
+occ = o_site * (pt[1] + ms.vOcc);
 } else {
-occ = pt.x * (pt.y + ms.vOcc);
+occ = pt[0] * (pt[1] + ms.vOcc);
 }a.foccupancy = Math.min (1, Math.max (0, occ));
 }if (ms.htUij != null) {
 if (J.util.Logger.debuggingHigh) {
@@ -320,18 +370,104 @@ J.util.Logger.debug ("setModulation tensor=" + J.util.Escape.e ((a.tensors.get (
 }for (var e, $e = ms.htUij.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) this.addUStr (a, e.getKey (), e.getValue ().floatValue ());
 
 if (a.tensors != null) (a.tensors.get (0)).isUnmodulated = true;
-var t = this.cr.atomSetCollection.addRotatedTensor (a, this.cr.symmetry.getTensor (a.anisoBorU), iop, false);
+var symmetry = this.getAtomSymmetry (a, this.cr.symmetry);
+var t = this.cr.atomSetCollection.getXSymmetry ().addRotatedTensor (a, symmetry.getTensor (a.anisoBorU), iop, false, symmetry);
 t.isModulated = true;
 if (J.util.Logger.debuggingHigh) {
 J.util.Logger.debug ("setModulation Uij(final)=" + J.util.Escape.eAF (a.anisoBorU) + "\n");
 J.util.Logger.debug ("setModulation tensor=" + (a.tensors.get (0)).getInfo ("all"));
-}}a.vib = ms;
+}}if (Float.isNaN (ms.x)) ms.set (0, 0, 0);
+a.vib = ms;
 if (this.modVib || a.foccupancy != 0) {
 var t = this.q1Norm.dot (a);
 if (Math.abs (t - Clazz.floatToInt (t)) > 0.001) t = Clazz.doubleToInt (Math.floor (t));
 sb.append ((Clazz.floatToInt (t)) + "\n");
-}this.cr.symmetry.toCartesian (ms, true);
-}, "J.adapter.smarter.Atom,JU.SB");
+}}, $fz.isPrivate = true, $fz), "J.adapter.smarter.Atom,JU.SB");
+$_V(c$, "getAtomSymmetry", 
+function (a, defaultSymmetry) {
+var ss;
+return (this.htSubsystems == null || (ss = this.getSubsystem (a)) == null ? defaultSymmetry : ss.getSymmetry ());
+}, "J.adapter.smarter.Atom,J.api.SymmetryInterface");
+$_M(c$, "setSubsystem", 
+($fz = function (code, system) {
+if (this.htSubsystems == null) this.htSubsystems =  new java.util.Hashtable ();
+this.htSubsystems.put (code, system);
+this.setSubsystemOptions ();
+}, $fz.isPrivate = true, $fz), "~S,J.adapter.readers.cif.Subsystem");
+$_M(c$, "getMatrices", 
+($fz = function (a) {
+var ss = this.getSubsystem (a);
+return (ss == null ? this.modMatrices : ss.getModMatrices ());
+}, $fz.isPrivate = true, $fz), "J.adapter.smarter.Atom");
+$_M(c$, "getSymmetry", 
+($fz = function (a) {
+var ss = this.getSubsystem (a);
+return (ss == null ? this.cr.symmetry : ss.getSymmetry ());
+}, $fz.isPrivate = true, $fz), "J.adapter.smarter.Atom");
+$_M(c$, "getSubsystem", 
+($fz = function (a) {
+return (this.htSubsystems == null ? null : this.htSubsystems.get ("" + a.altLoc));
+}, $fz.isPrivate = true, $fz), "J.adapter.smarter.Atom");
+$_V(c$, "setMinMax0", 
+function (minXYZ, maxXYZ) {
+if (this.htSubsystems == null) return;
+var symmetry = this.getDefaultUnitCell ();
+this.minXYZ0 = JU.P3.newP (minXYZ);
+this.maxXYZ0 = JU.P3.newP (maxXYZ);
+var pt0 = JU.P3.newP (minXYZ);
+var pt1 = JU.P3.newP (maxXYZ);
+var pt =  new JU.P3 ();
+symmetry.toCartesian (pt0, true);
+symmetry.toCartesian (pt1, true);
+var pts = J.util.BoxInfo.unitCubePoints;
+for (var e, $e = this.htSubsystems.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) {
+var sym = e.getValue ().getSymmetry ();
+for (var i = 8; --i >= 0; ) {
+pt.x = (pts[i].x == 0 ? pt0.x : pt1.x);
+pt.y = (pts[i].y == 0 ? pt0.y : pt1.y);
+pt.z = (pts[i].z == 0 ? pt0.z : pt1.z);
+this.expandMinMax (pt, sym, minXYZ, maxXYZ);
+}
+}
+}, "JU.P3,JU.P3");
+$_M(c$, "expandMinMax", 
+($fz = function (pt, sym, minXYZ, maxXYZ) {
+var pt2 = JU.P3.newP (pt);
+var slop = 0.0001;
+sym.toFractional (pt2, false);
+if (minXYZ.x > pt2.x + slop) minXYZ.x = Clazz.doubleToInt (Math.floor (pt2.x)) - 1;
+if (minXYZ.y > pt2.y + slop) minXYZ.y = Clazz.doubleToInt (Math.floor (pt2.y)) - 1;
+if (minXYZ.z > pt2.z + slop) minXYZ.z = Clazz.doubleToInt (Math.floor (pt2.z)) - 1;
+if (maxXYZ.x < pt2.x - slop) maxXYZ.x = Clazz.doubleToInt (Math.ceil (pt2.x)) + 1;
+if (maxXYZ.y < pt2.y - slop) maxXYZ.y = Clazz.doubleToInt (Math.ceil (pt2.y)) + 1;
+if (maxXYZ.z < pt2.z - slop) maxXYZ.z = Clazz.doubleToInt (Math.ceil (pt2.z)) + 1;
+}, $fz.isPrivate = true, $fz), "JU.P3,J.api.SymmetryInterface,JU.P3,JU.P3");
+$_M(c$, "trimAtomSet", 
+($fz = function () {
+if (!this.cr.doApplySymmetry) return;
+var ac = this.cr.atomSetCollection;
+var bs = ac.bsAtoms;
+var sym = this.getDefaultUnitCell ();
+var atoms = ac.atoms;
+var pt =  new JU.P3 ();
+if (bs == null) bs = ac.bsAtoms = J.util.BSUtil.newBitSet2 (0, ac.atomCount);
+for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
+var a = atoms[i];
+pt.setT (a);
+pt.add (a.vib);
+this.getSymmetry (a).toCartesian (pt, false);
+sym.toFractional (pt, false);
+if (!ac.xtalSymmetry.isWithinCell (3, pt, this.minXYZ0.x, this.maxXYZ0.x, this.minXYZ0.y, this.maxXYZ0.y, this.minXYZ0.z, this.maxXYZ0.z, 0.001) || this.isCommensurate && a.foccupancy < 0.5) bs.clear (i);
+}
+}, $fz.isPrivate = true, $fz));
+$_M(c$, "getDefaultUnitCell", 
+($fz = function () {
+return (this.modCell != null && this.htSubsystems.containsKey (this.modCell) ? this.htSubsystems.get (this.modCell).getSymmetry () : this.cr.atomSetCollection.getSymmetry ());
+}, $fz.isPrivate = true, $fz));
+$_V(c$, "getSymmetryFromCode", 
+function (code) {
+return this.htSubsystems.get (code).getSymmetry ();
+}, "~S");
 Clazz.defineStatics (c$,
 "U_LIST", "U11U22U33U12U13U23UISO");
 });

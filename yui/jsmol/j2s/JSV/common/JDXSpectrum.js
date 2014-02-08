@@ -400,7 +400,7 @@ c$.areXScalesCompatible = $_M(c$, "areXScalesCompatible",
 function (s1, s2, isSubspecCheck, isLinkCheck) {
 var isNMR1 = s1.isNMR ();
 if (isNMR1 != s2.isNMR ()) return false;
-if (!isLinkCheck && !s1.xUnits.equalsIgnoreCase (s2.xUnits)) return false;
+if (!isLinkCheck && !JSV.common.JDXSpectrum.areUnitsCompatible (s1.xUnits, s2.xUnits)) return false;
 if (isSubspecCheck) {
 if (s1.is1D () != s2.is1D ()) return false;
 } else if (isLinkCheck) {
@@ -409,6 +409,13 @@ if (!isNMR1) return true;
 return false;
 }return (!isNMR1 || s2.is1D () && s1.parent.nucleusX.equals (s2.parent.nucleusX));
 }, "JSV.common.JDXSpectrum,JSV.common.JDXSpectrum,~B,~B");
+c$.areUnitsCompatible = $_M(c$, "areUnitsCompatible", 
+($fz = function (u1, u2) {
+if (u1.equalsIgnoreCase (u2)) return true;
+u1 = u1.toUpperCase ();
+u2 = u2.toUpperCase ();
+return (u1.equals ("HZ") && u2.equals ("PPM") || u1.equals ("PPM") && u2.equals ("HZ"));
+}, $fz.isPrivate = true, $fz), "~S,~S");
 c$.areLinkableX = $_M(c$, "areLinkableX", 
 function (s1, s2) {
 return (s1.isNMR () && s2.isNMR () && s1.nucleusX.equals (s2.nucleusX));
@@ -421,6 +428,10 @@ $_M(c$, "setNHydrogens",
 function (nH) {
 this.nH = nH;
 }, "~N");
+$_M(c$, "doNormalize", 
+function () {
+System.out.println ("OK");
+});
 Clazz.pu$h ();
 c$ = Clazz.declareType (JSV.common.JDXSpectrum, "IRMode", Enum);
 c$.getMode = $_M(c$, "getMode", 

@@ -1000,7 +1000,7 @@ if (this.backgroundImage != null) this.plotImage (-2147483648, 0, -2147483648, t
 }, "J.api.JmolRendererInterface");
 $_V(c$, "drawAtom", 
 function (atom) {
-this.fillSphereXYZ (atom.screenDiameter, atom.screenX, atom.screenY, atom.screenZ);
+this.fillSphereXYZ (atom.sD, atom.sX, atom.sY, atom.sZ);
 }, "J.modelset.Atom");
 $_V(c$, "getExportType", 
 function () {
@@ -1054,7 +1054,7 @@ function (rotationMatrix) {
 var vertexVectors = J.util.Normix.getVertexVectors ();
 for (var i = J.g3d.Graphics3D.normixCount; --i >= 0; ) {
 var tv = this.transformedVectors[i];
-rotationMatrix.transform2 (vertexVectors[i], tv);
+rotationMatrix.rotate2 (vertexVectors[i], tv);
 this.shadeIndexes[i] = this.shader.getShadeB (tv.x, -tv.y, tv.z);
 this.shadeIndexes2Sided[i] = (tv.z >= 0 ? this.shadeIndexes[i] : this.shader.getShadeB (-tv.x, tv.y, -tv.z));
 }

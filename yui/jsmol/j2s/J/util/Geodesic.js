@@ -150,10 +150,8 @@ v2 = t;
 var iv = J.util.Geodesic.htVertex.get (hashKey);
 if (iv != null) {
 return iv.shortValue ();
-}var newVertexVector = JU.V3.newV (J.util.Geodesic.vertexVectors[v1]);
-J.util.Geodesic.vertexVectors[J.util.Geodesic.vertexNext] = newVertexVector;
-newVertexVector.add (J.util.Geodesic.vertexVectors[v2]);
-newVertexVector.scale (0.5);
+}var newVertexVector = J.util.Geodesic.vertexVectors[J.util.Geodesic.vertexNext] =  new JU.V3 ();
+newVertexVector.add2 (J.util.Geodesic.vertexVectors[v1], J.util.Geodesic.vertexVectors[v2]);
 newVertexVector.normalize ();
 J.util.Geodesic.htVertex.put (hashKey, Short.$valueOf (J.util.Geodesic.vertexNext));
 return J.util.Geodesic.vertexNext++;

@@ -7,22 +7,17 @@ var isDataFrame = this.viewer.isJmolDataFrameForModel (bioShape.modelIndex);
 for (var i = this.bsVisible.nextSetBit (0); i >= 0; i = this.bsVisible.nextSetBit (i + 1)) {
 var atomA = this.modelSet.atoms[this.leadAtomIndices[i]];
 var atomB = this.modelSet.atoms[this.leadAtomIndices[i + 1]];
-if (atomA.getNBackbonesDisplayed () == 0 || atomB.getNBackbonesDisplayed () == 0 || this.modelSet.isAtomHidden (atomB.getIndex ())) continue;
+if (atomA.getNBackbonesDisplayed () == 0 || atomB.getNBackbonesDisplayed () == 0 || this.modelSet.isAtomHidden (atomB.index)) continue;
 if (!isDataFrame && atomA.distance (atomB) > 10) continue;
 var colixA = J.util.C.getColixInherited (this.colixes[i], atomA.getColix ());
 var colixB = J.util.C.getColixInherited (this.colixes[i + 1], atomB.getColix ());
-if (!this.isExport && !this.isPass2) {
-var doA = !J.util.C.isColixTranslucent (colixA);
-var doB = !J.util.C.isColixTranslucent (colixB);
-if (!doA || !doB) {
-if (!doA && !doB) continue;
-this.needTranslucent = true;
-}}var xA = atomA.screenX;
-var yA = atomA.screenY;
-var zA = atomA.screenZ;
-var xB = atomB.screenX;
-var yB = atomB.screenY;
-var zB = atomB.screenZ;
+if (!this.isExport && !this.isPass2 && !this.setBioColix (colixA) && !this.setBioColix (colixB)) continue;
+var xA = atomA.sX;
+var yA = atomA.sY;
+var zA = atomA.sZ;
+var xB = atomB.sX;
+var yB = atomB.sY;
+var zB = atomB.sZ;
 this.mad = this.mads[i];
 if (this.mad < 0) {
 this.g3d.drawLine (colixA, colixB, xA, yA, zA, xB, yB, zB);

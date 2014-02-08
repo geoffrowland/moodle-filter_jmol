@@ -38,7 +38,7 @@ this.atomSetCollection = this.viewer.getModelAdapter ().getAtomSetCollectionFrom
 J.util.Logger.error ("file ERROR: " + this.atomSetCollection);
 return;
 }if (!this.isAppend && !this.viewer.displayLoadErrors) this.viewer.zap (false, true, false);
-this.fm.fullPathName = this.fm.fileName = this.fm.nameAsGiven = (this.dataReaders == null ? "file[]" : "String[]");
+this.fm.setFileInfo ([this.dataReaders == null ? "file[]" : "String[]"]);
 });
 $_V(c$, "getBufferedReaderOrBinaryDocument", 
 function (i, forceBinary) {

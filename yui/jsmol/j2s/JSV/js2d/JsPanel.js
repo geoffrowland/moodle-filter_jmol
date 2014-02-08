@@ -20,12 +20,12 @@ $_V(c$, "getPanelData",
 function () {
 return this.pd;
 });
-c$.getPanelOne = $_M(c$, "getPanelOne", 
-function (viewer, spectrum) {
+c$.getEmptyPanel = $_M(c$, "getEmptyPanel", 
+function (viewer) {
 var p =  new JSV.js2d.JsPanel (viewer);
-p.pd.initOne (spectrum);
+p.pd = null;
 return p;
-}, "JSV.common.JSViewer,JSV.common.JDXSpectrum");
+}, "JSV.common.JSViewer");
 c$.getPanelMany = $_M(c$, "getPanelMany", 
 function (viewer, spectra, startIndex, endIndex) {
 var p =  new JSV.js2d.JsPanel (viewer);
@@ -73,7 +73,12 @@ $_V(c$, "showMessage",
 function (msg, title) {
 J.util.Logger.info (msg);
 {
+if (msg != null) {
+if (title == null)
+Jmol._showStatus(msg);
+else
 alert(msg);
+}
 }this.getFocusNow (true);
 }, "~S,~S");
 $_V(c$, "getFocusNow", 
@@ -168,4 +173,8 @@ $_V(c$, "processTwoPointGesture",
 function (touches) {
 this.mouse.processTwoPointGesture (touches);
 }, "~A");
+$_V(c$, "showMenu", 
+function (x, y) {
+this.viewer.showMenu (x, y);
+}, "~N,~N");
 });

@@ -73,26 +73,10 @@ var bsDeleted = this.viewer.getDeletedAtoms ();
 for (var i = this.atomCount; --i >= 0; ) {
 var atom = this.atoms[i];
 atom.setClickable (0);
-if (bsDeleted != null && bsDeleted.get (i) || (atom.getShapeVisibilityFlags () & this.myVisibilityFlag) == 0 || this.modelSet.isAtomHidden (i)) continue;
+if (bsDeleted != null && bsDeleted.get (i) || (atom.shapeVisibilityFlags & this.myVisibilityFlag) == 0 || this.modelSet.isAtomHidden (i)) continue;
 atom.setClickable (this.myVisibilityFlag);
 }
 });
-$_V(c$, "setVisibilityFlags", 
-function (bs) {
-var showHydrogens = this.viewer.getBoolean (603979922);
-var bsDeleted = this.viewer.getDeletedAtoms ();
-for (var i = this.atomCount; --i >= 0; ) {
-var atom = this.atoms[i];
-var flag = atom.getShapeVisibilityFlags ();
-flag &= (-2 & ~this.myVisibilityFlag);
-atom.setShapeVisibilityFlags (flag);
-if (bsDeleted != null && bsDeleted.get (i) || !showHydrogens && atom.getElementNumber () == 1) continue;
-var modelIndex = atom.getModelIndex ();
-if (bs.get (modelIndex)) {
-atom.setShapeVisibility (1, true);
-if (atom.madAtom != 0 && !this.modelSet.isAtomHidden (i)) atom.setShapeVisibility (this.myVisibilityFlag, true);
-}}
-}, "JU.BS");
 $_V(c$, "getShapeState", 
 function () {
 return this.viewer.getShapeState (this);

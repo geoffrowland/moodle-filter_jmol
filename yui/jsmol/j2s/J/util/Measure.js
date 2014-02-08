@@ -130,8 +130,7 @@ if (ptRef != null) {
 var pt0 = JU.P3.newP (pointA);
 pt0.add (vNorm);
 var d = pt0.distance (ptRef);
-pt0.setT (pointA);
-pt0.sub (vNorm);
+pt0.sub2 (pointA, vNorm);
 if (d > pt0.distance (ptRef)) {
 vNorm.scale (-1);
 nd = -nd;
@@ -149,8 +148,7 @@ var dist = J.util.Measure.distanceToPlane (plane, pt);
 vNorm.set (plane.x, plane.y, plane.z);
 vNorm.normalize ();
 vNorm.scale (-dist);
-ptProj.setT (pt);
-ptProj.add (vNorm);
+ptProj.add2 (pt, vNorm);
 }, "JU.P3,JU.P4,JU.P3,JU.V3");
 c$.getNormalFromCenter = $_M(c$, "getNormalFromCenter", 
 function (ptCenter, ptA, ptB, ptC, isOutward, normal) {
@@ -179,8 +177,7 @@ c$.projectOntoAxis = $_M(c$, "projectOntoAxis",
 function (point, axisA, axisUnitVector, vectorProjection) {
 vectorProjection.sub2 (point, axisA);
 var projectedLength = vectorProjection.dot (axisUnitVector);
-point.setT (axisUnitVector);
-point.scaleAdd (projectedLength, axisA);
+point.scaleAdd2 (projectedLength, axisUnitVector, axisA);
 vectorProjection.sub2 (point, axisA);
 }, "JU.P3,JU.P3,JU.V3,JU.V3");
 c$.calcBestAxisThroughPoints = $_M(c$, "calcBestAxisThroughPoints", 
@@ -219,8 +216,7 @@ m.scale (1 / sum_Xi2);
 vTemp.cross (m, axisUnitVector);
 axisUnitVector.add (vTemp);
 axisUnitVector.normalize ();
-vTemp.setT (axisUnitVector);
-vTemp.sub (a);
+vTemp.sub2 (axisUnitVector, a);
 return vTemp.length ();
 }, "~A,~N,JU.P3,JU.V3,JU.V3");
 c$.calcAveragePoint = $_M(c$, "calcAveragePoint", 
@@ -252,8 +248,7 @@ var cptsA = J.util.Measure.getCenterAndPoints (ptsA);
 var cptsB = J.util.Measure.getCenterAndPoints (ptsB);
 var retStddev =  Clazz.newFloatArray (2, 0);
 var q = J.util.Measure.calculateQuaternionRotation ([cptsA, cptsB], retStddev, true);
-var v = JU.V3.newV (cptsB[0]);
-v.sub (cptsA[0]);
+var v = JU.V3.newVsub (cptsB[0], cptsA[0]);
 m.setMV (q.getMatrix (), v);
 if (centerA != null) centerA.setT (cptsA[0]);
 return retStddev[1];
@@ -285,10 +280,8 @@ var ptB =  new JU.P3 ();
 for (var i = n + 1; --i >= 1; ) {
 var aij = centerAndPoints[0][i];
 var bij = centerAndPoints[1][i];
-ptA.setT (aij);
-ptA.sub (centerAndPoints[0][0]);
-ptB.setT (bij);
-ptB.sub (centerAndPoints[0][1]);
+ptA.sub2 (aij, centerAndPoints[0][0]);
+ptB.sub2 (bij, centerAndPoints[0][1]);
 Sxx += ptA.x * ptB.x;
 Sxy += ptA.x * ptB.y;
 Sxz += ptA.x * ptB.z;
@@ -327,8 +320,7 @@ var cB = ptsB[0];
 var n = ptsA.length - 1;
 var ptAnew =  new JU.P3 ();
 for (var i = n + 1; --i >= 1; ) {
-ptAnew.setT (ptsA[i]);
-ptAnew.sub (cA);
+ptAnew.sub2 (ptsA[i], cA);
 q.transformP2 (ptAnew, ptAnew).add (cB);
 sum2 += ptAnew.distanceSquared (ptsB[i]);
 }
@@ -340,7 +332,7 @@ var v =  new JU.List ();
 for (var i = 0; i < vPts.size (); i++) {
 var pt = JU.P3.newP (vPts.get (i));
 pt.sub (center);
-m4.transform2 (pt, pt);
+m4.rotTrans2 (pt, pt);
 pt.add (center);
 v.addLast (pt);
 }
@@ -419,8 +411,7 @@ tempNorm.normalize ();
 if (v == null) v = JU.V3.newV (tempNorm);
 var l_dot_n = v.dot (tempNorm);
 if (Math.abs (l_dot_n) < 0.01) return null;
-vTemp.setT (ptRet);
-vTemp.sub (pt1);
+vTemp.sub2 (ptRet, pt1);
 ptRet.scaleAdd2 (vTemp.dot (tempNorm) / l_dot_n, v, pt1);
 return ptRet;
 }, "JU.P3,JU.V3,JU.P4,JU.P3,JU.V3,JU.V3");

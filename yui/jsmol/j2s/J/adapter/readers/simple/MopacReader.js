@@ -54,7 +54,7 @@ $_M(c$, "processAtomicCharges",
 function () {
 this.readLines (2);
 this.atomSetCollection.newAtomSet ();
-this.baseAtomIndex = this.atomSetCollection.getAtomCount ();
+this.baseAtomIndex = this.atomSetCollection.atomCount;
 var expectedAtomNumber = 0;
 while (this.readLine () != null) {
 var atomNumber = this.parseIntStr (this.line);
@@ -73,10 +73,10 @@ this.readLines (3);
 var expectedAtomNumber = 0;
 if (!this.chargesFound) {
 this.atomSetCollection.newAtomSet ();
-this.baseAtomIndex = this.atomSetCollection.getAtomCount ();
+this.baseAtomIndex = this.atomSetCollection.atomCount;
 } else {
 this.chargesFound = false;
-}var atoms = this.atomSetCollection.getAtoms ();
+}var atoms = this.atomSetCollection.atoms;
 while (this.readLine () != null) {
 var atomNumber = this.parseIntStr (this.line);
 if (atomNumber == -2147483648) break;
@@ -96,7 +96,7 @@ atom.elementSymbol = elementSymbol;
 $_M(c$, "readFrequencies", 
 ($fz = function () {
 var bsOK =  new JU.BS ();
-var n0 = this.atomSetCollection.getCurrentAtomSetIndex () + 1;
+var n0 = this.atomSetCollection.currentAtomSetIndex + 1;
 var tokens;
 var done = false;
 while (!done && this.readLine () != null && this.line.indexOf ("DESCRIPTION") < 0 && this.line.indexOf ("MASS-WEIGHTED") < 0) if (this.line.toUpperCase ().indexOf ("ROOT") >= 0) {
@@ -107,7 +107,7 @@ this.discardLinesUntilNonBlank ();
 tokens = this.getTokens ();
 }var frequencyCount = tokens.length;
 this.readLine ();
-var iAtom0 = this.atomSetCollection.getAtomCount ();
+var iAtom0 = this.atomSetCollection.atomCount;
 var atomCount = this.atomSetCollection.getLastAtomSetAtomCount ();
 var ignore =  Clazz.newBooleanArray (frequencyCount, false);
 var freq1 = JU.PT.parseFloatStrict (tokens[0]);
@@ -134,7 +134,7 @@ for (var i = this.vibrationNumber - 1; --i >= 0; ) if (info[i] == null) info[i] 
 
 for (var i = 0, n = n0; i < this.vibrationNumber; i++) {
 if (!bsOK.get (i)) continue;
-this.atomSetCollection.setCurrentAtomSetIndex (n++);
+this.atomSetCollection.currentAtomSetIndex = n++;
 this.atomSetCollection.setAtomSetFrequency (null, info[i][2], info[i][0], null);
 }
 }, $fz.isPrivate = true, $fz));

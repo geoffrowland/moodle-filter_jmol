@@ -49,18 +49,18 @@ return;
 }if ("atom" === propertyName) {
 this.thisAtom = (value).intValue ();
 if (this.thisAtom >= this.atoms.length) return;
-this.atoms[this.thisAtom].setShapeVisibility (this.myVisibilityFlag, true);
+this.setShapeVisibility (this.atoms[this.thisAtom], true);
 this.ec.allocDotsConvexMaps (this.atomCount);
 return;
 }if ("dots" === propertyName) {
 if (this.thisAtom >= this.atoms.length) return;
 this.isActive = true;
 this.ec.setFromBits (this.thisAtom, value);
-this.atoms[this.thisAtom].setShapeVisibility (this.myVisibilityFlag, true);
+this.setShapeVisibility (this.atoms[this.thisAtom], true);
 if (this.mads == null) {
 this.ec.setMads (null);
 this.mads =  Clazz.newShortArray (this.atomCount, 0);
-for (var i = 0; i < this.atomCount; i++) if (this.atoms[i].isInFrame () && this.atoms[i].isShapeVisible (this.myVisibilityFlag)) try {
+for (var i = 0; i < this.atomCount; i++) if (this.atoms[i].isVisible (1 | this.myVisibilityFlag)) try {
 this.mads[i] = Clazz.floatToShort (this.ec.getAppropriateRadius (i) * 1000);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
@@ -162,7 +162,7 @@ $_V(c$, "setModelClickability",
 function () {
 for (var i = this.atomCount; --i >= 0; ) {
 var atom = this.atoms[i];
-if ((atom.getShapeVisibilityFlags () & this.myVisibilityFlag) == 0 || this.modelSet.isAtomHidden (i)) continue;
+if ((atom.shapeVisibilityFlags & this.myVisibilityFlag) == 0 || this.modelSet.isAtomHidden (i)) continue;
 atom.setClickable (this.myVisibilityFlag);
 }
 });

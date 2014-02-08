@@ -27,5 +27,5 @@ if (info != null) this.htParams.put ("nameSpaceInfo", info);
 this.atomSetCollection = this.viewer.getModelAdapter ().getAtomSetCollectionFromDOM (this.aDOMNode, this.htParams);
 if (Clazz.instanceOf (this.atomSetCollection, String)) return;
 this.viewer.zap (false, true, false);
-this.fm.fullPathName = this.fm.fileName = this.fm.nameAsGiven = "JSNode";
+this.fm.setFileInfo (["JSNode"]);
 });

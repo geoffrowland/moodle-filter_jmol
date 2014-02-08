@@ -1,12 +1,11 @@
 Clazz.declarePackage ("J.modelset");
-Clazz.load (null, "J.modelset.Measurement", ["java.lang.Float", "JU.A4", "$.List", "$.P3", "$.SB", "$.V3", "J.atomdata.RadiusData", "J.constant.EnumVdw", "J.modelset.LabelToken", "J.util.Escape", "$.Measure"], function () {
+Clazz.load (null, "J.modelset.Measurement", ["java.lang.Float", "JU.List", "$.PT", "$.SB", "J.atomdata.RadiusData", "J.constant.EnumVdw", "J.modelset.LabelToken", "J.util.Escape", "$.Measure"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.thisID = null;
 this.modelSet = null;
 this.index = 0;
 this.isVisible = true;
 this.isHidden = false;
-this.isDynamic = false;
 this.isTrajectory = false;
 this.$isValid = true;
 this.colix = 0;
@@ -20,16 +19,21 @@ this.countPlusIndices = null;
 this.pts = null;
 this.value = 0;
 this.strFormat = null;
+this.text = null;
 this.viewer = null;
 this.strMeasurement = null;
-this.aa = null;
-this.pointArc = null;
-this.text = null;
 this.type = null;
+this.tainted = false;
+this.renderAxis = null;
+this.renderArc = null;
 Clazz.instantialize (this, arguments);
 }, J.modelset, "Measurement");
 Clazz.prepareFields (c$, function () {
 this.countPlusIndices =  Clazz.newIntArray (5, 0);
+});
+$_M(c$, "isTainted", 
+function () {
+return (this.tainted && !(this.tainted = false));
 });
 $_M(c$, "setM", 
 function (modelSet, m, value, colix, strFormat, index) {
@@ -51,7 +55,7 @@ this.count = (indices == null ? 0 : indices[0]);
 if (this.count > 0) {
 System.arraycopy (indices, 0, this.countPlusIndices, 0, this.count + 1);
 this.isTrajectory = modelSet.isTrajectoryMeasurement (this.countPlusIndices);
-}this.value = (Float.isNaN (value) || this.isTrajectory ? this.getMeasurement () : value);
+}this.value = (Float.isNaN (value) || this.isTrajectory ? this.getMeasurement (null) : value);
 this.formatMeasurement (null);
 return this;
 }, "J.modelset.ModelSet,J.modelset.Measurement,~N,~N,~S,~N");
@@ -65,10 +69,6 @@ this.viewer = modelSet.viewer;
 this.tickInfo = tickInfo;
 return this;
 }, "J.modelset.ModelSet,~A,~A,J.modelset.TickInfo");
-$_M(c$, "getCount", 
-function () {
-return this.count;
-});
 $_M(c$, "setCount", 
 function (count) {
 this.setCountM (count);
@@ -77,21 +77,13 @@ $_M(c$, "setCountM",
 function (count) {
 this.count = this.countPlusIndices[0] = count;
 }, "~N");
-$_M(c$, "getCountPlusIndices", 
-function () {
-return this.countPlusIndices;
-});
-$_M(c$, "getPoints", 
-function () {
-return this.pts;
-});
 $_M(c$, "getAtomIndex", 
 function (n) {
 return (n > 0 && n <= this.count ? this.countPlusIndices[n] : -1);
 }, "~N");
 $_M(c$, "getAtom", 
-function (i) {
-var pt = this.countPlusIndices[i];
+function (n) {
+var pt = this.countPlusIndices[n];
 return (pt < -1 ? this.pts[-2 - pt] : this.modelSet.atoms[pt]);
 }, "~N");
 $_M(c$, "getLastIndex", 
@@ -105,7 +97,7 @@ return this.strMeasurement;
 $_M(c$, "getStringUsing", 
 function (viewer, strFormat, units) {
 this.viewer = viewer;
-this.value = this.getMeasurement ();
+this.value = this.getMeasurement (null);
 this.formatMeasurementAs (strFormat, units, true);
 if (strFormat == null) return this.getInfoAsString (units);
 return this.strMeasurement;
@@ -114,28 +106,12 @@ $_M(c$, "getStringDetail",
 function () {
 return (this.count == 2 ? "Distance" : this.count == 3 ? "Angle" : "Torsion") + this.getMeasurementScript (" - ", false) + " : " + this.value;
 });
-$_M(c$, "getStrFormat", 
-function () {
-return this.strFormat;
-});
-$_M(c$, "getValue", 
-function () {
-return this.value;
-});
-$_M(c$, "getAxisAngle", 
-function () {
-return this.aa;
-});
-$_M(c$, "getPointArc", 
-function () {
-return this.pointArc;
-});
 $_M(c$, "refresh", 
-function () {
-this.value = this.getMeasurement ();
+function (pts) {
+this.value = this.getMeasurement (pts);
 this.isTrajectory = this.modelSet.isTrajectoryMeasurement (this.countPlusIndices);
 this.formatMeasurement (null);
-});
+}, "~A");
 $_M(c$, "getMeasurementScript", 
 function (sep, withModelIndex) {
 var str = "";
@@ -153,27 +129,16 @@ this.formatMeasurement (units);
 }, "~S,~S,~B");
 $_M(c$, "formatMeasurement", 
 function (units) {
+this.tainted = true;
+switch (Float.isNaN (this.value) ? 0 : this.count) {
+default:
 this.strMeasurement = null;
-if (Float.isNaN (this.value) || this.count == 0) return;
-switch (this.count) {
+return;
 case 2:
 this.strMeasurement = this.formatDistance (units);
 return;
 case 3:
-if (this.value == 180) {
-this.aa = null;
-this.pointArc = null;
-} else {
-var vectorBA =  new JU.V3 ();
-var vectorBC =  new JU.V3 ();
-var radians = J.util.Measure.computeAngle (this.getAtom (1), this.getAtom (2), this.getAtom (3), vectorBA, vectorBC, false);
-var vectorAxis =  new JU.V3 ();
-vectorAxis.cross (vectorBA, vectorBC);
-this.aa = JU.A4.new4 (vectorAxis.x, vectorAxis.y, vectorAxis.z, radians);
-vectorBA.normalize ();
-vectorBA.scale (0.5);
-this.pointArc = JU.P3.newP (vectorBA);
-}case 4:
+case 4:
 this.strMeasurement = this.formatAngle (this.value);
 return;
 }
@@ -300,30 +265,29 @@ V.addLast (this.strMeasurement);
 return V;
 }, "~B");
 $_M(c$, "getMeasurement", 
-function () {
+function (pts) {
 if (this.countPlusIndices == null) return NaN;
 if (this.count < 2) return NaN;
 for (var i = this.count; --i >= 0; ) if (this.countPlusIndices[i + 1] == -1) {
 return NaN;
 }
-var ptA = this.getAtom (1);
-var ptB = this.getAtom (2);
+var ptA = (pts == null ? this.getAtom (1) : pts[0]);
+var ptB = (pts == null ? this.getAtom (2) : pts[1]);
 var ptC;
-var ptD;
 switch (this.count) {
 case 2:
 return ptA.distance (ptB);
 case 3:
-ptC = this.getAtom (3);
+ptC = (pts == null ? this.getAtom (3) : pts[2]);
 return J.util.Measure.computeAngleABC (ptA, ptB, ptC, true);
 case 4:
-ptC = this.getAtom (3);
-ptD = this.getAtom (4);
+ptC = (pts == null ? this.getAtom (3) : pts[2]);
+var ptD = (pts == null ? this.getAtom (4) : pts[3]);
 return J.util.Measure.computeTorsion (ptA, ptB, ptC, ptD, true);
 default:
 return NaN;
 }
-});
+}, "~A");
 $_M(c$, "getLabel", 
 function (i, asBitSet, withModelIndex) {
 var atomIndex = this.countPlusIndices[i];
@@ -342,8 +306,8 @@ return !(this.sameAs (1, 2) || this.count > 2 && this.sameAs (1, 3) || this.coun
 });
 c$.find = $_M(c$, "find", 
 function (measurements, m) {
-var indices = m.getCountPlusIndices ();
-var points = m.getPoints ();
+var indices = m.countPlusIndices;
+var points = m.pts;
 for (var i = measurements.size (); --i >= 0; ) if (measurements.get (i).sameAsPoints (indices, points)) return i;
 
 return -1;
@@ -365,7 +329,7 @@ var f = this.fixValue (units, true);
 var sb =  new JU.SB ();
 sb.append (this.count == 2 ? (this.type == null ? "distance" : this.type) : this.count == 3 ? "angle" : "dihedral");
 sb.append (" \t").appendF (f);
-sb.append (" \t").append (J.util.Escape.eS (this.strMeasurement));
+sb.append (" \t").append (JU.PT.esc (this.strMeasurement));
 for (var i = 1; i <= this.count; i++) sb.append (" \t").append (this.getLabel (i, false, false));
 
 if (this.thisID != null) sb.append (" \t").append (this.thisID);

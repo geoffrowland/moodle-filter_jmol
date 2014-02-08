@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shapebio");
-Clazz.load (["J.shape.AtomShape", "J.modelset.Atom", "J.modelsetbio.NucleicMonomer", "J.viewer.JC"], "J.shapebio.BioShape", ["java.lang.Float", "JU.AU", "$.BS", "J.constant.EnumPalette", "$.EnumStructure", "J.modelsetbio.NucleicPolymer", "J.util.C", "$.Logger"], function () {
+Clazz.load (["J.shape.AtomShape", "J.viewer.JC"], "J.shapebio.BioShape", ["java.lang.Float", "JU.AU", "$.BS", "J.constant.EnumPalette", "$.EnumStructure", "J.modelsetbio.NucleicPolymer", "J.util.C", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.modelIndex = 0;
 this.modelVisibilityFlags = 0;
@@ -213,7 +213,8 @@ this.shape.atoms[iAtom].setClickable (J.shapebio.BioShape.ALPHA_CARBON_VISIBILIT
 if (isNucleicPolymer) (this.monomers[i]).setModelClickability ();
 }
 });
-c$.ALPHA_CARBON_VISIBILITY_FLAG = c$.prototype.ALPHA_CARBON_VISIBILITY_FLAG = J.modelsetbio.NucleicMonomer.CARTOON_VISIBILITY_FLAG | J.modelset.Atom.BACKBONE_VISIBILITY_FLAG | J.viewer.JC.getShapeVisibilityFlag (10) | J.viewer.JC.getShapeVisibilityFlag (12) | J.viewer.JC.getShapeVisibilityFlag (13) | J.viewer.JC.getShapeVisibilityFlag (14);
+c$.CARTOON_VISIBILITY_FLAG = c$.prototype.CARTOON_VISIBILITY_FLAG = J.viewer.JC.getShapeVisibilityFlag (11);
+c$.ALPHA_CARBON_VISIBILITY_FLAG = c$.prototype.ALPHA_CARBON_VISIBILITY_FLAG = J.shapebio.BioShape.CARTOON_VISIBILITY_FLAG | J.viewer.JC.getShapeVisibilityFlag (10) | J.viewer.JC.getShapeVisibilityFlag (12) | J.viewer.JC.getShapeVisibilityFlag (13) | J.viewer.JC.getShapeVisibilityFlag (14) | 8192;
 Clazz.defineStatics (c$,
 "eightPiSquared100", 7895.6835208714865);
 });

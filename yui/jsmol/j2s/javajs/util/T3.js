@@ -1,11 +1,11 @@
 Clazz.declarePackage ("JU");
-Clazz.load (null, "JU.T3", ["java.lang.Float"], function () {
+Clazz.load (["javajs.api.JSONEncodable"], "JU.T3", ["java.lang.Float"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.x = 0;
 this.y = 0;
 this.z = 0;
 Clazz.instantialize (this, arguments);
-}, JU, "T3", null, java.io.Serializable);
+}, JU, "T3", null, [javajs.api.JSONEncodable, java.io.Serializable]);
 Clazz.makeConstructor (c$, 
 function () {
 });
@@ -39,6 +39,17 @@ this.x += t1.x;
 this.y += t1.y;
 this.z += t1.z;
 }, "JU.T3");
+$_M(c$, "distanceSquared", 
+function (p1) {
+var dx = this.x - p1.x;
+var dy = this.y - p1.y;
+var dz = this.z - p1.z;
+return (dx * dx + dy * dy + dz * dz);
+}, "JU.T3");
+$_M(c$, "distance", 
+function (p1) {
+return Math.sqrt (this.distanceSquared (p1));
+}, "JU.T3");
 $_M(c$, "sub2", 
 function (t1, t2) {
 this.x = t1.x - t2.x;
@@ -57,18 +68,24 @@ this.x *= s;
 this.y *= s;
 this.z *= s;
 }, "~N");
+$_M(c$, "add3", 
+function (a, b, c) {
+this.x += a;
+this.y += b;
+this.z += c;
+}, "~N,~N,~N");
 $_M(c$, "scaleAdd2", 
 function (s, t1, t2) {
 this.x = s * t1.x + t2.x;
 this.y = s * t1.y + t2.y;
 this.z = s * t1.z + t2.z;
 }, "~N,JU.T3,JU.T3");
-$_M(c$, "scaleAdd", 
-function (s, t1) {
-this.x = s * this.x + t1.x;
-this.y = s * this.y + t1.y;
-this.z = s * this.z + t1.z;
-}, "~N,JU.T3");
+$_M(c$, "ave", 
+function (a, b) {
+this.x = (a.x + b.x) / 2;
+this.y = (a.y + b.y) / 2;
+this.z = (a.z + b.z) / 2;
+}, "JU.T3,JU.T3");
 $_M(c$, "dot", 
 function (v) {
 return this.x * v.x + this.y * v.y + this.z * v.z;
@@ -109,5 +126,9 @@ return (this.x == t2.x && this.y == t2.y && this.z == t2.z);
 $_V(c$, "toString", 
 function () {
 return "(" + this.x + ", " + this.y + ", " + this.z + ")";
+});
+$_V(c$, "toJSON", 
+function () {
+return "[" + this.x + "," + this.y + "," + this.z + "]";
 });
 });

@@ -811,8 +811,7 @@ case 6:
 if (isNot != (!J.smiles.SmilesSearch.isDiaxial (atom0, atom0, atom6, atom1, v, -0.95))) return false;
 J.smiles.SmilesSearch.getPlaneNormals (atom2, atom3, atom4, atom5, v);
 if (isNot != (v.vNorm1.dot (v.vNorm2) < 0 || v.vNorm2.dot (v.vNorm3) < 0)) return false;
-v.vNorm2.setT (atom0);
-v.vNorm2.sub (atom1);
+v.vNorm2.sub2 (atom0, atom1);
 return (isNot == ((v.vNorm1.dot (v.vNorm2) < 0 ? 2 : 1) == order));
 case 8:
 J.smiles.SmilesSearch.getPlaneNormals (atom1, atom2, atom3, atom4, v);
@@ -979,10 +978,8 @@ return map;
 }, "J.util.JmolNode,J.util.JmolNode,~A");
 c$.isDiaxial = $_M(c$, "isDiaxial", 
 function (atomA, atomB, atom1, atom2, v, f) {
-v.vA.setT (atomA);
-v.vB.setT (atomB);
-v.vA.sub (atom1);
-v.vB.sub (atom2);
+v.vA.sub2 (atomA, atom1);
+v.vB.sub2 (atomB, atom2);
 v.vA.normalize ();
 v.vB.normalize ();
 return (v.vA.dot (v.vB) < f);

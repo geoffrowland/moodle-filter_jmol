@@ -66,13 +66,13 @@ var competitor = closest[0];
 var nitrogen = this.getNitrogenAtom ();
 var marBegin = (Clazz.doubleToInt (madBegin / 2));
 if (marBegin < 1200) marBegin = 1200;
-if (nitrogen.screenZ == 0) return;
-var radiusBegin = Clazz.floatToInt (this.scaleToScreen (nitrogen.screenZ, marBegin));
+if (nitrogen.sZ == 0) return;
+var radiusBegin = Clazz.floatToInt (this.scaleToScreen (nitrogen.sZ, marBegin));
 if (radiusBegin < 4) radiusBegin = 4;
 var ccarbon = this.getCarbonylCarbonAtom ();
 var marEnd = (Clazz.doubleToInt (madEnd / 2));
 if (marEnd < 1200) marEnd = 1200;
-var radiusEnd = Clazz.floatToInt (this.scaleToScreen (nitrogen.screenZ, marEnd));
+var radiusEnd = Clazz.floatToInt (this.scaleToScreen (nitrogen.sZ, marEnd));
 if (radiusEnd < 4) radiusEnd = 4;
 var alpha = this.getLeadAtom ();
 if (this.isCursorOnTopOf (alpha, x, y, Clazz.doubleToInt ((radiusBegin + radiusEnd) / 2), competitor) || this.isCursorOnTopOf (nitrogen, x, y, radiusBegin, competitor) || this.isCursorOnTopOf (ccarbon, x, y, radiusEnd, competitor)) closest[0] = alpha;
@@ -112,8 +112,7 @@ return true;
 if (jmolHPoint) {
 vNH.sub2 (nitrogenPoint, this.getLeadAtom ());
 vNH.normalize ();
-var v =  new JU.V3 ();
-v.sub2 (nitrogenPoint, prev.getCarbonylCarbonAtom ());
+var v = JU.V3.newVsub (nitrogenPoint, prev.getCarbonylCarbonAtom ());
 v.normalize ();
 vNH.add (v);
 } else {
@@ -143,9 +142,8 @@ return this.getCarbonylCarbonAtom ();
 case 'q':
 if (this.monomerIndex == this.bioPolymer.monomerCount - 1) return null;
 var mNext = (this.bioPolymer.getGroups ()[this.monomerIndex + 1]);
-var pt = JU.P3.newP (this.getCarbonylCarbonAtom ());
-pt.add (mNext.getNitrogenAtom ());
-pt.scale (0.5);
+var pt =  new JU.P3 ();
+pt.ave (this.getCarbonylCarbonAtom (), mNext.getNitrogenAtom ());
 return pt;
 }
 }, "~S");
@@ -167,7 +165,7 @@ vB.sub2 (ptCa, this.getNitrogenAtom ());
 vB.cross (vC, vB);
 var mat =  new JU.M3 ();
 mat.setAA (JU.A4.newVA (vB, -0.29670596));
-mat.transform (vC);
+mat.rotate (vC);
 vA.cross (vB, vC);
 break;
 case 'b':

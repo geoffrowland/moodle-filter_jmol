@@ -21,6 +21,8 @@ this.isSigned = false;
 this.cnmrPeaks = null;
 this.hnmrPeaks = null;
 this.aboutComputedMenuBaseCount = 0;
+this.allowMenu = false;
+this.zoomEnabled = false;
 this.pd = null;
 this.thisX = 0;
 this.thisY = 0;
@@ -213,9 +215,9 @@ $_M(c$, "fixLabel",
 ($fz = function (label) {
 if (label.startsWith ("_")) label = label.substring (label.indexOf ("_", 2) + 1);
  else if (label.equals ("VERSION")) label = JSV.common.JSVersion.VERSION;
-label = JU.PT.simpleReplace (label, "CB", "");
-label = JU.PT.simpleReplace (label, "Menu", "");
-label = JU.PT.simpleReplace (label, "_", " ");
+label = JU.PT.rep (label, "CB", "");
+label = JU.PT.rep (label, "Menu", "");
+label = JU.PT.rep (label, "_", " ");
 return label;
 }, $fz.isPrivate = true, $fz), "~S");
 $_M(c$, "checkKey", 
@@ -246,7 +248,7 @@ what = "set picking " + basename.substring (0, basename.length - 2);
 }} else {
 what = what.substring (pt + 1);
 if ((pt = what.indexOf ("|")) >= 0) what = (TF ? what.substring (0, pt) : what.substring (pt + 1)).trim ();
-what = JU.PT.simpleReplace (what, "T/F", (TF ? " TRUE" : " FALSE"));
+what = JU.PT.rep (what, "T/F", (TF ? " TRUE" : " FALSE"));
 }}this.viewer.runScript (what);
 }, $fz.isPrivate = true, $fz), "~O,~S,~B");
 $_V(c$, "checkMenuClick", 
@@ -293,7 +295,7 @@ for (var i = 0; i < n; i++) {
 var peak = peaks.get (i);
 var title = JU.PT.getQuotedAttribute (peak, "title");
 var atoms = JU.PT.getQuotedAttribute (peak, "atoms");
-if (atoms != null) this.menuCreateItem (menu, title, "select visible & (@" + JU.PT.simpleReplace (atoms, ",", " or @") + ")", "Focus" + i);
+if (atoms != null) this.menuCreateItem (menu, title, "select visible & (@" + JU.PT.rep (atoms, ",", " or @") + ")", "Focus" + i);
 }
 this.menuEnable (menu, true);
 return true;
@@ -339,29 +341,43 @@ function (panelNodes, allowCompoundMenu) {
 }, "JU.List,~B");
 $_V(c$, "setEnabled", 
 function (allowMenu, zoomEnabled) {
-if (!allowMenu) {
-this.setItemEnabled ("_SIGNED_FileMenu", false);
-this.setItemEnabled ("ViewMenu", false);
-this.setItemEnabled ("Views", false);
-this.setItemEnabled ("Script", false);
-this.setItemEnabled ("Print", false);
-}this.setItemEnabled ("ZoomMenu", zoomEnabled);
+this.allowMenu = allowMenu;
+this.zoomEnabled = zoomEnabled;
+this.enableMenus ();
 }, "~B,~B");
+$_M(c$, "enableMenus", 
+($fz = function () {
+this.setItemEnabled ("_SIGNED_FileMenu", this.allowMenu);
+this.setItemEnabled ("ViewMenu", this.pd != null && this.allowMenu);
+this.setItemEnabled ("Open_File...", this.allowMenu);
+this.setItemEnabled ("Open_Simulation...", this.allowMenu);
+this.setItemEnabled ("Open_URL...", this.allowMenu);
+this.setItemEnabled ("Save_AsMenu", this.pd != null && this.allowMenu);
+this.setItemEnabled ("Export_AsMenu", this.pd != null && this.allowMenu);
+this.setItemEnabled ("Append_File...", this.pd != null && this.allowMenu);
+this.setItemEnabled ("Append_Simulation...", this.pd != null && this.allowMenu);
+this.setItemEnabled ("Append_URL...", this.pd != null && this.allowMenu);
+this.setItemEnabled ("Views...", this.pd != null && this.allowMenu);
+this.setItemEnabled ("Script", this.allowMenu);
+this.setItemEnabled ("Print...", this.pd != null && this.allowMenu);
+this.setItemEnabled ("ZoomMenu", this.pd != null && this.zoomEnabled);
+}, $fz.isPrivate = true, $fz));
 $_M(c$, "setEnables", 
 ($fz = function (jsvp) {
-this.pd = jsvp.getPanelData ();
-var spec0 = this.pd.getSpectrum ();
-var isOverlaid = this.pd.isShowAllStacked ();
-var isSingle = this.pd.haveSelectedSpectrum ();
-this.setItemEnabled ("Integration", this.pd.getSpectrum ().canIntegrate ());
-this.setItemEnabled ("Measurements", this.pd.hasCurrentMeasurements (JSV.common.Annotation.AType.Measurements));
-this.setItemEnabled ("Peaks", this.pd.getSpectrum ().is1D ());
+this.pd = (jsvp == null ? null : jsvp.getPanelData ());
+var spec0 = (this.pd == null ? null : this.pd.getSpectrum ());
+var isOverlaid = this.pd != null && this.pd.isShowAllStacked ();
+var isSingle = this.pd != null && this.pd.haveSelectedSpectrum ();
+this.setItemEnabled ("Integration", this.pd != null && this.pd.getSpectrum ().canIntegrate ());
+this.setItemEnabled ("Measurements", this.pd != null && this.pd.hasCurrentMeasurements (JSV.common.Annotation.AType.Measurements));
+this.setItemEnabled ("Peaks", this.pd != null && this.pd.getSpectrum ().is1D ());
 this.setItemEnabled ("Predicted_Solution_Colour", isSingle && spec0.canShowSolutionColor ());
 this.setItemEnabled ("Toggle_Trans/Abs", isSingle && spec0.canConvertTransAbs ());
 this.setItemEnabled ("Show_Overlay_Key", isOverlaid && this.pd.getNumberOfGraphSets () == 1);
 this.setItemEnabled ("Overlay_Offset...", isOverlaid);
-this.setItemEnabled ("JDXMenu", spec0.canSaveAsJDX ());
-this.setItemEnabled ("ExportAsMenu", true);
+this.setItemEnabled ("JDXMenu", this.pd != null && spec0.canSaveAsJDX ());
+this.setItemEnabled ("Export_AsMenu", this.pd != null);
+this.enableMenus ();
 }, $fz.isPrivate = true, $fz), "JSV.api.JSVPanel");
 $_M(c$, "setItemEnabled", 
 ($fz = function (key, TF) {

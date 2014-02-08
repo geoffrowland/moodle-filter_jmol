@@ -11,8 +11,8 @@ Clazz.instantialize (this, arguments);
 Clazz.makeConstructor (c$, 
 function (atomSetCollection) {
 Clazz.superConstructor (this, J.adapter.smarter.StructureIterator, []);
-this.structureCount = atomSetCollection.getStructureCount ();
-this.structures = atomSetCollection.getStructures ();
+this.structureCount = atomSetCollection.structureCount;
+this.structures = atomSetCollection.structures;
 this.istructure = 0;
 this.bsModelsDefined = atomSetCollection.bsStructuredModels;
 }, "J.adapter.smarter.AtomSetCollection");

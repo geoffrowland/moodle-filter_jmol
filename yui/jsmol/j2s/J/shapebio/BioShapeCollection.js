@@ -20,11 +20,11 @@ $_V(c$, "getSizeG",
 function (group) {
 var m = group;
 var groupIndex = m.getGroupIndex ();
-var leadAtomIndex = m.getLeadAtom ().getIndex ();
+var leadAtomIndex = m.getLeadAtom ().index;
 for (var i = this.bioShapes.length; --i >= 0; ) {
 var bioShape = this.bioShapes[i];
 for (var j = 0; j < bioShape.monomerCount; j++) {
-if (bioShape.monomers[j].getGroupIndex () == groupIndex && bioShape.monomers[j].getLeadAtom ().getIndex () == leadAtomIndex) return bioShape.mads[j];
+if (bioShape.monomers[j].getGroupIndex () == groupIndex && bioShape.monomers[j].getLeadAtom ().index == leadAtomIndex) return bioShape.mads[j];
 }
 }
 return 0;

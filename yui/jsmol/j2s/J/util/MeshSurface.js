@@ -298,13 +298,13 @@ break;
 case 135270407:
 this.getIntersection (0, null, null, null, slabbingObject, null, null, false, false, 32, isGhost);
 break;
-case 135266324:
+case 135266325:
 case 1073742114:
 case 1073742018:
 var o = slabbingObject;
 var distance = (o[0]).floatValue ();
 switch (slabType) {
-case 135266324:
+case 135266325:
 var points = o[1];
 var bs = o[2];
 sb.append ("within ").appendF (distance).append (bs == null ? J.util.Escape.e (points) : J.util.Escape.e (bs));

@@ -65,7 +65,7 @@ return this;
 }, "~N,java.util.Map,J.atomdata.RadiusData,~S,~S,J.modelset.TickInfo,~B,~B,Boolean,~B,~N,~N,J.modelset.Text");
 $_M(c$, "processNextMeasure", 
 function (m) {
-var value = m.getMeasurement ();
+var value = m.getMeasurement (null);
 if (this.htMin != null && !m.isMin (this.htMin) || this.radiusData != null && !m.isInRange (this.radiusData, value)) return;
 if (this.measurementStrings == null && this.measurements == null) {
 var f = this.minArray[this.iFirstAtom];
@@ -74,7 +74,7 @@ value = m.fixValue (this.units, false);
 this.minArray[this.iFirstAtom] = (1 / f == -Infinity ? value : Math.min (f, value));
 return;
 }if (this.measurementStrings != null) this.measurementStrings.addLast (m.getStringUsing (this.viewer, this.strFormat, this.units));
- else this.measurements.addLast (Float.$valueOf (m.getMeasurement ()));
+ else this.measurements.addLast (Float.$valueOf (m.getMeasurement (null)));
 }, "J.modelset.Measurement");
 $_M(c$, "getMeasurements", 
 function (asArray, asMinArray) {
@@ -126,7 +126,7 @@ if (thispt > ptLastAtom) {
 if (m.isValid () && (!this.mustBeConnected || m.isConnected (this.atoms, thispt)) && (!this.mustNotBeConnected || !m.isConnected (this.atoms, thispt)) && (this.intramolecular == null || m.isIntramolecular (this.atoms, thispt) == this.intramolecular.booleanValue ())) this.client.processNextMeasure (m);
 return;
 }var bs = this.points.get (thispt);
-var indices = m.getCountPlusIndices ();
+var indices = m.countPlusIndices;
 var thisAtomIndex = (thispt == 0 ? 2147483647 : indices[thispt]);
 if (thisAtomIndex < 0) {
 this.nextMeasure (thispt + 1, ptLastAtom, m, thisModel);

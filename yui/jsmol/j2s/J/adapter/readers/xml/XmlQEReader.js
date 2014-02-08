@@ -40,7 +40,7 @@ if (!this.parent.doGetModel (++this.parent.modelNumber, null)) {
 this.parent.checkLastModel ();
 return;
 }this.parent.setFractionalCoordinates (true);
-this.atomSetCollection.setDoFixPeriodic ();
+this.atomSetCollection.doFixPeriodic = true;
 this.atomSetCollection.newAtomSet ();
 return;
 }if (!this.parent.doProcessLines) return;

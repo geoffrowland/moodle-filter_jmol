@@ -70,7 +70,7 @@ for (var i = 0; i < dVal.length; i++) strFormat = J.util.Txt.formatString (strFo
 
 }
 }
-return JU.PT.simpleReplace (strFormat, "%%", "%");
+return JU.PT.rep (strFormat, "%%", "%");
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 } else {
@@ -78,7 +78,7 @@ throw e;
 }
 }
 System.out.println ("TextFormat.sprintf error " + list + " " + strFormat);
-return JU.PT.simpleReplace (strFormat, "%", "?");
+return JU.PT.rep (strFormat, "%", "?");
 }, "~S,~S,~A");
 c$.formatString = $_M(c$, "formatString", 
 ($fz = function (strFormat, key, strT, floatT, doubleT, doOne) {
@@ -147,9 +147,9 @@ return strLabel;
 c$.formatCheck = $_M(c$, "formatCheck", 
 function (strFormat) {
 if (strFormat == null || strFormat.indexOf ('p') < 0 && strFormat.indexOf ('q') < 0) return strFormat;
-strFormat = JU.PT.simpleReplace (strFormat, "%%", "\1");
-strFormat = JU.PT.simpleReplace (strFormat, "%p", "%6.2p");
-strFormat = JU.PT.simpleReplace (strFormat, "%q", "%6.2q");
+strFormat = JU.PT.rep (strFormat, "%%", "\1");
+strFormat = JU.PT.rep (strFormat, "%p", "%6.2p");
+strFormat = JU.PT.rep (strFormat, "%q", "%6.2q");
 var format = JU.PT.split (strFormat, "%");
 var sb =  new JU.SB ();
 sb.append (format[0]);
@@ -254,7 +254,7 @@ var n = list.size ();
 for (var i = 0; i < n; i++) {
 var name = list.get (i);
 var newName = newList.get (i);
-if (!newName.equals (name)) s = JU.PT.simpleReplace (s, "\"" + name + "\"", "\"" + newName + "\"");
+if (!newName.equals (name)) s = JU.PT.rep (s, "\"" + name + "\"", "\"" + newName + "\"");
 }
 return s;
 }, "~S,java.util.List,java.util.List");
@@ -264,7 +264,7 @@ var n = list.size ();
 for (var i = 0; i < n; i++) {
 var name = list.get (i);
 var newName = newList.get (i);
-if (!newName.equals (name)) s = JU.PT.simpleReplace (s, name, newName);
+if (!newName.equals (name)) s = JU.PT.rep (s, name, newName);
 }
 return s;
 }, "~S,java.util.List,java.util.List");

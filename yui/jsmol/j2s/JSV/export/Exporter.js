@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.export");
-Clazz.load (["JSV.api.ExportInterface"], "JSV.export.Exporter", ["JU.Base64", "$.PT", "JSV.common.Annotation", "$.ExportType", "$.JSVFileManager", "$.JSViewer", "JSV.util.JSVTxt"], function () {
+Clazz.load (["JSV.api.ExportInterface"], "JSV.export.Exporter", ["JU.Base64", "$.PT", "JSV.common.Annotation", "$.ExportType", "$.JSVFileManager", "$.JSViewer"], function () {
 c$ = Clazz.declareType (JSV["export"], "Exporter", null, JSV.api.ExportInterface);
 Clazz.makeConstructor (c$, 
 function () {
@@ -198,6 +198,7 @@ $_M(c$, "getSuggestedFileName",
 var pd = viewer.selectedPanel.getPanelData ();
 var sourcePath = pd.getSpectrum ().getFilePath ();
 var newName = JSV.common.JSVFileManager.getName (sourcePath);
+if (newName.startsWith ("$")) newName = newName.substring (1);
 var pt = newName.lastIndexOf (".");
 var name = (pt < 0 ? newName : newName.substring (0, pt));
 var ext = ".jdx";
@@ -234,7 +235,7 @@ var br = JSV.common.JSVFileManager.getBufferedReaderFromName (name, null);
 var line = null;
 while ((line = br.readLine ()) != null) {
 out.append (line);
-out.append (JSV.util.JSVTxt.newLine);
+out.append (JSV["export"].Exporter.newLine);
 }
 out.closeChannel ();
 return "OK " + out.getByteCount () + " bytes";
@@ -246,4 +247,5 @@ throw e;
 }
 }
 }, $fz.isPrivate = true, $fz), "~S,JU.OC");
+c$.newLine = c$.prototype.newLine = System.getProperty ("line.separator");
 });

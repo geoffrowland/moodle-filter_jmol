@@ -52,12 +52,14 @@ this.lastTargetSerial = -2147483648;
 this.tlsGroupID = 0;
 this.atomTypePt0 = 0;
 this.atomTypeLen = 0;
-this.byChain = false;
-this.bySymop = false;
 this.isCourseGrained = false;
 this.haveDoubleBonds = false;
 this.dataT = null;
 this.tlsU = null;
+this.vConnect = null;
+this.connectNextAtomIndex = 0;
+this.connectNextAtomSet = 0;
+this.connectLast = null;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.pdb, "PdbReader", J.adapter.smarter.AtomSetCollectionReader);
 Clazz.prepareFields (c$, function () {
@@ -66,14 +68,15 @@ this.dataT =  Clazz.newFloatArray (8, 0);
 });
 $_V(c$, "initializeReader", 
 function () {
-this.setIsPDB ();
 this.pdbHeader = (this.getHeader ?  new JU.SB () : null);
 this.applySymmetry = !this.checkFilterKey ("NOSYMMETRY");
 this.getTlsGroups = this.checkFilterKey ("TLS");
-this.byChain = this.checkFilterKey ("BYCHAIN");
-this.bySymop = this.checkFilterKey ("BYSYMOP");
-this.isCourseGrained = this.byChain || this.bySymop;
-if (this.checkFilterKey ("ASSEMBLY")) this.filter = JU.PT.simpleReplace (this.filter, "ASSEMBLY", "BIOMOLECULE");
+if (this.checkFilterKey ("ASSEMBLY")) this.filter = JU.PT.rep (this.filter, "ASSEMBLY", "BIOMOLECULE");
+var isbiomol = this.checkFilterKey ("BIOMOLECULE");
+var byChain = isbiomol && this.checkFilterKey ("BYCHAIN");
+var bySymop = isbiomol && this.checkFilterKey ("BYSYMOP");
+this.isCourseGrained = byChain || bySymop;
+if (!this.isCourseGrained) this.setIsPDB ();
 if (this.htParams.containsKey ("vTlsModels")) {
 this.vTlsModels = this.htParams.remove ("vTlsModels");
 }var s = this.getFilter ("TYPE ");
@@ -112,7 +115,7 @@ this.modelNumber = (this.bsModels == null ? modelNo : this.modelNumber + 1);
 if (!this.doGetModel (this.modelNumber, null)) {
 this.handleTlsMissingModels ();
 return this.checkLastModel ();
-}this.atomSetCollection.connectAll (this.maxSerial, this.isConnectStateBug);
+}if (!this.isCourseGrained) this.connectAll (this.maxSerial, this.isConnectStateBug);
 if (this.atomCount > 0) this.applySymmetryAndSetTrajectory ();
 this.model (modelNo);
 if (this.isLegacyModelType || !isAtom) return true;
@@ -193,17 +196,18 @@ this.finalizeReaderPDB ();
 $_M(c$, "finalizeReaderPDB", 
 function () {
 this.checkNotPDB ();
-this.atomSetCollection.connectAll (this.maxSerial, this.isConnectStateBug);
+if (!this.isCourseGrained) this.connectAll (this.maxSerial, this.isConnectStateBug);
 var symmetry;
-if (this.vBiomolecules != null && this.vBiomolecules.size () > 0 && this.atomSetCollection.getAtomCount () > 0) {
+if (this.vBiomolecules != null && this.vBiomolecules.size () > 0 && this.atomSetCollection.atomCount > 0) {
 this.atomSetCollection.setAtomSetAuxiliaryInfo ("biomolecules", this.vBiomolecules);
 this.setBiomoleculeAtomCounts ();
 if (this.thisBiomolecule != null && this.applySymmetry) {
-this.atomSetCollection.applySymmetryBio (this.thisBiomolecule, this.notionalUnitCell, this.applySymmetryToBonds, this.filter);
+this.atomSetCollection.getXSymmetry ().applySymmetryBio (this.thisBiomolecule, this.notionalUnitCell, this.applySymmetryToBonds, this.filter);
 this.vTlsModels = null;
+this.atomSetCollection.xtalSymmetry = null;
 }}if (this.vTlsModels != null) {
 symmetry = J.api.Interface.getOptionInterface ("symmetry.Symmetry");
-var n = this.atomSetCollection.getAtomSetCount ();
+var n = this.atomSetCollection.atomSetCount;
 if (n == this.vTlsModels.size ()) {
 for (var i = n; --i >= 0; ) this.setTlsGroups (i, i, symmetry);
 
@@ -228,9 +232,9 @@ J.util.Logger.info (this.sbIgnored.toString ());
 }});
 $_M(c$, "checkForResidualBFactors", 
 ($fz = function (symmetry) {
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 var isResidual = false;
-for (var i = this.atomSetCollection.getAtomCount (); --i >= 0; ) {
+for (var i = this.atomSetCollection.atomCount; --i >= 0; ) {
 var anisou = this.tlsU.get (atoms[i]);
 if (anisou == null) continue;
 var resid = anisou[7] - (anisou[0] + anisou[1] + anisou[2]) / 3;
@@ -314,7 +318,7 @@ if (this.vCompnds.size () == 0) this.vCompnds.addLast (this.currentCompnd);
 this.currentKey = key;
 }if (value.endsWith (";")) value = value.substring (0, value.length - 1);
 this.currentCompnd.put (this.currentKey, value);
-if (this.currentKey.equals ("CHAIN")) this.currentCompnd.put ("select", "(:" + JU.PT.simpleReplace (JU.PT.simpleReplace (value, ", ", ",:"), " ", "") + ")");
+if (this.currentKey.equals ("CHAIN")) this.currentCompnd.put ("select", "(:" + JU.PT.rep (JU.PT.rep (value, ", ", ",:"), " ", "") + ")");
 }, $fz.isPrivate = true, $fz), "~B");
 $_M(c$, "setBiomoleculeAtomCounts", 
 ($fz = function () {
@@ -339,7 +343,7 @@ var id = "";
 var needLine = true;
 var info = null;
 var nBiomt = 0;
-var mIdent = JU.M4.newM (null);
+var mIdent = JU.M4.newM4 (null);
 while (true) {
 if (needLine) this.readLine ();
  else needLine = true;
@@ -388,7 +392,7 @@ if (i == 4 || i == 8) this.readLine ();
 }
 mat[15] = 1;
 var m4 =  new JU.M4 ();
-m4.setA (mat, 0);
+m4.setA (mat);
 if (m4.equals (mIdent)) biomts.add (0, m4);
  else biomts.addLast (m4);
 continue;
@@ -471,7 +475,7 @@ $_M(c$, "processAtom",
 function (atom, name, altID, group3, chain, seqNo, insCode, isHetero, sym) {
 atom.atomName = name;
 var ch = altID;
-if (ch != ' ') atom.alternateLocationID = ch;
+if (ch != ' ') atom.altLoc = ch;
 atom.group3 = group3;
 ch = chain < 256 ? String.fromCharCode (chain) : 0;
 if (this.chainAtomCounts != null) this.chainAtomCounts[ch.charCodeAt (0)]++;
@@ -502,7 +506,7 @@ atom.formalCharge = charge;
 this.setAdditionalAtomParameters (atom);
 if (this.haveMappedSerials) this.atomSetCollection.addAtomWithMappedSerialNumber (atom);
  else this.atomSetCollection.addAtom (atom);
-if (this.atomCount++ == 0) this.atomSetCollection.setAtomSetAuxiliaryInfo ("isPDB", Boolean.TRUE);
+if (this.atomCount++ == 0 && !this.isCourseGrained) this.atomSetCollection.setAtomSetAuxiliaryInfo ("isPDB", Boolean.TRUE);
 if (atom.isHetero) {
 if (this.htHetero != null) {
 this.atomSetCollection.setAtomSetAuxiliaryInfo ("hetNames", this.htHetero);
@@ -549,12 +553,12 @@ this.conformationIndex = this.configurationPtr - 1;
 this.lastGroup = atom.sequenceNumber;
 this.lastInsertion = atom.insertionCode;
 this.lastAltLoc = '\0';
-}if (atom.alternateLocationID != '\0') {
-var msg = " atom [" + atom.group3 + "]" + atom.sequenceNumber + (atom.insertionCode == '\0' ? "" : "^" + atom.insertionCode) + (atom.chainID == 0 ? "" : ":" + this.viewer.getChainIDStr (atom.chainID)) + "." + atom.atomName + "%" + atom.alternateLocationID + "\n";
-if (this.conformationIndex >= 0 && atom.alternateLocationID != this.lastAltLoc) {
-this.lastAltLoc = atom.alternateLocationID;
+}if (atom.altLoc != '\0') {
+var msg = " atom [" + atom.group3 + "]" + atom.sequenceNumber + (atom.insertionCode == '\0' ? "" : "^" + atom.insertionCode) + (atom.chainID == 0 ? "" : ":" + this.viewer.getChainIDStr (atom.chainID)) + "." + atom.atomName + "%" + atom.altLoc + "\n";
+if (this.conformationIndex >= 0 && atom.altLoc != this.lastAltLoc) {
+this.lastAltLoc = atom.altLoc;
 this.conformationIndex--;
-}if (this.conformationIndex < 0 && atom.alternateLocationID != this.lastAltLoc) {
+}if (this.conformationIndex < 0 && atom.altLoc != this.lastAltLoc) {
 this.sbIgnored.append ("ignoring").append (msg);
 return false;
 }this.sbSelected.append ("loading").append (msg);
@@ -633,7 +637,7 @@ this.sbConect.append (st);
 this.sb.append (st1);
 } else {
 this.sbConect.append (st);
-}this.atomSetCollection.addConnection ([i1, targetSerial, i < 4 ? 1 : 2048]);
+}this.addConnection ([i1, targetSerial, i < 4 ? 1 : 2048]);
 }
 this.sbConect.appendSB (this.sb);
 }, $fz.isPrivate = true, $fz));
@@ -696,13 +700,13 @@ this.checkNotPDB ();
 this.haveMappedSerials = false;
 this.sbConect = null;
 this.atomSetCollection.newAtomSet ();
-this.atomSetCollection.setAtomSetAuxiliaryInfo ("isPDB", Boolean.TRUE);
+if (!this.isCourseGrained) this.atomSetCollection.setAtomSetAuxiliaryInfo ("isPDB", Boolean.TRUE);
 this.atomSetCollection.setCurrentAtomSetNumber (modelNumber);
 if (this.isCourseGrained) this.atomSetCollection.setAtomSetAuxiliaryInfo ("courseGrained", Boolean.TRUE);
 }, "~N");
 $_M(c$, "checkNotPDB", 
 ($fz = function () {
-var isPDB = (this.nRes == 0 || this.nUNK != this.nRes);
+var isPDB = (!this.isCourseGrained && (this.nRes == 0 || this.nUNK != this.nRes));
 this.atomSetCollection.setCheckSpecial (!isPDB);
 this.atomSetCollection.setAtomSetAuxiliaryInfo ("isPDB", isPDB ? Boolean.TRUE : Boolean.FALSE);
 this.nUNK = this.nRes = 0;
@@ -792,7 +796,7 @@ index = this.atomSetCollection.getAtomIndexFromSerial (serial);
 this.haveMappedSerials = true;
 }if (index < 0) {
 return;
-}var atom = this.atomSetCollection.getAtom (index);
+}var atom = this.atomSetCollection.atoms[index];
 for (var i = 28, pt = 0; i < 70; i += 7, pt++) data[pt] = this.parseFloatRange (this.line, i, i + 7);
 
 for (var i = 0; i < 6; i++) {
@@ -961,7 +965,7 @@ var groups = tlsGroupInfo.get ("groups");
 var index0 = this.atomSetCollection.getAtomSetAtomIndex (iModel);
 var data =  Clazz.newIntArray (this.atomSetCollection.getAtomSetAtomCount (iModel), 0);
 var indexMax = index0 + data.length;
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 var nGroups = groups.size ();
 for (var i = 0; i < nGroups; i++) {
 var group = groups.get (i);
@@ -1003,7 +1007,7 @@ return (isLast && iAtom >= 0 ? this.findAtom (iAtom, atom2, chain, resno, false)
 }, $fz.isPrivate = true, $fz), "~N,~N,~N,~N,~B");
 $_M(c$, "findAtom", 
 ($fz = function (atom1, atom2, chain, resno, isTrue) {
-var atoms = this.atomSetCollection.getAtoms ();
+var atoms = this.atomSetCollection.atoms;
 for (var i = atom1; i < atom2; i++) {
 var atom = atoms[i];
 if ((atom.chainID == chain && atom.sequenceNumber == resno) == isTrue) return i;
@@ -1060,6 +1064,52 @@ c$.fixRadius = $_M(c$, "fixRadius",
 function (r) {
 return (r < 0.9 ? 1 : r);
 }, "~N");
+$_M(c$, "addConnection", 
+($fz = function (is) {
+if (this.vConnect == null) {
+this.connectLast = null;
+this.vConnect =  new JU.List ();
+}if (this.connectLast != null) {
+if (is[0] == this.connectLast[0] && is[1] == this.connectLast[1] && is[2] != 2048) {
+this.connectLast[2]++;
+return;
+}}this.vConnect.addLast (this.connectLast = is);
+}, $fz.isPrivate = true, $fz), "~A");
+$_M(c$, "connectAllBad", 
+($fz = function (maxSerial) {
+var firstAtom = this.connectNextAtomIndex;
+for (var i = this.connectNextAtomSet; i < this.atomSetCollection.atomSetCount; i++) {
+var count = this.atomSetCollection.getAtomSetAtomCount (i);
+this.atomSetCollection.setAtomSetAuxiliaryInfoForSet ("PDB_CONECT_firstAtom_count_max", [firstAtom, count, maxSerial], i);
+if (this.vConnect != null) {
+this.atomSetCollection.setAtomSetAuxiliaryInfoForSet ("PDB_CONECT_bonds", this.vConnect, i);
+this.atomSetCollection.setGlobalBoolean (3);
+}firstAtom += count;
+}
+this.vConnect = null;
+this.connectNextAtomSet = this.atomSetCollection.currentAtomSetIndex + 1;
+this.connectNextAtomIndex = firstAtom;
+}, $fz.isPrivate = true, $fz), "~N");
+$_M(c$, "connectAll", 
+($fz = function (maxSerial, isConnectStateBug) {
+var ac = this.atomSetCollection;
+var index = ac.currentAtomSetIndex;
+if (index < 0) return;
+if (isConnectStateBug) {
+this.connectAllBad (maxSerial);
+return;
+}ac.setAtomSetAuxiliaryInfo ("PDB_CONECT_firstAtom_count_max", [ac.getAtomSetAtomIndex (index), ac.getAtomSetAtomCount (index), maxSerial]);
+if (this.vConnect == null) return;
+var firstAtom = this.connectNextAtomIndex;
+for (var i = ac.atomSetCount; --i >= this.connectNextAtomSet; ) {
+ac.setAtomSetAuxiliaryInfoForSet ("PDB_CONECT_bonds", this.vConnect, i);
+ac.setGlobalBoolean (3);
+firstAtom += ac.getAtomSetAtomCount (i);
+}
+this.vConnect = null;
+this.connectNextAtomSet = index + 1;
+this.connectNextAtomIndex = firstAtom;
+}, $fz.isPrivate = true, $fz), "~N,~B");
 Clazz.defineStatics (c$,
 "MODE_PDB", 0,
 "MODE_HEX", 1,

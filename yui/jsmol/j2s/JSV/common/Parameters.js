@@ -6,6 +6,7 @@ this.integralMinY = 0.1;
 this.integralRange = 50.0;
 this.integralOffset = 30.0;
 this.integralDrawAll = false;
+this.viewOffset = 0;
 this.peakListThreshold = NaN;
 this.peakListInterpolation = "parabolic";
 this.precision = 2;

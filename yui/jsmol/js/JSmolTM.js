@@ -27,7 +27,7 @@ Jmol.say = function(msg) {
 }
 
 Jmol._TMApplet = function(id, Info, checkOnly){
-		this._syncId = ("" + Math.random()).substring(3);
+		this._uniqueId = ("" + Math.random()).substring(3);
 		this._id = id;
 		this._is2D = true;
     this._isJava = false;
