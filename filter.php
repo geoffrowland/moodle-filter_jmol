@@ -182,9 +182,7 @@ function filter_jmol_replace_callback($matches) {
     // Force Java applet for binary files (.pdb.gz or .pse) with some browsers (IE or Chrome)
     $browser = strtolower($_SERVER['HTTP_USER_AGENT']);
     if ($matches[3] == "pdb.gz" || $matches[3] == "pse") { 
-        if (strpos($browser,'trident')) {
-            $technol = 'JAVA';
-        } else if (strpos($browser,'msie')) {
+        if (strpos($browser,'ie')) {
             $technol = 'JAVA';
         } else if (strpos($browser,'chrome')) {
             $technol = 'JAVA';
