@@ -200,39 +200,66 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $technol = 'HTML5';	
     } 
-    return "<div style='position relative; width: ".$size."px; height: ".$size."px;'>
-    <div id='jmoldiv".$id."' style='position: absolute; z-index: 0; width: ".$size."px; height: ".$size."px;'>
+    // Prepare divs for Jmol/JSmol and controls.
+    // Each Jmol/JSmol instance, in a page, has a unique ID.
+    // Load JSmol JavaScript as a YUI module.
+    // The Y.on('load', function () {}) is important in ensuring that JSmol does not interfere with Moodle YUI functions.
+    // The YUI resize function allows Jmol/Jmol instance to be proportionately resized - drag handle at bottom-right corner.
+    return "
+    <div id='resize".$id."' class='yui3-resize-knob' style='position: relative; border: 1px solid lightgray; width: ".$size."px; height: ".$size."px;'>
+    <div id='jmoldiv".$id."'style='display: block; position: absolute; z-index: 0; width: 100%; height: 100%;'>
     <noscript>".$jsdisabled."</noscript>
     </div>
     </div>
     <div style='width: ".$size."px'>
     <div id='control".$id."' style='float: left'></div>
-    <div id='download".$id."' style='float: right'>
+    <div id='download".$id."' style='float: left; margin: 6px 1em'>
     <a href='".$matches[2]."' title='".$downloadstructurefile."'>
-    <img src='".$wwwroot."/filter/jmol/download.gif' />
-    </a> <a href='".$wwwroot."/filter/jmol/lang/en/help/jmol/jmol.html' title='".$jmolhelp."'target='_blank'>
-    <img src='".$wwwroot."/pix/help.gif' />
+    <img src='".$wwwroot."/filter/jmol/pix/download.svg' />
+    </a> <a href='".$wwwroot."/filter/jmol/help.php' title='".$jmolhelp."'target='_blank'>
+    <img src='".$wwwroot."/filter/jmol/pix/help.svg' />
     </a>
     </div>
     </div>
     <script type='text/javascript'>
-    YUI().use('jsmol', 'node-base', function (Y) {
+    // Resize Jmol from autohiding handle at bottom-right corner
+    YUI().use('resize', 'jsmol', 'node-base', function (Y) {
+        var resize = new Y.Resize({
+            node: '#resize".$id."',
+            wrap: true,
+            autoHide: true,
+            handles: 'br'
+        });
+        // Fix Jmol aspect ratio and set min max size
+        resize.plug(Y.Plugin.ResizeConstrained, {
+            preserveRatio: true,
+            minWidth: 100,
+            minHeight: 100,
+            maxWidth: 1000,
+            maxHeight: 1000
+        });
+        // Reset jmol resolution to adjusted size
+        resize.on('resize:end', function(event) {
+            $('#jmoldiv".$id."').html(Jmol.resizeApplet(jmol".$id.",'100%'));
+        });
         var Info = {
-            width: ".$size.",
+            width: '100%',
+            height: '100%',
+            debug: false,
             color: 'white',
-            height: ".$size.",
-            script: '".$loadscript.$initscript."',
+            addSelectionOptions: false,
+            serverURL: '".$wwwroot."/filter/jmol/yui/jsmol/php/jsmol.php',
             use: '".$technol."',
-            serverURL: '".$wwwroot."/filter/jmol/yui/jsmol/jsmol.php',
-            j2sPath: '".$wwwroot."/filter/jmol/yui/jsmol/j2s',
+            deferApplet: false,
+            deferUncover: false,
             jarPath: '".$wwwroot."/filter/jmol/yui/jsmol/java',
+            j2sPath: '".$wwwroot."/filter/jmol/yui/jsmol/j2s',
             jarFile: 'JmolAppletSigned0.jar',
             isSigned: true,
-            addSelectionOptions: false,
-            readyFunction: null,
-            console: 'jmol_infodiv',
             disableInitialConsole: true,
             disableJ2SLoadMonitor: true,
+            readyFunction: null,
+            script: 'frank off;".$loadscript.$initscript."',
             defaultModel: null,
             debug: false
         }
@@ -241,8 +268,8 @@ function filter_jmol_replace_callback($matches) {
             //Uncomment following if MathJax is installed
             //MathJax.Hub.Queue(function () {
                 Jmol.setDocument(0);
-        	Jmol._alertNoBinary = false;
-        	Jmol.getApplet('jmol".$id."', Info);
+                Jmol._alertNoBinary = false;
+        	    Jmol.getApplet('jmol".$id."', Info);
                 $('#jmoldiv".$id."').html(Jmol.getAppletHtml(jmol".$id."));
                 $('#control".$id."').html(".$control.");
             //});
