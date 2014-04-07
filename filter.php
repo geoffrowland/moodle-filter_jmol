@@ -159,10 +159,7 @@ function filter_jmol_replace_callback($matches) {
             Jmol.jmolCheckbox(jmol'.$id.', "spin on", "spin off", "Spin", "")';
     } // End of switch
     //
-    // Prepare divs for JSmol and controls.
-    // Load JSmol JavaScript as a YUI module.
-    // The Y.on('load', function () {} is important in ensuring that JSmol does not interfere with Moodle YUI functions.
-    // Each JSmol instance, in a page, has a unique ID.
+    // Set up appropriate controls and scripts for different file types
     if ($matches[3] == "cif") {
         $loadscript = 'load \"'.$matches[2].'\" {1 1 1} PACKED; set antialiasDisplay on;';
     } else if ($matches[3] == "pdb" || $matches[3] == "pdb.gz") {
@@ -207,7 +204,7 @@ function filter_jmol_replace_callback($matches) {
     // The YUI resize function allows Jmol/Jmol instance to be proportionately resized - drag handle at bottom-right corner.
     return "
     <div id='resize".$id."' class='yui3-resize-knob' style='position: relative; border: 1px solid lightgray; width: ".$size."px; height: ".$size."px;'>
-    <div id='jmoldiv".$id."'style='display: block; position: absolute; z-index: 0; width: 100%; height: 100%;'>
+    <div id='jmoldiv".$id."' style='display: block; position: absolute; z-index: 0; width: 100%; height: 100%;'>
     <noscript>".$jsdisabled."</noscript>
     </div>
     </div>
@@ -216,7 +213,7 @@ function filter_jmol_replace_callback($matches) {
     <div id='download".$id."' style='float: left; margin: 6px 1em'>
     <a href='".$matches[2]."' title='".$downloadstructurefile."'>
     <img src='".$wwwroot."/filter/jmol/pix/download.svg' />
-    </a> <a href='".$wwwroot."/filter/jmol/help.php' title='".$jmolhelp."'target='_blank'>
+    </a> <a href='".$wwwroot."/filter/jmol/help.php' title='".$jmolhelp."' target='_blank'>
     <img src='".$wwwroot."/filter/jmol/pix/help.svg' />
     </a>
     </div>
