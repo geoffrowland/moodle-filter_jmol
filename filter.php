@@ -59,14 +59,14 @@ class filter_jmol extends moodle_text_filter {
         static $jsinitialised = false;
 
         if (empty($jsinitialised)) {
-		    $jsinitialised = true;
-            $url= '/filter/jmol/yui/jsmol/JSmol.min.js';
+	    $url= '/filter/jmol/yui/jsmol/JSmol.min.js';
             $url = new moodle_url($url);
             $moduleconfig = array(
                 'name' => 'jsmol',
                 'fullpath' => $url
             );
         $page->requires->js_module($moduleconfig);
+        $jsinitialised = true;
         }
     }
 
