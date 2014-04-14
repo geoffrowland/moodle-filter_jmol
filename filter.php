@@ -51,10 +51,28 @@ defined('MOODLE_INTERNAL') || die();
 // Jmol Wiki: http//wiki.jmol.org.
 
 class filter_jmol extends moodle_text_filter {
+    
+    public function setup($page, $context) {
+        global $CFG;
+        
+        // This only requires execution once per request.
+        static $jsinitialised = false;
+
+        if (empty($jsinitialised)) {
+		    $jsinitialised = true;
+            $url= '/filter/jmol/yui/jsmol/JSmol.min.js';
+            $url = new moodle_url($url);
+            $moduleconfig = array(
+                'name' => 'jsmol',
+                'fullpath' => $url
+            );
+        $page->requires->js_module($moduleconfig);
+        }
+    }
 
     public function filter($text, array $options = array()) {
-        // Global declared in case YUI JSmol module is inserted elsewhere in page (e.g. JSmol resource artefact?).
-        global $CFG, $yui_jsmol_has_been_configured;
+        
+        global $CFG;
         $wwwroot = $CFG->wwwroot;
         $host = preg_replace('~^.*://([^:/]*).*$~', '$1', $wwwroot);
 
@@ -65,19 +83,7 @@ class filter_jmol extends moodle_text_filter {
         $search = '/<a\\b([^>]*?)href=\"((?:\.|\\\|https?:\/\/' . $host . ')[^\"]+\.('.$jmolfiletypes.'))\??(.*?)\"([^>]*)>(.*?)<\/a>(\s*JMOLSCRIPT\{(.*?)\})?/is';
 
         $newtext = preg_replace_callback($search, 'filter_jmol_replace_callback', $text);
-        // YUI JSmol module configured once per page.
-        if (($newtext != $text) && !isset($yui_jsmol_has_been_configured)) {
-            $yui_jsmol_has_been_configured = true;
-            $newtext = "<script type='text/javascript'>
-            YUI().applyConfig({
-                modules: {
-                    'jsmol': {
-                        fullpath: M.cfg.wwwroot + '/filter/jmol/yui/jsmol/JSmol.min.js'
-                    }
-                }
-            });
-            </script>".$newtext;
-        }
+
         return $newtext;
     }
 }
