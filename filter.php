@@ -214,7 +214,7 @@ function filter_jmol_replace_callback($matches) {
     <noscript>".$jsdisabled."</noscript>
     </div>
     </div>
-    <div style='width: ".$size."px'>
+    <div style='width: ".$size."px; padding-bottom: 30px;'>
     <div id='control".$id."' style='float: left'></div>
     <div id='download".$id."' style='float: left; margin: 6px 1em'>
     <a href='".$matches[2]."' title='".$downloadstructurefile."'>
