@@ -1,26 +1,27 @@
 Clazz.declarePackage ("JSV.common");
 c$ = Clazz.decorateAsClass (function () {
 this.repaintPending = false;
-this.viewer = null;
+this.vwr = null;
 Clazz.instantialize (this, arguments);
 }, JSV.common, "RepaintManager");
 Clazz.makeConstructor (c$, 
 function (viewer) {
-this.viewer = viewer;
+this.vwr = viewer;
 }, "JSV.common.JSViewer");
-$_M(c$, "refresh", 
+Clazz.defineMethod (c$, "refresh", 
 function () {
 if (this.repaintPending) {
 return false;
 }this.repaintPending = true;
-this.viewer.selectedPanel.getPanelData ().taintedAll = true;
+this.vwr.pd ().taintedAll = true;
+var applet = this.vwr.html5Applet;
 {
-if (typeof Jmol != "undefined" && Jmol._repaint && this.viewer.applet)
-Jmol._repaint(this.viewer.applet, false);
+if (typeof Jmol != "undefined" && Jmol._repaint && applet)
+Jmol._repaint(applet, false);
 this.repaintDone();
 }return true;
 });
-$_M(c$, "repaintDone", 
+Clazz.defineMethod (c$, "repaintDone", 
 function () {
 this.repaintPending = false;
 this.notify ();

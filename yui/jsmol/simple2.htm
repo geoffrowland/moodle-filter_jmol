@@ -1,6 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-	        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <head>
 	<title>JSmol -- platform-aware Jmol using jQuery</title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -8,7 +7,6 @@
 <script type="text/javascript" src="JSmol.min.js"></script>
 
 <script type="text/javascript">
-//<![CDATA[
 
 // simple2.htm: demonstration of using platform-aware Jmol with jQuery
 // author: Bob Hanson hansonr@stolaf.edu 8/11/2012 8:21:03 AM
@@ -41,7 +39,7 @@ var Info = {
 	use: "HTML5",
 	jarPath: "java",
 	j2sPath: "j2s",
-	jarFile: "JmolApplet.jar",
+	jarFile: "JmolAppletSigned.jar",
 	isSigned: false,
 	addSelectionOptions: false,
 	serverURL: "http://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php",
@@ -70,58 +68,36 @@ var Info = {
 
 	}
 
-
-var jmol = "jmol"; // the JavaScript applet object
-
 // The actual applet will be jmol._applet (if it turns out to be an actual Applet),
 // but we will never access that directly.
 
 $(document).ready(function(){	
-	
-	// set Jmol to simply create the code and not use document.write
-	
-	Jmol.setDocument(0);
-	// now we have a JavaScript Object "jmol" and jmol._code is the HTML
-	// we will need later
-	
+		
 	// This demonstration shows that
 	// what is put on the page can depend upon the platform.
 
-  // It may seem strange or uncessary in what is below to use the syntax  
-	// 
-	//  Jmol.jmolXXXX(jmol,...)
-	//
-	// instead of just 
-	//
-	//  jmol.XXXX(...)
-	//
-	// This was an intentional design decision. 
-	// The reason has to do with flexibility, organization, and legacy:
-	// 
-	// It allows us to be much more flexible in that jmol is allowed to be just the string "jmol"
-	// (which allows us to create controls on the page before the applet wrapper object is created
-	//  when using more traditional in-body scripting if we are not interested in platforms).
-	//
-	// It allowed me to put all the controls in (optional) Jmol.controls, which is a bit cleaner
-	// than just having all the controls in the jmol applet wrapper prototype (which would be OK, 
-	// but would require copying, possibly with modification, in the case we have other 
-	// related prototypes such as glMol, ChemDoodle, JSpecView, or JME
-	//
-	// It allows users of Jmol.js to easily migrate to this system -- just add "Jmol." in front of 
-	// the legacy call jmolXXXX(...) and add the applet reference as the first parameter.
-	// 
-	// Note that the use of $(document.ready()) is completely optional. 
+	// Note that the use of $(document.ready()) is optional but preferred. 
 	// You can do the traditional in-body coding if you want. See also simple2-nojq.htm.
 	// But as Gusts Kaksis pointed out, if we are using jQuery for database lookups, we might
 	// as well use it for more than that. 
-	// If you do not use $(document.ready()), be sure to define jmol this way:
-	//
-	// jmol = "jmol"
-	//
-	// prior to calling any of the methods that create controls -- jmolButton, jmolLink, etc.
-	// and, if you do that, realize that you cannot implement any platform-aware features. 
-	//
   
+  // note that we create the applet first, before the controls, because
+  // we need window.jmol to be defined for those, and Jmol.getAppletHtml does that.
+  
+  $("#middlepanel").html(Jmol.getAppletHtml("jmol", Info));
+
+  // alternatively, you can use
+  //
+  //   jmol = "jmol"
+  //
+  // and then create the buttons before the applet itself. 
+  // Just make sure if you do that to use the name of the applet you are
+  // actually going to be using. So, perhaps:
+  //
+  //   jmolApplet0 = "jmolApplet0"
+  //
+
+	var use = (Info.use != "JAVA" ? Info.use : Info.isSigned ? "SIGNED" : "JAVA");  
   var radios = [
 		["set background white", "white", true],
 		["set background black", "black"]
@@ -129,8 +105,8 @@ $(document).ready(function(){
 
 		$("#leftpanel").html(
 		  '<a target="_blank" href="data/chairflip.png">images</a> '
-			+ '<a target="_blank" href="simple2.htm?cd%20data%3Bscript%20cyclflip2.spt;//&_USE=' + Info.use + '">cyclohexane ring flip</a> '
-			+ '<a href="simple2.htm?_USE=' + Info.use + '">back</a><br />'
+			+ '<a target="_blank" href="simple2.htm?script%20data/cyclflip2.spt;//&_USE=' + use + '">cyclohexane ring flip</a> '
+			+ '<a href="simple2.htm?_USE=' + use + '">back</a><br />'
 			+ (true || isApplet ? 
 			'Drag-Minimize '
 			+ Jmol.jmolLink(jmol,"set picking dragMinimize", "on")  
@@ -152,11 +128,6 @@ $(document).ready(function(){
 			+ "<br />Background: "
 			+ Jmol.jmolRadioGroup(jmol, radios)
 		);
-
-  // the HTML code is in jmol._code since we are using Jmol.setDocument(0)
-			Jmol.getApplet("jmol", Info);
-
-  	$("#middlepanel").html(Jmol.getAppletHtml(jmol));
 
   // right panel
   
@@ -181,9 +152,9 @@ $(document).ready(function(){
 		+ Jmol.jmolButton(jmol,"select *;if ($s1) {isosurface s1 delete} else {calculate partialcharge;isosurface s1 vdw map MEP translucent}","show/hide MEP")
 		+ "<br /><br />"
 		+ (isApplet ?
-		Jmol.jmolButton(jmol,"show NMR","Predict NMR")
-		+ "<br /><br />"
-		+ Jmol.jmolButton(jmol,"write FILE ?","Save FILE")
+// no longer works		Jmol.jmolButton(jmol,"show NMR","Predict NMR")
+//		+ "<br /><br />"
+		Jmol.jmolButton(jmol,"write FILE ?","Save FILE")
 		+ "<br />"
 		+ Jmol.jmolButton(jmol,"write PNGJ ?.png","Save PNG")
 		+ "<br /><br /><a href=simple2.htm?_USE=HTML5>HTML5 version</a>"

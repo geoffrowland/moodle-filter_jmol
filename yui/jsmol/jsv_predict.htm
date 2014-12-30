@@ -31,7 +31,7 @@ var JMEInfo = {
 	use: "HTML5"
   ,visible: true
   ,divId: "jmediv"
-  ,options : "autoez;"
+  ,options : "autoez;nocanonize;"
   ,addSelectionOptions: true
 	//,jarPath: "jme",
 	//,jarFile: "JME.jar"
@@ -84,7 +84,7 @@ Jmol.getJMEApplet("jme", JMEInfo);
 Jmol.getJSVApplet("jsv", JSVInfo)
 </script>
 <br />
-<a href="javascript:unhideJSV();Jmol.showInfo(jsv, true)">info</a>
+<a href="javascript:unhideJSV();Jmol.showInfo(jsv, true);">info</a>
 <a href="javascript:Jmol.clearConsole(jsv)">clear</a>
 <a href="javascript:Jmol.showInfo(jsv, false)">spectrum</a>
  (note that OH and NH hydrogens will not be shown)

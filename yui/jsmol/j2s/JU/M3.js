@@ -1,17 +1,13 @@
 Clazz.declarePackage ("JU");
 Clazz.load (["JU.M34"], "JU.M3", ["JU.T3"], function () {
 c$ = Clazz.declareType (JU, "M3", JU.M34, java.io.Serializable);
-Clazz.makeConstructor (c$, 
-function () {
-Clazz.superConstructor (this, JU.M3, []);
-});
-c$.newA9 = $_M(c$, "newA9", 
+c$.newA9 = Clazz.defineMethod (c$, "newA9", 
 function (v) {
 var m =  new JU.M3 ();
 m.setA (v);
 return m;
 }, "~A");
-c$.newM3 = $_M(c$, "newM3", 
+c$.newM3 = Clazz.defineMethod (c$, "newM3", 
 function (m1) {
 var m =  new JU.M3 ();
 if (m1 == null) {
@@ -28,16 +24,16 @@ m.m21 = m1.m21;
 m.m22 = m1.m22;
 return m;
 }, "JU.M3");
-$_M(c$, "setScale", 
+Clazz.defineMethod (c$, "setScale", 
 function (scale) {
 this.clear33 ();
 this.m00 = this.m11 = this.m22 = scale;
 }, "~N");
-$_M(c$, "setM3", 
+Clazz.defineMethod (c$, "setM3", 
 function (m1) {
 this.setM33 (m1);
 }, "JU.M34");
-$_M(c$, "setA", 
+Clazz.defineMethod (c$, "setA", 
 function (m) {
 this.m00 = m[0];
 this.m01 = m[1];
@@ -49,15 +45,15 @@ this.m20 = m[6];
 this.m21 = m[7];
 this.m22 = m[8];
 }, "~A");
-$_M(c$, "setElement", 
+Clazz.defineMethod (c$, "setElement", 
 function (row, col, v) {
 this.set33 (row, col, v);
 }, "~N,~N,~N");
-$_M(c$, "getElement", 
+Clazz.defineMethod (c$, "getElement", 
 function (row, col) {
 return this.get33 (row, col);
 }, "~N,~N");
-$_M(c$, "setRow", 
+Clazz.defineMethod (c$, "setRow", 
 function (row, x, y, z) {
 switch (row) {
 case 0:
@@ -79,7 +75,7 @@ default:
 this.err ();
 }
 }, "~N,~N,~N,~N");
-$_M(c$, "setRowV", 
+Clazz.defineMethod (c$, "setRowV", 
 function (row, v) {
 switch (row) {
 case 0:
@@ -101,15 +97,15 @@ default:
 this.err ();
 }
 }, "~N,JU.T3");
-$_M(c$, "setRowA", 
+Clazz.defineMethod (c$, "setRowA", 
 function (row, v) {
 this.setRow33 (row, v);
 }, "~N,~A");
-$_M(c$, "getRow", 
+Clazz.overrideMethod (c$, "getRow", 
 function (row, v) {
 this.getRow33 (row, v);
 }, "~N,~A");
-$_M(c$, "setColumn3", 
+Clazz.defineMethod (c$, "setColumn3", 
 function (column, x, y, z) {
 switch (column) {
 case 0:
@@ -131,7 +127,7 @@ default:
 this.err ();
 }
 }, "~N,~N,~N,~N");
-$_M(c$, "setColumnV", 
+Clazz.defineMethod (c$, "setColumnV", 
 function (column, v) {
 switch (column) {
 case 0:
@@ -153,7 +149,7 @@ default:
 this.err ();
 }
 }, "~N,JU.T3");
-$_M(c$, "getColumnV", 
+Clazz.defineMethod (c$, "getColumnV", 
 function (column, v) {
 switch (column) {
 case 0:
@@ -175,118 +171,87 @@ default:
 this.err ();
 }
 }, "~N,JU.T3");
-$_M(c$, "setColumnA", 
+Clazz.defineMethod (c$, "setColumnA", 
 function (column, v) {
 this.setColumn33 (column, v);
 }, "~N,~A");
-$_M(c$, "getColumn", 
+Clazz.defineMethod (c$, "getColumn", 
 function (column, v) {
 this.getColumn33 (column, v);
 }, "~N,~A");
-$_M(c$, "add", 
+Clazz.defineMethod (c$, "add", 
 function (m1) {
 this.add33 (m1);
 }, "JU.M3");
-$_M(c$, "sub", 
+Clazz.defineMethod (c$, "sub", 
 function (m1) {
 this.sub33 (m1);
 }, "JU.M3");
-$_M(c$, "transpose", 
+Clazz.defineMethod (c$, "transpose", 
 function () {
 this.transpose33 ();
 });
-$_M(c$, "transposeM", 
+Clazz.defineMethod (c$, "transposeM", 
 function (m1) {
 this.setM33 (m1);
 this.transpose33 ();
 }, "JU.M3");
-$_M(c$, "invertM", 
+Clazz.defineMethod (c$, "invertM", 
 function (m1) {
 this.setM33 (m1);
 this.invert ();
 }, "JU.M3");
-$_M(c$, "invert", 
+Clazz.defineMethod (c$, "invert", 
 function () {
-var s = this.determinant ();
+var s = this.determinant3 ();
 if (s == 0.0) return;
 s = 1 / s;
 this.set9 (this.m11 * this.m22 - this.m12 * this.m21, this.m02 * this.m21 - this.m01 * this.m22, this.m01 * this.m12 - this.m02 * this.m11, this.m12 * this.m20 - this.m10 * this.m22, this.m00 * this.m22 - this.m02 * this.m20, this.m02 * this.m10 - this.m00 * this.m12, this.m10 * this.m21 - this.m11 * this.m20, this.m01 * this.m20 - this.m00 * this.m21, this.m00 * this.m11 - this.m01 * this.m10);
 this.scale (s);
 });
-$_M(c$, "determinant", 
-function () {
-return this.m00 * (this.m11 * this.m22 - this.m21 * this.m12) - this.m01 * (this.m10 * this.m22 - this.m20 * this.m12) + this.m02 * (this.m10 * this.m21 - this.m20 * this.m11);
-});
-$_M(c$, "rotX", 
+Clazz.defineMethod (c$, "setAsXRotation", 
 function (angle) {
-var c = Math.cos (angle);
-var s = Math.sin (angle);
-this.m00 = 1.0;
-this.m01 = 0.0;
-this.m02 = 0.0;
-this.m10 = 0.0;
-this.m11 = c;
-this.m12 = -s;
-this.m20 = 0.0;
-this.m21 = s;
-this.m22 = c;
+this.setXRot (angle);
+return this;
 }, "~N");
-$_M(c$, "rotY", 
+Clazz.defineMethod (c$, "setAsYRotation", 
 function (angle) {
-var c = Math.cos (angle);
-var s = Math.sin (angle);
-this.m00 = c;
-this.m01 = 0.0;
-this.m02 = s;
-this.m10 = 0.0;
-this.m11 = 1.0;
-this.m12 = 0.0;
-this.m20 = -s;
-this.m21 = 0.0;
-this.m22 = c;
+this.setYRot (angle);
+return this;
 }, "~N");
-$_M(c$, "rotZ", 
+Clazz.defineMethod (c$, "setAsZRotation", 
 function (angle) {
-var c = Math.cos (angle);
-var s = Math.sin (angle);
-this.m00 = c;
-this.m01 = -s;
-this.m02 = 0.0;
-this.m10 = s;
-this.m11 = c;
-this.m12 = 0.0;
-this.m20 = 0.0;
-this.m21 = 0.0;
-this.m22 = 1.0;
+this.setZRot (angle);
+return this;
 }, "~N");
-$_M(c$, "scale", 
+Clazz.defineMethod (c$, "scale", 
 function (scalar) {
 this.mul33 (scalar);
 }, "~N");
-$_M(c$, "mul", 
+Clazz.defineMethod (c$, "mul", 
 function (m1) {
 this.mul2 (this, m1);
 }, "JU.M3");
-$_M(c$, "mul2", 
+Clazz.defineMethod (c$, "mul2", 
 function (m1, m2) {
 this.set9 (m1.m00 * m2.m00 + m1.m01 * m2.m10 + m1.m02 * m2.m20, m1.m00 * m2.m01 + m1.m01 * m2.m11 + m1.m02 * m2.m21, m1.m00 * m2.m02 + m1.m01 * m2.m12 + m1.m02 * m2.m22, m1.m10 * m2.m00 + m1.m11 * m2.m10 + m1.m12 * m2.m20, m1.m10 * m2.m01 + m1.m11 * m2.m11 + m1.m12 * m2.m21, m1.m10 * m2.m02 + m1.m11 * m2.m12 + m1.m12 * m2.m22, m1.m20 * m2.m00 + m1.m21 * m2.m10 + m1.m22 * m2.m20, m1.m20 * m2.m01 + m1.m21 * m2.m11 + m1.m22 * m2.m21, m1.m20 * m2.m02 + m1.m21 * m2.m12 + m1.m22 * m2.m22);
 }, "JU.M3,JU.M3");
-$_V(c$, "equals", 
+Clazz.overrideMethod (c$, "equals", 
 function (o) {
 if (!(Clazz.instanceOf (o, JU.M3))) return false;
 var m = o;
 return this.m00 == m.m00 && this.m01 == m.m01 && this.m02 == m.m02 && this.m10 == m.m10 && this.m11 == m.m11 && this.m12 == m.m12 && this.m20 == m.m20 && this.m21 == m.m21 && this.m22 == m.m22;
 }, "~O");
-$_V(c$, "hashCode", 
+Clazz.overrideMethod (c$, "hashCode", 
 function () {
 return JU.T3.floatToIntBits0 (this.m00) ^ JU.T3.floatToIntBits0 (this.m01) ^ JU.T3.floatToIntBits0 (this.m02) ^ JU.T3.floatToIntBits0 (this.m10) ^ JU.T3.floatToIntBits0 (this.m11) ^ JU.T3.floatToIntBits0 (this.m12) ^ JU.T3.floatToIntBits0 (this.m20) ^ JU.T3.floatToIntBits0 (this.m21) ^ JU.T3.floatToIntBits0 (this.m22);
 });
-$_M(c$, "setZero", 
+Clazz.defineMethod (c$, "setZero", 
 function () {
 this.clear33 ();
 });
-$_M(c$, "set9", 
-($fz = function (m00, m01, m02, m10, m11, m12, m20, m21, m22) {
+Clazz.defineMethod (c$, "set9", 
+ function (m00, m01, m02, m10, m11, m12, m20, m21, m22) {
 this.m00 = m00;
 this.m01 = m01;
 this.m02 = m02;
@@ -296,13 +261,38 @@ this.m12 = m12;
 this.m20 = m20;
 this.m21 = m21;
 this.m22 = m22;
-}, $fz.isPrivate = true, $fz), "~N,~N,~N,~N,~N,~N,~N,~N,~N");
-$_V(c$, "toString", 
+}, "~N,~N,~N,~N,~N,~N,~N,~N,~N");
+Clazz.overrideMethod (c$, "toString", 
 function () {
 return "[\n  [" + this.m00 + "\t" + this.m01 + "\t" + this.m02 + "]" + "\n  [" + this.m10 + "\t" + this.m11 + "\t" + this.m12 + "]" + "\n  [" + this.m20 + "\t" + this.m21 + "\t" + this.m22 + "] ]";
 });
-$_M(c$, "setAA", 
+Clazz.defineMethod (c$, "setAA", 
 function (a) {
 this.setAA33 (a);
+return this;
 }, "JU.A4");
+Clazz.defineMethod (c$, "setAsBallRotation", 
+function (responseFactor, dx, dy) {
+var r = Math.sqrt (dx * dx + dy * dy);
+var th = r * responseFactor;
+if (th == 0) {
+this.setScale (1);
+return false;
+}var c = Math.cos (th);
+var s = Math.sin (th);
+var nx = -dy / r;
+var ny = dx / r;
+var c1 = c - 1;
+this.m00 = 1 + c1 * nx * nx;
+this.m01 = this.m10 = c1 * nx * ny;
+this.m20 = -(this.m02 = s * nx);
+this.m11 = 1 + c1 * ny * ny;
+this.m21 = -(this.m12 = s * ny);
+this.m22 = c;
+return true;
+}, "~N,~N,~N");
+Clazz.defineMethod (c$, "isRotation", 
+function () {
+return (Math.abs (this.determinant3 () - 1) < 0.001);
+});
 });

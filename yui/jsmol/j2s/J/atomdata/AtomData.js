@@ -18,7 +18,7 @@ this.atomRadius = null;
 this.atomicNumber = null;
 this.atomMolecule = null;
 this.hAtoms = null;
-this.atomCount = 0;
+this.ac = 0;
 this.hydrogenAtomCount = 0;
 this.adpMode = 0;
 Clazz.instantialize (this, arguments);
@@ -27,6 +27,7 @@ Clazz.makeConstructor (c$,
 function () {
 });
 Clazz.defineStatics (c$,
+"MODE_FILL_MODEL", 0,
 "MODE_FILL_COORDS", 1,
 "MODE_FILL_RADII", 2,
 "MODE_FILL_MOLECULES", 4,

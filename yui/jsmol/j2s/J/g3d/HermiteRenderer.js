@@ -1,7 +1,8 @@
 Clazz.declarePackage ("J.g3d");
-Clazz.load (["J.g3d.G3DRenderer", "JU.P3", "$.V3"], "J.g3d.HermiteRenderer", ["JU.List", "$.P3i", "J.util.Point3fi"], function () {
+Clazz.load (["J.g3d.G3DRenderer", "JU.P3", "$.V3"], "J.g3d.HermiteRenderer", ["JU.Lst", "$.P3i", "JU.Point3fi"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.g3d = null;
+this.gdata = null;
 this.pLeft = null;
 this.pRight = null;
 this.sLeft = null;
@@ -58,15 +59,16 @@ this.needToFill =  Clazz.newBooleanArray (16, false);
 Clazz.makeConstructor (c$, 
 function () {
 });
-$_V(c$, "set", 
-function (g3d) {
+Clazz.overrideMethod (c$, "set", 
+function (g3d, gdata) {
 this.g3d = g3d;
+this.gdata = gdata;
 return this;
-}, "J.api.JmolRendererInterface");
-$_M(c$, "renderHermiteRope", 
+}, "J.api.JmolRendererInterface,JU.GData");
+Clazz.defineMethod (c$, "renderHermiteRope", 
 function (fill, tension, diameterBeg, diameterMid, diameterEnd, p0, p1, p2, p3) {
 if (p0.z == 1 || p1.z == 1 || p2.z == 1 || p3.z == 1) return;
-if (this.g3d.isClippedZ (p1.z) || this.g3d.isClippedZ (p2.z)) return;
+if (this.gdata.isClippedZ (p1.z) || this.gdata.isClippedZ (p2.z)) return;
 var x1 = p1.x;
 var y1 = p1.y;
 var z1 = p1.z;
@@ -125,7 +127,7 @@ this.pLeft[sp].setT (pMid);
 this.sLeft[sp] = s;
 } while (sp >= 0);
 }, "~B,~N,~N,~N,~N,JU.P3i,JU.P3i,JU.P3i,JU.P3i");
-$_M(c$, "renderHermiteRibbon", 
+Clazz.defineMethod (c$, "renderHermiteRibbon", 
 function (fill, border, tension, p0, p1, p2, p3, p4, p5, p6, p7, aspectRatio, fillType) {
 if (p0.z == 1 || p1.z == 1 || p2.z == 1 || p3.z == 1 || p4.z == 1 || p5.z == 1 || p6.z == 1 || p7.z == 1) return;
 if (!fill) {
@@ -147,8 +149,8 @@ var zT1 = Clazz.doubleToInt (((z2 - p0.z) * tension) / 8);
 var xT2 = Clazz.doubleToInt (((p3.x - x1) * tension) / 8);
 var yT2 = Clazz.doubleToInt (((p3.y - y1) * tension) / 8);
 var zT2 = Clazz.doubleToInt (((p3.z - z1) * tension) / 8);
-J.util.Point3fi.set2 (this.pTopLeft[0], p1);
-J.util.Point3fi.set2 (this.pTopRight[0], p2);
+JU.Point3fi.set2 (this.pTopLeft[0], p1);
+JU.Point3fi.set2 (this.pTopRight[0], p2);
 var x5 = p5.x;
 var y5 = p5.y;
 var z5 = p5.z;
@@ -161,8 +163,8 @@ var zT5 = Clazz.doubleToInt (((z6 - p4.z) * tension) / 8);
 var xT6 = Clazz.doubleToInt (((p7.x - x5) * tension) / 8);
 var yT6 = Clazz.doubleToInt (((p7.y - y5) * tension) / 8);
 var zT6 = Clazz.doubleToInt (((p7.z - z5) * tension) / 8);
-J.util.Point3fi.set2 (this.pBotLeft[0], p5);
-J.util.Point3fi.set2 (this.pBotRight[0], p6);
+JU.Point3fi.set2 (this.pBotLeft[0], p5);
+JU.Point3fi.set2 (this.pBotRight[0], p6);
 this.sLeft[0] = 0;
 this.sRight[0] = 1;
 this.needToFill[0] = true;
@@ -259,17 +261,17 @@ this.c2.z += 1;
 this.a2.z += 1;
 this.g3d.fillQuadrilateral (this.a1, this.c1, this.c2, this.a2);
 }}, "~B,~B,~N,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i,~N,~N");
-c$.isFront = $_M(c$, "isFront", 
-($fz = function (a, b, c) {
+c$.isFront = Clazz.defineMethod (c$, "isFront", 
+ function (a, b, c) {
 J.g3d.HermiteRenderer.vAB.sub2 (b, a);
 J.g3d.HermiteRenderer.vAC.sub2 (c, a);
 J.g3d.HermiteRenderer.vAB.cross (J.g3d.HermiteRenderer.vAB, J.g3d.HermiteRenderer.vAC);
 return (J.g3d.HermiteRenderer.vAB.z < 0 ? -1 : 1);
-}, $fz.isPrivate = true, $fz), "JU.P3,JU.P3,JU.P3");
-$_M(c$, "renderParallelPair", 
-($fz = function (fill, tension, p0, p1, p2, p3, p4, p5, p6, p7) {
+}, "JU.P3,JU.P3,JU.P3");
+Clazz.defineMethod (c$, "renderParallelPair", 
+ function (fill, tension, p0, p1, p2, p3, p4, p5, p6, p7) {
 var endPoints = [p2, p1, p6, p5];
-var points =  new JU.List ();
+var points =  new JU.Lst ();
 var whichPoint = 0;
 var numTopStrandPoints = 2;
 var numPointsPerSegment = 5.0;
@@ -356,7 +358,7 @@ points.addLast (endPoints[whichPoint++]);
 var size = points.size ();
 for (var top = 0; top < numTopStrandPoints && (top + numTopStrandPoints) < size; top++) this.g3d.drawLineAB (points.get (top), points.get (top + numTopStrandPoints));
 
-}, $fz.isPrivate = true, $fz), "~B,~N,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i");
+}, "~B,~N,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i,JU.P3i");
 c$.vAB = c$.prototype.vAB =  new JU.V3 ();
 c$.vAC = c$.prototype.vAC =  new JU.V3 ();
 });

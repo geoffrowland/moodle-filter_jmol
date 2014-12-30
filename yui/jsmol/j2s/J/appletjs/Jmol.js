@@ -1,74 +1,50 @@
 Clazz.declarePackage ("J.appletjs");
-Clazz.load (["J.util.GenericApplet", "java.util.Hashtable"], "J.appletjs.Jmol", ["JU.PT", "J.constant.EnumCallback", "J.util.Logger", "$.Parser"], function () {
+Clazz.load (["javajs.api.JSInterface", "JU.GenericApplet"], "J.appletjs.Jmol", ["java.util.Hashtable", "JU.PT", "JU.Logger", "$.Parser"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.htParams = null;
 Clazz.instantialize (this, arguments);
-}, J.appletjs, "Jmol", J.util.GenericApplet);
-Clazz.prepareFields (c$, function () {
-this.htParams =  new java.util.Hashtable ();
-});
+}, J.appletjs, "Jmol", JU.GenericApplet, javajs.api.JSInterface);
 Clazz.makeConstructor (c$, 
-function (viewerOptions) {
+function (vwrOptions) {
 Clazz.superConstructor (this, J.appletjs.Jmol, []);
-if (viewerOptions == null) viewerOptions =  new java.util.Hashtable ();
-this.viewerOptions = viewerOptions;
-for (var entry, $entry = viewerOptions.entrySet ().iterator (); $entry.hasNext () && ((entry = $entry.next ()) || true);) this.htParams.put (entry.getKey ().toLowerCase (), entry.getValue ());
+this.htParams =  new java.util.Hashtable ();
+if (vwrOptions == null) vwrOptions =  new java.util.Hashtable ();
+this.vwrOptions = vwrOptions;
+for (var entry, $entry = vwrOptions.entrySet ().iterator (); $entry.hasNext () && ((entry = $entry.next ()) || true);) this.htParams.put (entry.getKey ().toLowerCase (), entry.getValue ());
 
-this.documentBase = "" + viewerOptions.get ("documentBase");
-this.codeBase = "" + viewerOptions.get ("codePath");
+this.documentBase = "" + vwrOptions.get ("documentBase");
+this.codeBase = "" + vwrOptions.get ("codePath");
 this.isJS = true;
 this.init (this);
 }, "java.util.Map");
-$_V(c$, "setStereoGraphics", 
+Clazz.overrideMethod (c$, "setStereoGraphics", 
 function (isStereo) {
 {
 if (isStereo)
-return viewer.apiPlatform.context;
+return vwr.apiPlatform.context;
 }return null;
 }, "~B");
-$_V(c$, "initOptions", 
+Clazz.overrideMethod (c$, "initOptions", 
 function () {
-this.viewerOptions.remove ("debug");
-this.viewerOptions.put ("fullName", this.fullName);
+this.vwrOptions.remove ("debug");
+this.vwrOptions.put ("fullName", this.fullName);
 this.haveDocumentAccess = "true".equalsIgnoreCase ("" + this.getValue ("allowjavascript", "true"));
 this.mayScript = true;
 });
-$_V(c$, "getParameter", 
+Clazz.overrideMethod (c$, "getJmolParameter", 
 function (paramName) {
 var o = this.htParams.get (paramName.toLowerCase ());
-return (o == null ? null :  String.instantialize (o.toString ()));
+return (o == null ? null : "" + o);
 }, "~S");
-$_V(c$, "doSendJsTextStatus", 
+Clazz.overrideMethod (c$, "doSendJsTextStatus", 
 function (message) {
 System.out.println (message);
 }, "~S");
-$_V(c$, "doSendJsTextareaStatus", 
+Clazz.overrideMethod (c$, "doSendJsTextareaStatus", 
 function (message) {
 System.out.println (message);
 }, "~S");
-$_M(c$, "doNotifySync", 
-function (info, appletName) {
-var syncCallback = this.b$.get (J.constant.EnumCallback.SYNC);
-if (!this.mayScript || syncCallback == null || !this.haveDocumentAccess && !syncCallback.startsWith ("Jmol.")) return info;
-J.util.Logger.info ("Jmol.notifySync " + appletName + " >> " + info);
-try {
-{
-if (syncCallback=="Jmol._mySyncCallback") return
-Jmol._mySyncCallback(this.htmlName, info, appletName); var f
-= eval(syncCallback); return f(this.htmlName, info,
-appletName);
-}} catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
-if (!this.haveNotifiedError) if (J.util.Logger.debugging) {
-J.util.Logger.debug ("syncCallback call error to " + syncCallback + ": " + e);
-}this.haveNotifiedError = true;
-} else {
-throw e;
-}
-}
-return info;
-}, "~S,~S");
-$_V(c$, "doFunctionXY", 
+Clazz.overrideMethod (c$, "doFunctionXY", 
 function (functionName, nX, nY) {
 var fxy =  Clazz.newFloatArray (Math.abs (nX), Math.abs (nY), 0);
 if (!this.mayScript || !this.haveDocumentAccess || nX == 0 || nY == 0) return fxy;
@@ -85,7 +61,7 @@ var data;
 data = eval(functionName)(this.htmlName, nX, nY);
 }nX = Math.abs (nX);
 var fdata =  Clazz.newFloatArray (nX * nY, 0);
-J.util.Parser.parseStringInfestedFloatArray (data, null, fdata);
+JU.Parser.parseStringInfestedFloatArray (data, null, fdata);
 for (var i = 0, ipt = 0; i < nX; i++) {
 for (var j = 0; j < nY; j++, ipt++) {
 fxy[i][j] = fdata[ipt];
@@ -93,17 +69,17 @@ fxy[i][j] = fdata[ipt];
 }
 } else {
 {
-data = eval(functionName)(htmlName, nX, nY, fxy);
+data = eval(functionName)(this.htmlName, nX, nY, fxy);
 }}} catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
-J.util.Logger.error ("Exception " + e + " with nX, nY: " + nX + " " + nY);
+JU.Logger.error ("Exception " + e + " with nX, nY: " + nX + " " + nY);
 } else {
 throw e;
 }
 }
 return fxy;
 }, "~S,~N,~N");
-$_V(c$, "doFunctionXYZ", 
+Clazz.overrideMethod (c$, "doFunctionXYZ", 
 function (functionName, nX, nY, nZ) {
 var fxyz =  Clazz.newFloatArray (Math.abs (nX), Math.abs (nY), Math.abs (nZ), 0);
 if (!this.mayScript || !this.haveDocumentAccess || nX == 0 || nY == 0 || nZ == 0) return fxyz;
@@ -112,19 +88,19 @@ try {
 eval(functionName)(this.htmlName, nX, nY, nZ, fxyz);
 }} catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
-J.util.Logger.error ("Exception " + e + " for " + functionName + " with nX, nY, nZ: " + nX + " " + nY + " " + nZ);
+JU.Logger.error ("Exception " + e + " for " + functionName + " with nX, nY, nZ: " + nX + " " + nY + " " + nZ);
 } else {
 throw e;
 }
 }
 return fxyz;
 }, "~S,~N,~N,~N");
-$_V(c$, "doShowDocument", 
+Clazz.overrideMethod (c$, "doShowDocument", 
 function (url) {
 {
 window.open(url.toString());
 }}, "java.net.URL");
-$_V(c$, "doSendCallback", 
+Clazz.overrideMethod (c$, "doSendCallback", 
 function (callback, data, strInfo) {
 if (callback == null || callback.length == 0) {
 } else if (callback.equals ("alert")) {
@@ -143,21 +119,21 @@ return o(data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);
 } catch (e) { System.out.println(callback + " failed " + e); }
 }}return "";
 }, "~S,~A,~S");
-$_V(c$, "doEval", 
+Clazz.overrideMethod (c$, "doEval", 
 function (strEval) {
 try {
 {
 return "" + eval(strEval);
 }} catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
-J.util.Logger.error ("# error evaluating " + strEval + ":" + e.toString ());
+JU.Logger.error ("# error evaluating " + strEval + ":" + e.toString ());
 } else {
 throw e;
 }
 }
 return "";
 }, "~S");
-$_V(c$, "doShowStatus", 
+Clazz.overrideMethod (c$, "doShowStatus", 
 function (message) {
 try {
 System.out.println (message);
@@ -168,4 +144,56 @@ throw e;
 }
 }
 }, "~S");
+Clazz.overrideMethod (c$, "cacheFileByName", 
+function (fileName, isAdd) {
+return this.viewer.cacheFileByName (fileName, isAdd);
+}, "~S,~B");
+Clazz.overrideMethod (c$, "cachePut", 
+function (key, data) {
+this.viewer.cachePut (key, data);
+}, "~S,~O");
+Clazz.overrideMethod (c$, "getGLmolView", 
+function () {
+return this.viewer.getGLmolView ();
+});
+Clazz.overrideMethod (c$, "getFullName", 
+function () {
+return this.fullName;
+});
+Clazz.overrideMethod (c$, "processMouseEvent", 
+function (id, x, y, modifiers, time) {
+return this.viewer.processMouseEvent (id, x, y, modifiers, time);
+}, "~N,~N,~N,~N,~N");
+Clazz.overrideMethod (c$, "setDisplay", 
+function (canvas) {
+this.viewer.setDisplay (canvas);
+}, "~O");
+Clazz.overrideMethod (c$, "setStatusDragDropped", 
+function (mode, x, y, fileName) {
+return this.viewer.setStatusDragDropped (mode, x, y, fileName);
+}, "~N,~N,~N,~S");
+Clazz.overrideMethod (c$, "startHoverWatcher", 
+function (enable) {
+this.viewer.startHoverWatcher (enable);
+}, "~B");
+Clazz.overrideMethod (c$, "update", 
+function () {
+this.viewer.updateJS ();
+});
+Clazz.overrideMethod (c$, "openFile", 
+function (fileName) {
+return this.viewer.openFile (fileName);
+}, "~S");
+Clazz.overrideMethod (c$, "openFileAsyncSpecial", 
+function (fileName, flags) {
+this.viewer.openFileAsyncSpecial (fileName, flags);
+}, "~S,~N");
+Clazz.overrideMethod (c$, "processTwoPointGesture", 
+function (touches) {
+this.viewer.processTwoPointGesture (touches);
+}, "~A");
+Clazz.overrideMethod (c$, "setScreenDimension", 
+function (width, height) {
+this.viewer.setScreenDimension (width, height);
+}, "~N,~N");
 });

@@ -14,19 +14,19 @@ this.a = (a == null ?  Clazz.newDoubleArray (m, n, 0) : a);
 this.m = m;
 this.n = n;
 }, "~A,~N,~N");
-$_M(c$, "getRowDimension", 
+Clazz.defineMethod (c$, "getRowDimension", 
 function () {
 return this.m;
 });
-$_M(c$, "getColumnDimension", 
+Clazz.defineMethod (c$, "getColumnDimension", 
 function () {
 return this.n;
 });
-$_M(c$, "getArray", 
+Clazz.defineMethod (c$, "getArray", 
 function () {
 return this.a;
 });
-$_M(c$, "getArrayCopy", 
+Clazz.defineMethod (c$, "getArrayCopy", 
 function () {
 var x =  Clazz.newDoubleArray (this.m, this.n, 0);
 for (var i = this.m; --i >= 0; ) for (var j = this.n; --j >= 0; ) x[i][j] = this.a[i][j];
@@ -34,7 +34,7 @@ for (var i = this.m; --i >= 0; ) for (var j = this.n; --j >= 0; ) x[i][j] = this
 
 return x;
 });
-$_M(c$, "copy", 
+Clazz.defineMethod (c$, "copy", 
 function () {
 var x =  new JU.Matrix (null, this.m, this.n);
 var c = x.a;
@@ -43,11 +43,11 @@ for (var i = this.m; --i >= 0; ) for (var j = this.n; --j >= 0; ) c[i][j] = this
 
 return x;
 });
-$_V(c$, "clone", 
+Clazz.overrideMethod (c$, "clone", 
 function () {
 return this.copy ();
 });
-$_M(c$, "getSubmatrix", 
+Clazz.defineMethod (c$, "getSubmatrix", 
 function (i0, j0, nrows, ncols) {
 var x =  new JU.Matrix (null, nrows, ncols);
 var xa = x.a;
@@ -56,7 +56,7 @@ for (var i = nrows; --i >= 0; ) for (var j = ncols; --j >= 0; ) xa[i][j] = this.
 
 return x;
 }, "~N,~N,~N,~N");
-$_M(c$, "getMatrixSelected", 
+Clazz.defineMethod (c$, "getMatrixSelected", 
 function (r, n) {
 var x =  new JU.Matrix (null, r.length, n);
 var xa = x.a;
@@ -67,7 +67,7 @@ for (var j = n; --j >= 0; ) xa[i][j] = b[j];
 }
 return x;
 }, "~A,~N");
-$_M(c$, "transpose", 
+Clazz.defineMethod (c$, "transpose", 
 function () {
 var x =  new JU.Matrix (null, this.n, this.m);
 var c = x.a;
@@ -76,15 +76,15 @@ for (var i = this.m; --i >= 0; ) for (var j = this.n; --j >= 0; ) c[j][i] = this
 
 return x;
 });
-$_M(c$, "add", 
+Clazz.defineMethod (c$, "add", 
 function (b) {
 return this.scaleAdd (b, 1);
 }, "JU.Matrix");
-$_M(c$, "sub", 
+Clazz.defineMethod (c$, "sub", 
 function (b) {
 return this.scaleAdd (b, -1);
 }, "JU.Matrix");
-$_M(c$, "scaleAdd", 
+Clazz.defineMethod (c$, "scaleAdd", 
 function (b, scale) {
 var x =  new JU.Matrix (null, this.m, this.n);
 var xa = x.a;
@@ -94,7 +94,7 @@ for (var i = this.m; --i >= 0; ) for (var j = this.n; --j >= 0; ) xa[i][j] = ba[
 
 return x;
 }, "JU.Matrix,~N");
-$_M(c$, "mul", 
+Clazz.defineMethod (c$, "mul", 
 function (b) {
 if (b.m != this.n) return null;
 var x =  new JU.Matrix (null, this.m, b.n);
@@ -110,18 +110,18 @@ xa[i][j] = s;
 
 return x;
 }, "JU.Matrix");
-$_M(c$, "inverse", 
+Clazz.defineMethod (c$, "inverse", 
 function () {
-return Clazz.innerTypeInstance (JU.Matrix.LUDecomp, this, null).solve (JU.Matrix.identity (this.m, this.m));
+return Clazz.innerTypeInstance (JU.Matrix.LUDecomp, this, null, this.m, this.n).solve (JU.Matrix.identity (this.m, this.m), this.n);
 });
-$_M(c$, "trace", 
+Clazz.defineMethod (c$, "trace", 
 function () {
 var t = 0;
 for (var i = Math.min (this.m, this.n); --i >= 0; ) t += this.a[i][i];
 
 return t;
 });
-c$.identity = $_M(c$, "identity", 
+c$.identity = Clazz.defineMethod (c$, "identity", 
 function (m, n) {
 var x =  new JU.Matrix (null, m, n);
 var xa = x.a;
@@ -129,7 +129,19 @@ for (var i = Math.min (m, n); --i >= 0; ) xa[i][i] = 1;
 
 return x;
 }, "~N,~N");
-$_V(c$, "toString", 
+Clazz.defineMethod (c$, "getRotation", 
+function () {
+return this.getSubmatrix (0, 0, this.m - 1, this.n - 1);
+});
+Clazz.defineMethod (c$, "getTranslation", 
+function () {
+return this.getSubmatrix (0, this.n - 1, this.m - 1, 1);
+});
+c$.newT = Clazz.defineMethod (c$, "newT", 
+function (r, asColumn) {
+return (asColumn ?  new JU.Matrix ([[r.x], [r.y], [r.z]], 3, 1) :  new JU.Matrix ([[r.x, r.y, r.z]], 1, 3));
+}, "JU.T3,~B");
+Clazz.overrideMethod (c$, "toString", 
 function () {
 var s = "[\n";
 for (var i = 0; i < this.m; i++) {
@@ -141,20 +153,8 @@ s += "]\n";
 s += "]";
 return s;
 });
-$_M(c$, "getRotation", 
-function () {
-return this.getSubmatrix (0, 0, this.m - 1, this.n - 1);
-});
-$_M(c$, "getTranslation", 
-function () {
-return this.getSubmatrix (0, this.n - 1, this.m - 1, 1);
-});
-c$.newT = $_M(c$, "newT", 
-function (r, asColumn) {
-return (asColumn ?  new JU.Matrix ([[r.x], [r.y], [r.z]], 3, 1) :  new JU.Matrix ([[r.x, r.y, r.z]], 1, 3));
-}, "JU.P3,~B");
 c$.$Matrix$LUDecomp$ = function () {
-Clazz.pu$h ();
+Clazz.pu$h(self.c$);
 c$ = Clazz.decorateAsClass (function () {
 Clazz.prepareCallback (this, arguments);
 this.LU = null;
@@ -163,62 +163,61 @@ this.pivsign = 0;
 Clazz.instantialize (this, arguments);
 }, JU.Matrix, "LUDecomp");
 Clazz.makeConstructor (c$, 
-function () {
+function (a, b) {
 this.LU = this.b$["JU.Matrix"].getArrayCopy ();
-this.piv =  Clazz.newIntArray (this.b$["JU.Matrix"].m, 0);
-for (var a = this.b$["JU.Matrix"].m; --a >= 0; ) this.piv[a] = a;
+this.piv =  Clazz.newIntArray (a, 0);
+for (var c = a; --c >= 0; ) this.piv[c] = c;
 
 this.pivsign = 1;
-var b;
-var c =  Clazz.newDoubleArray (this.b$["JU.Matrix"].m, 0);
-for (var d = 0; d < this.b$["JU.Matrix"].n; d++) {
-for (var e = this.b$["JU.Matrix"].m; --e >= 0; ) c[e] = this.LU[e][d];
+var d;
+var e =  Clazz.newDoubleArray (a, 0);
+for (var f = 0; f < b; f++) {
+for (var g = a; --g >= 0; ) e[g] = this.LU[g][f];
 
-for (var f = this.b$["JU.Matrix"].m; --f >= 0; ) {
-b = this.LU[f];
-var g = Math.min (f, d);
-var h = 0.0;
-for (var i = g; --i >= 0; ) h += b[i] * c[i];
+for (var h = a; --h >= 0; ) {
+d = this.LU[h];
+var i = Math.min (h, f);
+var j = 0.0;
+for (var k = i; --k >= 0; ) j += d[k] * e[k];
 
-b[d] = c[f] -= h;
+d[f] = e[h] -= j;
 }
-var g = d;
-for (var h = this.b$["JU.Matrix"].m; --h > d; ) if (Math.abs (c[h]) > Math.abs (c[g])) g = h;
+var i = f;
+for (var j = a; --j > f; ) if (Math.abs (e[j]) > Math.abs (e[i])) i = j;
 
-if (g != d) {
-for (var i = this.b$["JU.Matrix"].n; --i >= 0; ) {
-var j = this.LU[g][i];
-this.LU[g][i] = this.LU[d][i];
-this.LU[d][i] = j;
+if (i != f) {
+for (var k = b; --k >= 0; ) {
+var l = this.LU[i][k];
+this.LU[i][k] = this.LU[f][k];
+this.LU[f][k] = l;
 }
-var j = this.piv[g];
-this.piv[g] = this.piv[d];
-this.piv[d] = j;
+var l = this.piv[i];
+this.piv[i] = this.piv[f];
+this.piv[f] = l;
 this.pivsign = -this.pivsign;
-}if ( new Boolean (d < this.b$["JU.Matrix"].m & this.LU[d][d] != 0.0).valueOf ()) for (var i = this.b$["JU.Matrix"].m; --i > d; ) this.LU[i][d] /= this.LU[d][d];
+}if ( new Boolean (f < a & this.LU[f][f] != 0.0).valueOf ()) for (var k = a; --k > f; ) this.LU[k][f] /= this.LU[f][f];
 
 }
-});
-$_M(c$, "solve", 
-function (a) {
-if (a.m != this.b$["JU.Matrix"].m) return null;
-for (var b = 0; b < this.b$["JU.Matrix"].n; b++) if (this.LU[b][b] == 0) return null;
+}, "~N,~N");
+Clazz.defineMethod (c$, "solve", 
+function (a, b) {
+for (var c = 0; c < b; c++) if (this.LU[c][c] == 0) return null;
 
-var c = a.n;
-var d = a.getMatrixSelected (this.piv, c);
-var e = d.a;
-for (var f = 0; f < this.b$["JU.Matrix"].n; f++) for (var g = f + 1; g < this.b$["JU.Matrix"].n; g++) for (var h = 0; h < c; h++) e[g][h] -= e[f][h] * this.LU[g][f];
-
+var d = a.n;
+var e = a.getMatrixSelected (this.piv, d);
+var f = e.a;
+for (var g = 0; g < b; g++) for (var h = g + 1; h < b; h++) for (var i = 0; i < d; i++) f[h][i] -= f[g][i] * this.LU[h][g];
 
 
-for (var i = this.b$["JU.Matrix"].n; --i >= 0; ) {
-for (var j = c; --j >= 0; ) e[i][j] /= this.LU[i][i];
 
-for (var k = i; --k >= 0; ) for (var l = c; --l >= 0; ) e[k][l] -= e[i][l] * this.LU[k][i];
+for (var j = b; --j >= 0; ) {
+for (var k = d; --k >= 0; ) f[j][k] /= this.LU[j][j];
+
+for (var l = j; --l >= 0; ) for (var m = d; --m >= 0; ) f[l][m] -= f[j][m] * this.LU[l][j];
 
 
 }
-return d;
-}, "JU.Matrix");
+return e;
+}, "JU.Matrix,~N");
 c$ = Clazz.p0p ();
 };

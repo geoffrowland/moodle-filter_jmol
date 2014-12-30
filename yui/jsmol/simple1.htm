@@ -14,14 +14,14 @@ var use = "HTML5" // JAVA HTML5 WEBGL IMAGE  are all otions
 var s = document.location.search;
 
 
-// Developers: The debugCode flag is checked in j2s/core/core.z.js, 
+// Developers: The _debugCode flag is checked in j2s/core/core.z.js, 
 // and, if TRUE, skips loading the core methods, forcing those
 // to be read from their individual directories. Set this
 // true if you want to do some code debugging by inserting
 // System.out.println, document.title, or alert commands
 // anywhere in the Java or Jmol code.
 
-Jmol.debugCode = (s.indexOf("debugcode") >= 0);
+Jmol._debugCode = (s.indexOf("debugcode") >= 0);
 
 jmol_isReady = function(applet) {
 	Jmol._getElement(applet, "appletdiv").style.border="1px solid blue"

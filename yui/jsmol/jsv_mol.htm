@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <script type="text/javascript" src="JSmol.min.js"></script>
+<script type="text/javascript" src="js/JSmolMenu.js"></script>
 <script type="text/javascript" src="js/JSmolJSV.js"></script>
 
 <script type="text/javascript">
@@ -10,8 +11,8 @@
 // always predefine the variables as their own name,
 // allowing buttons to be created before or after applet placement
 
-jsvApplet = "jsvApplet0";
-jmolApplet = "jmolApplet0";
+jsvApplet = "jsv";
+jmolApplet = "jmol";
 
 // applet ids and commands to give only when all applets are ready;
 // also sets up a script sync pathway for Jmol/JSpecView.
@@ -26,14 +27,14 @@ var MInfo;       // for Molfile
 //var use = "HTML5"//"JAVA HTML5 IMAGE" // WEBGL only by request by link below.
 //var s = document.location.search;
 
-// Developers: The debugCode flag is checked in j2s/java/core.z.js,
+// Developers: The _debugCode flag is checked in j2s/java/core.z.js,
 // and, if TRUE, skips loading the core methods, forcing those
 // to be read from their individual directories. Set this
 // true if you want to do some code debugging by inserting
 // System.out.println, document.title, or alert commands
 // anywhere in the Java or Jmol code.
 
-Jmol.debugCode = true;//(s.indexOf("debugcode") >= 0);
+Jmol._debugCode = true;//(s.indexOf("debugcode") >= 0);
 
 jmol_isReady = function(applet) {
 	document.title = (applet._id + " is ready")
@@ -85,12 +86,8 @@ MInfo = {
 
 
 $(document).ready(function() {
-
-// note that getAppletHtml with an Info invokes Jmol.setDocument(0), but resets it
-
-  $("#jmoldiv").html(Jmol.getAppletHtml("jmolApplet0", MInfo));
-  Jmol.setDocument(0);
-  $("#jsvdiv").html(Jmol.getAppletHtml(Jmol.getJSVApplet("jsvApplet0",SInfo)))  
+  $("#jmoldiv").html(Jmol.getAppletHtml("jmol", MInfo));
+  $("#jsvdiv").html(Jmol.getAppletHtml(Jmol.getJSVApplet("jsv",SInfo)))  
 });
 
 </script>
@@ -106,9 +103,9 @@ $(document).ready(function() {
 </td>
 </tr>
 </table>
-<a href="javascript:Jmol.script(jsvApplet0, 'gridon')">grid on</a> <a href="javascript:Jmol.script(jsvApplet0, 'gridon false')">grid off</a>
-<a href="javascript:Jmol.script(jsvApplet0, 'showpeaklist')">show peak list</a>
-<a href="javascript:jsvApplet0._showInfo(true)">show info</a>
+<a href="javascript:Jmol.script(jsv, 'gridon')">grid on</a> <a href="javascript:Jmol.script(jsv, 'gridon false')">grid off</a>
+<a href="javascript:Jmol.script(jsv, 'showpeaklist')">show peak list</a>
+<a href="javascript:jsv._showInfo(true);Jmol.showInfo(jmol, true)">show info</a>
 </div>
 </body>
 </html>

@@ -1,53 +1,54 @@
 Clazz.declarePackage ("JSV.js2d");
-Clazz.load (["JSV.api.JSVFileHelper"], "JSV.js2d.JsFileHelper", ["JSV.js2d.JsFile"], function () {
+Clazz.load (["JSV.api.JSVFileHelper"], "JSV.js2d.JsFileHelper", ["JU.PT", "JSV.js2d.JsFile"], function () {
 c$ = Clazz.decorateAsClass (function () {
-this.viewer = null;
+this.vwr = null;
 Clazz.instantialize (this, arguments);
 }, JSV.js2d, "JsFileHelper", null, JSV.api.JSVFileHelper);
 Clazz.makeConstructor (c$, 
 function () {
 });
-$_V(c$, "set", 
+Clazz.overrideMethod (c$, "set", 
 function (viewer) {
-this.viewer = viewer;
+this.vwr = viewer;
 return this;
 }, "JSV.common.JSViewer");
-$_V(c$, "getFile", 
+Clazz.overrideMethod (c$, "getFile", 
 function (fileName, panelOrFrame, isSave) {
 var f = null;
+fileName = JU.PT.rep (fileName, "=", "_");
 {
 f = prompt("Enter a file name:", fileName);
 }return (f == null ? null :  new JSV.js2d.JsFile (f));
 }, "~S,~O,~B");
-$_V(c$, "setDirLastExported", 
+Clazz.overrideMethod (c$, "setDirLastExported", 
 function (name) {
 return name;
 }, "~S");
-$_V(c$, "setFileChooser", 
+Clazz.overrideMethod (c$, "setFileChooser", 
 function (pdf) {
 }, "JSV.common.ExportType");
-$_V(c$, "showFileOpenDialog", 
+Clazz.overrideMethod (c$, "showFileOpenDialog", 
 function (panelOrFrame, userData) {
-var applet = this.viewer.applet;
+var applet = this.vwr.html5Applet;
 {
-Jmol._loadFileAsynchronously(this, applet, "", userData);
+Jmol._loadFileAsynchronously(this, applet, "?", userData);
 }return null;
 }, "~O,~A");
-$_M(c$, "setData", 
+Clazz.defineMethod (c$, "setData", 
 function (fileName, data, userInfo) {
 if (fileName == null) return;
 if (data == null) {
-this.viewer.selectedPanel.showMessage (fileName, "File Open Error");
+this.vwr.selectedPanel.showMessage (fileName, "File Open Error");
 return;
 }var script = (userInfo == null ? null : "");
 var isAppend = false;
 {
 isAppend = userInfo[0];
 script = userInfo[1];
-}this.viewer.si.siOpenDataOrFile ( String.instantialize (data), fileName, null, null, -1, -1, isAppend);
-if (script != null) this.viewer.runScript (script);
+}this.vwr.si.siOpenDataOrFile ( String.instantialize (data), "cache://" + fileName, null, null, -1, -1, isAppend, null, null);
+if (script != null) this.vwr.runScript (script);
 }, "~S,~O,~A");
-$_V(c$, "getUrlFromDialog", 
+Clazz.overrideMethod (c$, "getUrlFromDialog", 
 function (info, msg) {
 {
 return prompt(info, msg);

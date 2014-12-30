@@ -6,24 +6,19 @@
 
   <script type="text/javascript">
 
-
-
-// note that the variable name MUST match the first parameter in quotes
-
-
 ;(function() {
 
 // ?_USE=JAVA   ?_USE=SIGNED   ?_USE=HTML5
 
-// Developers: The debugCode flag is checked in j2s/java/core.z.js, 
+// Developers: The _debugCode flag is checked in j2s/java/core.z.js, 
 // and, if TRUE, skips loading the core methods, forcing those
 // to be read from their individual directories. Set this
 // true if you want to do some code debugging by inserting
-// System.out.println, document.title, or alert commands
+// System.out.println(x), document.title=x, or alert(x) 
 // anywhere in the Java or Jmol code.
 
 var s = document.location.search;
-Jmol.debugCode = (s.indexOf("debugcode") >= 0);
+Jmol._debugCode = (s.indexOf("debugcode") >= 0);
 
 jmol_isReady = function(applet) {
 	document.title = (applet._id + " is ready")
@@ -56,13 +51,6 @@ InfoA = {
 
 
 })();
-
-
-
-Jmol.setDocument(document);
-
-// notice that we are using no document.write() function here. All DOM-based.
-// Jmol.getAppletHtml is working.
 
 $(document).ready(function(){
   $("#appletplace1").html(Jmol.getAppletHtml("jmol1", InfoA));

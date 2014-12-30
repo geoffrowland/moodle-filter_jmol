@@ -1,14 +1,14 @@
 Clazz.declarePackage ("JSV.export");
-Clazz.load (null, "JSV.export.JDXCompressor", ["JU.DF", "$.SB", "JSV.export.Exporter", "J.util.Logger"], function () {
+Clazz.load (null, "JSV.export.JDXCompressor", ["JU.DF", "$.SB", "JSV.export.Exporter", "JU.Logger"], function () {
 c$ = Clazz.declareType (JSV["export"], "JDXCompressor");
-c$.compressDIF = $_M(c$, "compressDIF", 
+c$.compressDIF = Clazz.defineMethod (c$, "compressDIF", 
 function (xyCoords, startIndex, endIndex, step, xFactor, yFactor, isDIFDUP) {
 var yStr =  new JU.SB ();
 var buffer =  new JU.SB ();
 for (var i = startIndex; i != endIndex; ) {
 buffer.append (JSV["export"].JDXCompressor.fixIntNoExponent (xyCoords[i].getXVal () / xFactor));
 yStr.setLength (0);
-if (J.util.Logger.debugging) J.util.Logger.info ("" + i + '\t' + xyCoords[i].getXVal () + '\t' + xyCoords[i].getYVal ());
+if (JU.Logger.debugging) JU.Logger.info ("" + i + '\t' + xyCoords[i].getXVal () + '\t' + xyCoords[i].getYVal ());
 var y1 = Math.round (xyCoords[i].getYVal () / yFactor);
 yStr.append (JSV["export"].JDXCompressor.makeSQZ (y1));
 var lastDif = "";
@@ -28,13 +28,13 @@ if (nDif > 0) {
 yStr.append (JSV["export"].JDXCompressor.makeDUP (nDif + 1));
 nDif = 0;
 }yStr.append (temp);
-}if (J.util.Logger.debugging) J.util.Logger.info ("" + i + '\t' + xyCoords[i].getXVal () + '\t' + xyCoords[i].getYVal () + '\t' + y2 + '\t' + nDif + '\t' + yStr);
+}if (JU.Logger.debugging) JU.Logger.info ("" + i + '\t' + xyCoords[i].getXVal () + '\t' + xyCoords[i].getYVal () + '\t' + y2 + '\t' + nDif + '\t' + yStr);
 y1 = y2;
 i += step;
 }
 if (nDif > 0) yStr.append (JSV["export"].JDXCompressor.makeDUP (nDif + 1));
 yStr.append (JSV["export"].JDXCompressor.makeSQZ (xyCoords[i], yFactor));
-if (J.util.Logger.debugging) J.util.Logger.info ("" + i + '\t' + xyCoords[i].getXVal () + '\t' + xyCoords[i].getYVal () + '\t' + nDif + '\t' + yStr);
+if (JU.Logger.debugging) JU.Logger.info ("" + i + '\t' + xyCoords[i].getXVal () + '\t' + xyCoords[i].getYVal () + '\t' + nDif + '\t' + yStr);
 }buffer.append (yStr.toString ()).append (JSV.export.Exporter.newLine);
 i += step;
 }
@@ -42,7 +42,7 @@ buffer.append (JSV["export"].JDXCompressor.fixIntNoExponent (xyCoords[endIndex].
 buffer.append ("  $$checkpoint").append (JSV.export.Exporter.newLine);
 return buffer.toString ();
 }, "~A,~N,~N,~N,~N,~N,~B");
-c$.compressFIX = $_M(c$, "compressFIX", 
+c$.compressFIX = Clazz.defineMethod (c$, "compressFIX", 
 function (xyCoords, startIndex, endIndex, step, xFactor, yFactor) {
 endIndex += step;
 var buffer =  new JU.SB ();
@@ -57,19 +57,19 @@ buffer.append (JSV.export.Exporter.newLine);
 }
 return buffer.toString ();
 }, "~A,~N,~N,~N,~N,~N");
-c$.leftJustify = $_M(c$, "leftJustify", 
+c$.leftJustify = Clazz.defineMethod (c$, "leftJustify", 
 function (s, s1, s2) {
 s.append (s2);
 var n = s1.length - s2.length;
 if (n > 0) s.append (s1.substring (0, n));
 }, "JU.SB,~S,~S");
-c$.rightJustify = $_M(c$, "rightJustify", 
+c$.rightJustify = Clazz.defineMethod (c$, "rightJustify", 
 function (s, s1, s2) {
 var n = s1.length - s2.length;
 if (n > 0) s.append (s1.substring (0, n));
 s.append (s2);
 }, "JU.SB,~S,~S");
-c$.compressSQZ = $_M(c$, "compressSQZ", 
+c$.compressSQZ = Clazz.defineMethod (c$, "compressSQZ", 
 function (xyCoords, startIndex, endIndex, step, xFactor, yFactor) {
 var yStr =  new JU.SB ();
 endIndex += step;
@@ -87,7 +87,7 @@ buffer.append (yStr.toString ()).append (JSV.export.Exporter.newLine);
 }
 return buffer.toString ();
 }, "~A,~N,~N,~N,~N,~N");
-c$.compressPAC = $_M(c$, "compressPAC", 
+c$.compressPAC = Clazz.defineMethod (c$, "compressPAC", 
 function (xyCoords, startIndex, endIndex, step, xFactor, yFactor) {
 var buffer =  new JU.SB ();
 endIndex += step;
@@ -102,28 +102,28 @@ buffer.append (JSV.export.Exporter.newLine);
 }
 return buffer.toString ();
 }, "~A,~N,~N,~N,~N,~N");
-c$.fixPacY = $_M(c$, "fixPacY", 
-($fz = function (y) {
+c$.fixPacY = Clazz.defineMethod (c$, "fixPacY", 
+ function (y) {
 return (y < 0 ? "" : " ") + JSV["export"].JDXCompressor.fixIntNoExponent (y);
-}, $fz.isPrivate = true, $fz), "~N");
-c$.makeSQZ = $_M(c$, "makeSQZ", 
-($fz = function (pt, yFactor) {
+}, "~N");
+c$.makeSQZ = Clazz.defineMethod (c$, "makeSQZ", 
+ function (pt, yFactor) {
 return JSV["export"].JDXCompressor.makeSQZ (Math.round (pt.getYVal () / yFactor));
-}, $fz.isPrivate = true, $fz), "JSV.common.Coordinate,~N");
-c$.makeSQZ = $_M(c$, "makeSQZ", 
-($fz = function (y) {
+}, "JSV.common.Coordinate,~N");
+c$.makeSQZ = Clazz.defineMethod (c$, "makeSQZ", 
+ function (y) {
 return JSV["export"].JDXCompressor.compress (y, "@ABCDEFGHI", "abcdefghi");
-}, $fz.isPrivate = true, $fz), "~N");
-c$.makeDIF = $_M(c$, "makeDIF", 
-($fz = function (dy) {
+}, "~N");
+c$.makeDIF = Clazz.defineMethod (c$, "makeDIF", 
+ function (dy) {
 return JSV["export"].JDXCompressor.compress (dy, "%JKLMNOPQR", "jklmnopqr");
-}, $fz.isPrivate = true, $fz), "~N");
-c$.makeDUP = $_M(c$, "makeDUP", 
-($fz = function (y) {
+}, "~N");
+c$.makeDUP = Clazz.defineMethod (c$, "makeDUP", 
+ function (y) {
 return JSV["export"].JDXCompressor.compress (y, "0STUVWXYZs", "");
-}, $fz.isPrivate = true, $fz), "~N");
-c$.compress = $_M(c$, "compress", 
-($fz = function (y, strPos, strNeg) {
+}, "~N");
+c$.compress = Clazz.defineMethod (c$, "compress", 
+ function (y, strPos, strNeg) {
 var negative = false;
 var yStr = String.valueOf (y);
 var ch = yStr.charAt (0);
@@ -134,8 +134,8 @@ ch = yStr.charAt (0);
 }var yStrArray = yStr.toCharArray ();
 yStrArray[0] = (negative ? strNeg.charAt (ch.charCodeAt (0) - 49) : strPos.charAt (ch.charCodeAt (0) - 48));
 return  String.instantialize (yStrArray);
-}, $fz.isPrivate = true, $fz), "~N,~S,~S");
-c$.getXYList = $_M(c$, "getXYList", 
+}, "~N,~S,~S");
+c$.getXYList = Clazz.defineMethod (c$, "getXYList", 
 function (xyCoords, startIndex, endIndex, step) {
 endIndex += step;
 var buffer =  new JU.SB ();
@@ -145,10 +145,10 @@ buffer.append (JSV["export"].JDXCompressor.fixIntNoExponent (point.getXVal ())).
 }
 return buffer.toString ();
 }, "~A,~N,~N,~N");
-c$.fixIntNoExponent = $_M(c$, "fixIntNoExponent", 
-($fz = function (x) {
+c$.fixIntNoExponent = Clazz.defineMethod (c$, "fixIntNoExponent", 
+ function (x) {
 return (x == Math.floor (x) ? String.valueOf (Clazz.doubleToInt (x)) : JU.DF.formatDecimalTrimmed (x, 10));
-}, $fz.isPrivate = true, $fz), "~N");
+}, "~N");
 Clazz.defineStatics (c$,
 "spaces", "                    ");
 });

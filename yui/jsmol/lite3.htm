@@ -239,7 +239,7 @@ $(window).ready(function() {
   Jmol.getTMApplet("jmol", Info);
   $("#apphere").html(jmol._code);
   var mol = $('html').html().split("MOL DATA\n")[1].split("-->")[0];
-  jmol._loadModel(mol);
+  jmol.__loadModel(mol);
   
   $("#spinstuff").html('<a href="javascript:jmol.spin(true)">spin ON</a> <a href="javascript:jmol.spin(false)">spin OFF</a>');  
 });

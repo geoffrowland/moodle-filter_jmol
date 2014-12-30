@@ -6,58 +6,77 @@
 if (!window["java.registered"])
  window["java.registered"] = false;
 
-(function () {
+(function (ClazzLoader) {
 
-if (window["java.packaged"]) return;
-window["java.packaged"] = true;
+	if (window["java.packaged"]) return;
+	window["java.packaged"] = true;
 
-var	base = ClazzLoader.fastGetJ2SLibBase() + "core/";
-
-for (var i = 0; i < Jmol._coreFiles.length; i++)
-  ClazzLoader.loadZJar (Jmol._coreFiles[i], ClazzLoader.runtimeKeyClass);
-
+	//if (!Jmol._isAsync) {
+		for (var i = 0; i < Jmol._coreFiles.length; i++)
+		  ClazzLoader.loadZJar(Jmol._coreFiles[i], ClazzLoader.runtimeKeyClass);
+	//}
+		
   if (Jmol._debugCode)
     return;
+
+	var	base = ClazzLoader.getJ2SLibBase() + "core/";
+
 
 // note - we don't need to list ALL the classes -- only the ones that are entry points.
 // several more classe are in each of these files -- see build_03_tojs.xml
 
 	ClazzLoader.jarClasspath (base + "coretext.z.js",	[    
-	"J.modelset.Object2d",
+	"JM.Object2d",
 	"$.Text",
 	"J.shape.Object2dShape",
 	"$.TextShape",
 	"$.Labels",
+	"$.Measures",
 	"$.Echo",
-	"$.Hover"
+	"$.Hover",
+	"J.render.TextRenderer",
+	"$.LabelsRenderer",
+	"$.MeasuresRenderer",
+	"$.EchoRenderer",
+	"$.HoverRenderer"	
 	]);
 
 	ClazzLoader.jarClasspath (base + "corescript.z.js",	[  
     "J.api.JmolScriptManager", 
     "$.JmolScriptEvaluator",
     "$.JmolScriptFunction",
-    "J.script.ScriptEvaluator", 
+    "JS.ScriptError", 
+    "$.ScriptParam", 
+    "$.ScriptExpr", 
+    "$.ScriptEval", 
+    "$.ScriptTokenParser", 
     "$.ScriptCompiler", 
     "$.CommandWatcherThread", 
     "$.ScriptQueueThread", 
     "$.ScriptDelayThread", 
     "$.ScriptManager",
-    "$.FileLoadThread"
+    "$.FileLoadThread",
+    "$.JmolCmdExtension", 
+    "$.JmolMathExtension",
+    "$.JmolSmilesExtension"
 	]);
 	
-	ClazzLoader.jarClasspath (base + "corescript2.z.js",	[  
-	"J.script.JmolScriptExtension", 
-	"J.scriptext.ScriptExt"
+	ClazzLoader.jarClasspath (base + "corescriptcmd.z.js",	[  
+	"JS.CmdExt"
+	]);
+	                                                 	
+	ClazzLoader.jarClasspath (base + "corescriptmath.z.js",	[  
+	"JS.MathExt"
 	]);
 	                                                 	
 	ClazzLoader.jarClasspath (base + "corestate.z.js",	[  
     "J.api.JmolStateCreator", 
-    "J.viewer.StateCreator" 
+    "JU.StateCreator" 
 	]);
 	
 	ClazzLoader.jarClasspath (base + "coreprop.z.js",	[  
     "J.api.JmolPropertyManager", 
-    "J.viewer.PropertyManager" 
+    "JU.PropertyManager" 
 	]);  
   
 	ClazzLoader.jarClasspath (base + "coreconsole.z.js",	[
@@ -68,21 +87,17 @@ for (var i = 0; i < Jmol._coreFiles.length; i++)
 	]);
 
 	ClazzLoader.jarClasspath (base + "coremenu.z.js",	[
-		"J.awtjs2d.JSmolPopup",		
-		"$.JSPopup",
-		"$.JSmolPopup",
-		"J.popup.JmolAbstractMenu",
-		"$.GenericPopup",
-		"$.PopupResource",
-		"$.MainPopupResourceBundle"
+		"J.awtjs2d.JmolJSPopup",	
+		"J.popup.MainPopupResourceBundle",
+		"$.JmolGenericPopup"
 	]);
 
 	ClazzLoader.jarClasspath (base + "corebinary.z.js",	[
     "java.io.DataInputStream",
     "$.PushbackInputStream",
+    "JS.api.GenericBinaryDocument",
     "JU.BC",
-    "J.api.JmolDocument",
-    "J.io2.BinaryDocument"
+    "$.BinaryDocument"
 	]);
 
 	ClazzLoader.jarClasspath (base + "corepymol.z.js",	[
@@ -98,14 +113,14 @@ for (var i = 0; i < Jmol._coreFiles.length; i++)
 
 	ClazzLoader.jarClasspath (base + "coremin.z.js",	[
 		"J.api.MinimizerInterface", // -- required by J.minimize.Minimizer
-		"J.minimize.Minimizer",
+		"JM.Minimizer",
 		"$.MinObject", // -- required by $.MinAngle
 		"$.MinAngle",
 		"$.MinAtom",
 		"$.MinBond",
 		"$.MinTorsion",
 		"$.Util",
-		"J.minimize.forcefield.AtomType",
+		"JM.FF.AtomType",
 		"$.Calculation", // -- required by $.CalculationsMMFF
 		"$.Calculations", // -- required by $.CalculationsMMFF
 		"$.CalculationsMMFF",
@@ -118,17 +133,17 @@ for (var i = 0; i < Jmol._coreFiles.length; i++)
 	]);
 
 	ClazzLoader.jarClasspath (base + "corezip.z.js",	[
-		"J.api.JmolZipUtility",
-		"$.ZInputStream",
-		"J.io2.ZipUtil",
-		"$.JmolZipInputStream"
+		"javajs.api.GenericZipInputStream",
+		"J.io.JmolUtil",
+		"JU.ZipTools",
+		"$.ZInputStream"
 	]);
 
 	ClazzLoader.jarClasspath (base + "corebio.z.js",	[
 		"J.adapter.readers.pdb.PdbReader",
 		"J.adapter.smarter.Structure",
 		"J.api.JmolBioResolver",
-		"J.modelsetbio.Resolver",
+		"JMB.Resolver",
 		"$.BioModel"
  ]);
 
@@ -161,7 +176,7 @@ for (var i = 0; i < Jmol._coreFiles.length; i++)
 	ClazzLoader.jarClasspath (base + "coresym.z.js",	[
     "J.adapter.smarter.XtalSymmetry",
 		"J.api.SymmetryInterface",
-		"J.symmetry.Symmetry",
+		"JS.Symmetry",
 		"$.PointGroup",
 		"$.SpaceGroup",
 		"$.HallInfo",
@@ -175,7 +190,8 @@ for (var i = 0; i < Jmol._coreFiles.length; i++)
 
 	ClazzLoader.jarClasspath (base + "coresmiles.z.js",	[
     "J.api.SmilesMatcherInterface",
-    "J.smiles.VTemp",
+    "JS.SmilesExt",
+    "$.VTemp",
     "$.SmilesMatcher",
     "$.InvalidSmilesException",
     "$.SmilesSearch",
@@ -188,22 +204,80 @@ for (var i = 0; i < Jmol._coreFiles.length; i++)
 	]);
 
 	ClazzLoader.jarClasspath (base + "corejsvmenu.z.js",	[
-          	"JSV.js2d.JsPopup"
+          	"JSV.js2d.JsPopup",
+          	"JSV.popup.JSVGenericPopup",
+          	"JSV.popup.JSVPopupResourceBundle"
+          	
   ]);
 
 	ClazzLoader.jarClasspath (base + "corejsvexport.z.js",	[
-          	"JSV.export.Exporter"
+          	"JSV.export.Exporter",
+        	  "JSV.api.ExportInterface",
+        	  "$.JSVExporter"
 	]);
 
+
 	ClazzLoader.jarClasspath (base + "corejsvdialog.z.js",	[
-        	"JSV.dialog.IntegrationDialog",
+					"JSV.api.PlatformDialog",
+					"JSV.js2d.JsDialogManager",
+					"$.DialogTableModel",
+					"$.JsDialog",
+        	"JSV.dialog.DialogManager",
+        	"$.IntegrationDialog",
         	"$.PeakListDialog",
           "$.MeasurementsDialog",
           "$.OverlayLegendDialog",
           "$.ViewsDialog"
 	]);
 
+	ClazzLoader.jarClasspath (base + "coreswing.z.js",	[
+				"javajs.api.SC", 
+        "javajs.awt.BorderLayout",
+        "$.Component",
+        "$.Container",
+        "$.LayoutManager",
+        "javajs.awt.event.ActionEvent",
+        "javajs.awt.event.ItemEvent",
+        "javajs.swing.AbstractButton",
+        "$.AbstractTableModel",
+        "$.ButtonGroup",
+        "$.Cell",
+        "$.ColumnSelectionModel",
+        "$.Document",
+        "$.FlowLayout",
+        "$.Grid",
+        "$.GridBagConstraints",
+        "$.GridBagLayout",
+        "$.Insets",
+        "$.JButton",
+        "$.JCheckBox",
+        "$.JCheckBoxMenuItem",
+        "$.JComboBox",
+        "$.JComponent",
+        "$.JComponentImp",
+        "$.JContentPane",
+        "$.JDialog",
+        "$.JEditorPane",
+        "$.JLabel",
+        "$.JMenu",
+        "$.JMenuItem",
+        "$.JPanel",
+        "$.JPopupMenu",
+        "$.JRadioButtonMenuItem",
+        "$.JScrollPane",
+        "$.JSplitPane",
+        "$.JTable",
+        "$.JTextField",
+        "$.JTextPane",
+        "$.ListSelectionModel",
+        "$.SwingConstants",
+        "$.TableCellRenderer",
+        "$.TableColumn",
+		"J.popup.GenericSwingPopup",
+		"$.PopupHelper",
+		"$.JSSwingPopupHelper",
+		"$.PopupResource"
+	]);
 
-
-}) ();
+}) (Clazz._Loader);
 window["java.registered"] = true;

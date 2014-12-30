@@ -1,6 +1,107 @@
+ TODO: 
+     - scaling picture: still buggy for very small depiction
+
+JSME_2013-10-13:
+     - small refactoring inside the JME code
+     - bug fix in doc.html
+
+JSME_2013-10-09:
+     - callback function setNotifyStructuralChangeJSfunction does not need the nocanonize function anymore
+JSME_2013-10-03:
+     - bug fix:D&D icon disappears after resizing JSME
+     - bug fix: resizing JSME, avoid multiple SVG/VML generation after each resize
+     - improved setNotifyAtomHighLightChangeJSfunction
+     - two more example pages about JSME resize
+     - depict mode takes the callback function notifyAtomHighLightJSfunction
+     - after clearing the canvas, the undo stack is not deleted anymore
+     
+JSME_2013-09-29:
+     - bug fix in index.html
+     
+JSME_2013-09-28:
+     - More simple installation examples
+     - index.html file
+     - improved doc.html file
+     - star option documented
+     
+
+JSME_2013-09-19:
+    - New methods: addClickHandler(), addMouseOverHandler()
+
+JSME_2013-09-17:
+    - New methods:  getOffsetSize(), getOffsetWidth(), getOffsetHeight(), setWidth(), setHeight(),  isVisible(), setVisible()
+    - improved javadoc API
+    
+JSME_2013-09-15:
+    - new utility function: Utils.runAfterBrowserEventLoopReturns
+    - setSize() method
+    - call back function argument for replaceAllAppletsByJSME
+    - JME: cache font and font metrics for the drawing area useful for many depictions
+    - scaling picture bug fix: the 2px padding around the atom labels was not scaled
+
+JSME_2013-09-08:
+    - Easy migration JME->JSME
+    - new documentation file: doc.html - still incomplete
+    - new option: paste/nopaste to disable pasting MOL into the applet
+    - query mode disabled by default
+    - aromaticity SMARTS query bug fix
+
+JSME_2013-08-04:
+    -xbutton, noxbutton options work
+    
+JSME_2013-06-29:
+    - For IE11, the clipboard management had to be adapted because of the unconventional user agent in IE11 (=Firefox)
+    - Android and iPad do not show the drag out button because dragging out does not work on these systems
+    - bug fix: undo & redo was not working for atom atom mapping
+    - Note: the number of GWT permutations has increased to 30
+
+
+JSME_2013-06-09:
+    - atom move atom button is optional (turned off by default)
+    - improved JSME_chemical_resolver_demo.html page
+
+
+JSME_2013-05-30:
+    - move atom button
+    - java application exits when its window is closed, no more END button
+    - new simpler HTML demo page
+    
+JSME_2013-05-01:
+    - bug fix: IE has no console unless the debugger window is open
+    - deleting explicit hydrogens when importing a structure from chemical resolver (demo page)
+
+JSME_2013-04-09:
+    - Custom paste menu and custom paste operation
+    - non GPL licensed image for the drag and drop icon
+    - local antialias for VML
+    - line width for the molecular area
+    - JavaDoc of the API
+    - clear function added 
+
+JSME_2013-04-01:
+    - bug fix in JSObject
+
+JSME_2013-03-30 :
+    - Drag out of MOL/RXN and drop onto another applet or on to a file system window to save the file
+    - DnD demo page
+    - No more alert window if the function jsmeOnLoad is not defined - instead provides a message to the console
+    - clear SDF stack as well when clicking on the clear icon
+    - stereo bond cancel bug fix (bug shows up visible with undo/redo)
+    - interactive atom marking demo page
+    - multiple instances of the editor in the same HTML page work
+    
+JSME_2013-03-24 :
+    - Drag and drop of files onto the applet
+
+JSME_2013-03-21 :
+    - undo bug fix
+    - showInfo function
+
+
 JSME_2013-03-19 :
     - antialias is on by default for SVG and off for VML
     - new help page
+    - first public release
 
 JSME_2013-03-18 :
     - spiro button

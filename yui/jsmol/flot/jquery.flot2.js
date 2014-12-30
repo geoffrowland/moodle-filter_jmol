@@ -24,6 +24,7 @@
 
 
 (function($) {
+  $.browser || ($.browser={});
     function Plot(target_, data_, options_) {
         // data is on the form:
         //   [ series1, series2 ... ]
