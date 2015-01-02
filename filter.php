@@ -196,7 +196,7 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $technol = 'HTML5';	
     } 
-    return "<div style='position relative; width: ".$size."px; height: ".$size."px;'>
+    return "<div style='position relative; width: ".$size."px; height: ".$size."px; border: 1px solid lightgray'>
     <div id='jmoldiv".$id."' style='position: absolute; z-index: 0; width: ".$size."px; height: ".$size."px;'>
     <noscript>".$jsdisabled."</noscript>
     </div>
