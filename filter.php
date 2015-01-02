@@ -51,28 +51,10 @@ defined('MOODLE_INTERNAL') || die();
 // Jmol Wiki: http//wiki.jmol.org.
 
 class filter_jmol extends moodle_text_filter {
-    
-    public function setup($page, $context) {
-        global $CFG;
-        
-        // This only requires execution once per request.
-        static $jsinitialised = false;
-
-        if (empty($jsinitialised)) {
-	    $url= '/filter/jmol/yui/jsmol/JSmol.min.js';
-            $url = new moodle_url($url);
-            $moduleconfig = array(
-                'name' => 'jsmol',
-                'fullpath' => $url
-            );
-        $page->requires->js_module($moduleconfig);
-        $jsinitialised = true;
-        }
-    }
 
     public function filter($text, array $options = array()) {
-        
-        global $CFG;
+        // Global declared in case YUI JSmol module is inserted elsewhere in page (e.g. JSmol resource artefact?).
+        global $CFG, $yui_jsmol_has_been_configured;
         $wwwroot = $CFG->wwwroot;
         $host = preg_replace('~^.*://([^:/]*).*$~', '$1', $wwwroot);
 
@@ -83,7 +65,19 @@ class filter_jmol extends moodle_text_filter {
         $search = '/<a\\b([^>]*?)href=\"((?:\.|\\\|https?:\/\/' . $host . ')[^\"]+\.('.$jmolfiletypes.'))\??(.*?)\"([^>]*)>(.*?)<\/a>(\s*JMOLSCRIPT\{(.*?)\})?/is';
 
         $newtext = preg_replace_callback($search, 'filter_jmol_replace_callback', $text);
-
+        // YUI JSmol module configured once per page.
+        if (($newtext != $text) && !isset($yui_jsmol_has_been_configured)) {
+            $yui_jsmol_has_been_configured = true;
+            $newtext = "<script type='text/javascript'>
+            YUI().applyConfig({
+                modules: {
+                    'jsmol': {
+                        fullpath: M.cfg.wwwroot + '/filter/jmol/yui/jsmol/JSmol.min.js'
+                    }
+                }
+            });
+            </script>".$newtext;
+        }
         return $newtext;
     }
 }
@@ -165,7 +159,10 @@ function filter_jmol_replace_callback($matches) {
             Jmol.jmolCheckbox(jmol'.$id.', "spin on", "spin off", "Spin", "")';
     } // End of switch
     //
-    // Set up appropriate controls and scripts for different file types
+    // Prepare divs for JSmol and controls.
+    // Load JSmol JavaScript as a YUI module.
+    // The Y.on('load', function () {} is important in ensuring that JSmol does not interfere with Moodle YUI functions.
+    // Each JSmol instance, in a page, has a unique ID.
     if ($matches[3] == "cif") {
         $loadscript = 'load \"'.$matches[2].'\" {1 1 1} PACKED; set antialiasDisplay on;';
     } else if ($matches[3] == "pdb" || $matches[3] == "pdb.gz") {
@@ -185,11 +182,7 @@ function filter_jmol_replace_callback($matches) {
     // Force Java applet for binary files (.pdb.gz or .pse) with some browsers (IE, Chrome or Safari)
     $browser = strtolower($_SERVER['HTTP_USER_AGENT']);
     if ($matches[3] == "pdb.gz" || $matches[3] == "pse") { 
-        // Internet Explorer 11
-        if (strpos($browser,'trident')) {
-            $technol = 'JAVA';
-        // Internet Explorer, older versions
-        } else if (strpos($browser,'msie')) {
+        if (strpos($browser,'ie')) {
             $technol = 'JAVA';
         } else if (strpos($browser,'chrome')) {
             $technol = 'JAVA';
@@ -203,66 +196,39 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $technol = 'HTML5';	
     } 
-    // Prepare divs for Jmol/JSmol and controls.
-    // Each Jmol/JSmol instance, in a page, has a unique ID.
-    // Load JSmol JavaScript as a YUI module.
-    // The Y.on('load', function () {}) is important in ensuring that JSmol does not interfere with Moodle YUI functions.
-    // The YUI resize function allows Jmol/Jmol instance to be proportionately resized - drag handle at bottom-right corner.
-    return "
-    <div id='resize".$id."' class='yui3-resize-knob' style='position: relative; border: 1px solid lightgray; width: ".$size."px; height: ".$size."px;'>
-    <div id='jmoldiv".$id."' style='display: block; position: absolute; z-index: 0; width: 100%; height: 100%;'>
+    return "<div style='position relative; width: ".$size."px; height: ".$size."px;'>
+    <div id='jmoldiv".$id."' style='position: absolute; z-index: 0; width: ".$size."px; height: ".$size."px;'>
     <noscript>".$jsdisabled."</noscript>
     </div>
     </div>
     <div style='width: ".$size."px'>
     <div id='control".$id."' style='float: left'></div>
-    <div id='download".$id."' style='float: left; margin: 6px 1em'>
+    <div id='download".$id."' style='float: right'>
     <a href='".$matches[2]."' title='".$downloadstructurefile."'>
-    <img src='".$wwwroot."/filter/jmol/pix/download.svg' />
-    </a> <a href='".$wwwroot."/filter/jmol/help.php' title='".$jmolhelp."' target='_blank'>
-    <img src='".$wwwroot."/filter/jmol/pix/help.svg' />
+    <img src='".$wwwroot."/filter/jmol/download.gif' />
+    </a> <a href='".$wwwroot."/filter/jmol/lang/en/help/jmol/jmol.html' title='".$jmolhelp."'target='_blank'>
+    <img src='".$wwwroot."/pix/help.gif' />
     </a>
     </div>
     </div>
     <script type='text/javascript'>
-    // Resize Jmol from autohiding handle at bottom-right corner
-    YUI().use('resize', 'jsmol', 'node-base', function (Y) {
-        var resize = new Y.Resize({
-            node: '#resize".$id."',
-            wrap: true,
-            autoHide: true,
-            handles: 'br'
-        });
-        // Fix Jmol aspect ratio and set min max size
-        resize.plug(Y.Plugin.ResizeConstrained, {
-            preserveRatio: true,
-            minWidth: 100,
-            minHeight: 100,
-            maxWidth: 1000,
-            maxHeight: 1000
-        });
-        // Reset jmol resolution to adjusted size
-        resize.on('resize:end', function(event) {
-            $('#jmoldiv".$id."').html(Jmol.resizeApplet(jmol".$id.",'100%'));
-        });
+    YUI().use('jsmol', 'node-base', function (Y) {
         var Info = {
-            width: '100%',
-            height: '100%',
-            debug: false,
+            width: ".$size.",
             color: 'white',
-            addSelectionOptions: false,
-            serverURL: '".$wwwroot."/filter/jmol/yui/jsmol/php/jsmol.php',
+            height: ".$size.",
+            script: '".$loadscript.$initscript."',
             use: '".$technol."',
-            deferApplet: false,
-            deferUncover: false,
-            jarPath: '".$wwwroot."/filter/jmol/yui/jsmol/java',
+            serverURL: '".$wwwroot."/filter/jmol/yui/jsmol/jsmol.php',
             j2sPath: '".$wwwroot."/filter/jmol/yui/jsmol/j2s',
+            jarPath: '".$wwwroot."/filter/jmol/yui/jsmol/java',
             jarFile: 'JmolAppletSigned0.jar',
             isSigned: true,
+            addSelectionOptions: false,
+            readyFunction: null,
+            console: 'jmol_infodiv',
             disableInitialConsole: true,
             disableJ2SLoadMonitor: true,
-            readyFunction: null,
-            script: 'frank off;".$loadscript.$initscript."',
             defaultModel: null,
             debug: false
         }
@@ -271,8 +237,8 @@ function filter_jmol_replace_callback($matches) {
             //Uncomment following if MathJax is installed
             //MathJax.Hub.Queue(function () {
                 Jmol.setDocument(0);
-                Jmol._alertNoBinary = false;
-        	    Jmol.getApplet('jmol".$id."', Info);
+        	Jmol._alertNoBinary = false;
+        	Jmol.getApplet('jmol".$id."', Info);
                 $('#jmoldiv".$id."').html(Jmol.getAppletHtml(jmol".$id."));
                 $('#control".$id."').html(".$control.");
             //});
