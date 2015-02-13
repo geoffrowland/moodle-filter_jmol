@@ -196,14 +196,14 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $technol = 'HTML5';	
     } 
-    return "<div style='position relative; width: ".$size."px; height: ".$size."px; border: 1px solid lightgray'>
-    <div id='jmoldiv".$id."' style='position: absolute; z-index: 0; width: ".$size."px; height: ".$size."px;'>
+    return "<div id='resize".$id."' class='yui3-resize-knob' style='position relative; width: ".$size."px; height: ".$size."px; border: 1px solid lightgray'>
+    <div id='jmoldiv".$id."' style='position: absolute; z-index: 0; width: 100%; height: 100%;'>
     <noscript>".$jsdisabled."</noscript>
     </div>
     </div>
     <div style='width: ".$size."px'>
     <div id='control".$id."' style='float: left'></div>
-    <div id='download".$id."' style='float: right'>
+    <div id='download".$id."' style='float: left; margin: 6px 1em'>
     <a href='".$matches[2]."' title='".$downloadstructurefile."'>
     <img src='".$wwwroot."/filter/jmol/pix/download.png' />
     </a> <a href='".$wwwroot."/filter/jmol/lang/en/help/jmol/jmol.html' title='".$jmolhelp."'target='_blank'>
@@ -212,11 +212,30 @@ function filter_jmol_replace_callback($matches) {
     </div>
     </div>
     <script type='text/javascript'>
-    YUI().use('jsmol', 'node-base', function (Y) {
+    // Resize Jmol from autohiding handle at bottom-right corner.
+    YUI().use('resize', 'jsmol', 'node-base', function (Y) {
+        var resize = new Y.Resize({
+            node: '#resize".$id."',
+            wrap: true,
+            autoHide: true,
+            handles: 'br' 
+        });
+        // Fix Jmol aspect ratio and set min max size.
+        resize.plug(Y.Plugin.ResizeConstrained, {
+            preserveRatio: true,
+            minWidth: 100,
+            minHeight: 100,
+            maxWidth: 1000,
+            maxHeight: 1000
+        });
+        // Reset jmol resolution to adjusted size
+        resize.on('resize:end', function(event) {
+            $('#jmoldiv".$id."').html(Jmol.resizeApplet(jmol".$id.",'100%'));
+        });
         var Info = {
-            width: ".$size.",
-            color: 'white',
-            height: ".$size.",
+            color: 'white',        
+            width: '100%',
+            height: '100%',
             script: '".$loadscript.$initscript."',
             use: '".$technol."',
             serverURL: '".$wwwroot."/filter/jmol/yui/jsmol/jsmol.php',
@@ -234,11 +253,11 @@ function filter_jmol_replace_callback($matches) {
         }
 
         Y.on('load', function () {
-            //Uncomment following if MathJax is installed
+            //Uncomment following if MathJax is installed.
             //MathJax.Hub.Queue(function () {
                 Jmol.setDocument(0);
-        	Jmol._alertNoBinary = false;
-        	Jmol.getApplet('jmol".$id."', Info);
+        	    Jmol._alertNoBinary = false;
+        	    Jmol.getApplet('jmol".$id."', Info);
                 $('#jmoldiv".$id."').html(Jmol.getAppletHtml(jmol".$id."));
                 $('#control".$id."').html(".$control.");
             //});
