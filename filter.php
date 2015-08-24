@@ -206,7 +206,7 @@ function filter_jmol_replace_callback($matches) {
     <div id='download".$id."' style='float: left; margin: 6px 1em'>
     <a href='".$matches[2]."' title='".$downloadstructurefile."'>
     <img src='".$wwwroot."/filter/jmol/pix/download.png' />
-    </a> <a href='".$wwwroot."/filter/jmol/lang/en/help/jmol/jmol.html' title='".$jmolhelp."'target='_blank'>
+    </a> <a href='".$wwwroot."/filter/jmol/lang/en/help/jmol/jmol.html' title='".$jmolhelp."' target='_blank'>
     <img src='".$wwwroot."/filter/jmol/pix/help.png' />
     </a>
     </div>
