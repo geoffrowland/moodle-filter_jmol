@@ -1,0 +1,35 @@
+# simpleBio popup menu for Jmol, devised for first-time users and simple models
+# 		e.g. Secondary School students of biomolecules --Biomodel-3--
+# based on  Jmol.mnu Jmol version 11.6.13  2008-11-24 13:39   en_US
+# Only changed entries are set here.
+# Made by Angel Herráez, 2009-01-11
+# You are welcome to use this menu or any modification of it as you please.
+
+# Part I -- Menu Structure
+# ------------------------
+
+@COLORSCHEME = cpk amino#PDB chain#PDB group#PDB shapely#PDB structure#PDB
+popupMenu = renderMenu colorMenu spinMenu selectMenuText - advancedMenu aboutMenu
+selectMenuText | Select ({0}) = hideNotSelectedCB showSelectionsCB - selectAll selectNone invertSelection - elementsComputedMenu - PDBproteinMenu PDBnucleicMenu PDBheteroMenu PDBcarboMenu PDBnoneOfTheAbove
+PDBheteroMenu | Hetero = allHetero Water Ligand - PDBheteroComputedMenu
+renderMenu | Style = renderCpkSpacefill renderBallAndStick renderSticks renderWireframe PDBrenderCartoonsOnly PDBrenderTraceOnly PDBstructureMenu - hbondMenu ssbondMenu - stereoMenu
+colorMenu | Color = [color_atoms]Menu [color_bonds]Menu [color_hbonds]Menu [color_ssbonds]Menu - [color_backbone]PDBMenu [color_cartoon]PDBsMenu [color_ribbon]PDBsMenu [color_rockets]PDBMenu [color_strands]PDBMenu [color_trace]PDBMenu - [color_background]Menu
+[color_atoms]Menu | Atoms = @COLORSCHEME - @COLOR - opaque translucent
+[color_backbone]PDBMenu | Backbone = none - @COLORSCHEME - @COLOR - opaque translucent
+[color_cartoon]PDBsMenu | Cartoon = none - @COLORSCHEME - @COLOR - opaque translucent
+[color_ribbon]PDBsMenu | Ribbons = none - @COLORSCHEME - @COLOR - opaque translucent
+[color_rockets]PDBMenu | Rockets = none - @COLORSCHEME - @COLOR - opaque translucent
+[color_strands]PDBMenu | Strands = none - @COLORSCHEME - @COLOR - opaque translucent
+[color_trace]PDBMenu | Trace = none - @COLORSCHEME - @COLOR - opaque translucent
+schemeMenu | By Scheme = cpk - amino#PDB chain#PDB group#PDB shapely#PDB structure#PDB 
+spinMenu | Spin = spinOn spinOff 
+advancedMenu | Advanced = choosePopupMenu languageComputedMenu showConsole
+choosePopupMenu | Choose menu = defaultMnu
+
+# Part II -- Key Definitions
+# --------------------------
+
+defaultMnu | Use full Jmol menu = load menu ""
+
+# Part III -- Word Translations
+# -----------------------------

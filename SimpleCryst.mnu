@@ -1,0 +1,42 @@
+# simpleCryst popup menu for Jmol, devised for first-time users and simple crystallographic
+# models of (in)organic molecules
+# based on  Jmol.mnu Jmol version 11.6.13  2008-11-24 13:39   en_US
+# Only changed entries are set here.
+# Made by Geoff Rowland, 2009-01-11
+# You are welcome to use this menu or any modification of it as you please.
+
+# Part I -- Menu Structure
+# ------------------------
+
+popupMenu = renderMenu colorMenu spinMenu - selectMenuText measureMenu - showMenu FILEUNITMenu advancedMenu aboutMenu
+selectMenuText | Select ({0}) = hideNotSelectedCB showSelectionsCB - selectAll selectNone invertSelection - elementsComputedMenu
+renderMenu | Style = showUNITCELLCB showAxesCB - renderCpkSpacefill renderBallAndStick renderSticks renderWireframe - stereoMenu
+colorMenu | Color = [color_atoms]Menu [color_bonds]Menu - [color_background]Menu
+[color_atoms]Menu | Atoms = cpk - @COLOR - opaque translucent
+spinMenu | Spin = spinOn spinOff
+showMenu | Show = showSpacegroup showState SYMMETRYshowSymmetry UNITCELLshow 
+FILEUNITMenu | Symmetry = SYMMETRYShowComputedMenu SYMMETRYhide FILEMOLload FILEUNITone FILEUNITnine FILEUNITnineRestricted FILEUNITninePoly
+[set_axes]Menu | Axes = off#axes dotted - byPixelMenu byAngstromMenu
+[set_UNITCELL]Menu | Unit cell = off#axes dotted - byPixelMenu byAngstromMenu
+advancedMenu | Advanced = choosePopupMenu languageComputedMenu showConsole
+choosePopupMenu | Choose menu = defaultMnu
+aboutMenu | About Jmol = APPLETjmolUrl APPLETmouseManualUrl APPLETtranslationUrl
+
+# Part II -- Key Definitions
+# --------------------------
+showAxesCB | Axes = set showAxes true | set showAxes false;set axesUNITCELL
+showUNITCELLCB | Unit cell = 
+SYMMETRYhide | Hide Symmetry = draw sym_* delete
+FILEMOLload | Reload (molecular) = save orientation;load "";restore orientation;center
+FILEUNITone | Reload {1 1 1} = save orientation;load "" {1 1 1} ;restore orientation;center
+FILEUNITnine | Reload {444 666 1} = save orientation;load "" {444 666 1} ;restore orientation;center
+FILEUNITnineRestricted | Reload {444 666 1} + Display 555 = save orientation;load "" {444 666 1} ;restore orientation; unitcell on; display cell=555;center visible;zoom 200
+FILEUNITninePoly | Reload + Polyhedra = save orientation;load "" {444 666 1} ;restore orientation; unitcell on; display cell=555; polyhedra 4,6 (displayed); color polyhedra translucent; center visible;zoom 200
+
+APPLETjmolUrl | http://www.jmol.org = show url "http://www.jmol.org"
+APPLETmouseManualUrl | Mouse Manual = show url "http://wiki.jmol.org/index.php/Mouse_Manual"
+APPLETtranslationUrl | Translations = show url "http://wiki.jmol.org/index.php/Internationalisation"
+defaultMnu | Use full Jmol menu = load menu ""
+
+# Part III -- Word Translations
+# -----------------------------
