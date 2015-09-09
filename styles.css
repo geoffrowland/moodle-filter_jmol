@@ -1,3 +1,31 @@
+*:fullscreen {
+  height: 100%;
+  width:100%;
+}
+*:-moz-full-screen {
+  height: 100%;
+  width:100%;
+}
+*:-webkit-full-screen {
+  height: 100%;
+  width:100%;
+}
+*:-ms-fullscreen {
+  height: 100% !important;
+  width:100% !important;
+}
+
+.jmolConsole {
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 2147483647 !important;
+}
+
+.jmolPopupMenu {
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 2147483647 !important;
+}
 
 .jmolPopupMenu a
 {
@@ -77,6 +105,7 @@
 {
   vertical-align: middle;
 }
+
 /* basic yui CSS for JSmol popup menu*/
 .ui-menu-item hr,
 .ui-menu-item ul,
@@ -89,4 +118,14 @@
   margin-right: 0px;
   margin-bottom: 0px;
   margin-left: 0px;
+}
+.jmolPanelImg
+{
+height: 16px;
+width: 16px;
+margin: 2px 2px 0px 0px;
+}
+.jmolPanelControl
+{
+margin: 2px 2px 0px 0px;
 }

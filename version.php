@@ -19,14 +19,14 @@
  *
  * @package    filter
  * @subpackage jmol
- * @copyright  2013 Geoffrey Rowland <growland at strode-college dot ac dot uk>
+ * @copyright  2013 Geoffrey Rowland <rowland dot geoff at gmail dot com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2015021300;    // The current plugin version (Date: YYYYMMDDXX)
-$plugin->requires  = 2012062500;    // Requires this Moodle version
-$plugin->component = 'filter_jmol'; // Full name of the plugin (used for diagnostics)
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release = '4.2 (Build: 2015021300)'; 
+$plugin->version   = 2015090900;    // The current plugin version (Date: YYYYMMDDXX).
+$plugin->requires  = 2012062500;    // Requires this Moodle version.
+$plugin->component = 'filter_jmol'; // Full name of the plugin (used for diagnostics).
+$plugin->maturity  = MATURITY_BETA;
+$plugin->release = '5.0 (Build: 2015090900)';
