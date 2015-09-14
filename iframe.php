@@ -150,7 +150,7 @@ switch ($controls){
                 echo 'title = "'.get_string('residues_desc', 'filter_jmol', true).'">';
                 echo get_string('residues', 'filter_jmol', true).'</option>';
                 echo '<option value = "select protein and *.OXT; label C-terminus; select protein and *.H2; label N-terminus; ';
-                echo 'select nucleic and *.O5T; label 5*-end; select all" ';
+                echo 'select nucleic and *.HO5\'; label 5\'-end; select nucleic and *.HO3\'; label 3\'-end; select all" ';
                 echo 'title = "'.get_string('termini_desc', 'filter_jmol', true).'">';
                 echo get_string('termini', 'filter_jmol', true).'</option>';
             break;
