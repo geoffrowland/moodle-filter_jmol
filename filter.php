@@ -179,6 +179,10 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $filepath = '/'.implode('/', $args).'/';
     }
+    // required for mod_page.
+    if ($filearea === 'content') {
+        $itemid = 0;
+    }
     $fs = get_file_storage();
     $file = $fs->get_file($contextid, $component, $filearea, $itemid, $filepath, $filename);
     // Copy data files from Moodle file API to temporary physical filesystem.
