@@ -61,16 +61,13 @@ if ($jmolfiletype == "cif" ) {
     $menu = 'SimpleChem.mnu';
     $dropmenu = 'SimpleChem';
 }
-switch ($controls) {
-    case 2:
+if ($controls === '2') {
         $menu = 'SimpleCryst.mnu';
         $dropmenu = 'SimpleCryst';
-    break;
-    case 3:
+} else if ($controls === '3') {
         $menu = 'SimpleBio.mnu';
         $dropmenu = 'SimpleBio';
-    break;
-    default:
+} else {
         $menu = $menu;
         $dropmmenu = $dropmenu;
 }
@@ -86,10 +83,35 @@ echo '</head>';
 echo '<body style="height: 100%; width: 100%; margin: 0px; padding: 0px; overflow: hidden">';
 echo '<div id = "structure" style = "width: 100%"></div>';
 echo '<div style = "width: 100%; background-color: lightgray; padding: 0px 0px 2px 2px" id = "panel">';
-switch ($controls){
-    case 0:
-    break;
-    default:
+if ($controls !== '0') {
+    if ($dropmenu === 'SimpleChem') {
+        echo '<select class = "jmolPanelControl" id = "display" title = "'.get_string('display', 'filter_jmol', true).'">';
+        echo '<option value = "isosurface delete; set hbondsBackbone FALSE; set ssbondsBackbone FALSE; wireframe only" ';
+        echo 'title = "'.get_string('wireframe', 'filter_jmol', true).'">';
+        echo get_string('wireframe', 'filter_jmol', true).'</option>';
+        echo '<option value = "isosurface delete; set hbondsBackbone FALSE; set ssbondsBackbone FALSE; wireframe -0.15" ';
+        echo 'title = "'.get_string('stick', 'filter_jmol', true).'">';
+        echo get_string('stick', 'filter_jmol', true).'</option>';
+        echo '<option value = "isosurface delete; set hbondsBackbone FALSE; set ssbondsBackbone FALSE; wireframe -0.15; ';
+        echo 'spacefill 23%" title = "'.get_string('ballandstick', 'filter_jmol', true).'" selected = selected">';
+        echo get_string('ballandstick', 'filter_jmol', true).'</option>';
+        echo '<option value = "isosurface delete; set hbondsBackbone FALSE; set ssbondsBackbone FALSE; ';
+        echo 'wireframe -0.15; spacefill 23%; dots on" title = "'.get_string('dots_desc', 'filter_jmol', true).'">';
+        echo get_string('dots', 'filter_jmol', true).'</option>';
+        echo '<option value = "set hbondsBackbone FALSE; set ssbondsBackbone FALSE; wireframe -0.15; spacefill 23%; select *; ';
+        echo 'isosurface vdw translucent" title = "'.get_string('surface_desc', 'filter_jmol', true).'">';
+        echo get_string('surface', 'filter_jmol', true).'</option>';
+        echo '<option value = "isosurface delete; set hbondsBackbone FALSE; set ssbondsBackbone FALSE; ';
+        echo 'spacefill only" title = "'.get_string('spacefill_desc', 'filter_jmol', true).'">';
+        echo get_string('spacefill', 'filter_jmol', true).'</option>';
+        echo '</select>';
+        echo '<select class = "jmolPanelControl" id = "labels" title = "'.get_string('labels', 'filter_jmol', true).'">';
+        echo '<option value = "label off" title = "'.get_string('off_desc', 'filter_jmol', true).'">';
+        echo get_string('off', 'filter_jmol', true).'</option>';
+        echo '<option value = "label %e" title = "'.get_string('atoms_desc', 'filter_jmol', true).'">';
+        echo get_string('atoms', 'filter_jmol', true).'</option>';
+        echo '</select>';
+    } else if ($dropmenu === 'SimpleBio') {
         echo '<select class = "jmolPanelControl" id = "display" title = "'.get_string('display', 'filter_jmol', true).'">';
         echo '<option value = "isosurface delete; set hbondsBackbone FALSE; set ssbondsBackbone FALSE; wireframe only" ';
         echo 'title = "'.get_string('wireframe', 'filter_jmol', true).'">';
@@ -109,144 +131,154 @@ switch ($controls){
         echo '<option value = "isosurface delete; set hbondsBackbone FALSE; set ssbondsBackbone FALSE; ';
         echo 'spacefill only" title = "'.get_string('spacefill_desc', 'filter_jmol', true).'">';
         echo get_string('spacefill', 'filter_jmol', true).'</option>';
-        switch ($dropmenu){
-            case SimpleBio:
-                echo '<option value = "isosurface delete; backbone -0.3; set hbondsBackbone TRUE; set ssbondsbackbone TRUE; ';
-                echo 'select *.CA; spacefill 0.3; select all" title = "'.get_string('backbone_desc', 'filter_jmol', true).'">';
-                echo get_string('backbone', 'filter_jmol', true).'</option>';
-                echo '<option value = "isosurface delete; cartoon only; set hbondsBackbone TRUE; set ssbondsbackbone TRUE; ';
-                echo 'select all" selected = "selected" title = "'.get_string('cartoon_desc', 'filter_jmol', true).'">';
-                echo get_string('cartoon', 'filter_jmol', true).'</option>';
-            break;
-        }
+        echo '<option value = "isosurface delete; backbone -0.3; set hbondsBackbone TRUE; set ssbondsbackbone TRUE; ';
+        echo 'select *.CA; spacefill 0.3; select all" title = "'.get_string('backbone_desc', 'filter_jmol', true).'">';
+        echo get_string('backbone', 'filter_jmol', true).'</option>';
+        echo '<option value = "isosurface delete; cartoon only; set hbondsBackbone TRUE; set ssbondsbackbone TRUE; ';
+        echo 'select all" selected = "selected" title = "'.get_string('cartoon_desc', 'filter_jmol', true).'">';
+        echo get_string('cartoon', 'filter_jmol', true).'</option>';
         echo '</select>';
-        switch ($dropmenu){
-            case SimpleBio:
-                echo '<select class = "jmolPanelControl" id = "biochem" ';
-                echo 'title = "'.get_string('colourscheme', 'filter_jmol', true).'">';
-                echo '<option value = "select all; color cpk" ';
-                echo 'title = "'.get_string('atoms', 'filter_jmol', true).'">';
-                echo get_string('atoms', 'filter_jmol', true).'</option>';
-                echo '<option value = "select all; color shapely" title = "'.get_string('primary_desc', 'filter_jmol', true).'">';
-                echo get_string('primary', 'filter_jmol', true).'</option>';
-                echo '<option value = "select all; colour structure"';
-                echo ' title = "'.get_string('secondary_desc', 'filter_jmol', true).'" selected = "selected">';
-                echo get_string('secondary', 'filter_jmol', true).'</option>';
-                echo '<option value = "select all; color monomer" title = "'.get_string('tertiary_desc', 'filter_jmol', true).'">';
-                echo get_string('tertiary', 'filter_jmol', true).'</option>';
-                echo '<option value = "select all; color chain" title = "'.get_string('quaternary_desc', 'filter_jmol', true).'">';
-                echo get_string('quaternary', 'filter_jmol', true).'</option>';
-                echo '</select>';
-            break;
-        }
-                echo '<select class = "jmolPanelControl" id = "labels" title = "'.get_string('labels', 'filter_jmol', true).'">';
-                echo '<option value = "label off" title = "'.get_string('off_desc', 'filter_jmol', true).'">';
-                echo get_string('off', 'filter_jmol', true).'</option>';
-                echo '<option value = "label %e" title = "'.get_string('atoms_desc', 'filter_jmol', true).'">';
-                echo get_string('atoms', 'filter_jmol', true).'</option>';
-        switch ($dropmenu){
-            case SimpleBio:
-                echo '<option value = "select protein and *.CA; label %n %R; select nucleic and *.N3; label %n %R; select all" ';
-                echo 'title = "'.get_string('residues_desc', 'filter_jmol', true).'">';
-                echo get_string('residues', 'filter_jmol', true).'</option>';
-                echo '<option value = "select protein and *.OXT; label C-terminus; select protein and *.H2; label N-terminus; ';
-                echo 'select nucleic and *.HO5\'; label 5\'-end; select nucleic and *.HO3\'; label 3\'-end; select all" ';
-                echo 'title = "'.get_string('termini_desc', 'filter_jmol', true).'">';
-                echo get_string('termini', 'filter_jmol', true).'</option>';
-            break;
-        }
-                echo '</select>';
-        switch ($dropmenu){
-            case SimpleBio:
-                echo '<input type = "checkbox" class = "jmolPanelControl" id = "hbond" ';
-                echo 'title = "'.get_string('hbonds_desc', 'filter_jmol', true).'">';
-                echo get_string('hbonds', 'filter_jmol', true);
-                echo '<input type = "checkbox" class = "jmolPanelControl" id = "ssbond" ';
-                echo 'title = "'.get_string('ssbonds_desc', 'filter_jmol', true).'">';
-                echo get_string('ssbonds', 'filter_jmol', true);
-            break;
-            case SimpleCryst:
-                echo '<select class = "jmolPanelControl" id = "symmetry" ';
-                echo 'title = "'.get_string('crystallography', 'filter_jmol', true).'">';
-                echo '<option value = "load \'\'; unitcell on" ';
-                echo 'title = "'.get_string('molecular', 'filter_jmol', true).'">';
-                echo get_string('molecular', 'filter_jmol', true).'</option>';
-                echo '<option value = "load \'\' {555 555 1}; display all; zoom 0" ';
-                echo 'title = "'.get_string('1x1x1_desc', 'filter_jmol', true).'" ';
-                echo 'selected = "selected">'.get_string('1x1x1', 'filter_jmol', true).'</option>';
-                echo '<option value = "load \'\' {444 666 1}; display all; zoom 0" ';
-                echo 'title = "'.get_string('3x3x3_desc', 'filter_jmol', true).'">';
-                echo get_string('3x3x3', 'filter_jmol', true).'</option>';
-                echo '<option value = "load \'\' {444 666 1}; display cell=555; zoom 0" ';
-                echo 'title = "'.get_string('1x1x1filled_desc', 'filter_jmol', true).'">';
-                echo get_string('1x1x1filled', 'filter_jmol', true).'</option>';
-                echo '<option value = "load \'\' {444 666 1}; display cell=555; zoom 0; polyhedra 4,6; ';
-                echo 'color polyhedra translucent;" title = "'.get_string('1x1x1polyhedra_desc', 'filter_jmol', true).'">';
-                echo get_string('1x1x1polyhedra', 'filter_jmol', true).'</option>';
-                echo '<option value = "load \'\' {444 666 1}; display all; zoom 0; polyhedra 4,6; color polyhedra translucent;" ';
-                echo 'title = "'.get_string('3x3x3polyhedra_desc', 'filter_jmol', true).'">';
-                echo get_string('3x3x3polyhedra', 'filter_jmol', true).'</option>';
-                echo '</select>';
-                echo '<input type = "checkbox" id = "unitcell" ';
-                echo 'title = "'.get_string('unitcell_desc', 'filter_jmol', true).'" checked>';
-                echo get_string('unitcell', 'filter_jmol', true);
-                echo '<input type = "checkbox" id = "axes" title = "'.get_string('axes_desc', 'filter_jmol', true).'" checked>';
-                echo get_string('axes', 'filter_jmol', true);
-             break;
-        }
-        echo '<select class = "jmolPanelControl" id = "color" ';
-        echo 'title = "'.get_string('backgroundcolour', 'filter_jmol', true).'" style = "background-color: #FFFFFF">';
-        echo '<option title = "'.get_string('whitebackground', 'filter_jmol', true).'" ';
-        echo 'value = "#FFFFFF" style = "background-color: white" selected = "selected"> </option>';
-        echo '<option title = "'.get_string('lightgreybackground', 'filter_jmol', true).'" value = "#D3D3D3" ';
-        echo 'style = "background-color: lightgray"> </option>';
-        echo '<option title = "'.get_string('blackbackground', 'filter_jmol', true).'" value = "#000000" ';
-        echo 'style = "background-color: black; color: white"> </option>';
+        echo '<select class = "jmolPanelControl" id = "biochem" ';
+        echo 'title = "'.get_string('colourscheme', 'filter_jmol', true).'">';
+        echo '<option value = "select all; color cpk" ';
+        echo 'title = "'.get_string('atoms', 'filter_jmol', true).'">';
+        echo get_string('atoms', 'filter_jmol', true).'</option>';
+        echo '<option value = "select all; color shapely" title = "'.get_string('primary_desc', 'filter_jmol', true).'">';
+        echo get_string('primary', 'filter_jmol', true).'</option>';
+        echo '<option value = "select all; colour structure"';
+        echo ' title = "'.get_string('secondary_desc', 'filter_jmol', true).'" selected = "selected">';
+        echo get_string('secondary', 'filter_jmol', true).'</option>';
+        echo '<option value = "select all; color monomer" title = "'.get_string('tertiary_desc', 'filter_jmol', true).'">';
+        echo get_string('tertiary', 'filter_jmol', true).'</option>';
+        echo '<option value = "select all; color chain" title = "'.get_string('quaternary_desc', 'filter_jmol', true).'">';
+        echo get_string('quaternary', 'filter_jmol', true).'</option>';
         echo '</select>';
-        echo '<select class = "jmolPanelControl" id = "performance" title = "'.get_string('performance', 'filter_jmol', true).'">';
-        echo '<option value = "set platformSpeed 8" title = "'.get_string('allfeatures', 'filter_jmol', true).'" ';
-        echo 'selected = "selected">8</option>';
-        echo '<option value = "set platformSpeed 7" title = "'.get_string('noantialiasing', 'filter_jmol', true).'">7</option>';
-        echo '<option value = "set platformSpeed 6" title = "'.get_string('notranslucency', 'filter_jmol', true).'">6</option>';
-        echo '<option value = "set platformSpeed 5" title = "'.get_string('surfacesdotted', 'filter_jmol', true).'">5</option>';
-        echo '<option value = "set platformSpeed 4" title = "'.get_string('cartoonsastrace', 'filter_jmol', true).'">4</option>';
-        echo '<option value = "set platformSpeed 3" title = "'.get_string('geosurfaceasdots', 'filter_jmol', true).'">3</option>';
-        echo '<option value = "set platformSpeed 2" title = "'.get_string('ellipsoidsasdots', 'filter_jmol', true).'">2</option>';
-        echo '<option value = "set platformSpeed 1" title = "'.get_string('wireframeonly', 'filter_jmol', true).'">1</option>';
+        echo '<select class = "jmolPanelControl" id = "labels" title = "'.get_string('labels', 'filter_jmol', true).'">';
+        echo '<option value = "label off" title = "'.get_string('off_desc', 'filter_jmol', true).'">';
+        echo get_string('off', 'filter_jmol', true).'</option>';
+        echo '<option value = "label %e" title = "'.get_string('atoms_desc', 'filter_jmol', true).'">';
+        echo get_string('atoms', 'filter_jmol', true).'</option>';
+        echo '<option value = "select protein and *.CA; label %n %R; select nucleic and *.N3; label %n %R; select all" ';
+        echo 'title = "'.get_string('residues_desc', 'filter_jmol', true).'">';
+        echo get_string('residues', 'filter_jmol', true).'</option>';
+        echo '<option value = "select protein and *.OXT; label C-terminus; select protein and *.H2; label N-terminus; ';
+        echo 'select nucleic and *.HO5\'; label 5\'-end; select nucleic and *.HO3\'; label 3\'-end; select all" ';
+        echo 'title = "'.get_string('termini_desc', 'filter_jmol', true).'">';
+        echo get_string('termini', 'filter_jmol', true).'</option>';
+        echo '<input type = "checkbox" class = "jmolPanelControl" id = "hbond" ';
+        echo 'title = "'.get_string('hbonds_desc', 'filter_jmol', true).'">';
+        echo get_string('hbonds', 'filter_jmol', true);
+        echo '<input type = "checkbox" class = "jmolPanelControl" id = "ssbond" ';
+        echo 'title = "'.get_string('ssbonds_desc', 'filter_jmol', true).'">';
+        echo get_string('ssbonds', 'filter_jmol', true);
         echo '</select>';
-        echo '<select class = "jmolPanelControl" id = "use" title = "'.get_string('displaytechnology', 'filter_jmol', true).'">';
-        switch ($technol){
-            case HTML5:
-                echo '<option title = "JSmol using HTML5" value = "HTML5" selected = "selected">JSmol</option>';
-                echo '<option title = "GLmol using WebGL" value = "WEBGL">GLmol</option>';
-                echo '<option title = "Jmol using Java" value = "SIGNED">Jmol</option>';
-            break;
-            case WEBGL:
-                echo '<option title = "JSmol using HTML5" value = "HTML5">JSmol</option>';
-                echo '<option title = "GLmol using WebGL" value = "WEBGL"selected = "selected">GLmol</option>';
-                echo '<option title = "Jmol using Java" value = "SIGNED">Jmol</option>';
-            break;
-            case SIGNED:
-                echo '<option title = "JSmol using HTML5" value = "HTML5">JSmol</option>';
-                echo '<option title = "GLmol using WebGL" value = "WEBGL">GLmol</option>';
-                echo '<option title = "Jmol using Java" value = "SIGNED" selected = "selected">Jmol</option>';
-            break;
-        }
+    } else if ($dropmenu === 'SimpleCryst') {
+        echo '<select class = "jmolPanelControl" id = "display" title = "'.get_string('display', 'filter_jmol', true).'">';
+        echo '<option value = "isosurface delete; set hbondsBackbone FALSE; set ssbondsBackbone FALSE; wireframe only" ';
+        echo 'title = "'.get_string('wireframe', 'filter_jmol', true).'">';
+        echo get_string('wireframe', 'filter_jmol', true).'</option>';
+        echo '<option value = "isosurface delete; set hbondsBackbone FALSE; set ssbondsBackbone FALSE; wireframe -0.15" ';
+        echo 'title = "'.get_string('stick', 'filter_jmol', true).'">';
+        echo get_string('stick', 'filter_jmol', true).'</option>';
+        echo '<option value = "isosurface delete; set hbondsBackbone FALSE; set ssbondsBackbone FALSE; wireframe -0.15; ';
+        echo 'spacefill 23%" title = "'.get_string('ballandstick', 'filter_jmol', true).'" selected = selected">';
+        echo get_string('ballandstick', 'filter_jmol', true).'</option>';
+        echo '<option value = "isosurface delete; set hbondsBackbone FALSE; set ssbondsBackbone FALSE; ';
+        echo 'wireframe -0.15; spacefill 23%; dots on" title = "'.get_string('dots_desc', 'filter_jmol', true).'">';
+        echo get_string('dots', 'filter_jmol', true).'</option>';
+        echo '<option value = "set hbondsBackbone FALSE; set ssbondsBackbone FALSE; wireframe -0.15; spacefill 23%; select *; ';
+        echo 'isosurface vdw translucent" title = "'.get_string('surface_desc', 'filter_jmol', true).'">';
+        echo get_string('surface', 'filter_jmol', true).'</option>';
+        echo '<option value = "isosurface delete; set hbondsBackbone FALSE; set ssbondsBackbone FALSE; ';
+        echo 'spacefill only" title = "'.get_string('spacefill_desc', 'filter_jmol', true).'">';
+        echo get_string('spacefill', 'filter_jmol', true).'</option>';
         echo '</select>';
-        echo '<input type = "checkbox" class = "jmolPanelControl" id = "spin" ';
-        echo 'title = "'.get_string('spin', 'filter_jmol', true).'">';
-        echo get_string('spin', 'filter_jmol', true);
-        echo '<img class = "jmolPanelImg" title = "'.get_string('displaymenu', 'filter_jmol', true).'" id = "menu" ';
-        echo 'src = "'.$wwwroot.'/filter/jmol/pix/menu.png">';
-        echo '<img class = "jmolPanelImg" title = "'.get_string('displayconsole', 'filter_jmol', true).'" id = "console" ';
-        echo 'src = "'.$wwwroot.'/filter/jmol/pix/console.png">';
-        echo '<img class = "jmolPanelImg" title = "'.get_string('downloadpngj', 'filter_jmol', true).'" id = "pngj" ';
-        echo 'src = "'.$wwwroot.'/filter/jmol/pix/download.png">';
-        echo '<img class = "jmolPanelImg" title = "'.get_string('togglefullscreen', 'filter_jmol', true).'" id = "fullscreen" ';
-        echo 'src = "'.$wwwroot.'/filter/jmol/pix/fullscreen.png">';
-        echo '<a href="'.$wwwroot.'/filter/jmol/help.php" target = "_blank">';
-        echo '<img title = "'.get_string('help', 'filter_jmol', true).'" ';
-        echo 'class = "jmolPanelImg" id = "help" src = "'.$wwwroot.'/filter/jmol/pix/help.png"></a>';
+        echo '<select class = "jmolPanelControl" id = "labels" title = "'.get_string('labels', 'filter_jmol', true).'">';
+        echo '<option value = "label off" title = "'.get_string('off_desc', 'filter_jmol', true).'">';
+        echo get_string('off', 'filter_jmol', true).'</option>';
+        echo '<option value = "label %e" title = "'.get_string('atoms_desc', 'filter_jmol', true).'">';
+        echo get_string('atoms', 'filter_jmol', true).'</option>';
+        echo '</select>';
+        echo '<select class = "jmolPanelControl" id = "symmetry" ';
+        echo 'title = "'.get_string('crystallography', 'filter_jmol', true).'">';
+        echo '<option value = "load \'\'; unitcell on" ';
+        echo 'title = "'.get_string('molecular', 'filter_jmol', true).'">';
+        echo get_string('molecular', 'filter_jmol', true).'</option>';
+        echo '<option value = "load \'\' {555 555 1}; display all; zoom 0" ';
+        echo 'title = "'.get_string('1x1x1_desc', 'filter_jmol', true).'" ';
+        echo 'selected = "selected">'.get_string('1x1x1', 'filter_jmol', true).'</option>';
+        echo '<option value = "load \'\' {444 666 1}; display all; zoom 0" ';
+        echo 'title = "'.get_string('3x3x3_desc', 'filter_jmol', true).'">';
+        echo get_string('3x3x3', 'filter_jmol', true).'</option>';
+        echo '<option value = "load \'\' {444 666 1}; display cell=555; zoom 0" ';
+        echo 'title = "'.get_string('1x1x1filled_desc', 'filter_jmol', true).'">';
+        echo get_string('1x1x1filled', 'filter_jmol', true).'</option>';
+        echo '<option value = "load \'\' {444 666 1}; display cell=555; zoom 0; polyhedra 4,6; ';
+        echo 'color polyhedra translucent;" title = "'.get_string('1x1x1polyhedra_desc', 'filter_jmol', true).'">';
+        echo get_string('1x1x1polyhedra', 'filter_jmol', true).'</option>';
+        echo '<option value = "load \'\' {444 666 1}; display all; zoom 0; polyhedra 4,6; color polyhedra translucent;" ';
+        echo 'title = "'.get_string('3x3x3polyhedra_desc', 'filter_jmol', true).'">';
+        echo get_string('3x3x3polyhedra', 'filter_jmol', true).'</option>';
+        echo '</select>';
+        echo '<input type = "checkbox" id = "unitcell" ';
+        echo 'title = "'.get_string('unitcell_desc', 'filter_jmol', true).'" checked>';
+        echo get_string('unitcell', 'filter_jmol', true);
+        echo '<input type = "checkbox" id = "axes" title = "'.get_string('axes_desc', 'filter_jmol', true).'" checked>';
+        echo get_string('axes', 'filter_jmol', true);
+    }
+    echo '<select class = "jmolPanelControl" id = "color" ';
+    echo 'title = "'.get_string('backgroundcolour', 'filter_jmol', true).'" style = "background-color: #FFFFFF">';
+    echo '<option title = "'.get_string('whitebackground', 'filter_jmol', true).'" ';
+    echo 'value = "#FFFFFF" style = "background-color: white" selected = "selected"> </option>';
+    echo '<option title = "'.get_string('lightgreybackground', 'filter_jmol', true).'" value = "#D3D3D3" ';
+    echo 'style = "background-color: lightgray"> </option>';
+    echo '<option title = "'.get_string('blackbackground', 'filter_jmol', true).'" value = "#000000" ';
+    echo 'style = "background-color: black; color: white"> </option>';
+    echo '</select>';
+    echo '<select class = "jmolPanelControl" id = "performance" title = "'.get_string('performance', 'filter_jmol', true).'">';
+    echo '<option value = "set platformSpeed 8" title = "'.get_string('allfeatures', 'filter_jmol', true).'" ';
+    echo 'selected = "selected">8</option>';
+    echo '<option value = "set platformSpeed 7" title = "'.get_string('noantialiasing', 'filter_jmol', true).'">7</option>';
+    echo '<option value = "set platformSpeed 6" title = "'.get_string('notranslucency', 'filter_jmol', true).'">6</option>';
+    echo '<option value = "set platformSpeed 5" title = "'.get_string('surfacesdotted', 'filter_jmol', true).'">5</option>';
+    echo '<option value = "set platformSpeed 4" title = "'.get_string('cartoonsastrace', 'filter_jmol', true).'">4</option>';
+    echo '<option value = "set platformSpeed 3" title = "'.get_string('geosurfaceasdots', 'filter_jmol', true).'">3</option>';
+    echo '<option value = "set platformSpeed 2" title = "'.get_string('ellipsoidsasdots', 'filter_jmol', true).'">2</option>';
+    echo '<option value = "set platformSpeed 1" title = "'.get_string('wireframeonly', 'filter_jmol', true).'">1</option>';
+    echo '</select>';
+    echo '<select class = "jmolPanelControl" id = "use" title = "'.get_string('displaytechnology', 'filter_jmol', true).'">';
+    switch ($technol){
+        case HTML5:
+            echo '<option title = "JSmol using HTML5" value = "HTML5" selected = "selected">JSmol</option>';
+            echo '<option title = "GLmol using WebGL" value = "WEBGL">GLmol</option>';
+            echo '<option title = "Jmol using Java" value = "SIGNED">Jmol</option>';
+        break;
+        case WEBGL:
+            echo '<option title = "JSmol using HTML5" value = "HTML5">JSmol</option>';
+            echo '<option title = "GLmol using WebGL" value = "WEBGL"selected = "selected">GLmol</option>';
+            echo '<option title = "Jmol using Java" value = "SIGNED">Jmol</option>';
+        break;
+        case SIGNED:
+            echo '<option title = "JSmol using HTML5" value = "HTML5">JSmol</option>';
+            echo '<option title = "GLmol using WebGL" value = "WEBGL">GLmol</option>';
+            echo '<option title = "Jmol using Java" value = "SIGNED" selected = "selected">Jmol</option>';
+        break;
+    }
+    echo '</select>';
+    echo '<input type = "checkbox" class = "jmolPanelControl" id = "spin" ';
+    echo 'title = "'.get_string('spin', 'filter_jmol', true).'">';
+    echo get_string('spin', 'filter_jmol', true);
+    echo '<img class = "jmolPanelImg" title = "'.get_string('displaymenu', 'filter_jmol', true).'" id = "menu" ';
+    echo 'src = "'.$wwwroot.'/filter/jmol/pix/menu.png">';
+    echo '<img class = "jmolPanelImg" title = "'.get_string('displayconsole', 'filter_jmol', true).'" id = "console" ';
+    echo 'src = "'.$wwwroot.'/filter/jmol/pix/console.png">';
+    echo '<img class = "jmolPanelImg" title = "'.get_string('downloadpngj', 'filter_jmol', true).'" id = "pngj" ';
+    echo 'src = "'.$wwwroot.'/filter/jmol/pix/download.png">';
+    echo '<img class = "jmolPanelImg" title = "'.get_string('togglefullscreen', 'filter_jmol', true).'" id = "fullscreen" ';
+    echo 'src = "'.$wwwroot.'/filter/jmol/pix/fullscreen.png">';
+    echo '<a href="'.$wwwroot.'/filter/jmol/help.php" target = "_blank">';
+    echo '<img title = "'.get_string('help', 'filter_jmol', true).'" ';
+    echo 'class = "jmolPanelImg" id = "help" src = "'.$wwwroot.'/filter/jmol/pix/help.png"></a>';
 }
 echo '</div>';
 echo '<script type="text/javascript">';
