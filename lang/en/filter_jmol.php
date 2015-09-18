@@ -30,6 +30,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 // Jmol settings.
+$string['pluginname'] = 'Jmol';
 $string['jsmol'] = 'JSmol';
 $string['jsmol_help'] = 'Click on cover image to activate';
 $string['jsmol_link'] = 'http://google.co.uk';
