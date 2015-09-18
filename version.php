@@ -29,4 +29,4 @@ $plugin->version   = 2015091800;    // The current plugin version (Date: YYYYMMD
 $plugin->requires  = 2012062500;    // Requires this Moodle version.
 $plugin->component = 'filter_jmol'; // Full name of the plugin (used for diagnostics).
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release = '5.0 (Build: 2015091700)';
+$plugin->release = '5.0 (Build: 2015091800)';
