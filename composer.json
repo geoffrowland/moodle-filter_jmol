@@ -1,0 +1,11 @@
+{
+    "name": "geoffrowland/moodle-filter_jmol",
+    "type": "moodle-filter",
+    "require": {
+        "composer/installers": "~1.0"
+    },
+    "extra": {
+        "installer-name": "jmol"
+    }
+}
+
