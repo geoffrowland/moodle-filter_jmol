@@ -188,6 +188,10 @@ function filter_jmol_replace_callback($matches) {
         $itemid = array_pop($args); ;
         $filepath='/';
     }
+    if ($filearea === 'answer') {
+        $itemid = array_pop($args); ;
+        $filepath='/';
+    }
     $fs = get_file_storage();
     $file = $fs->get_file($contextid, $component, $filearea, $itemid, $filepath, $filename);
     // Copy data files from Moodle file API to temporary physical filesystem.
