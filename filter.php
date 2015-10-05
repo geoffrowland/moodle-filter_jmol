@@ -183,6 +183,11 @@ function filter_jmol_replace_callback($matches) {
     if ($filearea === 'content') {
         $itemid = 0;
     }
+    // required for mod_quiz
+    if ($filearea === 'questiontext') {
+        $itemid = array_pop($args); ;
+        $filepath='/';
+    }
     $fs = get_file_storage();
     $file = $fs->get_file($contextid, $component, $filearea, $itemid, $filepath, $filename);
     // Copy data files from Moodle file API to temporary physical filesystem.
