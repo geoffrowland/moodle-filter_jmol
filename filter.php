@@ -183,7 +183,7 @@ function filter_jmol_replace_callback($matches) {
     if ($filearea === 'content') {
         $itemid = 0;
     }
-    // required for mod_quiz
+    // required for mod_quiz.
     if ($filearea === 'questiontext') {
         $itemid = array_pop($args); ;
         $filepath='/';
@@ -205,7 +205,7 @@ function filter_jmol_replace_callback($matches) {
         if (!file_exists($destpath)) {
             mkdir(dirname($destpath), 0755, true);
             $file->copy_content_to($destpath);
-        } else if (sha1($file->get_content()) != sha1($destpath)) {
+        } else if (sha1($file->get_content()) !== sha1_file($destpath)) {
             $file->copy_content_to($destpath);
         } else {
             // Touch file to update timestamp.
