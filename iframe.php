@@ -53,7 +53,7 @@ if ($jmolfiletype == "cif" ) {
 } else if ($jmolfiletype == "pdb" || $filetype == "mci") {
     $loadscript = 'set zoomLarge false; set pdbAddHydrogens true; load '.$pathname.'; calculate hbonds; hbonds off; ssbonds off;';
     $loadscript = $loadscript.' set hbondsBackbone TRUE; set ssbondsbackbone TRUE; display not water; select protein or nucleic;';
-    $loadscript = $loadscript.'cartoons only; color structure; select *';
+    $loadscript = $loadscript.'cartoons only; color structure; select *;';
     $menu = 'SimpleBio.mnu';
     $dropmenu = 'SimpleBio';
 } else {
