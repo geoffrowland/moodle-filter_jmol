@@ -121,11 +121,20 @@
 }
 .jmolPanelImg
 {
-height: 16px;
-width: 16px;
-margin: 2px 2px 0px 0px;
+  height: 16px;
+  width: 16px;
+  margin: 2px 2px 0px 0px;
 }
 .jmolPanelControl
 {
-margin: 2px 2px 0px 0px;
+  margin: 2px 2px 0px 0px;
+}
+#jmolApplet0_appletdiv p
+{
+  margin-top: 0em;
+  margin-bottom: 0em;
+}
+#jmolApplet0_infodiv
+{
+  top: 0px !important;
 }
