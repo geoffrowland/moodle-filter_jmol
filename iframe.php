@@ -67,7 +67,6 @@ $binary = false;
 if ($filetypeend == 'png' || $filetypeend == 'gz' || $filetypeend == 'pse') {
     $binary = true;
 }
-$jmolfiletype = substr($filetype, 0, 3);
 $filename = $filestem.'.'.$filetype;
 $lang = $_GET['l'];
 $initscript = $_GET['i'];
@@ -93,7 +92,7 @@ if ($jmolfiletype === "cif" ) {
     $loadscript = 'set zoomLarge false; set pdbAddHydrogens true; load '.$pathname.';';
     $menu = 'SimpleBio.mnu';
     $dropmenu = 'SimpleBio';
-} else if ($jmolfiletype === "pdb" || $filetype === "mcif") {
+} else if ($jmolfiletype === "pdb" || $jmolfiletype === "mcif") {
     $loadscript = 'set zoomLarge false; set pdbAddHydrogens true; load '.$pathname.'; calculate hbonds; hbonds off; ssbonds off; ';
     $loadscript = $loadscript.'display not water; select protein or nucleic; cartoons only; color structure; ';
     $loadscript = $loadscript.'set hbondsBackbone TRUE; set ssbondsbackbone TRUE; select *';
@@ -195,14 +194,14 @@ if ($controls !== '0') {
         echo '<option value = "select all; color cpk" ';
         echo 'title = "'.get_string('atoms', 'filter_jmol', true).'">';
         echo get_string('atoms', 'filter_jmol', true).'</option>';
-        echo '<option value = "select all; color shapely" title = "'.get_string('primary_desc', 'filter_jmol', true).'">';
+        echo '<option value = "select protein or nucleic; color shapely" title = "'.get_string('primary_desc', 'filter_jmol', true).'">';
         echo get_string('primary', 'filter_jmol', true).'</option>';
-        echo '<option value = "select all; colour structure"';
+        echo '<option value = "select protein or nucleic; colour structure"';
         echo ' title = "'.get_string('secondary_desc', 'filter_jmol', true).'" selected = "selected">';
         echo get_string('secondary', 'filter_jmol', true).'</option>';
-        echo '<option value = "select all; color monomer" title = "'.get_string('tertiary_desc', 'filter_jmol', true).'">';
+        echo '<option value = "select protein or nucleic; color monomer" title = "'.get_string('tertiary_desc', 'filter_jmol', true).'">';
         echo get_string('tertiary', 'filter_jmol', true).'</option>';
-        echo '<option value = "select all; color chain" title = "'.get_string('quaternary_desc', 'filter_jmol', true).'">';
+        echo '<option value = "select protein or nucleic; color chain" title = "'.get_string('quaternary_desc', 'filter_jmol', true).'">';
         echo get_string('quaternary', 'filter_jmol', true).'</option>';
         echo '</select>';
         if ($technol != 'WEBGL') {
