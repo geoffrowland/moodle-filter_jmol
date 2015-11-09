@@ -1,5 +1,5 @@
 # simpleBio popup menu for Jmol, devised for first-time users and simple models
-# 		e.g. Secondary School students of biomolecules --Biomodel-3--
+#       e.g. Secondary School students of biomolecules --Biomodel-3--
 # based on  Jmol.mnu Jmol version 11.6.13  2008-11-24 13:39   en_US
 # Only changed entries are set here.
 # Made by Angel Herráez, 2009-01-11
@@ -9,7 +9,7 @@
 # ------------------------
 
 @COLORSCHEME = cpk amino#PDB chain#PDB group#PDB shapely#PDB structure#PDB
-popupMenu = renderMenu colorMenu spinMenu selectMenuText - advancedMenu aboutMenu
+popupMenu = renderMenu colorMenu spinMenu selectMenuText - showConsole defaultMnu - languageComputedMenu aboutMenu
 selectMenuText | Select ({0}) = hideNotSelectedCB showSelectionsCB - selectAll selectNone invertSelection - elementsComputedMenu - PDBproteinMenu PDBnucleicMenu PDBheteroMenu PDBcarboMenu PDBnoneOfTheAbove
 PDBheteroMenu | Hetero = allHetero Water Ligand - PDBheteroComputedMenu
 renderMenu | Style = renderCpkSpacefill renderBallAndStick renderSticks renderWireframe PDBrenderCartoonsOnly PDBrenderTraceOnly PDBstructureMenu - hbondMenu ssbondMenu - stereoMenu
@@ -21,15 +21,13 @@ colorMenu | Color = [color_atoms]Menu [color_bonds]Menu [color_hbonds]Menu [colo
 [color_rockets]PDBMenu | Rockets = none - @COLORSCHEME - @COLOR - opaque translucent
 [color_strands]PDBMenu | Strands = none - @COLORSCHEME - @COLOR - opaque translucent
 [color_trace]PDBMenu | Trace = none - @COLORSCHEME - @COLOR - opaque translucent
-schemeMenu | By Scheme = cpk - amino#PDB chain#PDB group#PDB shapely#PDB structure#PDB 
-spinMenu | Spin = spinOn spinOff 
-advancedMenu | Advanced = choosePopupMenu languageComputedMenu showConsole
-choosePopupMenu | Choose menu = defaultMnu
+schemeMenu | By Scheme = cpk - amino#PDB chain#PDB group#PDB shapely#PDB structure#PDB
+spinMenu | Spin = spinOn spinOff
 
 # Part II -- Key Definitions
 # --------------------------
 
-defaultMnu | Use full Jmol menu = load menu ""
+defaultMnu | Use full menu = load menu ""
 
 # Part III -- Word Translations
 # -----------------------------

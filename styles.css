@@ -16,15 +16,19 @@
 }
 
 .jmolConsole {
-  top: 0 !important;
-  left: 0 !important;
-  z-index: 2147483647 !important;
+/*
+ *  top: 10px !important;
+ *  left: 10px !important;
+*/
+    z-index: 2147483647 !important;
 }
 
 .jmolPopupMenu {
-  top: 0 !important;
-  left: 0 !important;
-  z-index: 2147483647 !important;
+/*
+ *  top: 10px !important;
+ *  left: 10px !important;
+*/
+    z-index: 2147483647 !important;
 }
 
 .jmolPopupMenu a
@@ -47,17 +51,17 @@
 .jmolPopupMenu .ui-state-hover, .jmolPopupMenu .ui-state-focus
 {
   border-top-width: 1px;
-  border-right-width-value: 1px;
+  border-right-width: 1px;
   border-bottom-width: 1px;
-  border-left-width-value: 1px;
+  border-left-width: 1px;
   border-top-style: solid;
-  border-right-style-value: solid;
+  border-right-style: solid;
   border-bottom-style: solid;
-  border-left-style-value: solid;
+  border-left-style: solid;
   border-top-color: #79b7e7;
-  border-right-color-value: #79b7e7;
+  border-right-color: #79b7e7;
   border-bottom-color: #79b7e7;
-  border-left-color-value: #79b7e7;
+  border-left-color: #79b7e7;
   border-image-source: none;
   border-image-slice: 100% 100% 100% 100%;
   border-image-width: 1 1 1 1;
@@ -84,17 +88,17 @@
   padding-left: 0.4em;
   white-space: nowrap;
   border-top-width: 1px;
-  border-right-width-value: 1px;
+  border-right-width: 1px;
   border-bottom-width: 1px;
-  border-left-width-value: 1px;
+  border-left-width: 1px;
   border-top-style: solid;
-  border-right-style-value: solid;
+  border-right-style: solid;
   border-bottom-style: solid;
-  border-left-style-value: solid;
+  border-left-style: solid;
   border-top-color: transparent;
-  border-right-color-value: transparent;
+  border-right-color: transparent;
   border-bottom-color: transparent;
-  border-left-color-value: transparent;
+  border-left-color: transparent;
   border-image-source: none;
   border-image-slice: 100% 100% 100% 100%;
   border-image-width: 1 1 1 1;
@@ -121,13 +125,13 @@
 }
 .jmolPanelImg
 {
-  height: 16px;
-  width: 16px;
-  margin: 2px 2px 0px 0px;
+height: 16px;
+width: 16px;
+margin: 2px 2px 0px 0px;
 }
 .jmolPanelControl
 {
-  margin: 2px 2px 0px 0px;
+margin: 2px 2px 0px 0px;
 }
 #jmolApplet0_appletdiv p
 {
@@ -136,5 +140,5 @@
 }
 #jmolApplet0_infodiv
 {
-  top: 0px !important;
+top: 0px !important;
 }

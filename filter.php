@@ -50,6 +50,7 @@ defined('MOODLE_INTERNAL') || die();
 // Jmol project site: http://jmol.sourceforge.net/
 // Jmol interactive scripting documentation(Use with JMOLSCRIPT{ }): http://chemapps.stolaf.edu/jmol/docs/
 // Jmol Wiki: http//wiki.jmol.org.
+
 class filter_jmol extends moodle_text_filter {
     public function filter($text, array $options = array()) {
         global $CFG, $PAGE, $bigscreenenabled;
@@ -66,7 +67,7 @@ class filter_jmol extends moodle_text_filter {
         $search = $search1.$search2;
         // Bigscreen loaded here, rather than in child iframe, to support Internet Explorer.
         $newtext = preg_replace_callback($search, 'filter_jmol_replace_callback', $text);
-        if (($newtext != $text) && !isset($bigscreenenabled)) {
+        if (($newtext !== $text) && !isset($bigscreenenabled)) {
             $bigscreenenabled = true;
             $PAGE->requires->js(new moodle_url('/filter/jmol/js/bigscreen.min.js'));
         }
@@ -127,12 +128,7 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $moodlelang = 'en';
     }
-    // Get language strings with lazy loading.
-    $hydrogens = get_string('hydrogens', 'filter_jmol', true);
-    $jmolhelp = get_string('jmolhelp', 'filter_jmol', true);
-    $jsdisabled = get_string('jsdisabled', 'filter_jmol', true);
-    $downloadstructurefile = get_string('downloadstructurefile', 'filter_jmol', true);
-    $fullscreen = get_string('fullscreen', 'filter_jmol', true);
+
     $wwwroot = $CFG->wwwroot;
     // Generate unique id for Jmol frame.
     static $count = 0;
@@ -150,68 +146,20 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $size = 350;
     }
+    $height = $size + 20;
     // Retrieve the file from the Moodle file API.
     $url = $matches[2];
-    $filetype = $matches[3];
     $shortpath = str_replace($wwwroot.'/pluginfile.php', '', $url);
-    $args = explode('/', $shortpath);
-    $contextid = array_shift($args); // Remove null at index 0.
-    $contextid = array_shift($args); // 1st argument at index 1.
-    $component = array_shift($args); // 2nd argument at index 2.
-    $filearea = array_shift($args);  // 3rd argument at index 3.
+    $filetype = $matches[3];
+    $filetypeargs = explode('.', $filetype);
+    $filetypeend = array_pop($filetypeargs);
+    $args = explode('/', $url);
     $filename = array_pop($args);    // Last argument.
-    $filename = urldecode($filename); // Decode %20, %28, %20 etc from filenames.
     $filestem = str_replace('.'.$filetype, '', $filename);
     $expfilename = str_replace('.png', '', $filename);
     $expfilename = str_replace('.gz', '', $expfilename);
     $expfilename = str_replace('.zip', '', $expfilename);
-    if (!$args) {
-        $itemid = 0;
-        $filepath = '/';
-    } else {
-        $itemid = array_shift($args);
-    }
-    if (!is_numeric($itemid)) {
-        $itemid = 0;
-    }
-    if (!$args) {
-        $filepath = '/';
-    } else {
-        $filepath = '/'.implode('/', $args).'/';
-    }
-    // required for mod_page.
-    if ($filearea === 'content') {
-        $itemid = 0;
-    }
-    // required for mod_quiz.
-    if ($filearea === 'questiontext') {
-        $itemid = array_pop($args); ;
-        $filepath='/';
-    }
-    if ($filearea === 'answer') {
-        $itemid = array_pop($args); ;
-        $filepath='/';
-    }
-    $fs = get_file_storage();
-    $file = $fs->get_file($contextid, $component, $filearea, $itemid, $filepath, $filename);
-    // Copy data files from Moodle file API to temporary physical filesystem.
-    // Then loaded by JSmol in iframe.
-    // Allows loading of binary data files (pdb.gz, pse format etc).
-    $pathname = $wwwroot.'/filter/jmol/temp'.$shortpath;
-    $destpath = $CFG->dirroot.'/filter/jmol/temp'.$shortpath;
-    $destpath = urldecode($destpath);
-    // Create temp directories and file, if they don't already exist.
-    if ($file) {
-        if (!file_exists($destpath)) {
-            mkdir(dirname($destpath), 0755, true);
-            $file->copy_content_to($destpath);
-        } else if (sha1($file->get_content()) !== sha1_file($destpath)) {
-            $file->copy_content_to($destpath);
-        } else {
-            // Touch file to update timestamp.
-            touch ($destpath);
-        }
-    }
+
     // Controls defined by parameter appended to structure file URL ?c=0, ?c=1 (default), ?c=2 ,?c=3 or ?c=4.
     if (count($matches) > 8) {
         $initscript = preg_replace("@(\s|<br />)+@si", " ",
@@ -219,19 +167,33 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $initscript = '';
     }
+    // Force Java applet for binary files (.pdb.gz or .pse or ,jsmol) with some older browsers
+    // Defaults should work for up-to-date browsers.
+    $browser = strtolower($_SERVER['HTTP_USER_AGENT']);
+    if ($filetypeend === "gz" || $filetypeend === "pse" || $filetypeend === "png" || $filetypeend === "jmol") {
+        if (strpos($browser, 'trident') || strpos($browser, 'msie')) {
+            $technol = 'SIGNED';
+        } else {
+            $technol = 'HTML5';
+        }
+    } else if (strpos($browser, 'msie 8')) {
+        $technol = 'SIGNED';
+    } else {
+        $technol = 'HTML5';
+    }
     // Setup iframe for Jmol/JSmol.
     return '
 <div style="height:100%; width:100%; border: 0; padding: 0; overflow:hidden">
 <iframe id = "iframe'.$id.'" allowfullscreen frameborder = "0"
 src = "'.new moodle_url('/filter/jmol/iframe.php', array(
-    'p' => $pathname,
+    'u' => $url,
     'n' => $filestem,
     'f' => $filetype,
     'l' => $moodlelang,
     'c' => $controls,
     'i' => $initscript,
     'id' => $id,
-    '_USE' => 'HTML5',
+    '_USE' => $technol,
     'DEFER' => true
     )).' "style = "border: 1px solid lightgray; padding: 0px; margin: 0px; height: '.$size.'px; width: '.$size.'px">
 </iframe>
@@ -260,5 +222,5 @@ src = "'.new moodle_url('/filter/jmol/iframe.php', array(
             BigScreen.toggle(elem);
         }
     };
-</script>';
+    </script>';
 }

@@ -22,7 +22,7 @@
  * @copyright  2006 Dan Stowell Original version for Moodle 1.x
  * @copyright  2010 Geoffrey Rowland <rowland dot geoff at gmail dot com> Update for Moodle 2.x
  * @copyright  2013 Geoffrey Rowland <rowland dot geoff at gmail dot com> Update for JavaScript/HTML5 JSmol
- * @copyright  2015 Geoffrey Rowland <rowland dot geoff at gmail dot com> Update for Moodle 2.9 
+ * @copyright  2015 Geoffrey Rowland <rowland dot geoff at gmail dot com> Update for Moodle 2.9
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @license    For Jmol/JSmol licence, see inside the bundled jmol and jsmol folders
  */
@@ -32,7 +32,6 @@ defined('MOODLE_INTERNAL') || die();
 // Jmol settings.
 $string['pluginname'] = 'Jmol';
 $string['jsmol'] = 'JSmol';
-$string['jsmol_help'] = 'Click on cover image to activate';
 $string['jsmol_link'] = 'http://google.co.uk';
 $string['jsmol_desc'] = 'JSmol';
 $string['taskcleanjmoltemp'] = 'Clean Jmol filter temp files';
@@ -47,7 +46,6 @@ $string['antialias'] = 'Antialias';
 $string['style'] = 'Style';
 $string['spin'] = 'Spin ';
 $string['download'] = 'Download';
-$string['off'] = 'off';
 $string['unitcell'] = 'Unit cell';
 $string['wireframe'] = 'Wireframe';
 $string['sticks'] = 'Sticks';
@@ -59,12 +57,8 @@ $string['cartoon_desc'] = 'Secondary structure cartoon';
 $string['ribbon'] = 'Ribbon';
 $string['backbone'] = 'Backbone';
 $string['backbone_desc'] = 'Backbone only';
-$string['hydrogens'] = 'Hydrogens';
 $string['polyhedra'] = 'Polyhedra';
-$string['jmolhelp'] = 'Jmol help';
 $string['fullscreen'] = 'Fullscreen';
-$string['downloadstructurefile'] = 'Download the chemical structure data file';
-$string['jsdisabled'] = 'The Jmol/JSmol 3D chemical structure viewer uses JavaScript. You may need to enable JavaScript in your Web browser. If you are unable to make use of this technology, you can still use the download link (below) to retrieve the chemical structure file.';
 $string['backgroundcolour'] = 'Background colour';
 $string['whitebackground'] = 'White background';
 $string['lightgreybackground'] = 'Light grey background';
@@ -85,7 +79,7 @@ $string['tertiary_desc'] = 'Colour tertiary structure';
 $string['quaternary'] = 'Quaternary';
 $string['quaternary_desc'] = 'Colour quaternary structure';
 $string['labels'] = 'Labels';
-$string['off'] = 'Off';
+$string['off'] = 'Labels off';
 $string['off_desc'] = 'Labels off';
 $string['atoms'] = 'Atoms';
 $string['atoms_desc'] = 'Atom labels';
@@ -128,6 +122,10 @@ $string['displayconsole'] = 'Display console';
 $string['downloadpngj'] = 'Download PNGJ structure + image file';
 $string['togglefullscreen'] = 'Toggle fullscreen';
 $string['help'] = 'Help';
+$string['nojavasupport'] = 'Jmol requires Java. Your browser does not support Java. Please try one of the following:<ol><li>Select a different display technology, JSmol (HTML5) or GLmol (WebGL), from the menu</li><li>Use a different, Java-supporting browser (Firefox, Safari or Internet Explorer). See <a target=\"_blank\" href=\"https://java.com\">Get Java</a></li></ol>';
+$string['nohtml5'] = 'JSmol requires HTML5. Your browser does not support HTML5. Please try one of the following:<ol><li>Select Jmol which uses Java display technology</li><li>Use a recent browser version that supports HTML5</li></ol>';
+$string['nobinary'] = 'Your browser does not support binary file loading via JavaScript. Please try one of the following:<ol><li>Select Jmol which uses Java display technology which supports binary file</li><li>Use a recent browser version that supports binary file loading via JavaScript</li></ol>';
+$string['nowebgl'] = 'GLmol requires WebGL. Your browser and/or platform does not currently support WebGL. Please try one of the following:<ol><li>Select a different display technology JSmol (HTML5) or Jmol (Java) from the menu</li><li><a target=\"_blank\" href=\"https://get.webgl.org\">Get WebGL</a></li></ol>';
 // Groups.
 $string['group'] = 'Group';
 $string['group1'] = 'Group1, the alkali metals';
