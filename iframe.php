@@ -82,7 +82,6 @@ $expfilename = str_replace('.png', '', $filename);
 $expfilename = str_replace('.gz', '', $expfilename);
 $expfilename = str_replace('.zip', '', $expfilename);
 
-$downloadstructurefile = get_string('downloadstructurefile', 'filter_jmol', true);
 $fullscreen = get_string('fullscreen', 'filter_jmol', true);
 if ($jmolfiletype === "cif" ) {
     $loadscript = 'set zoomLarge false; load '.$pathname.' {1 1 1}; zoom 0;';
