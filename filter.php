@@ -135,10 +135,9 @@ function filter_jmol_replace_callback($matches) {
     $count++;
     $id = time() . $count;
 
-    if (!preg_match('/c=(\d{1,2})/', $matches[4], $optmatch)) {
-        $optmatch = array(1 => 1);
+    if (preg_match('/c=(\d{1,2})/', $matches[4], $optmatch)) {
+        $controls = $optmatch[1];
     }
-    $controls = $optmatch[1];
     
     // cover image - defer Jmol/JSmol object loading ?i=0 no cover image, ?i=1 (default) cover image
     if (preg_match('/i=(\d{1,1})/', $matches[4], $optmatch)) {
