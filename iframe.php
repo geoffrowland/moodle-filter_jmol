@@ -102,7 +102,11 @@ if ($jmolfiletype === "cif" ) {
     $menu = 'SimpleChem.mnu';
     $dropmenu = 'SimpleChem';
 }
-if ($controls === '2') {
+if ($controls === '1') {
+        $menu = 'SimpleChem.mnu';
+        $dropmenu = 'SimpleChem';
+        $loadscript = 'set zoomLarge false; load '.$pathname.';';
+} else if ($controls === '2') {
         $menu = 'SimpleCryst.mnu';
         $dropmenu = 'SimpleCryst';
 } else if ($controls === '3') {
