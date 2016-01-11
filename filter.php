@@ -139,7 +139,13 @@ function filter_jmol_replace_callback($matches) {
         $optmatch = array(1 => 1);
     }
     $controls = $optmatch[1];
-
+    
+    // cover image - defer Jmol/JSmol object loading ?i=0 no cover image, ?i=1 (default) cover image
+    if (preg_match('/i=(\d{1,1})/', $matches[4], $optmatch)) {
+        $coverimage = $optmatch[1];
+    } else {
+        $coverimage = 1;
+    }
     // JSmol size (width = height) in pixels defined by parameter appended to structure file URL e.g. ?s=200, ?s=300 (default) etc.
     if (preg_match('/s=(\d{1,3})/', $matches[4], $optmatch)) {
         $size = $optmatch[1];
@@ -194,7 +200,7 @@ src = "'.new moodle_url('/filter/jmol/iframe.php', array(
     'i' => $initscript,
     'id' => $id,
     '_USE' => $technol,
-    'DEFER' => true
+    'DEFER' => $coverimage
     )).' "style = "border: 1px solid lightgray; padding: 0px; margin: 0px; height: '.$size.'px; width: '.$size.'px">
 </iframe>
 </div>
