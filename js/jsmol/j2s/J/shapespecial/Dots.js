@@ -71,10 +71,8 @@ throw e;
 
 this.ec.setMads (this.mads);
 }this.mads[this.thisAtom] = Clazz.floatToShort (this.thisRadius * 1000);
-if (this.colixes == null) {
-this.colixes =  Clazz.newShortArray (this.ac, 0);
-this.paletteIDs =  Clazz.newByteArray (this.ac, 0);
-}this.colixes[this.thisAtom] = JU.C.getColix (this.thisArgb);
+if (this.colixes == null) this.checkColixLength (4, this.ac);
+this.colixes[this.thisAtom] = JU.C.getColix (this.thisArgb);
 this.bsOn.set (this.thisAtom);
 return;
 }if ("refreshTrajectories" === propertyName) {
@@ -152,10 +150,8 @@ if (dotsConvexMaps != null) {
 for (var i = this.ac; --i >= 0; ) if (this.bsOn.get (i)) {
 dotsConvexMaps[i] = null;
 }
-}if (dotsConvexMaps == null && (this.colixes == null || this.colixes.length != this.ac)) {
-this.colixes =  Clazz.newShortArray (this.ac, 0);
-this.paletteIDs =  Clazz.newByteArray (this.ac, 0);
-}this.ec.calculate (rd, maxRadius, this.bsOn, this.bsIgnore, !this.vwr.getBoolean (603979830), this.vwr.getBoolean (603979829), this.isSurface, true);
+}if (dotsConvexMaps == null && (this.colixes == null || this.colixes.length != this.ac)) this.checkColixLength (4, this.ac);
+this.ec.calculate (rd, maxRadius, this.bsOn, this.bsIgnore, !this.vwr.getBoolean (603979830), this.vwr.getBoolean (603979829), this.isSurface, true);
 this.rdLast = rd;
 }, "J.atomdata.RadiusData,JU.BS");
 Clazz.overrideMethod (c$, "setAtomClickability", 

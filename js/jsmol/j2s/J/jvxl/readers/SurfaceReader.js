@@ -264,9 +264,9 @@ return "-";
 });
 Clazz.overrideMethod (c$, "getPlane", 
 function (x) {
-return this.getPlane2 (x);
+return this.getPlaneSR (x);
 }, "~N");
-Clazz.defineMethod (c$, "getPlane2", 
+Clazz.defineMethod (c$, "getPlaneSR", 
 function (x) {
 if (this.yzCount == 0) this.initPlanes ();
 if (this.qpc != null) this.qpc.getPlane (x, this.yzPlanes[x % 2]);

@@ -1,9 +1,8 @@
 Clazz.declarePackage ("J.shapebio");
 Clazz.load (["J.shapebio.BioShapeCollection"], "J.shapebio.Trace", ["J.atomdata.RadiusData", "J.c.VDW"], function () {
 c$ = Clazz.declareType (J.shapebio, "Trace", J.shapebio.BioShapeCollection);
-Clazz.defineMethod (c$, "initShape", 
+Clazz.overrideMethod (c$, "initShape", 
 function () {
-Clazz.superCall (this, J.shapebio.Trace, "initShape", []);
 this.madOn = 600;
 this.madHelixSheet = 1500;
 this.madTurnRandom = 500;
@@ -26,7 +25,7 @@ var sumsq = 0.0;
 var min = 3.4028235E38;
 var max = 0;
 for (var i = bsAtoms.nextSetBit (0); i >= 0; i = bsAtoms.nextSetBit (i + 1)) {
-var value = this.atoms[i].atomPropertyFloat (null, 1112541196, null);
+var value = this.atoms[i].atomPropertyFloat (null, 1111492620, null);
 sum += value;
 sumsq += (value * value);
 if (value < min) min = value;
@@ -51,7 +50,7 @@ nonlinear = true;
 break;
 }
 for (var i = bsAtoms.nextSetBit (0); i >= 0; i = bsAtoms.nextSetBit (i + 1)) {
-var scale = this.atoms[i].atomPropertyFloat (null, 1112541196, null);
+var scale = this.atoms[i].atomPropertyFloat (null, 1111492620, null);
 switch (transform) {
 case 3:
 case 7:

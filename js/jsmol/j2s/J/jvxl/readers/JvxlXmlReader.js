@@ -223,7 +223,7 @@ if (s.length > 0) this.jvxlData.meshColor = s;
 s = J.jvxl.readers.XmlReader.getXmlAttrib (data, "rendering");
 if (s.length > 0) this.jvxlData.rendering = s;
 this.jvxlData.colorScheme = J.jvxl.readers.XmlReader.getXmlAttrib (data, "colorScheme");
-if (this.jvxlData.colorScheme.length == 0) this.jvxlData.colorScheme = null;
+if (this.jvxlData.colorScheme.length == 0) this.jvxlData.colorScheme = (this.jvxlDataIsColorMapped ? "roygb" : null);
 if (this.jvxlData.thisSet < 0) {
 var n = this.parseIntStr (J.jvxl.readers.XmlReader.getXmlAttrib (data, "set"));
 if (n > 0) this.jvxlData.thisSet = n - 1;

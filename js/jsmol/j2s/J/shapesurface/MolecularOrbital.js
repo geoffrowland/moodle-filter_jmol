@@ -61,7 +61,7 @@ var slabInfo = value;
 var tok = (slabInfo[0]).intValue ();
 this.moSlab = this.thisModel.get ("slab");
 if (this.moSlab == null) this.thisModel.put ("slab", this.moSlab =  new JU.Lst ());
-if (tok == 1048587) {
+if (tok == 1073742333) {
 this.moSlab = null;
 this.thisModel.remove ("slab");
 return;
@@ -169,7 +169,7 @@ this.$moLinearCombination = null;
 } else if ("token" === propertyName) {
 var tok = (value).intValue ();
 switch (tok) {
-case 1113198595:
+case 1112150019:
 case 1073742042:
 this.moDots = tok;
 break;
@@ -198,11 +198,11 @@ Clazz.defineMethod (c$, "getId",
 return "mo_model" + this.vwr.getModelNumberDotted (modelIndex);
 }, "~N");
 Clazz.overrideMethod (c$, "getProperty", 
-function (propertyName, param) {
+function (propertyName, index) {
 if (propertyName.startsWith ("list")) {
 var s = "";
 if (propertyName.equals ("list")) {
-s = this.getPropI ("list");
+s = this.getPropI ("list", index);
 if (s.length > 1) s += "cutoff = " + this.jvxlData.cutoff + "\n";
 s = "\n" + s;
 }return this.getMoInfo (-1) + s;
@@ -212,7 +212,7 @@ if (propertyName === "showMO") {
 var str =  new JU.SB ();
 var mos = (this.sg.params.moData.get ("mos"));
 var nOrb = (mos == null ? 0 : mos.size ());
-var thisMO = param;
+var thisMO = index;
 var currentMO = this.$moNumber;
 var isShowCurrent = (thisMO == -2147483648);
 if (thisMO == 2147483647) {
@@ -237,7 +237,7 @@ if (nTotal == 1) break;
 }
 str.append (J.jvxl.data.JvxlCoder.jvxlGetFile (this.jvxlData, null, null, "TRAILERONLY", true, 0, null, null));
 return str.toString ();
-}return this.getPropI (propertyName);
+}return this.getPropI (propertyName, index);
 }, "~S,~N");
 Clazz.defineMethod (c$, "getMoInfo", 
 function (modelIndex) {
@@ -389,5 +389,5 @@ var key = entry.getKey ();
 this.htModels.put (key, entry.getValue ());
 }
 }Clazz.superCall (this, J.shapesurface.MolecularOrbital, "merge", [shape]);
-}, "J.shape.Shape");
+}, "J.shape.MeshCollection");
 });

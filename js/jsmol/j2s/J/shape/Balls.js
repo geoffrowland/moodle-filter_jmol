@@ -26,7 +26,7 @@ function (propertyName, value, bs) {
 if ("color" === propertyName) {
 var colix = JU.C.getColixO (value);
 if (colix == 0) colix = 2;
-if (this.bsColixSet == null) this.bsColixSet =  new JU.BS ();
+if (this.bsColixSet == null) this.bsColixSet = JU.BS.newN (this.ac);
 var pid = J.c.PAL.pidOf (value);
 for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
 var atom = this.atoms[i];

@@ -207,7 +207,7 @@ this.q.createCube ();
 Clazz.overrideMethod (c$, "getPlane", 
 function (x) {
 if (!this.qSetupDone) this.setupCalculation ();
-return this.getPlane2 (x);
+return this.getPlaneSR (x);
 }, "~N");
 Clazz.defineMethod (c$, "setupCalculation", 
  function () {

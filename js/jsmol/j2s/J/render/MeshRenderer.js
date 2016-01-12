@@ -70,7 +70,7 @@ var c = mesh.colix;
 for (var j = max; --j >= 0; ) {
 var m = mesh.symops[j];
 if (m == null) continue;
-if (mesh.colorType == 1297090050) mesh.colix = mesh.symopColixes[j];
+if (mesh.colorType == 1296041474) mesh.colix = mesh.symopColixes[j];
 var normals = mesh.symopNormixes[j];
 var needNormals = (normals == null);
 verticesTemp = (needNormals ?  new Array (this.vertexCount) : null);
@@ -164,7 +164,7 @@ if (!this.renderLow && this.mesh.pc > 0 && (this.isGhostPass ? this.mesh.slabMes
 Clazz.defineMethod (c$, "renderPoints", 
 function () {
 if (!this.mesh.isTriangleSet || this.mesh.pc < 0) {
-for (var i = this.vertexCount; --i >= 0; ) if (!this.frontOnly || this.normixes == null || this.transformedVectors[this.normixes[i]].z >= 0) this.drawPoint (i, false);
+for (var i = this.vertexCount; --i >= 0; ) if (!this.frontOnly || this.normixes == null || this.isVisibleNormix (this.normixes[i])) this.drawPoint (i, false);
 
 return;
 }var polygonIndexes = this.mesh.pis;
@@ -175,7 +175,7 @@ bsPoints.andNot (this.mesh.bsDisplay);
 }for (var i = this.mesh.pc; --i >= 0; ) {
 if (!this.isPolygonDisplayable (i)) continue;
 var p = polygonIndexes[i];
-if (this.frontOnly && this.transformedVectors[this.normixes[i]].z < 0) continue;
+if (this.frontOnly && !this.isVisibleNormix (this.normixes[i])) continue;
 for (var j = p.length - 1; --j >= 0; ) {
 var pt = p[j];
 if (bsPoints.get (pt)) continue;
@@ -222,7 +222,7 @@ continue;
 }var check;
 if (this.mesh.isTriangleSet) {
 var normix = this.normixes[i];
-if (!this.vwr.gdata.isDirectedTowardsCamera (normix)) continue;
+if (this.frontOnly && !this.isVisibleNormix (normix)) continue;
 if (fill) {
 if (this.isPrecision) this.g3d.fillTriangle3CNBits (this.p3Screens[iA], this.colix, normix, this.p3Screens[iB], this.colix, normix, this.p3Screens[iC], this.colix, normix);
  else this.g3d.fillTriangle3CN (this.screens[iA], this.colix, normix, this.screens[iB], this.colix, normix, this.screens[iC], this.colix, normix);
@@ -253,7 +253,7 @@ continue;
 case 4:
 var iD = polygon[3];
 var nD = this.normixes[iD];
-if (this.frontOnly && (check != 7 || this.transformedVectors[nD].z < 0)) continue;
+if (this.frontOnly && (check != 7 || !this.isVisibleNormix (nD))) continue;
 if (fill) {
 if (generateSet) {
 this.bsPolygonsToExport.set (i);
@@ -270,6 +270,10 @@ this.g3d.fillTriangle3CN (this.screens[iA], this.colix, nA, this.screens[iC], th
 }
 if (generateSet) this.exportSurface (this.colix);
 }, "~B,~B,~B");
+Clazz.defineMethod (c$, "isVisibleNormix", 
+function (normix) {
+return (normix < 0 || this.transformedVectors[normix].z >= 0);
+}, "~N");
 Clazz.defineMethod (c$, "drawTriangleBits", 
  function (screenA, colixA, screenB, colixB, screenC, colixC, check, diam) {
 if (!this.antialias && diam == 1) {

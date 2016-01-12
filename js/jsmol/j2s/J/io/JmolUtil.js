@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.io");
-Clazz.load (["J.api.JmolZipUtilities"], "J.io.JmolUtil", ["java.io.BufferedInputStream", "$.BufferedReader", "java.net.URL", "java.util.Hashtable", "$.StringTokenizer", "JU.AU", "$.Lst", "$.OC", "$.PT", "$.Rdr", "$.SB", "J.adapter.smarter.AtomSetCollection", "J.api.Interface", "J.io.JmolBinary", "JU.Escape", "$.Logger"], function () {
+Clazz.load (["J.api.JmolZipUtilities"], "J.io.JmolUtil", ["java.io.BufferedInputStream", "$.BufferedReader", "java.net.URL", "java.util.Hashtable", "$.StringTokenizer", "JU.AU", "$.Lst", "$.OC", "$.PT", "$.Rdr", "$.SB", "J.adapter.smarter.AtomSetCollection", "J.api.Interface", "JU.Escape", "$.Logger", "JV.FileManager"], function () {
 c$ = Clazz.declareType (J.io, "JmolUtil", null, J.api.JmolZipUtilities);
 Clazz.makeConstructor (c$, 
 function () {
@@ -110,7 +110,7 @@ var selectAll = (manifest.indexOf ("IGNORE_MANIFEST") >= 0);
 var exceptFiles = (manifest.indexOf ("EXCEPT_FILES") >= 0);
 if (selectAll || subFileName != null) haveManifest = false;
 if (useFileManifest && haveManifest) {
-var path = J.io.JmolBinary.getManifestScriptPath (manifest);
+var path = JV.FileManager.getManifestScriptPath (manifest);
 if (path != null) return "NOTE: file recognized as a script file: " + fileName + path + "\n";
 }var vCollections =  new JU.Lst ();
 var htCollections = (haveManifest ?  new java.util.Hashtable () : null);

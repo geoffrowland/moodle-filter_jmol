@@ -21,10 +21,6 @@ function (x, y, closest, bsNot) {
 if (this.shapes != null) for (var i = 0; i < this.shapes.length && closest[0] == null; ++i) if (this.shapes[i] != null) this.shapes[i].findNearestAtomIndex (x, y, closest, bsNot);
 
 }, "~N,~N,~A,JU.BS");
-Clazz.defineMethod (c$, "getShapes", 
-function () {
-return this.shapes;
-});
 Clazz.defineMethod (c$, "getShapePropertyIndex", 
 function (shapeID, propertyName, index) {
 if (this.shapes == null || this.shapes[shapeID] == null) return null;
@@ -186,15 +182,6 @@ Clazz.defineMethod (c$, "getShape",
 function (i) {
 return (this.shapes == null ? null : this.shapes[i]);
 }, "~N");
-Clazz.defineMethod (c$, "mergeShapes", 
-function (newShapes) {
-if (newShapes == null) return;
-if (this.shapes == null) this.shapes = newShapes;
- else for (var i = 0; i < newShapes.length; ++i) if (newShapes[i] != null) {
-if (this.shapes[i] == null) this.loadShape (i);
-this.shapes[i].merge (newShapes[i]);
-}
-}, "~A");
 Clazz.defineMethod (c$, "resetBioshapes", 
 function (bsAllAtoms) {
 if (this.shapes == null) return;
@@ -206,9 +193,7 @@ this.shapes[i].setProperty ("color", J.c.PAL.NONE, bsAllAtoms);
 }, "JU.BS");
 Clazz.defineMethod (c$, "setAtomLabel", 
 function (strLabel, i) {
-if (this.shapes == null) return;
-this.loadShape (5);
-this.shapes[5].setProperty ("label:" + strLabel, Integer.$valueOf (i), null);
+if (this.shapes != null) this.shapes[5].setProperty ("label:" + strLabel, Integer.$valueOf (i), null);
 }, "~S,~N");
 Clazz.defineMethod (c$, "setModelVisibility", 
 function () {
@@ -243,19 +228,22 @@ if (shape != null) shape.setAtomClickability ();
 }
 });
 Clazz.defineMethod (c$, "finalizeAtoms", 
-function (bsAtoms, ptOffset) {
+function (checkAtoms, finalizeParams) {
 var vwr = this.vwr;
+if (finalizeParams) vwr.finalizeTransformParameters ();
 var tm = vwr.tm;
 var bs = this.bsRenderableAtoms;
+var bsAtoms = (checkAtoms ? tm.bsSelectedAtoms : null);
 if (bsAtoms != null) {
 var ptCenter = this.ms.getAtomSetCenter (bsAtoms);
 var pt =  new JU.P3 ();
 tm.transformPt3f (ptCenter, pt);
-pt.add (ptOffset);
+pt.add (tm.ptOffset);
 tm.unTransformPoint (pt, pt);
 pt.sub (ptCenter);
 vwr.setAtomCoordsRelative (pt, bsAtoms);
-ptOffset.set (0, 0, 0);
+tm.ptOffset.set (0, 0, 0);
+tm.bsSelectedAtoms = null;
 }this.ms.getAtomsInFrame (bs);
 var vibrationVectors = this.ms.vibrations;
 var vibs = (vibrationVectors != null && tm.vibrationOn);
@@ -270,7 +258,7 @@ atom.sX = screen.x;
 atom.sY = screen.y;
 atom.sZ = screen.z;
 var d = Math.abs (atom.madAtom);
-if (d == JM.Atom.MAD_GLOBAL) d = Clazz.floatToInt (vwr.getFloat (1141899265) * 2000);
+if (d == JM.Atom.MAD_GLOBAL) d = Clazz.floatToInt (vwr.getFloat (1140850689) * 2000);
 atom.sD = Clazz.floatToShort (vwr.tm.scaleToScreen (screen.z, d));
 if (checkOccupancy && vibrationVectors[i] != null && (occ = vibrationVectors[i].getOccupancy100 (vibs)) != -2147483648) {
 haveMods = true;
@@ -328,7 +316,7 @@ this.navMinMax[1] = maxX;
 this.navMinMax[2] = minY;
 this.navMinMax[3] = maxY;
 return this.navMinMax;
-}, "JU.BS,JU.P3");
+}, "~B,~B");
 Clazz.defineMethod (c$, "setModelSet", 
 function (modelSet) {
 this.ms = this.vwr.ms = modelSet;

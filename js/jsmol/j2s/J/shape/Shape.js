@@ -47,12 +47,6 @@ Clazz.defineMethod (c$, "setShapeVisibility",
 function (atom, isVisible) {
 atom.setShapeVisibility (this.vf, isVisible);
 }, "JM.Atom,~B");
-Clazz.defineMethod (c$, "initShape", 
-function () {
-});
-Clazz.defineMethod (c$, "merge", 
-function (shape) {
-}, "J.shape.Shape");
 Clazz.defineMethod (c$, "setShapeSizeRD", 
 function (size, rd, bsSelected) {
 if (rd == null) this.setSize (size, bsSelected);

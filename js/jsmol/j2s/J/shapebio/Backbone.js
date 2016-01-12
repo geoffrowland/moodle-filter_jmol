@@ -4,9 +4,8 @@ c$ = Clazz.decorateAsClass (function () {
 this.bsSelected = null;
 Clazz.instantialize (this, arguments);
 }, J.shapebio, "Backbone", J.shapebio.BioShapeCollection);
-Clazz.defineMethod (c$, "initShape", 
+Clazz.overrideMethod (c$, "initShape", 
 function () {
-Clazz.superCall (this, J.shapebio.Backbone, "initShape", []);
 this.madOn = 1;
 this.madHelixSheet = 1500;
 this.madTurnRandom = 500;

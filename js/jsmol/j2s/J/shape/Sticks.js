@@ -11,9 +11,8 @@ Clazz.instantialize (this, arguments);
 Clazz.prepareFields (c$, function () {
 this.ptXY =  new JU.P3i ();
 });
-Clazz.defineMethod (c$, "initShape", 
+Clazz.overrideMethod (c$, "initShape", 
 function () {
-Clazz.superCall (this, J.shape.Sticks, "initShape", []);
 this.myMask = 1023;
 this.reportAll = false;
 });

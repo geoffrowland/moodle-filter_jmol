@@ -120,7 +120,7 @@ this.params.title = null;
 return true;
 } else if (JU.AU.isAS (value)) {
 this.params.title = value;
-for (var i = 0; i < this.params.title.length; i++) if (this.params.title[i].length > 0) JU.Logger.info (this.params.title[i]);
+if (JU.Logger.debugging) for (var i = 0; i < this.params.title.length; i++) if (this.params.title[i].length > 0) JU.Logger.info (this.params.title[i]);
 
 }return true;
 }if ("sigma" === propertyName) {

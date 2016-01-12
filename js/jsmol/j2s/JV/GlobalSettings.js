@@ -31,7 +31,9 @@ this.forceAutoBond = false;
 this.fractionalRelative = true;
 this.inlineNewlineChar = '|';
 this.loadFormat = null;
-this.loadLigandFormat = null;
+this.pdbLoadFormat = null;
+this.pdbLoadFormat0 = null;
+this.pdbLoadLigandFormat = null;
 this.nmrUrlFormat = null;
 this.nmrPredictFormat = null;
 this.smilesUrlFormat = null;
@@ -101,6 +103,7 @@ this.showMultipleBonds = true;
 this.ssbondsBackbone = false;
 this.multipleBondSpacing = -1;
 this.multipleBondRadiusFactor = 0;
+this.multipleBondBananas = false;
 this.cartoonBaseEdges = false;
 this.cartoonRockets = false;
 this.backboneSteps = false;
@@ -267,8 +270,9 @@ this.testFlag4 = g.testFlag4;
 this.databases =  new java.util.Hashtable ();
 this.getDataBaseList (JV.JC.databases);
 this.getDataBaseList (this.userDatabases);
-}this.loadFormat = this.databases.get ("pdb");
-this.loadLigandFormat = this.databases.get ("ligand");
+}this.loadFormat = this.pdbLoadFormat = this.databases.get ("pdb");
+this.pdbLoadFormat0 = this.databases.get ("pdb0");
+this.pdbLoadLigandFormat = this.databases.get ("ligand");
 this.nmrUrlFormat = this.databases.get ("nmr");
 this.nmrPredictFormat = this.databases.get ("nmrdb");
 this.smilesUrlFormat = this.databases.get ("nci") + "/file?format=sdf&get3d=True";
@@ -317,7 +321,6 @@ this.setI ("spinZ", 0);
 this.setI ("spinFps", 30);
 this.setF ("visualRange", 5.0);
 this.setI ("stereoDegrees", -5);
-this.setI ("stateversion", 0);
 this.setB ("syncScript", vwr.sm.syncingScripts);
 this.setB ("syncMouse", vwr.sm.syncingMouse);
 this.setB ("syncStereo", vwr.sm.stereoSync);
@@ -444,7 +447,7 @@ this.setB ("legacyHAddition", this.legacyHAddition);
 this.setB ("legacyJavaFloat", this.legacyJavaFloat);
 this.setF ("loadAtomDataTolerance", this.loadAtomDataTolerance);
 this.setO ("loadFormat", this.loadFormat);
-this.setO ("loadLigandFormat", this.loadLigandFormat);
+this.setO ("loadLigandFormat", this.pdbLoadLigandFormat);
 this.setB ("logCommands", this.logCommands);
 this.setB ("logGestures", this.logGestures);
 this.setB ("measureAllModels", this.measureAllModels);
@@ -462,6 +465,7 @@ this.setB ("modelKitMode", this.modelKitMode);
 this.setF ("modulationScale", this.modulationScale);
 this.setB ("monitorEnergy", this.monitorEnergy);
 this.setF ("multipleBondRadiusFactor", this.multipleBondRadiusFactor);
+this.setB ("multipleBondBananas", this.multipleBondBananas);
 this.setF ("multipleBondSpacing", this.multipleBondSpacing);
 this.setB ("multiProcessor", this.multiProcessor && (JV.Viewer.nProcessors > 1));
 this.setB ("navigationMode", this.navigationMode);
@@ -655,7 +659,7 @@ function (name, nullAsString) {
 var v = this.getParam (name, false);
 return (v == null && nullAsString ? "" : v);
 }, "~S,~B");
-Clazz.defineMethod (c$, "getOrSetNewVariable", 
+Clazz.defineMethod (c$, "getAndSetNewVariable", 
 function (name, doSet) {
 if (name == null || name.length == 0) name = "x";
 var v = this.getParam (name, true);
@@ -692,26 +696,33 @@ function () {
 return this.structureList;
 });
 Clazz.defineMethod (c$, "resolveDataBase", 
-function (database, id) {
-var format = this.databases.get (database.toLowerCase ());
-if (format == null) return null;
-if (id.indexOf ("/") < 0) {
+function (database, id, format) {
+if (format == null) {
+if ((format = this.databases.get (database.toLowerCase ())) == null) return null;
+var pt = id.indexOf ("/");
+if (pt < 0) {
 if (database.equals ("pubchem")) id = "name/" + id;
  else if (database.equals ("nci")) id += "/file?format=sdf&get3d=True";
-}while (format.indexOf ("%c") >= 0) {
-try {
-for (var i = 1; i < 10; i++) {
+}if (format.startsWith ("'")) {
+pt = id.indexOf (".");
+var n = (pt > 0 ? JU.PT.parseInt (id.substring (pt + 1)) : 0);
+if (pt > 0) id = id.substring (0, pt);
+format = JU.PT.rep (format, "%n", "" + n);
+}} else if (id.indexOf (".") >= 0 && format.indexOf ("%FILE.") >= 0) {
+format = format.substring (0, format.indexOf ("%FILE"));
+}try {
+while (format.indexOf ("%c") >= 0) for (var i = 1; i < 10; i++) {
 format = JU.PT.rep (format, "%c" + i, id.substring (i - 1, i));
 }
+
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 } else {
 throw e;
 }
 }
-}
-return (format.indexOf ("%FILE") < 0 ? format + id : JU.PT.formatStringS (format, "FILE", id));
-}, "~S,~S");
+return (format.indexOf ("%FILE") >= 0 ? JU.PT.formatStringS (format, "FILE", id) : format.indexOf ("%file") >= 0 ? JU.PT.formatStringS (format, "file", id.toLowerCase ()) : format + id);
+}, "~S,~S,~S");
 c$.doReportProperty = Clazz.defineMethod (c$, "doReportProperty", 
 function (name) {
 return (name.charAt (0) != '_' && JV.GlobalSettings.unreportedProperties.indexOf (";" + name + ";") < 0);
@@ -754,7 +765,7 @@ if (sMode.equals ("User")) this.app (str, this.vwr.getDefaultVdwNameOrData (2147
 this.app (str, "set forceAutoBond " + this.forceAutoBond);
 this.app (str, "#set defaultDirectory " + JU.PT.esc (this.defaultDirectory));
 this.app (str, "#set loadFormat " + JU.PT.esc (this.loadFormat));
-this.app (str, "#set loadLigandFormat " + JU.PT.esc (this.loadLigandFormat));
+this.app (str, "#set loadLigandFormat " + JU.PT.esc (this.pdbLoadLigandFormat));
 this.app (str, "#set smilesUrlFormat " + JU.PT.esc (this.smilesUrlFormat));
 this.app (str, "#set nihResolverFormat " + JU.PT.esc (this.nihResolverFormat));
 this.app (str, "#set pubChemFormat " + JU.PT.esc (this.pubChemFormat));
@@ -768,6 +779,7 @@ this.app (str, "set legacyJavaFloat " + this.legacyJavaFloat);
 this.app (str, "set minBondDistance " + this.minBondDistance);
 this.app (str, "set minimizationCriterion  " + this.minimizationCriterion);
 this.app (str, "set minimizationSteps  " + this.minimizationSteps);
+this.app (str, "set multipleBondBananas false");
 this.app (str, "set pdbAddHydrogens " + (htParams != null && htParams.get ("pdbNoHydrogens") !== Boolean.TRUE ? this.pdbAddHydrogens : false));
 this.app (str, "set pdbGetHeader " + this.pdbGetHeader);
 this.app (str, "set pdbSequential " + this.pdbSequential);

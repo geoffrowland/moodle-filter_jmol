@@ -34,7 +34,7 @@ return this.pointGroup.getInfo (modelIndex, asDraw, asInfo, type, index, scale);
 }, "~N,~B,~B,~S,~N,~N");
 Clazz.overrideMethod (c$, "setSpaceGroup", 
 function (doNormalize) {
-if (this.spaceGroup == null) this.spaceGroup = (JS.SpaceGroup.getNull (true)).set (doNormalize);
+if (this.spaceGroup == null) this.spaceGroup = JS.SpaceGroup.getNull (true, doNormalize, false);
 }, "~B");
 Clazz.overrideMethod (c$, "addSpaceGroupOperation", 
 function (xyz, opId) {
@@ -58,8 +58,8 @@ function (symmetry) {
 this.spaceGroup = symmetry.getSpaceGroup ();
 }, "J.api.SymmetryInterface");
 Clazz.overrideMethod (c$, "createSpaceGroup", 
-function (desiredSpaceGroupIndex, name, object) {
-this.spaceGroup = JS.SpaceGroup.createSpaceGroup (desiredSpaceGroupIndex, name, object);
+function (desiredSpaceGroupIndex, name, data) {
+this.spaceGroup = JS.SpaceGroup.createSpaceGroup (desiredSpaceGroupIndex, name, data);
 if (this.spaceGroup != null && JU.Logger.debugging) JU.Logger.debug ("using generated space group " + this.spaceGroup.dumpInfo (null));
 return this.spaceGroup != null;
 }, "~N,~S,~O");
@@ -156,15 +156,17 @@ return this.symmetryInfo == null || this.symmetryInfo.coordinatesAreFractional;
 });
 Clazz.overrideMethod (c$, "getCellRange", 
 function () {
-return this.symmetryInfo.cellRange;
+return this.symmetryInfo == null ? null : this.symmetryInfo.cellRange;
 });
 Clazz.overrideMethod (c$, "getSymmetryInfoStr", 
 function () {
-return this.symmetryInfo.infoStr;
+return (this.symmetryInfo == null ? "" : this.symmetryInfo.infoStr);
 });
 Clazz.overrideMethod (c$, "getSymmetryOperations", 
 function () {
-return this.symmetryInfo == null ? this.spaceGroup.finalOperations : this.symmetryInfo.symmetryOperations;
+if (this.symmetryInfo != null) return this.symmetryInfo.symmetryOperations;
+if (this.spaceGroup == null) this.spaceGroup = JS.SpaceGroup.getNull (true, false, true);
+return this.spaceGroup.finalOperations;
 });
 Clazz.overrideMethod (c$, "isPeriodic", 
 function () {
@@ -190,8 +192,7 @@ return (this.unitCell != null);
 Clazz.overrideMethod (c$, "checkUnitCell", 
 function (uc, cell, ptTemp, isAbsolute) {
 uc.toFractional (ptTemp, isAbsolute);
-var slop = 0.02;
-return (ptTemp.x >= cell.x - 1 - slop && ptTemp.x <= cell.x + slop && ptTemp.y >= cell.y - 1 - slop && ptTemp.y <= cell.y + slop && ptTemp.z >= cell.z - 1 - slop && ptTemp.z <= cell.z + slop);
+return (ptTemp.x >= cell.x - 1 - 0.02 && ptTemp.x <= cell.x + 0.02 && ptTemp.y >= cell.y - 1 - 0.02 && ptTemp.y <= cell.y + 0.02 && ptTemp.z >= cell.z - 1 - 0.02 && ptTemp.z <= cell.z + 0.02);
 }, "J.api.SymmetryInterface,JU.P3,JU.P3,~B");
 Clazz.overrideMethod (c$, "setUnitCell", 
 function (unitCellParams, setRelative) {

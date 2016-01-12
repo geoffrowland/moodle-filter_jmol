@@ -88,7 +88,7 @@ if ($jmolfiletype === "cif" ) {
     $menu = 'SimpleCryst.mnu';
     $dropmenu = 'SimpleCryst';
 } else if ($jmolfiletype === "pse") {
-    $loadscript = 'set zoomLarge false; set pdbAddHydrogens true; load '.$pathname.';';
+    $loadscript = 'set zoomLarge false; load '.$pathname.';';
     $menu = 'SimpleBio.mnu';
     $dropmenu = 'SimpleBio';
 } else if ($jmolfiletype === "pdb" || $jmolfiletype === "mcif") {
@@ -267,21 +267,21 @@ if ($controls !== '0') {
         echo 'title = "'.get_string('molecular', 'filter_jmol', true).'">';
         echo get_string('molecular', 'filter_jmol', true).'</option>';
         echo '<option value = "load \'\' {555 555 1}; display all; zoom 0" ';
-        echo 'title = "'.get_string('1x1x1_desc', 'filter_jmol', true).'" ';
-        echo 'selected = "selected">'.get_string('1x1x1', 'filter_jmol', true).'</option>';
+        echo 'title = "'.get_string('cell_desc', 'filter_jmol', true).'" ';
+        echo 'selected = "selected">'.get_string('cell', 'filter_jmol', true).'</option>';
         echo '<option value = "load \'\' {444 666 1}; display all; zoom 0" ';
-        echo 'title = "'.get_string('3x3x3_desc', 'filter_jmol', true).'">';
-        echo get_string('3x3x3', 'filter_jmol', true).'</option>';
+        echo 'title = "'.get_string('bigcell_desc', 'filter_jmol', true).'">';
+        echo get_string('bigcell', 'filter_jmol', true).'</option>';
         echo '<option value = "load \'\' {444 666 1}; display cell=555; zoom 0" ';
-        echo 'title = "'.get_string('1x1x1filled_desc', 'filter_jmol', true).'">';
-        echo get_string('1x1x1filled', 'filter_jmol', true).'</option>';
+        echo 'title = "'.get_string('cellfilled_desc', 'filter_jmol', true).'">';
+        echo get_string('cellfilled', 'filter_jmol', true).'</option>';
         echo '<option value = "load \'\' {444 666 1}; display cell=555; zoom 0; polyhedra 4,6; ';
         echo 'color polyhedra translucent;" ';
-        echo 'title = "'.get_string('1x1x1polyhedra_desc', 'filter_jmol', true).'">';
-        echo get_string('1x1x1polyhedra', 'filter_jmol', true).'</option>';
+        echo 'title = "'.get_string('cellpolyhedra_desc', 'filter_jmol', true).'">';
+        echo get_string('cellpolyhedra', 'filter_jmol', true).'</option>';
         echo '<option value = "load \'\' {444 666 1}; display all; zoom 0; polyhedra 4,6; color polyhedra translucent;" ';
-        echo 'title = "'.get_string('3x3x3polyhedra_desc', 'filter_jmol', true).'">';
-        echo get_string('3x3x3polyhedra', 'filter_jmol', true).'</option>';
+        echo 'title = "'.get_string('bigcellpolyhedra_desc', 'filter_jmol', true).'">';
+        echo get_string('bigcellpolyhedra', 'filter_jmol', true).'</option>';
         echo '</select>';
         echo '<input type = "checkbox" id = "unitcell" ';
         echo 'title = "'.get_string('unitcell_desc', 'filter_jmol', true).'" checked>';

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.io");
-Clazz.load (null, "J.io.JmolBinary", ["java.io.BufferedInputStream", "java.util.Hashtable", "JU.PT", "$.Rdr", "$.SB", "J.api.Interface", "JU.Logger", "JV.FileManager"], function () {
+Clazz.load (null, "J.io.JmolBinary", ["java.io.BufferedInputStream", "java.util.Hashtable", "JU.PT", "$.Rdr", "$.SB", "J.api.Interface", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.fm = null;
 this.jzu = null;
@@ -13,19 +13,6 @@ function (fm) {
 this.fm = fm;
 return this;
 }, "JV.FileManager");
-c$.getEmbeddedScript = Clazz.defineMethod (c$, "getEmbeddedScript", 
-function (script) {
-if (script == null) return script;
-var pt = script.indexOf ("**** Jmol Embedded Script ****");
-if (pt < 0) return script;
-var pt1 = script.lastIndexOf ("/*", pt);
-var pt2 = script.indexOf ((script.charAt (pt1 + 2) == '*' ? "*" : "") + "*/", pt);
-if (pt1 >= 0 && pt2 >= pt) script = script.substring (pt + "**** Jmol Embedded Script ****".length, pt2) + "\n";
-while ((pt1 = script.indexOf (" #Jmol...\u0000")) >= 0) script = script.substring (0, pt1) + script.substring (pt1 + " #Jmol...\u0000".length + 4);
-
-if (JU.Logger.debugging) JU.Logger.debug (script);
-return script;
-}, "~S");
 Clazz.defineMethod (c$, "getJzu", 
  function () {
 return (this.jzu == null ? this.jzu = J.api.Interface.getOption ("io.JmolUtil", this.fm.vwr, "file") : this.jzu);
@@ -38,28 +25,6 @@ Clazz.defineMethod (c$, "getImage",
 function (fullPathNameOrBytes, echoName, forceSync) {
 return this.getJzu ().getImage (this.fm.vwr, fullPathNameOrBytes, echoName, forceSync);
 }, "~O,~S,~B");
-c$.getFileReferences = Clazz.defineMethod (c$, "getFileReferences", 
-function (script, fileList) {
-for (var ipt = 0; ipt < JV.FileManager.scriptFilePrefixes.length; ipt++) {
-var tag = JV.FileManager.scriptFilePrefixes[ipt];
-var i = -1;
-while ((i = script.indexOf (tag, i + 1)) >= 0) {
-var s = JU.PT.getQuotedStringAt (script, i);
-if (s.indexOf ("::") >= 0) s = JU.PT.split (s, "::")[1];
-fileList.addLast (s);
-}
-}
-}, "~S,JU.Lst");
-c$.getManifestScriptPath = Clazz.defineMethod (c$, "getManifestScriptPath", 
-function (manifest) {
-if (manifest.indexOf ("$SCRIPT_PATH$") >= 0) return "";
-var ch = (manifest.indexOf ('\n') >= 0 ? "\n" : "\r");
-if (manifest.indexOf (".spt") >= 0) {
-var s = JU.PT.split (manifest, ch);
-for (var i = s.length; --i >= 0; ) if (s[i].indexOf (".spt") >= 0) return "|" + JU.PT.trim (s[i], "\r\n \t");
-
-}return null;
-}, "~S");
 Clazz.defineMethod (c$, "spartanFileGetRdr", 
 function (name, info) {
 var name00 = name;
@@ -173,6 +138,4 @@ Clazz.defineMethod (c$, "getCachedPngjBytes",
 function (pathName) {
 return this.getJzu ().getCachedPngjBytes (this, pathName);
 }, "~S");
-Clazz.defineStatics (c$,
-"PMESH_BINARY_MAGIC_NUMBER", "PM\1\0");
 });

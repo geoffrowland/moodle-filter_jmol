@@ -72,7 +72,7 @@ if ("cache" === propertyName) {
 if (this.currentMesh == null) return;
 var id = this.currentMesh.thisID;
 var imodel = this.currentMesh.modelIndex;
-this.vwr.cachePut ("cache://isosurface_" + id, this.getPropI ("jvxlDataXml"));
+this.vwr.cachePut ("cache://isosurface_" + id, this.getPropI ("jvxlDataXml", -1));
 this.deleteMeshI (this.currentMesh.index);
 this.setPropI ("init", null, null);
 this.setPropI ("thisID", id, null);
@@ -289,7 +289,7 @@ if (this.thisMesh != null) this.thisMesh.atomIndex = this.atomIndex;
 this.center.setT (value);
 } else if ("colorRGB" === propertyName) {
 var rgb = (value).intValue ();
-if (rgb == 1297090050) {
+if (rgb == 1296041474) {
 this.colorType = rgb;
 } else {
 this.colorType = 0;
@@ -425,6 +425,8 @@ this.thisMesh.vcs = vertexColixes;
 }}});
 Clazz.defineMethod (c$, "slabPolygons", 
 function (slabInfo) {
+this.thisMesh.calculatedVolume = null;
+this.thisMesh.calculatedArea = null;
 this.thisMesh.getMeshSlicer ().slabPolygons (slabInfo, false);
 this.thisMesh.reinitializeLightingAndColor (this.vwr);
 }, "~A");
@@ -449,7 +451,7 @@ return true;
 var mesh = this.getMesh (data[0]);
 if (mesh == null) return false;
 data[3] = Integer.$valueOf (mesh.modelIndex);
-mesh.getMeshSlicer ().getIntersection (0, data[1], null, data[2], null, null, null, false, false, 135266319, false);
+mesh.getMeshSlicer ().getIntersection (0, data[1], null, data[2], null, null, null, false, false, 134217750, false);
 return true;
 }if (property === "getBoundingBox") {
 var id = data[0];
@@ -488,18 +490,18 @@ return true;
 }, "~S,~A");
 Clazz.overrideMethod (c$, "getProperty", 
 function (property, index) {
-return this.getPropI (property);
+return this.getPropI (property, index);
 }, "~S,~N");
 Clazz.defineMethod (c$, "getPropI", 
-function (property) {
-var ret = this.getPropMC (property);
+function (property, index) {
+var ret = this.getPropMC (property, index);
 if (ret != null) return ret;
 if (property === "message") {
 var s = "";
 if (this.shapeID == 24) s += " with cutoff=" + this.jvxlData.cutoff;
 if (this.jvxlData.dataMin != 3.4028235E38) s += " min=" + this.jvxlData.dataMin + " max=" + this.jvxlData.dataMax;
-s += "; " + JV.JC.shapeClassBases[this.shapeID].toLowerCase () + " count: " + this.getPropMC ("count");
-return s + this.getPropI ("dataRangeStr") + this.jvxlData.msg;
+s += "; " + JV.JC.shapeClassBases[this.shapeID].toLowerCase () + " count: " + this.getPropMC ("count", index);
+return s + this.getPropI ("dataRangeStr", index) + this.jvxlData.msg;
 }if (property === "dataRange") return this.getDataRange ();
 if (property === "dataRangeStr") {
 var dataRange = this.getDataRange ();
@@ -537,7 +539,7 @@ for (var i = list.size (); --i >= 0; ) this.getMeshCommand (sb, i);
 
 return sb.toString ();
 }return null;
-}, "~S");
+}, "~S,~N");
 Clazz.defineMethod (c$, "getDataRange", 
  function () {
 return (this.thisMesh == null || this.jvxlData.jvxlPlane != null && this.thisMesh.colorEncoder == null ? null :  Clazz.newFloatArray (-1, [this.jvxlData.mappedDataMin, this.jvxlData.mappedDataMax, (this.jvxlData.isColorReversed ? this.jvxlData.valueMappedToBlue : this.jvxlData.valueMappedToRed), (this.jvxlData.isColorReversed ? this.jvxlData.valueMappedToRed : this.jvxlData.valueMappedToBlue)]));
@@ -680,9 +682,9 @@ Clazz.defineMethod (c$, "getCapSlabObject",
 try {
 if (s.indexOf ("array") == 0) {
 var pts = JU.PT.split (s.substring (6, s.length - 1), ",");
-return JU.TempArray.getSlabObjectType (1679429641,  Clazz.newArray (-1, [JU.Escape.uP (pts[0]), JU.Escape.uP (pts[1]), JU.Escape.uP (pts[2]), JU.Escape.uP (pts[3])]), isCap, null);
+return JU.TempArray.getSlabObjectType (1678381065,  Clazz.newArray (-1, [JU.Escape.uP (pts[0]), JU.Escape.uP (pts[1]), JU.Escape.uP (pts[2]), JU.Escape.uP (pts[3])]), isCap, null);
 }var plane = JU.Escape.uP (s);
-if (Clazz.instanceOf (plane, JU.P4)) return JU.TempArray.getSlabObjectType (135266319, plane, isCap, null);
+if (Clazz.instanceOf (plane, JU.P4)) return JU.TempArray.getSlabObjectType (134217750, plane, isCap, null);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 } else {

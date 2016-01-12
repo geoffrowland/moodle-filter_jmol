@@ -52,13 +52,13 @@ try {
 if (nX > 0 && nY > 0) {
 for (var i = 0; i < nX; i++) for (var j = 0; j < nY; j++) {
 {
-fxy[i][j] = eval(functionName)(this.htmlName, i, j);
+fxy[i][j] = window.eval(functionName)(this.htmlName, i, j);
 }}
 
 } else if (nY > 0) {
 var data;
 {
-data = eval(functionName)(this.htmlName, nX, nY);
+data = window.eval(functionName)(this.htmlName, nX, nY);
 }nX = Math.abs (nX);
 var fdata =  Clazz.newFloatArray (nX * nY, 0);
 JU.Parser.parseStringInfestedFloatArray (data, null, fdata);
@@ -69,7 +69,7 @@ fxy[i][j] = fdata[ipt];
 }
 } else {
 {
-data = eval(functionName)(this.htmlName, nX, nY, fxy);
+data = window.eval(functionName)(this.htmlName, nX, nY, fxy);
 }}} catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 JU.Logger.error ("Exception " + e + " with nX, nY: " + nX + " " + nY);
@@ -85,7 +85,7 @@ var fxyz =  Clazz.newFloatArray (Math.abs (nX), Math.abs (nY), Math.abs (nZ), 0)
 if (!this.mayScript || !this.haveDocumentAccess || nX == 0 || nY == 0 || nZ == 0) return fxyz;
 try {
 {
-eval(functionName)(this.htmlName, nX, nY, nZ, fxyz);
+window.eval(functionName)(this.htmlName, nX, nY, nZ, fxyz);
 }} catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 JU.Logger.error ("Exception " + e + " for " + functionName + " with nX, nY, nZ: " + nX + " " + nY + " " + nZ);
@@ -123,7 +123,7 @@ Clazz.overrideMethod (c$, "doEval",
 function (strEval) {
 try {
 {
-return "" + eval(strEval);
+return window.eval(strEval);
 }} catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 JU.Logger.error ("# error evaluating " + strEval + ":" + e.toString ());

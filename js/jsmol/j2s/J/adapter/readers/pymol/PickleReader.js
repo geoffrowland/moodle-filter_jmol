@@ -29,6 +29,7 @@ Clazz.makeConstructor (c$,
 function (doc, vwr) {
 this.binaryDoc = doc;
 this.vwr = vwr;
+this.stack.ensureCapacity (1000);
 }, "javajs.api.GenericBinaryDocument,JV.Viewer");
 Clazz.defineMethod (c$, "log", 
  function (s) {
@@ -225,9 +226,10 @@ Clazz.defineMethod (c$, "getObjects",
  function (mark) {
 var n = this.stack.size () - mark;
 var args =  new JU.Lst ();
-for (var j = 0; j < n; j++) args.addLast (null);
+args.ensureCapacity (n);
+for (var i = mark; i < this.stack.size (); ++i) args.addLast (this.stack.get (i));
 
-for (var j = n, i = this.stack.size (); --i >= mark; ) args.set (--j, this.stack.remove (i));
+for (var i = this.stack.size (); --i >= mark; ) this.stack.remove (i);
 
 return args;
 }, "~N");
@@ -249,9 +251,10 @@ this.markCount++;
 switch (this.markCount) {
 case 2:
 this.thisSection = this.stack.get (i - 2);
+if (Clazz.instanceOf (this.thisSection, String)) {
 this.inMovie = "movie".equals (this.thisSection);
 this.inNames = "names".equals (this.thisSection);
-break;
+}break;
 default:
 break;
 }

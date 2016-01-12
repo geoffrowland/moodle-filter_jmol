@@ -376,8 +376,8 @@
   proto._getAtomCorrelation = function(molData) {
     // get the first atom mapping available by loading the model structure into model 2, 
     this._loadMolData(molData, "atommap = compare({1.1} {2.1} 'MAP' 'H'); zap 2.1", true);
-    var map = jmol._evaluate("atommap");
-    var n = jmol._evaluate("{*}.count");
+    var map = this._evaluate("atommap");
+    var n = this._evaluate("{*}.count");
     var A = [];
     var B = [];
     // these are Jmol atom indexes. The second number will be >= n, and all must be incremented by 1.

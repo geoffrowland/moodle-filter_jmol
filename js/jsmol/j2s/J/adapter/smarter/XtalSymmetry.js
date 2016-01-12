@@ -677,11 +677,13 @@ this.asc.addAtom (a);
 this.firstSymmetryAtom = atomMax++;
 break;
 }
+var assemblyIdAtoms = thisBiomolecule.get ("asemblyIdAtoms");
 if (filter.indexOf ("#<") >= 0) {
 len = Math.min (len, JU.PT.parseInt (filter.substring (filter.indexOf ("#<") + 2)) - 1);
 filter = JU.PT.rep (filter, "#<", "_<");
 }for (var iAtom = this.firstSymmetryAtom; iAtom < atomMax; iAtom++) atoms[iAtom].bsSymmetry = JU.BSUtil.newAndSetBit (0);
 
+var bsAtoms = this.asc.bsAtoms;
 for (var i = (biomtchains == null ? 1 : 0); i < len; i++) {
 if (filter.indexOf ("!#") >= 0) {
 if (filter.indexOf ("!#" + (i + 1) + ";") >= 0) continue;
@@ -689,9 +691,14 @@ if (filter.indexOf ("!#" + (i + 1) + ";") >= 0) continue;
 continue;
 }var mat = biomts.get (i);
 var chains = (biomtchains == null ? null : biomtchains.get (i));
-for (var iAtom = this.firstSymmetryAtom; iAtom < atomMax; iAtom++) {
-if (this.asc.bsAtoms != null && !this.asc.bsAtoms.get (iAtom)) continue;
-if (chains != null && chains.indexOf (":" + this.acr.vwr.getChainIDStr (atoms[iAtom].chainID) + ";") < 0) continue;
+if (chains != null && assemblyIdAtoms != null) {
+bsAtoms =  new JU.BS ();
+for (var e, $e = assemblyIdAtoms.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) if (chains.indexOf (":" + e.getKey () + ";") >= 0) bsAtoms.or (e.getValue ());
+
+if (this.asc.bsAtoms != null) bsAtoms.and (this.asc.bsAtoms);
+chains = null;
+}for (var iAtom = this.firstSymmetryAtom; iAtom < atomMax; iAtom++) {
+if (bsAtoms != null && !bsAtoms.get (iAtom) || chains != null && chains.indexOf (":" + this.acr.vwr.getChainIDStr (atoms[iAtom].chainID) + ";") < 0) continue;
 try {
 var atomSite = atoms[iAtom].atomSite;
 var atom1;
@@ -720,8 +727,7 @@ if (i > 0) this.symmetry.addBioMoleculeOperation (mat, false);
 }
 if (biomtchains != null) {
 if (this.asc.bsAtoms == null) this.asc.bsAtoms = JU.BSUtil.newBitSet2 (0, this.asc.ac);
-for (var iAtom = this.firstSymmetryAtom; iAtom < atomMax; iAtom++) this.asc.bsAtoms.clear (iAtom);
-
+this.asc.bsAtoms.clearBits (this.firstSymmetryAtom, atomMax);
 }this.noSymmetryCount = atomMax - this.firstSymmetryAtom;
 this.asc.setCurrentModelInfo ("presymmetryAtomIndex", Integer.$valueOf (this.firstSymmetryAtom));
 this.asc.setCurrentModelInfo ("presymmetryAtomCount", Integer.$valueOf (this.noSymmetryCount));

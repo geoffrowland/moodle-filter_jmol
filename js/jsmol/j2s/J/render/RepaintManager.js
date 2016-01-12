@@ -124,8 +124,7 @@ if (!isOK) throw  new NullPointerException ();
 Clazz.overrideMethod (c$, "renderExport", 
 function (gdata, modelSet, params) {
 var isOK;
-this.vwr.finalizeTransformParameters ();
-this.shapeManager.finalizeAtoms (null, null);
+this.shapeManager.finalizeAtoms (false, true);
 var exporter3D = this.vwr.initializeExporter (params);
 isOK = (exporter3D != null);
 if (!isOK) {

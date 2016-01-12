@@ -137,14 +137,17 @@ function filter_jmol_replace_callback($matches) {
 
     if (preg_match('/c=(\d{1,2})/', $matches[4], $optmatch)) {
         $controls = $optmatch[1];
+    } else {
+        $controls = '';
     }
-    
-    // cover image - defer Jmol/JSmol object loading ?i=0 no cover image, ?i=1 (default) cover image
+
+    // Cover image - defer Jmol/JSmol object loading.
     if (preg_match('/i=(\d{1,1})/', $matches[4], $optmatch)) {
         $coverimage = $optmatch[1];
     } else {
         $coverimage = 1;
     }
+
     // JSmol size (width = height) in pixels defined by parameter appended to structure file URL e.g. ?s=200, ?s=300 (default) etc.
     if (preg_match('/s=(\d{1,3})/', $matches[4], $optmatch)) {
         $size = $optmatch[1];
@@ -152,6 +155,7 @@ function filter_jmol_replace_callback($matches) {
         $size = 350;
     }
     $height = $size + 20;
+
     // Retrieve the file from the Moodle file API.
     $url = $matches[2];
     $shortpath = str_replace($wwwroot.'/pluginfile.php', '', $url);
@@ -165,14 +169,14 @@ function filter_jmol_replace_callback($matches) {
     $expfilename = str_replace('.gz', '', $expfilename);
     $expfilename = str_replace('.zip', '', $expfilename);
 
-    // Controls defined by parameter appended to structure file URL ?c=0, ?c=1 (default), ?c=2 ,?c=3 or ?c=4.
+    // Controls defined by parameter appended to structure file URL ?c=0, ?c=1 (default), ?c=2 or ?c=3.
     if (count($matches) > 8) {
         $initscript = preg_replace("@(\s|<br />)+@si", " ",
         str_replace(array("\n", '"', '<br />'), array("; ", "", ""), $matches[8]));
     } else {
         $initscript = '';
     }
-    // Force Java applet for binary files (.pdb.gz or .pse or ,jsmol) with some older browsers
+    // Force Java applet for binary files (.pdb.gz or .pse or ,jsmol) with some older browsers.
     // Defaults should work for up-to-date browsers.
     $browser = strtolower($_SERVER['HTTP_USER_AGENT']);
     if ($filetypeend === "gz" || $filetypeend === "pse" || $filetypeend === "png" || $filetypeend === "jmol") {

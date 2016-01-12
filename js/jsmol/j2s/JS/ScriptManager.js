@@ -314,17 +314,15 @@ var isCached = fileName.startsWith ("cache://");
 if (this.vwr.isApplet && fileName.indexOf ("://") < 0) fileName = "file://" + (fileName.startsWith ("/") ? "" : "/") + fileName;
 try {
 if (fileName.endsWith (".pse")) {
-cmd = (isCached ? "" : "zap;") + "load SYNC " + JU.PT.esc (fileName) + " filter 'DORESIZE'";
+cmd = (isCached ? "" : "zap;") + "load SYNC " + JU.PT.esc (fileName) + (this.vwr.isApplet ? "" : " filter 'DORESIZE'");
 return;
 }if (fileName.endsWith ("jvxl")) {
 cmd = "isosurface ";
-return;
-}if (!fileName.toLowerCase ().endsWith (".spt")) {
+} else if (!fileName.toLowerCase ().endsWith (".spt")) {
 var type = this.getDragDropFileTypeName (fileName);
 if (type == null) {
 type = JV.FileManager.determineSurfaceTypeIs (this.vwr.getBufferedInputStream (fileName));
 if (type != null) cmd = "if (_filetype == 'Pdb') { isosurface sigma 1.0 within 2.0 {*} " + JU.PT.esc (fileName) + " mesh nofill }; else; { isosurface " + JU.PT.esc (fileName) + "}";
-return;
 } else if (type.equals ("Jmol")) {
 cmd = "script ";
 } else if (type.equals ("Cube")) {
@@ -409,7 +407,7 @@ sb.appendI (pts.length).append ("\n").append ("Viewer.AddHydrogens").append ("#n
 for (var i = 0; i < pts.length; i++) sb.append ("H ").appendF (pts[i].x).append (" ").appendF (pts[i].y).append (" ").appendF (pts[i].z).append (" - - - - ").appendI (++atomno).appendC ('\n');
 
 this.vwr.openStringInlineParamsAppend (sb.toString (), null, true);
-this.eval.runScriptBuffer (sbConnect.toString (), null);
+this.eval.runScriptBuffer (sbConnect.toString (), null, false);
 var bsB = this.vwr.getModelUndeletedAtomsBitSet (modelIndex);
 bsB.andNot (bsA);
 return bsB;

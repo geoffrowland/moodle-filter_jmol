@@ -195,12 +195,12 @@ if (this.nSkipZ != 0) this.skipVoxels (this.nSkipZ);
 }
 }this.volumeData.setVoxelDataAsArray (this.voxelData);
 }, "~B");
-Clazz.defineMethod (c$, "getPlane", 
+Clazz.overrideMethod (c$, "getPlane", 
 function (x) {
 if (x == 0) this.initPlanes ();
 if (this.preProcessPlanes) return this.getPlaneProcessed (x);
-var plane = this.getPlane2 (x);
-if (this.qpc == null) this.getPlane (plane, true);
+var plane = this.getPlaneSR (x);
+if (this.qpc == null) this.getPlaneVFR (plane, true);
 return plane;
 }, "~N");
 Clazz.defineMethod (c$, "getPlaneProcessed", 
@@ -216,8 +216,8 @@ this.qpc.setupCalculation (this.volumeData, this.sg.params.bsSelected, null, nul
 this.iPlaneRaw = 1;
 this.qpc.setPlanes (this.yzPlanesRaw =  Clazz.newFloatArray (4, this.yzCount, 0));
 if (this.hasColorData) {
-this.getPlane (this.yzPlanesRaw[0], false);
-this.getPlane (this.yzPlanesRaw[1], false);
+this.getPlaneVFR (this.yzPlanesRaw[0], false);
+this.getPlaneVFR (this.yzPlanesRaw[1], false);
 plane = this.yzPlanes[0];
 for (var i = 0; i < this.yzCount; i++) plane[i] = NaN;
 
@@ -243,7 +243,7 @@ this.iPlaneRaw++;
 plane = this.yzPlanesRaw[this.iPlaneRaw];
 }
 if (x < x1) {
-this.getPlane (plane, false);
+this.getPlaneVFR (plane, false);
 this.qpc.calcPlane (x, plane = this.yzPlanes[x % 2]);
 for (var i = 0; i < this.yzCount; i++) if (plane[i] != nan) this.recordData (plane[i]);
 
@@ -252,7 +252,7 @@ for (var i = 0; i < this.yzCount; i++) plane[i] = NaN;
 
 }return plane;
 }, "~N");
-Clazz.defineMethod (c$, "getPlane", 
+Clazz.defineMethod (c$, "getPlaneVFR", 
  function (plane, doRecord) {
 try {
 for (var y = 0, ptyz = 0; y < this.nPointsY; ++y) {

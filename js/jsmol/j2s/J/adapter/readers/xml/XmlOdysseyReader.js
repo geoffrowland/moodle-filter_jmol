@@ -5,10 +5,11 @@ this.modelName = null;
 this.formula = null;
 this.phase = null;
 this.myAttributes = null;
+this.formalCharge = -2147483648;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.xml, "XmlOdysseyReader", J.adapter.readers.xml.XmlReader);
 Clazz.prepareFields (c$, function () {
-this.myAttributes =  Clazz.newArray (-1, ["id", "label", "xyz", "element", "hybrid", "a", "b", "order", "box"]);
+this.myAttributes =  Clazz.newArray (-1, ["id", "label", "xyz", "element", "hybrid", "a", "b", "order", "charge", "entity", "box"]);
 });
 Clazz.makeConstructor (c$, 
 function () {
@@ -24,9 +25,9 @@ if ("structure".equals (localName)) {
 this.asc.newAtomSet ();
 return;
 }if ("atom".equals (localName)) {
-this.atom =  new J.adapter.smarter.Atom ();
-if (this.atts.containsKey ("label")) this.atom.atomName = this.atts.get ("label");
- else this.atom.atomName = this.atts.get ("id");
+var id = this.atts.get ("id");
+(this.atom =  new J.adapter.smarter.Atom ()).atomName = this.atts.get (this.atts.containsKey ("label") ? "label" : "id");
+if (id != null && this.stateScriptVersionInt >= 140400) this.asc.atomSymbolicMap.put (id, this.atom);
 if (this.atts.containsKey ("xyz")) {
 var xyz = this.atts.get ("xyz");
 var tokens = JU.PT.getTokens (xyz);
@@ -40,6 +41,15 @@ var atom2 = this.atts.get ("b");
 var order = 1;
 if (this.atts.containsKey ("order")) order = this.parseBondToken (this.atts.get ("order"));
 this.asc.addNewBondFromNames (atom1, atom2, order);
+return;
+}if ("group".equals (localName)) {
+var charge = this.atts.get ("charge");
+if (charge != null && charge.indexOf (".") < 0) {
+this.formalCharge = JU.PT.parseInt (charge);
+}return;
+}if ("member".equals (localName) && this.formalCharge != -2147483648) {
+var atom = this.asc.getAtomFromName (this.atts.get ("entity"));
+if (atom != null) atom.formalCharge = this.formalCharge;
 return;
 }if ("boundary".equals (localName)) {
 var boxDim = JU.PT.getTokens (this.atts.get ("box"));
@@ -93,11 +103,13 @@ if (this.atom.elementSymbol != null && !Float.isNaN (this.atom.z)) {
 this.asc.addAtomWithMappedName (this.atom);
 }this.atom = null;
 return;
-}if ("title".equals (localName)) {
+}if ("group".equals (localName)) {
+this.formalCharge = -2147483648;
+} else if ("title".equals (localName)) {
 this.modelName = this.chars;
-}if ("formula".equals (localName)) {
+} else if ("formula".equals (localName)) {
 this.formula = this.chars;
-}if ("phase".equals (localName)) {
+} else if ("phase".equals (localName)) {
 this.phase = this.chars;
 }this.keepChars = false;
 this.chars = null;

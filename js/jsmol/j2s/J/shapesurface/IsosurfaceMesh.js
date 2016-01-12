@@ -386,13 +386,11 @@ if (this.jvxlData.vertexColorMap.size () == 0) this.jvxlData.vertexColorMap = nu
 }, "~B");
 Clazz.defineMethod (c$, "setColorCommand", 
 function () {
-if (this.colorEncoder == null) return;
-this.colorCommand = this.colorEncoder.getColorScheme ();
+if (this.colorEncoder == null || (this.colorCommand = this.colorEncoder.getColorScheme ()) == null) return;
 if (this.colorCommand.equals ("inherit")) {
 this.colorCommand = "#inherit;";
 return;
-}if (this.colorCommand == null) return;
-this.colorCommand = "color $" + (JU.PT.isLetter (this.thisID.charAt (0)) && this.thisID.indexOf (" ") < 0 ? this.thisID : "\"" + this.thisID + "\"") + " \"" + this.colorCommand + "\" range " + (this.jvxlData.isColorReversed ? this.jvxlData.valueMappedToBlue + " " + this.jvxlData.valueMappedToRed : this.jvxlData.valueMappedToRed + " " + this.jvxlData.valueMappedToBlue);
+}this.colorCommand = "color $" + JU.PT.esc (this.thisID) + JU.PT.esc (this.colorCommand) + " range " + (this.jvxlData.isColorReversed ? this.jvxlData.valueMappedToBlue + " " + this.jvxlData.valueMappedToRed : this.jvxlData.valueMappedToRed + " " + this.jvxlData.valueMappedToBlue);
 });
 Clazz.defineMethod (c$, "setColorsFromJvxlData", 
 function (colorRgb) {
