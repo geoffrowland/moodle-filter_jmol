@@ -187,10 +187,14 @@ if ($controls !== '0') {
         echo 'set hbondsBackbone TRUE; set ssbondsbackbone TRUE; ';
         echo 'select *.CA; spacefill 0.3; select *;" title = "'.get_string('backbone_desc', 'filter_jmol', true).'">';
         echo get_string('backbone', 'filter_jmol', true).'</option>';
-        echo '<option value = "isosurface delete; display not water; select protein or nucleic; cartoon only; ';
-        echo 'set hbondsBackbone TRUE; set ssbondsbackbone TRUE; ';
+        echo '<option value = "isosurface delete; display not water; select protein or nucleic; set cartoonFancy false; ';
+        echo 'cartoon only; set hbondsBackbone TRUE; set ssbondsbackbone TRUE; ';
         echo 'select *;" selected = "selected" title = "'.get_string('cartoon_desc', 'filter_jmol', true).'">';
         echo get_string('cartoon', 'filter_jmol', true).'</option>';
+        echo '<option value = "isosurface delete; display not water; select protein or nucleic; set cartoonFancy true; ';
+        echo 'cartoon only; set hbondsBackbone TRUE; set ssbondsbackbone TRUE; ';
+        echo 'select *;" title = "'.get_string('fancy_desc', 'filter_jmol', true).'">';
+        echo get_string('fancy', 'filter_jmol', true).'</option>';
         echo '</select>';
         echo '<select class = "jmolPanelControl" id = "biochem" ';
         echo 'title = "'.get_string('colourscheme', 'filter_jmol', true).'">';
