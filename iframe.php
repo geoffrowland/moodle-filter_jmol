@@ -376,6 +376,7 @@ echo '};';
 echo 'fixsize();';
 // Write J(S)mol to div.
 echo '$("#structure").html(Jmol.getAppletHtml("jmolApplet0", Info));';
+echo '$("#jmolApplet0_coverclickgo").attr("src", "'.$wwwroot.'/filter/jmol/pix/play_256.png");';
 echo 'Jmol._alertNoBinary = true;';
 if ($technol === "SIGNED") {
     if ($bname == 'opr' && $bplatform == 'linux') {
