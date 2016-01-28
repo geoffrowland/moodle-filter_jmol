@@ -204,7 +204,7 @@ src = "'.new moodle_url('/filter/jmol/iframe.php', array(
     'id' => $id,
     '_USE' => $technol,
     'DEFER' => $coverimage
-    )).' "style = "border: 1px solid lightgray; padding: 0px; margin: 0px; height: '.$size.'px; width: '.$size.'px">
+    )).'" style = "border: 1px solid lightgray; padding: 0px; margin: 0px; height: '.$size.'px; width: '.$size.'px">
 </iframe>
 </div>
 <script>
