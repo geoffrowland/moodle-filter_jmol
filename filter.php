@@ -154,7 +154,6 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $size = 350;
     }
-    $height = $size + 20;
 
     // Retrieve the file from the Moodle file API.
     $url = $matches[2];
