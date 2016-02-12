@@ -4084,8 +4084,7 @@ var loadScript = function (node, file, why, ignoreOnload, fSuccess, _loadScript)
     }
 		return;
 	}
-  // not accessed in JSmol
-  alert(1)    
+  // only when running asynchronously    
 	var info = {
 		dataType:"script",
 		async:true, 

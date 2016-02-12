@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shapespecial");
-Clazz.load (["J.shape.AtomShape", "JU.AU", "$.P3", "$.V3"], "J.shapespecial.Polyhedra", ["java.lang.Boolean", "$.Float", "java.util.Hashtable", "JU.BS", "$.Lst", "$.Measure", "$.P4", "$.PT", "$.SB", "J.c.PAL", "J.shapespecial.Polyhedron", "JU.BSUtil", "$.C", "$.Logger", "$.Normix"], function () {
+Clazz.load (["J.shape.AtomShape", "JU.AU", "$.BS", "$.P3", "$.V3"], "J.shapespecial.Polyhedra", ["java.lang.Boolean", "$.Float", "java.util.Hashtable", "JU.Lst", "$.Measure", "$.P4", "$.PT", "$.SB", "J.c.PAL", "J.shapespecial.Polyhedron", "JU.BSUtil", "$.C", "$.Logger", "$.Normix"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.otherAtoms = null;
 this.normalsT = null;
@@ -15,6 +15,8 @@ this.iHaveCenterBitSet = false;
 this.bondedOnly = false;
 this.haveBitSetVertices = false;
 this.centers = null;
+this.thisID = null;
+this.center = null;
 this.bsVertices = null;
 this.bsVertexCount = null;
 this.useUnitCell = false;
@@ -22,7 +24,8 @@ this.nPoints = 0;
 this.planarParam = 0;
 this.info = null;
 this.distanceRef = 0;
-this.buildMode = 0;
+this.modelIndex = 0;
+this.bsPolys = null;
 this.vAB = null;
 this.vAC = null;
 this.vBC = null;
@@ -33,19 +36,24 @@ this.otherAtoms =  new Array (498);
 this.normalsT =  new Array (251);
 this.planesT = JU.AU.newInt2 (250);
 this.polyhedrons =  new Array (32);
+this.bsPolys =  new JU.BS ();
 this.vAB =  new JU.V3 ();
 this.vAC =  new JU.V3 ();
 this.vBC =  new JU.V3 ();
 });
 Clazz.overrideMethod (c$, "setProperty", 
 function (propertyName, value, bs) {
+if (this.thisID != null) bs =  new JU.BS ();
 if ("init" === propertyName) {
 this.faceCenterOffset = 0.25;
 this.planarParam = NaN;
 this.radius = 0.0;
 this.nVertices = 0;
 this.nPoints = 0;
+this.modelIndex = -1;
 this.bsVertices = null;
+this.thisID = null;
+this.center = null;
 this.useUnitCell = false;
 this.centers = null;
 this.info = null;
@@ -60,6 +68,21 @@ this.centers = bs;
 this.iHaveCenterBitSet = true;
 }this.deletePolyhedra ();
 this.buildPolyhedra ();
+return;
+}if ("thisID" === propertyName) {
+this.thisID = value;
+return;
+}if ("center" === propertyName) {
+this.center = value;
+return;
+}if ("offset" === propertyName) {
+if (this.thisID != null) this.offsetPolyhedra (value);
+return;
+}if ("scale" === propertyName) {
+if (this.thisID != null) this.scalePolyhedra ((value).floatValue ());
+return;
+}if ("model" === propertyName) {
+this.modelIndex = (value).intValue ();
 return;
 }if ("collapsed" === propertyName) {
 this.isCollapsed = (value).booleanValue ();
@@ -106,7 +129,7 @@ this.bondedOnly = true;
 return;
 }if ("info" === propertyName) {
 this.info = value;
-this.centers = JU.BSUtil.newAndSetBit (this.info.get ("atomIndex").intValue);
+this.centers = (this.info.containsKey ("center") ? null : JU.BSUtil.newAndSetBit (this.info.get ("atomIndex").intValue));
 this.iHaveCenterBitSet = true;
 return;
 }if ("delete" === propertyName) {
@@ -132,13 +155,35 @@ this.drawEdges = 2;
 return;
 }if (propertyName.indexOf ("color") == 0) {
 bs = ("colorThis" === propertyName && this.iHaveCenterBitSet ? this.centers : this.andBitSet (bs));
-var colixEdge = ("colorPhase" === propertyName ? JU.C.getColix (((value)[0]).intValue ()) : 0);
-for (var i = this.polyhedronCount; --i >= 0; ) if (bs.get (this.polyhedrons[i].centralAtom.i)) this.polyhedrons[i].colixEdge = colixEdge;
-
-if ("colorPhase" === propertyName) value = (value)[1];
+var isPhase = ("colorPhase" === propertyName);
+var cvalue = (isPhase ? (value)[1] : value);
+var colixEdge = (isPhase ? JU.C.getColix (((value)[0]).intValue ()) : 0);
+var colix = JU.C.getColixO (isPhase ? cvalue : value);
+var p;
+var bs1 = this.findPolyBS (bs);
+for (var i = bs1.nextSetBit (0); i >= 0; i = bs1.nextSetBit (i + 1)) {
+p = this.polyhedrons[i];
+if (p.id == null) {
+p.colixEdge = colixEdge;
+} else {
+p.colixEdge = colixEdge;
+p.colix = colix;
+}}
+if (this.thisID != null) return;
+value = cvalue;
 propertyName = "color";
 }if (propertyName.indexOf ("translucency") == 0) {
-bs = ("translucentThis".equals (value) && this.iHaveCenterBitSet ? this.centers : this.andBitSet (bs));
+var isTranslucent = (value.equals ("translucent"));
+if (this.thisID != null) {
+var bs1 = this.findPolyBS (bs);
+var p;
+for (var i = bs1.nextSetBit (0); i >= 0; i = bs1.nextSetBit (i + 1)) {
+p = this.polyhedrons[i];
+p.colix = JU.C.getColixTranslucent3 (p.colix, isTranslucent, this.translucentLevel);
+if (p.colixEdge != 0) p.colixEdge = JU.C.getColixTranslucent3 (p.colixEdge, isTranslucent, this.translucentLevel);
+}
+return;
+}bs = ("translucentThis".equals (value) && this.iHaveCenterBitSet ? this.centers : this.andBitSet (bs));
 if (value.equals ("translucentThis")) value = "translucent";
 }if ("radius" === propertyName) {
 this.radius = (value).floatValue ();
@@ -146,43 +191,54 @@ return;
 }if (propertyName === "deleteModelAtoms") {
 var modelIndex = ((value)[2])[0];
 for (var i = this.polyhedronCount; --i >= 0; ) {
-this.polyhedrons[i].info = null;
-var mi = this.polyhedrons[i].centralAtom.mi;
+var p = this.polyhedrons[i];
+p.info = null;
+var mi = (p.id == null ? p.centralAtom.mi : p.modelIndex);
 if (mi == modelIndex) {
 this.polyhedronCount--;
 this.polyhedrons = JU.AU.deleteElements (this.polyhedrons, i, 1);
 }}
 }this.setPropAS (propertyName, value, bs);
 }, "~S,~O,JU.BS");
+Clazz.defineMethod (c$, "scalePolyhedra", 
+ function (scale) {
+var bs = this.findPolyBS (null);
+for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) this.polyhedrons[i].scale = scale;
+
+}, "~N");
+Clazz.defineMethod (c$, "offsetPolyhedra", 
+ function (value) {
+var bs = this.findPolyBS (null);
+for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) this.polyhedrons[i].setOffset (JU.P3.newP (value));
+
+}, "JU.P3");
 Clazz.overrideMethod (c$, "getProperty", 
 function (propertyName, index) {
 if (propertyName === "symmetry") {
 var s = "";
-for (var i = this.polyhedronCount; --i >= 0; ) s += this.polyhedrons[i].getSymmetry (this.vwr, true) + "\n";
+for (var i = 0; i < this.polyhedronCount; i++) s += this.polyhedrons[i].getSymmetry (this.vwr, true) + "\n";
 
 return s;
 }return null;
 }, "~S,~N");
 Clazz.overrideMethod (c$, "getPropertyData", 
 function (property, data) {
-var iatom;
-if (property === "points") {
-iatom = (data[0]).intValue ();
-for (var i = this.polyhedronCount; --i >= 0; ) {
-if (this.polyhedrons[i].centralAtom.i == iatom) {
-if (this.polyhedrons[i].collapsed) break;
-data[1] = this.polyhedrons[i].vertices;
+var iatom = (Clazz.instanceOf (data[0], Integer) ? (data[0]).intValue () : -1);
+var id = (Clazz.instanceOf (data[0], String) ? data[0] : null);
+var p;
+if (property === "checkID") {
+return this.checkID (id);
+}if (property === "points") {
+p = this.findPoly (id, iatom, false);
+if (p == null) return false;
+data[1] = p.vertices;
 return true;
-}}
-return false;
 }if (property === "move") {
 var mat = data[1];
 if (mat == null) return false;
-var bs = data[0];
-for (var i = this.polyhedronCount; --i >= 0; ) {
-var p = this.polyhedrons[i];
-if (bs.get (p.centralAtom.i)) p.move (mat);
-}
+var bs = this.findPolyBS (data[0]);
+for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) this.polyhedrons[i].move (mat);
+
 return true;
 }if (property === "centers") {
 var bs =  new JU.BS ();
@@ -193,14 +249,16 @@ if (sm != null) smiles = sm.cleanSmiles (smiles);
 var nv = (smiles != null ? JU.PT.countChar (smiles, '*') : n == null ? -2147483648 : n.intValue ());
 if (smiles != null && nv == 0) nv = -2147483648;
 for (var i = this.polyhedronCount; --i >= 0; ) {
-if (nv > 0 && this.polyhedrons[i].nVertices != nv || nv > -2147483648 && nv < 0 && this.polyhedrons[i].triangles.length != -nv) continue;
+p = this.polyhedrons[i];
+if (p.id != null) continue;
+if (nv > 0 && p.nVertices != nv || nv > -2147483648 && nv < 0 && p.triangles.length != -nv) continue;
 if (smiles == null) {
-bs.set (this.polyhedrons[i].centralAtom.i);
+bs.set (p.centralAtom.i);
 } else if (sm != null) {
-this.polyhedrons[i].getSymmetry (this.vwr, false);
-var smiles0 = this.polyhedrons[i].polySmiles;
+p.getSymmetry (this.vwr, false);
+var smiles0 = p.polySmiles;
 try {
-if (sm.areEqual (smiles, smiles0) > 0) bs.set (this.polyhedrons[i].centralAtom.i);
+if (sm.areEqual (smiles, smiles0) > 0) bs.set (p.centralAtom.i);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 e.printStackTrace ();
@@ -216,17 +274,42 @@ var info =  new JU.Lst ();
 for (var i = this.polyhedronCount; --i >= 0; ) info.addLast (this.polyhedrons[i].getInfo (this.vwr, true));
 
 data[1] = info;
-return false;
-}if (property === "info") {
-iatom = (data[0]).intValue ();
-for (var i = this.polyhedronCount; --i >= 0; ) {
-if (this.polyhedrons[i].centralAtom.i == iatom) {
-data[1] = this.polyhedrons[i].getInfo (this.vwr, true);
 return true;
-}}
-return false;
-}return false;
+}if (property === "info") {
+p = this.findPoly (id, iatom, true);
+if (p == null) return false;
+data[1] = p.getInfo (this.vwr, true);
+return true;
+}return this.getPropShape (property, data);
 }, "~S,~A");
+Clazz.defineMethod (c$, "checkID", 
+ function (thisID) {
+this.thisID = thisID;
+return (this.findPolyBS (null).cardinality () > 0);
+}, "~S");
+Clazz.defineMethod (c$, "findPoly", 
+ function (id, iatom, allowCollapsed) {
+for (var i = this.polyhedronCount; --i >= 0; ) {
+var p = this.polyhedrons[i];
+if (p.id == null ? p.centralAtom.i == iatom : p.id.equalsIgnoreCase (id)) return (allowCollapsed || !this.polyhedrons[i].collapsed ? this.polyhedrons[i] : null);
+}
+return null;
+}, "~S,~N,~B");
+Clazz.defineMethod (c$, "findPolyBS", 
+ function (bsCenters) {
+var bs = this.bsPolys;
+bs.clearAll ();
+var p;
+for (var i = this.polyhedronCount; --i >= 0; ) {
+p = this.polyhedrons[i];
+if (p.id == null ? bsCenters != null && bsCenters.get (p.centralAtom.i) : this.isMatch (p.id)) bs.set (i);
+}
+return bs;
+}, "JU.BS");
+Clazz.defineMethod (c$, "isMatch", 
+ function (id) {
+return this.thisID != null && JU.PT.isMatch (id.toLowerCase (), this.thisID.toLowerCase (), true, true);
+}, "~S");
 Clazz.overrideMethod (c$, "getShapeDetail", 
 function () {
 var lst =  new JU.Lst ();
@@ -237,8 +320,10 @@ return lst;
 Clazz.defineMethod (c$, "andBitSet", 
  function (bs) {
 var bsCenters =  new JU.BS ();
-for (var i = this.polyhedronCount; --i >= 0; ) bsCenters.set (this.polyhedrons[i].centralAtom.i);
-
+for (var i = this.polyhedronCount; --i >= 0; ) {
+var p = this.polyhedrons[i];
+if (p.id == null) bsCenters.set (p.centralAtom.i);
+}
 bsCenters.and (bs);
 return bsCenters;
 }, "JU.BS");
@@ -246,11 +331,13 @@ Clazz.defineMethod (c$, "deletePolyhedra",
  function () {
 var newCount = 0;
 var pid = J.c.PAL.pidOf (null);
+var bs = this.findPolyBS (this.centers);
 for (var i = 0; i < this.polyhedronCount; ++i) {
 var p = this.polyhedrons[i];
-var iAtom = p.centralAtom.i;
-if (this.centers.get (iAtom)) this.setColixAndPalette (0, pid, iAtom);
- else this.polyhedrons[newCount++] = p;
+if (bs.get (i)) {
+if (p.id == null) this.setColixAndPalette (0, pid, p.centralAtom.i);
+continue;
+}this.polyhedrons[newCount++] = p;
 }
 for (var i = newCount; i < this.polyhedronCount; ++i) this.polyhedrons[i] = null;
 
@@ -258,20 +345,29 @@ this.polyhedronCount = newCount;
 });
 Clazz.defineMethod (c$, "setVisible", 
  function (visible) {
-for (var i = this.polyhedronCount; --i >= 0; ) {
-var p = this.polyhedrons[i];
-if (p != null && this.centers.get (p.centralAtom.i)) p.visible = visible;
-}
+var bs = this.findPolyBS (this.centers);
+for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) this.polyhedrons[i].visible = visible;
+
 }, "~B");
 Clazz.defineMethod (c$, "buildPolyhedra", 
  function () {
-var useBondAlgorithm = this.radius == 0 || this.bondedOnly;
-this.buildMode = (this.info != null ? 6 : this.nPoints > 0 ? 2 : this.haveBitSetVertices ? 4 : this.useUnitCell ? 5 : useBondAlgorithm ? 1 : 3);
-var iter = (this.buildMode == 3 ? this.ms.getSelectedAtomIterator (null, false, false, false, false) : null);
+var p = null;
+if (this.thisID != null) {
+if (JU.PT.isWild (this.thisID)) return;
+if (this.center != null) p = this.validatePolyhedron (this.center, this.nPoints);
+} else if (this.info != null && this.info.containsKey ("id")) {
+this.thisID = this.info.get ("id").asString ();
+p =  new J.shapespecial.Polyhedron ().setInfo (this.info, this.vwr.ms.at);
+}if (p != null) {
+this.addPolyhedron (p);
+return;
+}var useBondAlgorithm = this.radius == 0 || this.bondedOnly;
+var buildMode = (this.info != null ? 6 : this.nPoints > 0 ? 2 : this.haveBitSetVertices ? 4 : this.useUnitCell ? 5 : useBondAlgorithm ? 1 : 3);
+var iter = (buildMode == 3 ? this.ms.getSelectedAtomIterator (null, false, false, false, false) : null);
 for (var i = this.centers.nextSetBit (0); i >= 0; i = this.centers.nextSetBit (i + 1)) {
 var atom = this.atoms[i];
-var p = null;
-switch (this.buildMode) {
+p = null;
+switch (buildMode) {
 case 4:
 p = this.constructBitSetPolyhedron (atom);
 break;
@@ -292,13 +388,16 @@ case 2:
 p = this.validatePolyhedron (atom, this.nPoints);
 break;
 }
-if (p != null) {
-if (this.polyhedronCount == this.polyhedrons.length) this.polyhedrons = JU.AU.doubleLength (this.polyhedrons);
-this.polyhedrons[this.polyhedronCount++] = p;
-}if (this.haveBitSetVertices) break;
+if (p != null) this.addPolyhedron (p);
+if (this.haveBitSetVertices) break;
 }
 if (iter != null) iter.release ();
 });
+Clazz.defineMethod (c$, "addPolyhedron", 
+ function (p) {
+if (this.polyhedronCount == this.polyhedrons.length) this.polyhedrons = JU.AU.doubleLength (this.polyhedrons);
+this.polyhedrons[this.polyhedronCount++] = p;
+}, "J.shapespecial.Polyhedron");
 Clazz.defineMethod (c$, "constructBondsPolyhedron", 
  function (atom, otherAtomCount) {
 if (otherAtomCount == 0) {
@@ -373,7 +472,7 @@ this.otherAtoms[otherAtomCount++] = pt;
 return (otherAtomCount < 3 || this.nVertices > 0 && !this.bsVertexCount.get (otherAtomCount) ? null : this.validatePolyhedron (atom, otherAtomCount));
 }, "JM.Atom,J.api.AtomIndexIterator");
 Clazz.defineMethod (c$, "validatePolyhedron", 
- function (centralAtom, vertexCount) {
+ function (atomOrPt, vertexCount) {
 var points = this.otherAtoms;
 var collapsed = this.isCollapsed;
 var triangleCount = 0;
@@ -381,14 +480,14 @@ var nPoints = vertexCount + 1;
 var ni = vertexCount - 2;
 var nj = vertexCount - 1;
 var planarParam = (Float.isNaN (this.planarParam) ? 0.98 : this.planarParam);
-points[vertexCount] = centralAtom;
-var ptAve = JU.P3.newP (centralAtom);
+points[vertexCount] = atomOrPt;
+var ptAve = JU.P3.newP (atomOrPt);
 for (var i = 0; i < vertexCount; i++) ptAve.add (points[i]);
 
 ptAve.scale (1 / (vertexCount + 1));
 var ptRef = JU.P3.newP (ptAve);
 var bsThroughCenter =  new JU.BS ();
-for (var pt = 0, i = 0; i < ni; i++) for (var j = i + 1; j < nj; j++) for (var k = j + 1; k < vertexCount; k++, pt++) if (this.isPlanar (points[i], points[j], points[k], ptRef)) bsThroughCenter.set (pt);
+if (this.thisID == null) for (var pt = 0, i = 0; i < ni; i++) for (var j = i + 1; j < nj; j++) for (var k = j + 1; k < vertexCount; k++, pt++) if (this.isPlanar (points[i], points[j], points[k], ptRef)) bsThroughCenter.set (pt);
 
 
 
@@ -423,7 +522,7 @@ if (isThroughCenter) {
 bsCenterPlanes.set (triangleCount++);
 } else if (collapsed) {
 ptRef.setT (points[nPoints] =  new JU.P3 ());
-points[nPoints].scaleAdd2 (offset, normal, centralAtom);
+points[nPoints].scaleAdd2 (offset, normal, atomOrPt);
 this.addFacet (i, j, k, ptRef, points, normals, triangles, triangleCount++, nPoints, isWindingOK, vAC);
 this.addFacet (k, i, j, ptRef, points, normals, triangles, triangleCount++, nPoints, isWindingOK, vAC);
 this.addFacet (j, k, i, ptRef, points, normals, triangles, triangleCount++, nPoints, isWindingOK, vAC);
@@ -438,8 +537,8 @@ if (JU.Logger.debugging) {
 JU.Logger.info ("Polyhedron planeCount=" + triangleCount + " nPoints=" + nPoints);
 for (var i = 0; i < triangleCount; i++) JU.Logger.info ("Polyhedron " + JU.PT.toJSON ("face[" + i + "]", triangles[i]));
 
-}return  new J.shapespecial.Polyhedron ().set (centralAtom, points, nPoints, vertexCount, triangles, triangleCount, this.getFaces (triangles, triangleCount, htNormMap), normals, bsCenterPlanes, collapsed, this.distanceRef);
-}, "JM.Atom,~N");
+}return  new J.shapespecial.Polyhedron ().set (this.thisID, this.modelIndex, atomOrPt, points, nPoints, vertexCount, triangles, triangleCount, this.getFaces (triangles, triangleCount, htNormMap), normals, bsCenterPlanes, collapsed, this.distanceRef);
+}, "JU.P3,~N");
 Clazz.defineMethod (c$, "addFacet", 
  function (i, j, k, ptRef, points, normals, faces, planeCount, nRef, isWindingOK, vTemp) {
 var normal =  new JU.V3 ();
@@ -448,8 +547,8 @@ normals[planeCount] = normal;
 faces[planeCount] =  Clazz.newIntArray (-1, [nRef, isWindingOK ? i : j, isWindingOK ? j : i, -2]);
 }, "~N,~N,~N,JU.P3,~A,~A,~A,~N,~N,~B,JU.V3");
 Clazz.defineMethod (c$, "checkFace", 
- function (points, nPoints, triangles, normals, index, pTemp, vNorm, vAC, htNormMap, htEdgeMap, planarParam, bsTemp) {
-var p1 = triangles[index];
+ function (points, nPoints, planes, normals, index, pTemp, vNorm, vAC, htNormMap, htEdgeMap, planarParam, bsTemp) {
+var p1 = planes[index];
 var i0 = p1[0];
 pTemp = JU.Measure.getPlaneThroughPoints (points[i0], points[p1[1]], points[p1[2]], vNorm, vAC, pTemp);
 var pt = points[i0];
@@ -571,10 +670,13 @@ Clazz.overrideMethod (c$, "setModelVisibilityFlags",
 function (bsModels) {
 for (var i = this.polyhedronCount; --i >= 0; ) {
 var p = this.polyhedrons[i];
+if (p.id == null) {
 if (this.ms.at[p.centralAtom.i].isDeleted ()) p.isValid = false;
 p.visibilityFlags = (p.visible && bsModels.get (p.centralAtom.mi) && !this.ms.isAtomHidden (p.centralAtom.i) && !this.ms.at[p.centralAtom.i].isDeleted () ? this.vf : 0);
 if (p.visibilityFlags != 0) this.setShapeVisibility (this.atoms[p.centralAtom.i], true);
-}
+} else {
+p.visibilityFlags = (p.visible && (p.modelIndex < 0 || bsModels.get (p.modelIndex)) ? this.vf : 0);
+}}
 }, "JU.BS");
 Clazz.overrideMethod (c$, "getShapeState", 
 function () {
@@ -587,7 +689,7 @@ if (this.drawEdges == 2) J.shape.Shape.appendCmd (s, "polyhedra frontedges");
 s.append (this.vwr.getAtomShapeState (this));
 for (var i = 0; i < this.polyhedronCount; i++) {
 var p = this.polyhedrons[i];
-if (p.isValid && p.colixEdge != 0 && this.bsColixSet.get (p.centralAtom.i)) J.shape.Shape.appendCmd (s, "select ({" + p.centralAtom.i + "}); color polyhedra " + (JU.C.isColixTranslucent (this.colixes[p.centralAtom.i]) ? "translucent " : "") + JU.C.getHexCode (this.colixes[p.centralAtom.i]) + " " + JU.C.getHexCode (p.colixEdge));
+if (p.isValid && p.id == null && p.colixEdge != 0 && this.bsColixSet.get (p.centralAtom.i)) J.shape.Shape.appendCmd (s, "select ({" + p.centralAtom.i + "}); color polyhedra " + (JU.C.isColixTranslucent (this.colixes[p.centralAtom.i]) ? "translucent " : "") + JU.C.getHexCode (this.colixes[p.centralAtom.i]) + " " + JU.C.getHexCode (p.colixEdge));
 }
 return s.toString ();
 });

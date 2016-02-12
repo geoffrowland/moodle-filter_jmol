@@ -1,5 +1,6 @@
 // JmolApplet.js -- Jmol._Applet and Jmol._Image
 
+// BH 1/15/2016 4:23:14 PM adding Info.makeLiveImage
 // BH 4/17/2015 2:33:32 PM update for SwingJS 
 // BH 10/19/2014 8:08:51 PM moved applet._cover and applet._displayCoverImage to 
 // BH 5/8/2014 11:20:21 AM trying to fix AH nd JG problem with multiple applets
@@ -93,6 +94,7 @@
 			isSigned: false,
 			j2sPath: "j2s",
 			coverImage: null,     // URL for image to display
+      makeLiveImage: null,  // URL for small image to click to make live (defaults to j2s/img/play_make_live.jpg)
 			coverTitle: "",       // tip that is displayed before model starts to load
 			coverCommand: "",     // Jmol command executed upon clicking image
 			deferApplet: false,   // true == the model should not be loaded until the image is clicked

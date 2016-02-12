@@ -619,10 +619,10 @@ throw e1;
 }
 return;
 case 1088421903:
-case 1073742102:
+case 134217762:
 if (!this.chk) {
 if (eval.tokAt (2) == 1275203608) {
-this.showString (this.getShapePropertyIndex (21, "symmetry", 0));
+this.showString (this.getShapePropertyIndex (21, "symmetry", this.tokAt (3) == 1073742334 ? 0 : 1));
 } else {
 this.showString (this.vwr.ms.calculatePointGroup (this.vwr.bsA ()));
 }}return;
@@ -2501,15 +2501,19 @@ Clazz_defineMethod (c$, "polyhedra",
  function () {
 var eval = this.e;
 var haveBonds = (this.slen == 1);
+var haveCenter = false;
 var needsGenerating = haveBonds;
 var onOffDelete = false;
 var typeSeen = false;
 var edgeParameterSeen = false;
+var scale = NaN;
 var nAtomSets = 0;
-this.e.sm.loadShape (21);
+eval.sm.loadShape (21);
 this.setShapeProperty (21, "init", Boolean.TRUE);
 var translucentLevel = 3.4028235E38;
 var colorArgb =  Clazz_newIntArray (-1, [-2147483648]);
+var offset = null;
+var id = null;
 for (var i = 1; i < this.slen; ++i) {
 var propertyName = null;
 var propertyValue = null;
@@ -2519,7 +2523,11 @@ propertyName = "info";
 propertyValue = this.e.theToken.value;
 needsGenerating = true;
 break;
+case 1073742138:
+scale = this.floatParameter (++i);
+continue;
 case 1747587102:
+if (id != null) this.invArg ();
 propertyName = "unitCell";
 propertyValue = Boolean.TRUE;
 needsGenerating = true;
@@ -2535,12 +2543,14 @@ propertyName = (eval.theTok == 1073742334 ? "off" : eval.theTok == 1073742335 ? 
 onOffDelete = true;
 break;
 case 2:
+if (id != null) this.invArg ();
 propertyName = "nVertices";
 propertyValue = Integer.$valueOf (this.intParameter (i));
 needsGenerating = true;
 if (this.tokAt (i + 1) == 268435504) i++;
 break;
 case 1677721602:
+if (id != null) this.invArg ();
 if (nAtomSets > 0) this.invPO ();
 needsGenerating = true;
 propertyName = "bonds";
@@ -2549,14 +2559,18 @@ break;
 case 1665140738:
 i++;
 case 3:
+if (id != null) this.invArg ();
 if (nAtomSets > 0) this.invPO ();
 propertyName = "radius";
 propertyValue = Float.$valueOf (this.floatParameter (i));
 needsGenerating = true;
 break;
 case 1073742066:
-eval.theTok = 1073741937;
-case 1073741937:
+if (!this.isFloatParameter (i + 1)) {
+offset = this.getPoint3f (++i, true);
+i = eval.iToken;
+continue;
+}case 1073741937:
 this.setShapeProperty (21, "collapsed", Boolean.TRUE);
 case 1073742099:
 case 1073741924:
@@ -2569,8 +2583,13 @@ break;
 }
 propertyValue = Float.$valueOf (this.floatParameter (++i));
 break;
+case 1094717454:
+if (id == null) this.invArg ();
+propertyName = "model";
+propertyValue = Integer.$valueOf (this.intParameter (++i));
+break;
 case 1073742170:
-if (nAtomSets > 1) this.invPO ();
+if (nAtomSets > 1 || id != null && !haveCenter) this.invPO ();
 nAtomSets = 3;
 if (this.tokAt (++i) == 10 || this.tokAt (i) == 1073742325) {
 propertyName = (needsGenerating ? "to" : "toBitSet");
@@ -2588,6 +2607,7 @@ case 1073742325:
 if (typeSeen) this.invPO ();
 switch (++nAtomSets) {
 case 1:
+if (id != null) this.invArg ();
 propertyName = "centers";
 break;
 case 2:
@@ -2623,29 +2643,45 @@ propertyName = JS.T.nameOf (eval.theTok);
 break;
 case 1073742182:
 case 1073742060:
-case 1073741862:
+case 1073741861:
 case 1073741958:
 case 1073741964:
 continue;
-default:
+case 1073741974:
+case 268435633:
+case 1073741824:
+case 4:
+if (!eval.isColorParam (i)) {
+if (i != 1) this.invPO ();
+id = (eval.theTok == 1073741974 ? this.stringParameter (++i) : eval.optParameterAsString (i));
+this.setShapeProperty (21, "thisID", id);
+this.setShapeProperty (21, "model", Integer.$valueOf (this.vwr.am.cmi));
+if (!eval.isCenterParameter (i + 1)) continue;
+propertyName = "center";
+propertyValue = this.centerParameter (++i);
+i = eval.iToken;
+haveCenter = true;
+break;
+}default:
 if (eval.isColorParam (i)) {
 colorArgb[0] = eval.getArgbParam (i);
 i = eval.iToken;
 continue;
 }this.invArg ();
 }
-this.setShapeProperty (21, propertyName, propertyValue);
-if (onOffDelete) return false;
+if (propertyName != null) this.setShapeProperty (21, propertyName, propertyValue);
+if (onOffDelete) return;
 }
 if (needsGenerating) {
 if (!typeSeen && haveBonds) this.setShapeProperty (21, "bonds", null);
 this.setShapeProperty (21, "generate", null);
-} else if (!edgeParameterSeen) {
+} else if (!edgeParameterSeen && offset == null && Float.isNaN (scale)) {
 this.error (19);
-}if (colorArgb[0] != -2147483648) this.setShapeProperty (21, "colorThis", Integer.$valueOf (colorArgb[0]));
+}if (offset != null) this.setShapeProperty (21, "offset", offset);
+if (!Float.isNaN (scale)) this.setShapeProperty (21, "scale", Float.$valueOf (scale));
+if (colorArgb[0] != -2147483648) this.setShapeProperty (21, "colorThis", Integer.$valueOf (colorArgb[0]));
 if (translucentLevel != 3.4028235E38) eval.setShapeTranslucency (21, "", "translucentThis", translucentLevel, null);
 this.setShapeProperty (21, "init", Boolean.FALSE);
-return true;
 });
 Clazz_defineMethod (c$, "write", 
  function (args) {
@@ -2721,7 +2757,7 @@ type = "INLINE";
 data = JS.SV.sValue (this.tokenAt (++pt, args));
 pt++;
 break;
-case 1073742102:
+case 134217762:
 type = "PGRP";
 pt++;
 type2 = JS.SV.sValue (this.tokenAt (pt, args)).toLowerCase ();
@@ -3461,7 +3497,7 @@ break;
 case 1073742088:
 if (!this.chk) msg = this.vwr.ms.getPDBHeader (this.vwr.am.cmi);
 break;
-case 1073742102:
+case 134217762:
 var typ = eval.optParameterAsString (2);
 if (typ.length == 0) typ = null;
 len = this.slen;

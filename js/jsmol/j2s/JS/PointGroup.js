@@ -1,6 +1,7 @@
 Clazz.declarePackage ("JS");
-Clazz.load (["JU.P3", "$.V3"], "JS.PointGroup", ["java.lang.Float", "java.util.Hashtable", "JU.Lst", "$.PT", "$.Quat", "$.SB", "JU.BSUtil", "$.Escape", "$.Logger", "$.Node"], function () {
+Clazz.load (["JU.V3"], "JS.PointGroup", ["java.lang.Float", "java.util.Hashtable", "JU.Lst", "$.P3", "$.PT", "$.Quat", "$.SB", "JU.BSUtil", "$.Escape", "$.Logger", "$.Node", "$.Point3fi"], function () {
 c$ = Clazz.decorateAsClass (function () {
+this.isAtoms = false;
 this.drawInfo = null;
 this.info = null;
 this.textInfo = null;
@@ -38,22 +39,23 @@ Clazz.prepareFields (c$, function () {
 this.nAxes =  Clazz.newIntArray (JS.PointGroup.maxAxis, 0);
 this.axes =  new Array (JS.PointGroup.maxAxis);
 this.vTemp =  new JU.V3 ();
-this.center =  new JU.P3 ();
 });
 Clazz.defineMethod (c$, "getName", 
 function () {
 return this.name;
 });
 c$.getPointGroup = Clazz.defineMethod (c$, "getPointGroup", 
-function (pgLast, atomset, bsAtoms, haveVibration, distanceTolerance, linearTolerance, localEnvOnly) {
+function (pgLast, center, atomset, bsAtoms, haveVibration, distanceTolerance, linearTolerance, localEnvOnly) {
 var pg =  new JS.PointGroup ();
 pg.distanceTolerance = distanceTolerance;
 pg.linearTolerance = linearTolerance;
+pg.isAtoms = (bsAtoms != null);
 pg.bsAtoms = (bsAtoms == null ? JU.BSUtil.newBitSet2 (0, atomset.length) : bsAtoms);
 pg.haveVibration = haveVibration;
+pg.center = center;
 pg.localEnvOnly = localEnvOnly;
 return (pg.set (pgLast, atomset) ? pg : pgLast);
-}, "JS.PointGroup,~A,JU.BS,~B,~N,~N,~B");
+}, "JS.PointGroup,JU.T3,~A,JU.BS,~B,~N,~N,~B");
 Clazz.makeConstructor (c$, 
  function () {
 });
@@ -193,23 +195,27 @@ return null;
 }, "~N,~N");
 Clazz.defineMethod (c$, "getPointsAndElements", 
  function (atomset) {
-var ac = JU.BSUtil.cardinalityOf (this.bsAtoms);
-if (ac > 100) return false;
+var ac = this.bsAtoms.cardinality ();
+if (this.isAtoms && ac > 100) return false;
 this.points =  new Array (ac);
 this.elements =  Clazz.newIntArray (ac, 0);
 if (ac == 0) return true;
 this.nAtoms = 0;
+var needCenter = (this.center == null);
+if (needCenter) this.center =  new JU.P3 ();
 for (var i = this.bsAtoms.nextSetBit (0); i >= 0; i = this.bsAtoms.nextSetBit (i + 1), this.nAtoms++) {
 var p = this.points[this.nAtoms] = atomset[i];
 if (Clazz.instanceOf (p, JU.Node)) {
 var bondIndex = (this.localEnvOnly ? 1 : 1 + Math.max (3, (p).getCovalentBondCount ()));
 this.elements[this.nAtoms] = (p).getElementNumber () * bondIndex;
-}this.center.add (this.points[this.nAtoms]);
+} else if (Clazz.instanceOf (p, JU.Point3fi)) {
+this.elements[this.nAtoms] = (p).sD;
+}if (needCenter) this.center.add (this.points[this.nAtoms]);
 }
-this.center.scale (1 / this.nAtoms);
+if (needCenter) this.center.scale (1 / this.nAtoms);
 for (var i = this.nAtoms; --i >= 0; ) {
 var r = this.center.distance (this.points[i]);
-if (r < this.distanceTolerance) this.centerAtomIndex = i;
+if (this.isAtoms && r < this.distanceTolerance) this.centerAtomIndex = i;
 this.radius = Math.max (this.radius, r);
 }
 return true;
@@ -251,7 +257,7 @@ continue out;
 }}
 }
 return nFound == this.points.length;
-}, "JU.Quat,JU.P3,~N");
+}, "JU.Quat,JU.T3,~N");
 Clazz.defineMethod (c$, "isLinear", 
  function (atoms) {
 var v1 = null;
@@ -443,7 +449,7 @@ this.addAxis (18, v);
 break;
 }
 return true;
-}, "~N,JU.V3,JU.P3");
+}, "~N,JU.V3,JU.T3");
 Clazz.defineMethod (c$, "addAxis", 
  function (iOrder, v) {
 if (this.haveAxis (iOrder, v)) return;

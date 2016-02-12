@@ -3766,7 +3766,7 @@ Clazz_defineStatics (c$,
 "minimumHbondDistance2", 0.25);
 });
 Clazz_declarePackage ("JM");
-Clazz_load (["JM.JmolBioModel", "$.JmolBioModelSet", "$.Model"], "JM.BioModel", ["java.lang.Boolean", "$.Character", "$.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "$.PT", "$.SB", "J.api.Interface", "J.c.STR", "JM.Group", "JM.AlphaMonomer", "$.AlphaPolymer", "$.AminoPolymer", "$.Monomer", "$.Resolver", "JS.SV", "$.T", "JU.BSUtil", "$.Escape", "$.Logger", "JV.JC"], function () {
+Clazz_load (["JM.JmolBioModel", "$.JmolBioModelSet", "$.Model"], "JM.BioModel", ["java.lang.Boolean", "$.Character", "$.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "$.PT", "$.SB", "J.api.Interface", "J.c.STR", "JM.Group", "JM.AlphaMonomer", "$.AlphaPolymer", "$.AminoPolymer", "$.Monomer", "$.Resolver", "JS.SV", "$.T", "JU.BSUtil", "$.Escape", "$.Logger"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.bioPolymerCount = 0;
 this.bioPolymers = null;
@@ -4646,12 +4646,12 @@ Clazz_defineMethod (c$, "getUnitID",
 function (atom, flags) {
 var sb =  new JU.SB ();
 var m = atom.group;
-var noTrim = !JV.JC.checkFlag (flags, 16);
-var ch = (JV.JC.checkFlag (flags, 8) ? m.getInsertionCode () : '\0');
+var noTrim = ((flags & 16) != 16);
+var ch = ((flags & 8) == 8 ? m.getInsertionCode () : '\0');
 var isAll = (ch != '\0');
-if (JV.JC.checkFlag (flags, 1) && (this.pdbID != null)) sb.append (this.pdbID);
+if ((flags & 1) == 1 && (this.pdbID != null)) sb.append (this.pdbID);
 sb.append ("|").appendO (this.ms.getInfo (this.modelIndex, "modelNumber")).append ("|").append (this.vwr.getChainIDStr (m.chain.chainID)).append ("|").append (m.getGroup3 ()).append ("|").appendI (m.getResno ());
-if (JV.JC.checkFlag (flags, 4)) {
+if ((flags & 4) == 4) {
 sb.append ("|").append (atom.getAtomName ());
 if (atom.altloc != '\0') sb.append ("|").appendC (atom.altloc);
  else if (noTrim || isAll) sb.append ("|");

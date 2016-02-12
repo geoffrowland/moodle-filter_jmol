@@ -129,7 +129,7 @@ function (fullPath, htParams, reader) {
 if (fullPath == null) return;
 this.debugging = JU.Logger.debugging;
 this.htParams = htParams;
-this.filePath = fullPath.$replace ('\\', '/');
+this.filePath = "" + htParams.get ("fullPathName");
 var i = this.filePath.lastIndexOf ('/');
 this.fileName = this.filePath.substring (i + 1);
 if (Clazz.instanceOf (reader, java.io.BufferedReader)) this.reader = reader;
@@ -351,7 +351,7 @@ this.firstLastStep = val;
 this.firstLastStep = this.htParams.get ("firstLastStep");
 } else if (this.htParams.containsKey ("bsModels")) {
 this.bsModels = this.htParams.get ("bsModels");
-}this.useFileModelNumbers = this.htParams.containsKey ("useFileModelNumbers");
+}this.useFileModelNumbers = this.htParams.containsKey ("useFileModelNumbers") || this.checkFilterKey ("USEFILEMODELNUMBERS");
 if (this.htParams.containsKey ("templateAtomCount")) this.templateAtomCount = (this.htParams.get ("templateAtomCount")).intValue ();
 if (this.bsModels != null || this.firstLastStep != null) this.desiredModelNumber = -2147483648;
 if (this.bsModels == null && this.firstLastStep != null) {
@@ -445,6 +445,7 @@ this.asc.setCollectionName ("<collection of " + (this.asc.iSet + 1) + " models>"
 } else {
 this.asc.setCollectionName (name);
 }this.asc.setModelInfoForSet ("name", name, Math.max (0, this.asc.iSet));
+this.asc.setAtomSetName (name);
 }, "~S");
 Clazz.defineMethod (c$, "cloneLastAtomSet", 
 function (ac, pts) {
@@ -592,7 +593,7 @@ this.nameRequired = JU.PT.getQuotedAttribute (this.filter, "NAME");
 if (this.nameRequired != null) {
 if (this.nameRequired.startsWith ("'")) this.nameRequired = JU.PT.split (this.nameRequired, "'")[1];
  else if (this.nameRequired.startsWith ("\"")) this.nameRequired = JU.PT.split (this.nameRequired, "\"")[1];
-filter0 = this.filter = JU.PT.rep (this.filter, this.nameRequired, "");
+this.filter = JU.PT.rep (this.filter, this.nameRequired, "");
 filter0 = this.filter = JU.PT.rep (this.filter, "NAME=", "");
 }this.filterAtomName = this.checkFilterKey ("*.") || this.checkFilterKey ("!.");
 this.filterElement = this.checkFilterKey ("_");
@@ -920,7 +921,7 @@ this.prevline = this.line;
 this.line = this.reader.readLine ();
 if (this.out != null && this.line != null) this.out.append (this.line).append ("\n");
 this.ptLine++;
-if (this.debugging) JU.Logger.debug (this.line);
+if (this.debugging && this.line != null) JU.Logger.debug (this.line);
 return this.line;
 });
 c$.getStrings = Clazz.defineMethod (c$, "getStrings", 

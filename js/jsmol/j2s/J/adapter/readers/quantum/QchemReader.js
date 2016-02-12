@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.readers.quantum");
-Clazz.load (["J.adapter.readers.quantum.MOReader", "$.BasisFunctionReader"], "J.adapter.readers.quantum.QchemReader", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "J.api.JmolAdapter", "J.quantum.QS", "JU.Logger"], function () {
+Clazz.load (["J.adapter.readers.quantum.MOReader"], "J.adapter.readers.quantum.QchemReader", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "J.adapter.readers.quantum.BasisFunctionReader", "J.api.JmolAdapter", "J.quantum.QS", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.calculationNumber = 1;
 this.alphas = null;
@@ -293,10 +293,10 @@ Clazz.instantialize (this, arguments);
 }, J.adapter.readers.quantum.QchemReader, "MOInfo");
 c$ = Clazz.p0p ();
 };
-c$.$DC_LIST = c$.prototype.$DC_LIST = J.adapter.readers.quantum.BasisFunctionReader.CANONICAL_DC_LIST;
+c$.$DC_LIST = c$.prototype.$DC_LIST = "DXX   DYY   DZZ   DXY   DXZ   DYZ";
 Clazz.defineStatics (c$,
 "$DS_LIST", "D3    D4    D2    D5    D1");
-c$.$FC_LIST = c$.prototype.$FC_LIST = J.adapter.readers.quantum.BasisFunctionReader.CANONICAL_FC_LIST;
+c$.$FC_LIST = c$.prototype.$FC_LIST = "XXX   YYY   ZZZ   XYY   XXY   XXZ   XZZ   YZZ   YYZ   XYZ";
 Clazz.defineStatics (c$,
 "$FS_LIST", "F4    F5    F3    F6    F2    F7    F1");
 });

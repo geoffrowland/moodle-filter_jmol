@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
 //
 // This filter will replace any links to a chemistry structure file
 // (.mol, .sdf, .csmol, .pdb, pdb.gz .xyz, .cml, .mol2, .cif, .mcif etc)
-// with with an interactive 3D display of the structure using Jmol/JSmol.
+// with with an interactive 3D display of the structure using Jmol/JSmol/GLmol.
 //
 // If required, allows customisation of the Jmol object size (default 350 px).
 //
@@ -154,7 +154,6 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $size = 350;
     }
-
     // Retrieve the file from the Moodle file API.
     $url = $matches[2];
     $shortpath = str_replace($wwwroot.'/pluginfile.php', '', $url);
@@ -191,9 +190,8 @@ function filter_jmol_replace_callback($matches) {
     }
     // Setup iframe for Jmol/JSmol.
     return '
-<div style="height:100%; width:100%; border: 0; padding: 0; overflow:hidden">
-<iframe id = "iframe'.$id.'" allowfullscreen frameborder = "0"
-src = "'.new moodle_url('/filter/jmol/iframe.php', array(
+<iframe id = "iframe'.$id.'" class = "jmoliframe" allowfullscreen frameborder = "0"
+ src = "'.new moodle_url('/filter/jmol/iframe.php', array(
     'u' => $url,
     'n' => $filestem,
     'f' => $filetype,
@@ -203,9 +201,8 @@ src = "'.new moodle_url('/filter/jmol/iframe.php', array(
     'id' => $id,
     '_USE' => $technol,
     'DEFER' => $coverimage
-    )).'" style = "border: 1px solid lightgray; padding: 0px; margin: 0px; height: '.$size.'px; width: '.$size.'px">
+    )).'" style = "height: '.$size.'px; width: '.$size.'px">
 </iframe>
-</div>
 <script>
     YUI().use("node", "event", "resize", function(Y) {
         var resize = new Y.Resize({

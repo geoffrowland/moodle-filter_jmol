@@ -60,7 +60,15 @@ function (rd, bsSelected) {
 }, "J.atomdata.RadiusData,JU.BS");
 Clazz.defineMethod (c$, "getPropertyData", 
 function (property, data) {
-return false;
+return this.getPropShape (property, data);
+}, "~S,~A");
+Clazz.defineMethod (c$, "getPropShape", 
+function (property, data) {
+if (Clazz.instanceOf (data[1], Integer)) {
+var index = (data[1]).intValue ();
+data[1] = this.getProperty (property, index);
+return (data[1] != null);
+}return false;
 }, "~S,~A");
 Clazz.defineMethod (c$, "setPropS", 
 function (propertyName, value, bsSelected) {

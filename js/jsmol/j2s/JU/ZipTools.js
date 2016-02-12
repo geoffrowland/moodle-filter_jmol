@@ -13,7 +13,7 @@ c$.newZIS = Clazz.defineMethod (c$, "newZIS",
 return (Clazz.instanceOf (is, javajs.api.ZInputStream) ? is : Clazz.instanceOf (is, java.io.BufferedInputStream) ?  new javajs.api.GenericZipInputStream (is) :  new javajs.api.GenericZipInputStream ( new java.io.BufferedInputStream (is)));
 }, "java.io.InputStream");
 Clazz.overrideMethod (c$, "getAllZipData", 
-function (is, subfileList, name0, binaryFileList, fileData) {
+function (is, subfileList, name0, binaryFileList, exclude, fileData) {
 var zis = JU.ZipTools.newZIS (is);
 var ze;
 var listing =  new JU.SB ();
@@ -26,7 +26,7 @@ if (prefixd.length == 0) prefixd = null;
 }try {
 while ((ze = zis.getNextEntry ()) != null) {
 var name = ze.getName ();
-if (prefix != null && prefixd != null && !(name.equals (prefix) || name.startsWith (prefixd))) continue;
+if (prefix != null && prefixd != null && !(name.equals (prefix) || name.startsWith (prefixd)) || exclude != null && name.contains (exclude)) continue;
 listing.append (name).appendC ('\n');
 var sname = "|" + name.substring (name.lastIndexOf ("/") + 1) + "|";
 var asBinaryString = (binaryFileList.indexOf (sname) >= 0);
@@ -38,7 +38,8 @@ name += ":asBinaryString";
 } else {
 str = JU.Rdr.fixUTF (bytes);
 }str = "BEGIN Directory Entry " + name + "\n" + str + "\nEND Directory Entry " + name + "\n";
-fileData.put (name0 + "|" + name, str);
+var key = name0 + "|" + name;
+fileData.put (key, str);
 }
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
@@ -47,7 +48,7 @@ throw e;
 }
 }
 fileData.put ("#Directory_Listing", listing.toString ());
-}, "java.io.InputStream,~A,~S,~S,java.util.Map");
+}, "java.io.InputStream,~A,~S,~S,~S,java.util.Map");
 Clazz.defineMethod (c$, "getBinaryStringForBytes", 
  function (bytes) {
 var ret =  new JU.SB ();

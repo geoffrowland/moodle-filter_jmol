@@ -52,7 +52,7 @@ name = subFileList[0];
 }if (subFileList != null) this.htParams.put ("subFileList", subFileList);
 var zis = t;
 var zipDirectory = this.fm.getZipDirectory (name, true, true);
-this.atomSetCollection = t = this.fm.getJmb ().getAtomSetCollectionOrBufferedReaderFromZip (this.vwr.getModelAdapter (), zis, name, zipDirectory, this.htParams, false);
+this.atomSetCollection = t = this.fm.getJzu ().getAtomSetCollectionOrBufferedReaderFromZip (this.vwr, zis, name, zipDirectory, this.htParams, 1, false);
 try {
 zis.close ();
 } catch (e) {
@@ -83,7 +83,6 @@ this.fm.setFileInfo ( Clazz.newArray (-1, [this.fullPathNameIn, this.fileNameIn,
 });
 c$.getChangeableReader = Clazz.defineMethod (c$, "getChangeableReader", 
 function (vwr, nameAsGivenIn, fullPathNameIn) {
-JU.Logger.info ("caching changeable file " + fullPathNameIn);
 return JU.Rdr.getBR (vwr.getLigandModel (nameAsGivenIn, fullPathNameIn, "_file", null));
 }, "JV.Viewer,~S,~S");
 Clazz.defineMethod (c$, "getAtomSetCollection", 

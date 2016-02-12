@@ -1091,38 +1091,8 @@ this.runScript ("set labeltoggle {atomindex=" + atomIndex + "}");
 this.vwr.setStatusAtomPicked (atomIndex, null, null);
 }return;
 case 31:
-if (this.bnd (this.clickAction, [0])) {
-bs = this.vwr.getAtomBitSet ("connected(atomIndex=" + atomIndex + ") and !within(SMARTS,'[r50,R]')");
-var nb = bs.cardinality ();
-switch (nb) {
-case 0:
-case 1:
+if (this.bnd (this.clickAction, [0])) this.vwr.invertRingAt (atomIndex, true);
 return;
-case 2:
-break;
-case 3:
-case 4:
-var lengths =  Clazz.newIntArray (nb, 0);
-var points =  Clazz.newIntArray (nb, 0);
-var ni = 0;
-for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1), ni++) {
-lengths[ni] = this.vwr.getBranchBitSet (i, atomIndex, true).cardinality ();
-points[ni] = i;
-}
-for (var j = 0; j < nb - 2; j++) {
-var max = -2147483648;
-var imax = 0;
-for (var i = 0; i < nb; i++) if (lengths[i] >= max && bs.get (points[i])) {
-imax = points[i];
-max = lengths[i];
-}
-bs.clear (imax);
-}
-}
-this.vwr.undoMoveActionClear (atomIndex, 2, true);
-this.vwr.invertSelected (null, null, atomIndex, bs);
-this.vwr.setStatusAtomPicked (atomIndex, "inverted: " + JU.Escape.eBS (bs), null);
-}return;
 case 7:
 if (this.bnd (this.clickAction, [4])) {
 bs = JU.BSUtil.newAndSetBit (atomIndex);

@@ -168,8 +168,17 @@ vRings[i - 3] = v;
 }if (this.needAromatic) {
 if (!aromaticDefined && (!aromaticStrict || i == 5 || i == 6)) for (var r = vR.size (); --r >= 0; ) {
 var bs = vR.get (r);
-if (aromaticDefined || JS.SmilesAromatic.isFlatSp2Ring (this.jmolAtoms, this.bsSelected, bs, (aromaticStrict ? 0.1 : 0.01))) this.bsAromatic.or (bs);
+if (aromaticDefined || JS.SmilesAromatic.isFlatSp2Ring (this.jmolAtoms, this.bsSelected, bs, (aromaticStrict ? 0.1 : 0.01))) {
+this.bsAromatic.or (bs);
+if (!aromaticStrict) switch (i) {
+case 5:
+this.bsAromatic5.or (bs);
+break;
+case 6:
+this.bsAromatic6.or (bs);
+break;
 }
+}}
 if (aromaticStrict) {
 switch (i) {
 case 5:
@@ -473,10 +482,10 @@ if (patternAtom.residueNumber != -2147483648 && patternAtom.residueNumber != (a.
 if (patternAtom.residueChar != null || patternAtom.elementNumber == -2) {
 var atype = a.getBioSmilesType ();
 var ptype = patternAtom.getBioSmilesType ();
-var resChar = (patternAtom.residueChar == null ? '*' : patternAtom.residueChar.charAt (0));
 var ok = true;
 var isNucleic = false;
 switch (ptype) {
+case '\0':
 case '*':
 ok = true;
 break;
@@ -493,6 +502,7 @@ break;
 }
 if (!ok) break;
 var s = a.getGroup1 ('\0').toUpperCase ();
+var resChar = (patternAtom.residueChar == null ? '*' : patternAtom.residueChar.charAt (0));
 var isOK = (resChar == s.charAt (0));
 switch (resChar) {
 case '*':

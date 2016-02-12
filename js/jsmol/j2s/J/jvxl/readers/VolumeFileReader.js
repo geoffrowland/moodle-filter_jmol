@@ -8,7 +8,7 @@ this.nSurfaces = 0;
 this.isAngstroms = false;
 this.canDownsample = false;
 this.downsampleRemainders = null;
-this.preProcessPlanes = false;
+this.getNCIPlanes = false;
 this.nData = 0;
 this.readerClosed = false;
 this.downsampleFactor = 0;
@@ -16,7 +16,7 @@ this.nSkipX = 0;
 this.nSkipY = 0;
 this.nSkipZ = 0;
 this.yzPlanesRaw = null;
-this.iPlaneRaw = 0;
+this.iPlaneNCI = 0;
 this.boundingBox = null;
 this.isScaledAlready = false;
 Clazz.instantialize (this, arguments);
@@ -37,7 +37,7 @@ this.jvxlData.wasCubic = true;
 this.boundingBox = this.params.boundingBox;
 if (this.params.qmOrbitalType == 4) {
 this.hasColorData = (this.params.parameters == null || this.params.parameters[1] >= 0);
-this.preProcessPlanes = true;
+this.getNCIPlanes = true;
 this.params.insideOut = !this.params.insideOut;
 }}, "J.jvxl.readers.SurfaceGenerator,java.io.BufferedReader");
 Clazz.defineMethod (c$, "recordData", 
@@ -198,22 +198,22 @@ if (this.nSkipZ != 0) this.skipVoxels (this.nSkipZ);
 Clazz.overrideMethod (c$, "getPlane", 
 function (x) {
 if (x == 0) this.initPlanes ();
-if (this.preProcessPlanes) return this.getPlaneProcessed (x);
+if (this.getNCIPlanes) return this.getPlaneNCI (x);
 var plane = this.getPlaneSR (x);
 if (this.qpc == null) this.getPlaneVFR (plane, true);
 return plane;
 }, "~N");
-Clazz.defineMethod (c$, "getPlaneProcessed", 
+Clazz.defineMethod (c$, "getPlaneNCI", 
 function (x) {
 var plane;
-if (this.iPlaneRaw == 0) {
+if (this.iPlaneNCI == 0) {
 this.qpc = J.api.Interface.getOption ("quantum.NciCalculation", this.sg.atomDataServer, null);
 var atomData =  new J.atomdata.AtomData ();
 atomData.modelIndex = -1;
 atomData.bsSelected = this.params.bsSelected;
 this.sg.fillAtomData (atomData, 1);
-this.qpc.setupCalculation (this.volumeData, this.sg.params.bsSelected, null, null, null, atomData.atomXyz, -1, null, null, null, null, null, null, this.params.isSquaredLinear, null, this.params.theProperty, true, null, this.params.parameters, this.params.testFlags);
-this.iPlaneRaw = 1;
+(this.qpc).setupCalculation (this.volumeData, this.sg.params.bsSelected, null, null, atomData.atoms, -1, true, null, this.params.parameters, this.params.testFlags);
+this.iPlaneNCI = 1;
 this.qpc.setPlanes (this.yzPlanesRaw =  Clazz.newFloatArray (4, this.yzCount, 0));
 if (this.hasColorData) {
 this.getPlaneVFR (this.yzPlanesRaw[0], false);
@@ -222,10 +222,10 @@ plane = this.yzPlanes[0];
 for (var i = 0; i < this.yzCount; i++) plane[i] = NaN;
 
 return plane;
-}this.iPlaneRaw = -1;
+}this.iPlaneNCI = -1;
 }var nan = this.qpc.getNoValue ();
 var x1 = this.nPointsX - 1;
-switch (this.iPlaneRaw) {
+switch (this.iPlaneNCI) {
 case -1:
 plane = this.yzPlanes[x % 2];
 x1++;
@@ -236,11 +236,11 @@ this.yzPlanesRaw[0] = this.yzPlanesRaw[1];
 this.yzPlanesRaw[1] = this.yzPlanesRaw[2];
 this.yzPlanesRaw[2] = this.yzPlanesRaw[3];
 this.yzPlanesRaw[3] = plane;
-plane = this.yzPlanesRaw[this.iPlaneRaw];
+plane = this.yzPlanesRaw[this.iPlaneNCI];
 break;
 default:
-this.iPlaneRaw++;
-plane = this.yzPlanesRaw[this.iPlaneRaw];
+this.iPlaneNCI++;
+plane = this.yzPlanesRaw[this.iPlaneNCI];
 }
 if (x < x1) {
 this.getPlaneVFR (plane, false);

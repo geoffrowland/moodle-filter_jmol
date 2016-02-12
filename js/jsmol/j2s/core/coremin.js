@@ -63,10 +63,8 @@
 ){
 var $t$;
 //var c$;
-Clazz_declarePackage ("J.api");
-Clazz_declareInterface (J.api, "MinimizerInterface");
 Clazz_declarePackage ("JM");
-Clazz_load (["J.api.MinimizerInterface"], "JM.Minimizer", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "J.i18n.GT", "JM.MinAngle", "$.MinAtom", "$.MinBond", "$.MinTorsion", "$.MinimizationThread", "JM.FF.ForceFieldMMFF", "$.ForceFieldUFF", "JU.BSUtil", "$.Escape", "$.Logger"], function () {
+Clazz_load (null, "JM.Minimizer", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "J.i18n.GT", "JM.MinAngle", "$.MinAtom", "$.MinBond", "$.MinTorsion", "$.MinimizationThread", "JM.FF.ForceFieldMMFF", "$.ForceFieldUFF", "JU.BSUtil", "$.Escape", "$.Logger"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.vwr = null;
 this.atoms = null;
@@ -100,11 +98,11 @@ this.$minimizationOn = false;
 this.minimizationThread = null;
 this.coordSaved = null;
 Clazz_instantialize (this, arguments);
-}, JM, "Minimizer", null, J.api.MinimizerInterface);
+}, JM, "Minimizer");
 Clazz_makeConstructor (c$, 
 function () {
 });
-Clazz_overrideMethod (c$, "setProperty", 
+Clazz_defineMethod (c$, "setProperty", 
 function (propertyName, value) {
 switch (("ff        cancel    clear     constraintfixed     stop      vwr    ").indexOf (propertyName)) {
 case 0:
@@ -135,7 +133,7 @@ break;
 }
 return this;
 }, "~S,~O");
-Clazz_overrideMethod (c$, "getProperty", 
+Clazz_defineMethod (c$, "getProperty", 
 function (propertyName, param) {
 if (propertyName.equals ("log")) {
 return (this.pFF == null ? "" : this.pFF.getLogData ());
@@ -188,7 +186,7 @@ this.constraints = null;
 this.constraintMap = null;
 this.pFF = null;
 });
-Clazz_overrideMethod (c$, "minimize", 
+Clazz_defineMethod (c$, "minimize", 
 function (steps, crit, bsSelected, bsFixed, haveFixed, forceSilent, ff) {
 this.isSilent = (forceSilent || this.vwr.getBooleanProperty ("minimizationSilent"));
 var val;
@@ -412,11 +410,11 @@ ff = "UFF";
 this.vwr.setStringProperty ("_minimizationForceField", ff);
 }return this.pFF;
 }, "~S");
-Clazz_overrideMethod (c$, "minimizationOn", 
+Clazz_defineMethod (c$, "minimizationOn", 
 function () {
 return this.$minimizationOn;
 });
-Clazz_overrideMethod (c$, "getThread", 
+Clazz_defineMethod (c$, "getThread", 
 function () {
 return this.minimizationThread;
 });
@@ -445,7 +443,7 @@ Clazz_defineMethod (c$, "reportEnergy",
  function () {
 this.vwr.setFloatProperty ("_minimizationEnergy", this.pFF.toUserUnits (this.pFF.getEnergy ()));
 });
-Clazz_overrideMethod (c$, "startMinimization", 
+Clazz_defineMethod (c$, "startMinimization", 
 function () {
 try {
 JU.Logger.info ("minimizer: startMinimization");
@@ -469,7 +467,7 @@ throw e;
 this.$minimizationOn = true;
 return true;
 });
-Clazz_overrideMethod (c$, "stepMinimization", 
+Clazz_defineMethod (c$, "stepMinimization", 
 function () {
 if (!this.$minimizationOn) return false;
 var doRefresh = (!this.isSilent && this.vwr.getBooleanProperty ("minimizationRefresh"));
@@ -485,7 +483,7 @@ this.updateAtomXYZ ();
 this.vwr.refresh (3, "minimization step " + currentStep);
 }return going;
 });
-Clazz_overrideMethod (c$, "endMinimization", 
+Clazz_defineMethod (c$, "endMinimization", 
 function () {
 this.updateAtomXYZ ();
 this.setMinimizationOn (false);
@@ -545,7 +543,7 @@ if (this.isSilent) JU.Logger.info (msg);
  else if (isEcho) this.vwr.showString (msg, false);
  else this.vwr.scriptEcho (msg);
 }, "~S,~B");
-Clazz_overrideMethod (c$, "calculatePartialCharges", 
+Clazz_defineMethod (c$, "calculatePartialCharges", 
 function (bonds, bondCount, atoms, bsAtoms) {
 var ff =  new JM.FF.ForceFieldMMFF (this);
 ff.setArrays (atoms, bsAtoms, bonds, bondCount, true, true);

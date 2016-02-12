@@ -43,8 +43,9 @@ m.bsSlabDisplay.setBits (0, (m.pc == 0 ? m.vc : m.pc));
 m.slabOptions =  new JU.SB ().append (m.meshType + " slab none");
 m.bsSlabGhost = null;
 m.slabMeshType = 1073742333;
-}if (slabType == 1073742333) return false;
-}var slabbingObject = slabObject[1];
+}if (slabType == 1073742333) {
+return false;
+}}var slabbingObject = slabObject[1];
 var andCap = (slabObject[2]).booleanValue () && !(slabType == 1073741872);
 if (andCap && !allowCap) return false;
 var colorData = slabObject[3];

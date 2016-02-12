@@ -117,17 +117,17 @@ if ($controls === '1') {
         $dropmmenu = $dropmenu;
 }
 echo '<!DOCTYPE html>';
-echo '<html style="height:100%; width:100%; overflow:hidden; margin:0; padding:0">';
+echo '<html class="jmolwrapper">';
 echo '<head>';
 echo '<meta charset="utf-8">';
 echo '<title>title</title>';
-echo '<link type="text/css" rel="stylesheet" href="styles.css">';
+echo '<link type="text/css" rel="stylesheet" href="iframe.css">';
 echo '<script type="text/javascript" src="'.$wwwroot.'/filter/jmol/js/jsmol/JSmol.min.js"></script>';
 echo '<script type="text/javascript" src="'.$wwwroot.'/filter/jmol/js/jsmol/JSmol.GLmol.min.js"></script>';
 echo '</head>';
-echo '<body style="height: 100%; width: 100%; margin: 0px; padding: 0px; overflow: hidden">';
-echo '<div id = "structure" style = "width: 100%"></div>';
-echo '<div style = "width: 100%; background-color: lightgray; padding: 0px 0px 2px 2px" id = "panel">';
+echo '<body class="jmolwrapper">';
+echo '<div id = "jmolstructure"></div>';
+echo '<div id = "jmolpanel">';
 if ($controls !== '0') {
     if ($dropmenu === 'SimpleChem') {
         echo '<select class = "jmolPanelControl" id = "display" title = "'.get_string('display', 'filter_jmol', true).'">';
@@ -203,7 +203,7 @@ if ($controls !== '0') {
         echo get_string('atoms', 'filter_jmol', true).'</option>';
         echo '<option value = "select all; color shapely" title = "'.get_string('primary_desc', 'filter_jmol', true).'">';
         echo get_string('primary', 'filter_jmol', true).'</option>';
-        echo '<option value = "select all; colour structure"';
+        echo '<option value = "select all; color structure"';
         echo ' title = "'.get_string('secondary_desc', 'filter_jmol', true).'" selected = "selected">';
         echo get_string('secondary', 'filter_jmol', true).'</option>';
         echo '<option value = "select all; color monomer" title = "'.get_string('tertiary_desc', 'filter_jmol', true).'">';
@@ -298,11 +298,11 @@ if ($controls !== '0') {
         echo '<select class = "jmolPanelControl" id = "color" ';
         echo 'title = "'.get_string('backgroundcolour', 'filter_jmol', true).'" style = "background-color: #FFFFFF">';
         echo '<option title = "'.get_string('whitebackground', 'filter_jmol', true).'" ';
-        echo 'value = "#FFFFFF" style = "background-color: white" selected = "selected"> </option>';
+        echo 'value = "#FFFFFF" class = "bgwhite" selected = "selected"> </option>';
         echo '<option title = "'.get_string('lightgreybackground', 'filter_jmol', true).'" value = "#D3D3D3" ';
-        echo 'style = "background-color: lightgray"> </option>';
+        echo 'class = "bglightgrey"> </option>';
         echo '<option title = "'.get_string('blackbackground', 'filter_jmol', true).'" value = "#000000" ';
-        echo 'style = "background-color: black; color: white"> </option>';
+        echo 'class = "bgblack"> </option>';
         echo '</select>';
         echo '<select class = "jmolPanelControl" id = "performance" title = "'.get_string('performance', 'filter_jmol', true).'">';
         echo '<option value = "set platformSpeed 8" title = "'.get_string('allfeatures', 'filter_jmol', true).'" ';
@@ -375,48 +375,48 @@ echo 'allowJavaScript: true';
 echo '};';
 echo 'fixsize();';
 // Write J(S)mol to div.
-echo '$("#structure").html(Jmol.getAppletHtml("jmolApplet0", Info));';
+echo '$("#jmolstructure").html(Jmol.getAppletHtml("jmolApplet0", Info));';
 echo '$("#jmolApplet0_coverclickgo").attr("src", "'.$wwwroot.'/filter/jmol/pix/play_256.png");';
 echo 'Jmol._alertNoBinary = true;';
 if ($technol === "SIGNED") {
     if ($bname == 'opr' && $bplatform == 'linux') {
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nojavasupport', 'filter_jmol', true).'</div>");';
     } else if ($bname == 'chrome' && $bversion > 34 && $bplatform == 'linux') {
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nojavasupport', 'filter_jmol', true).'</div>");';
     } else if ($bname == 'chrome' && $bversion > 44 && $bplatform != '!linux') {
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nojavasupport', 'filter_jmol', true).'</div>");';
     } else if ($bname == 'edge') {
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nojavasupport', 'filter_jmol', true).'</div>");';
     } else {
         echo 'if (!navigator.javaEnabled()){';
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nojava', 'filter_jmol', true).'</div>");';
         echo '}';
     }
 } else if ($technol === "HTML5") {
     if ($bname == 'msie' && $bversion < 9) {
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nohtml5', 'filter_jmol', true).'</div>");';
     } else if ($bname == 'msie' && $binary == true ) {
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nobinary', 'filter_jmol', true).'</div>");';
     }
 } else if ($technol === "WEBGL") {
     if ($bname == 'msie' && $bversion == '11' && $binary == true ) {
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nobinary', 'filter_jmol', true).'</div>");';
     } else {
         echo 'if (!!window.WebGLRenderingContext) {';
         echo '    if (!(document.createElement("canvas").getContext("webgl") ';
         echo '|| document.createElement("canvas").getContext("experimental-webgl"))) {';
-        echo '        $("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '        $("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nowebgl', 'filter_jmol', true).'</div>");';        echo '    }';
         echo '} else {';
-        echo '    $("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '    $("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nowebgl', 'filter_jmol', true).'</div>");';
         echo '}';
     }
@@ -495,7 +495,7 @@ echo '$("#pngj").click(function(){';
 echo 'Jmol.script(jmolApplet0, "write PNGJ '.$expfilename.'.png");';
 echo '});';
 echo 'function fixsize(){';
-echo '$("#structure").css({height: $(window).height() - $("#panel").height()});';
+echo '$("#jmolstructure").css({height: $(window).height() - $("#jmolpanel").height()});';
 echo '};';
 echo '$(window).resize(function(){';
 echo 'fixsize();';

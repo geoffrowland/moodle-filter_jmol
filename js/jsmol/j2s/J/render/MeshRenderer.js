@@ -14,6 +14,7 @@ this.diameter = 0;
 this.width = 0;
 this.isTranslucent = false;
 this.frontOnly = false;
+this.isShell = false;
 this.antialias = false;
 this.haveBsDisplay = false;
 this.selectedPolyOnly = false;
@@ -122,7 +123,8 @@ if (!this.doRender || this.isGhostPass && !(this.doRender = this.g3d.setC (this.
 this.vertices = this.mesh.vs;
 if (this.needTranslucent) this.g3d.setC (JU.C.getColixTranslucent3 (4, true, 0.5));
 return true;
-}this.vertices = (this.mesh.scale3d == 0 && this.mesh.mat4 == null ? this.mesh.vs : this.mesh.getOffsetVertices (this.thePlane));
+}if (this.mesh.isModelConnected) this.mesh.mat4 = this.ms.am[this.mesh.modelIndex].mat4;
+this.vertices = (this.mesh.scale3d == 0 && this.mesh.mat4 == null ? this.mesh.vs : this.mesh.getOffsetVertices (this.thePlane));
 if (this.mesh.lineData == null) {
 if ((this.vertexCount = this.mesh.vc) == 0) return false;
 this.normixes = this.mesh.normixes;
@@ -131,11 +133,13 @@ this.haveBsDisplay = (this.mesh.bsDisplay != null);
 this.selectedPolyOnly = (this.isGhostPass || this.mesh.bsSlabDisplay != null);
 this.bsPolygons = (this.isGhostPass ? this.mesh.bsSlabGhost : this.selectedPolyOnly ? this.mesh.bsSlabDisplay : null);
 this.renderLow = (!this.isExport && !this.vwr.checkMotionRendering (1073742018));
-this.frontOnly = this.renderLow || !this.tm.slabEnabled && this.mesh.frontOnly && !this.mesh.isTwoSided && !this.selectedPolyOnly && (this.meshSlabValue == -2147483648 || this.meshSlabValue >= 100);
+var allowFrontOnly = (!this.mesh.isTwoSided && !this.selectedPolyOnly && (this.meshSlabValue == -2147483648 || this.meshSlabValue >= 100));
+this.frontOnly = this.renderLow || this.mesh.frontOnly && !this.tm.slabEnabled && allowFrontOnly;
+this.isShell = this.mesh.isShell && allowFrontOnly;
 this.screens = this.vwr.allocTempScreens (this.vertexCount);
 if (this.isPrecision) this.p3Screens = this.vwr.allocTempPoints (this.vertexCount);
-if (this.frontOnly) this.transformedVectors = this.vwr.gdata.getTransformedVertexVectors ();
-if (this.transformedVectors == null) this.frontOnly = false;
+if (this.frontOnly || this.isShell) this.transformedVectors = this.vwr.gdata.getTransformedVertexVectors ();
+if (this.transformedVectors == null) this.frontOnly = this.isShell = false;
 }return true;
 });
 Clazz.defineMethod (c$, "setColix", 
@@ -236,7 +240,7 @@ continue;
 }var nA = this.normixes[iA];
 var nB = this.normixes[iB];
 var nC = this.normixes[iC];
-check = this.checkNormals (nA, nB, nC);
+check = (this.frontOnly || this.isShell ? this.checkFront (nA, nB, nC) : 7);
 if (fill && check != 7) continue;
 switch (polygon.length) {
 case 3:
@@ -294,14 +298,13 @@ if ((check & 1) == 1) this.g3d.fillCylinderXYZ (colixA, colixB, 1, diam, screenA
 if ((check & 2) == 2) this.g3d.fillCylinderXYZ (colixB, colixC, 1, diam, screenB.x, screenB.y, screenB.z, screenC.x, screenC.y, screenC.z);
 if ((check & 4) == 4) this.g3d.fillCylinderXYZ (colixA, colixC, 1, diam, screenA.x, screenA.y, screenA.z, screenC.x, screenC.y, screenC.z);
 }, "JU.P3i,~N,JU.P3i,~N,JU.P3i,~N,~N,~N");
-Clazz.defineMethod (c$, "checkNormals", 
+Clazz.defineMethod (c$, "checkFront", 
 function (nA, nB, nC) {
 var check = 7;
-if (this.frontOnly) {
 if (this.transformedVectors[nA].z < 0) check ^= 1;
 if (this.transformedVectors[nB].z < 0) check ^= 2;
 if (this.transformedVectors[nC].z < 0) check ^= 4;
-}return check;
+return check;
 }, "~N,~N,~N");
 Clazz.defineMethod (c$, "drawEdge", 
 function (iA, iB, fill, vA, vB, sA, sB) {

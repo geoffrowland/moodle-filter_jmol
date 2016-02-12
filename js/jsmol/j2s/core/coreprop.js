@@ -66,7 +66,7 @@ var $t$;
 Clazz_declarePackage ("J.api");
 Clazz_declareInterface (J.api, "JmolPropertyManager");
 Clazz_declarePackage ("JV");
-Clazz_load (["J.api.JmolPropertyManager", "java.util.Hashtable"], "JV.PropertyManager", ["java.lang.Boolean", "$.Double", "$.Float", "java.util.Arrays", "$.Date", "$.Map", "JU.AU", "$.BArray", "$.BS", "$.Base64", "$.Lst", "$.M3", "$.M4", "$.P3", "$.PT", "$.SB", "$.V3", "J.api.Interface", "JM.BondSet", "$.LabelToken", "JS.SV", "$.T", "JU.BSUtil", "$.C", "$.Edge", "$.Elements", "$.Escape", "$.JmolMolecule", "$.Logger", "JV.ActionManager", "$.JC", "$.Viewer", "JV.binding.Binding"], function () {
+Clazz_load (["J.api.JmolPropertyManager", "java.util.Hashtable"], "JV.PropertyManager", ["java.lang.Boolean", "$.Double", "$.Float", "java.util.Arrays", "$.Date", "$.Map", "JU.AU", "$.BArray", "$.BS", "$.Base64", "$.Lst", "$.M3", "$.M4", "$.P3", "$.PT", "$.SB", "$.V3", "J.api.Interface", "JM.BondSet", "$.LabelToken", "JS.SV", "$.T", "JU.BSUtil", "$.C", "$.Edge", "$.Elements", "$.Escape", "$.JmolMolecule", "$.Logger", "JV.ActionManager", "$.FileManager", "$.JC", "$.Viewer", "JV.binding.Binding"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.vwr = null;
 this.map = null;
@@ -490,9 +490,9 @@ case 27:
 var params = myParam.toString ().toLowerCase ();
 return this.getImage (params, params.indexOf ("g64") < 0 && params.indexOf ("base64") < 0 && (returnType == null || returnType.equalsIgnoreCase ("java")));
 case 35:
-return this.vwr.getShapeProperty (24, "getInfo");
+return this.vwr.getShapeProperty (24, "info");
 case 36:
-return this.vwr.getShapeProperty (24, "getData");
+return this.vwr.getShapeProperty (24, "data");
 case 40:
 return this.vwr.getNMRCalculation ().getInfo (myParam.toString ());
 case 41:
@@ -646,7 +646,7 @@ info.put ("canSkipLoad", Boolean.$valueOf (m.canSkipLoad));
 info.put ("modelSetHasVibrationVectors", Boolean.$valueOf (m.modelSetHasVibrationVectors ()));
 if (m.modelSetProperties != null) {
 info.put ("modelSetProperties", m.modelSetProperties);
-}info.put ("modelCountSelected", Integer.$valueOf (JU.BSUtil.cardinalityOf (bsModels)));
+}info.put ("modelCountSelected", Integer.$valueOf (bsModels.cardinality ()));
 info.put ("modelsSelected", bsModels);
 var vModels =  new JU.Lst ();
 m.getMolecules ();
@@ -765,7 +765,7 @@ var asJSON = type.equalsIgnoreCase ("JSON") || type.equalsIgnoreCase ("CD");
 var mol =  new JU.SB ();
 var ms = this.vwr.ms;
 if (!isXYZ && !asJSON) {
-mol.append (isModelKit ? "Jmol Model Kit" : this.vwr.fm.getFullPathName (false).$replace ('\\', '/'));
+mol.append (isModelKit ? "Jmol Model Kit" : JV.FileManager.fixDOSName (this.vwr.fm.getFullPathName (false)));
 var version = JV.Viewer.getJmolVersion ();
 mol.append ("\n__Jmol-").append (version.substring (0, 2));
 var cMM;
@@ -789,7 +789,7 @@ var atoms = ms.at;
 for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) if (doTransform && atoms[i].isDeleted ()) bsAtoms.clear (i);
 
 var bsBonds = JV.PropertyManager.getCovalentBondsForAtoms (ms.bo, ms.bondCount, bsAtoms);
-if (!asXYZVIB && bsAtoms.cardinality () == 0) return "";
+if (!asXYZVIB && bsAtoms.isEmpty ()) return "";
 var isOK = true;
 var bsModels = this.vwr.ms.getModelBS (bsAtoms, true);
 if (ms.trajectory != null && !allTrajectories) ms.trajectory.selectDisplayed (bsModels);
@@ -812,7 +812,7 @@ var ptTemp =  new JU.P3 ();
 for (var i = bsModels.nextSetBit (0); i >= 0; i = bsModels.nextSetBit (i + 1)) {
 var bsTemp = JU.BSUtil.copy (bsAtoms);
 bsTemp.and (ms.getModelAtomBitSetIncludingDeleted (i, false));
-if (bsTemp.cardinality () == 0) continue;
+if (bsTemp.isEmpty ()) continue;
 mol.appendI (bsTemp.cardinality ()).appendC ('\n');
 var props = ms.am[i].properties;
 mol.append ("Model[" + (i + 1) + "]: ");
@@ -1557,7 +1557,7 @@ return out.toString ();
 Clazz_overrideMethod (c$, "getModelCml", 
 function (bs, atomsMax, addBonds, doTransform, allTrajectories) {
 var sb =  new JU.SB ();
-var nAtoms = JU.BSUtil.cardinalityOf (bs);
+var nAtoms = bs.cardinality ();
 if (nAtoms == 0) return "";
 J.api.Interface.getInterface ("JU.XmlUtil", this.vwr, "file");
 JU.XmlUtil.openTag (sb, "molecule");

@@ -10,6 +10,7 @@ this.readIdeal = true;
 this.configurationPtr = -2147483648;
 this.useAuthorChainID = true;
 this.thisDataSetName = "";
+this.lastDataSetName = null;
 this.chemicalName = "";
 this.thisStructuralFormula = "";
 this.thisFormula = "";
@@ -422,8 +423,10 @@ var isLigand = false;
 if (this.key.startsWith ("_atom_site") || (isLigand = this.key.equals ("_chem_comp_atom_comp_id"))) {
 if (!this.processAtomSiteLoopBlock (isLigand)) return;
 if (this.thisDataSetName.equals ("global")) this.asc.setCollectionName (this.thisDataSetName = this.chemicalName);
+if (!this.thisDataSetName.equals (this.lastDataSetName)) {
 this.asc.setAtomSetName (this.thisDataSetName);
-this.asc.setCurrentModelInfo ("chemicalName", this.chemicalName);
+this.lastDataSetName = this.thisDataSetName;
+}this.asc.setCurrentModelInfo ("chemicalName", this.chemicalName);
 this.asc.setCurrentModelInfo ("structuralFormula", this.thisStructuralFormula);
 this.asc.setCurrentModelInfo ("formula", this.thisFormula);
 return;

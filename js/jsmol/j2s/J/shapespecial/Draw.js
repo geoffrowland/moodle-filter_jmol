@@ -406,7 +406,7 @@ this.thisMesh.ptCenters = null;
 this.thisMesh.modelFlags = null;
 this.thisMesh.drawTypes = null;
 this.thisMesh.drawVertexCounts = null;
-this.thisMesh.connections = connections;
+this.thisMesh.connectedAtoms = connections;
 if (this.polygon != null) {
 if (this.polygon.size () == 0) return false;
 this.thisMesh.isTriangleSet = true;
@@ -470,7 +470,7 @@ return true;
 }, "~A");
 Clazz.overrideMethod (c$, "clean", 
 function () {
-for (var i = this.meshCount; --i >= 0; ) if (this.meshes[i] == null || this.meshes[i].vc == 0 && this.meshes[i].connections == null && this.meshes[i].lineData == null) this.deleteMeshI (i);
+for (var i = this.meshCount; --i >= 0; ) if (this.meshes[i] == null || this.meshes[i].vc == 0 && this.meshes[i].connectedAtoms == null && this.meshes[i].lineData == null) this.deleteMeshI (i);
 
 });
 Clazz.defineMethod (c$, "addPoint", 
@@ -700,7 +700,7 @@ case 2:
 drawType = (this.isArc ? J.shapespecial.Draw.EnumDrawType.ARC : this.isPlane && this.isCircle ? J.shapespecial.Draw.EnumDrawType.CIRCULARPLANE : this.isCylinder ? J.shapespecial.Draw.EnumDrawType.CYLINDER : J.shapespecial.Draw.EnumDrawType.LINE);
 break;
 default:
-drawType = (this.thisMesh.connections == null ? J.shapespecial.Draw.EnumDrawType.PLANE : J.shapespecial.Draw.EnumDrawType.ARROW);
+drawType = (this.thisMesh.connectedAtoms == null ? J.shapespecial.Draw.EnumDrawType.PLANE : J.shapespecial.Draw.EnumDrawType.ARROW);
 }
 }this.thisMesh.drawType = drawType;
 this.thisMesh.drawVertexCount = nVertices;
@@ -720,7 +720,7 @@ return;
 Clazz.defineMethod (c$, "scale", 
  function (mesh, newScale) {
 var dmesh = mesh;
-if (newScale == 0 || dmesh.vc == 0 && dmesh.connections == null || dmesh.scale == newScale) return;
+if (newScale == 0 || dmesh.vc == 0 && dmesh.connectedAtoms == null || dmesh.scale == newScale) return;
 var f = newScale / dmesh.scale;
 dmesh.scale = newScale;
 dmesh.isScaleSet = true;
@@ -933,7 +933,7 @@ if (dmesh.isFixed) str.append (" fixed");
 if (iModel < 0) iModel = 0;
 if (dmesh.noHead) str.append (" noHead");
  else if (dmesh.isBarb) str.append (" barb");
-if (dmesh.scale != 1 && dmesh.isScaleSet && (dmesh.haveXyPoints || dmesh.connections != null || dmesh.drawType === J.shapespecial.Draw.EnumDrawType.CIRCLE || dmesh.drawType === J.shapespecial.Draw.EnumDrawType.ARC)) str.append (" scale ").appendF (dmesh.scale);
+if (dmesh.scale != 1 && dmesh.isScaleSet && (dmesh.haveXyPoints || dmesh.connectedAtoms != null || dmesh.drawType === J.shapespecial.Draw.EnumDrawType.CIRCLE || dmesh.drawType === J.shapespecial.Draw.EnumDrawType.ARC)) str.append (" scale ").appendF (dmesh.scale);
 if (dmesh.width != 0) str.append (" diameter ").appendF ((dmesh.drawType === J.shapespecial.Draw.EnumDrawType.CYLINDER ? Math.abs (dmesh.width) : dmesh.drawType === J.shapespecial.Draw.EnumDrawType.CIRCULARPLANE ? Math.abs (dmesh.width * dmesh.scale) : dmesh.width));
  else if (dmesh.diameter > 0) str.append (" diameter ").appendI (dmesh.diameter);
 if (dmesh.lineData != null) {
@@ -969,7 +969,7 @@ str.append (dmesh.isVector ? " ARROW ARC" : " ARC");
 break;
 case J.shapespecial.Draw.EnumDrawType.ARROW:
 str.append (dmesh.isVector ? " VECTOR" : " ARROW");
-if (dmesh.connections != null) str.append (" connect ").append (JU.Escape.eAI (dmesh.connections));
+if (dmesh.connectedAtoms != null) str.append (" connect ").append (JU.Escape.eAI (dmesh.connectedAtoms));
 break;
 case J.shapespecial.Draw.EnumDrawType.CIRCLE:
 str.append (" CIRCLE");

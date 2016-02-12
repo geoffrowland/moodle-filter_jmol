@@ -64,7 +64,7 @@
 var $t$;
 //var c$;
 Clazz_declarePackage ("JS");
-Clazz_load (null, "JS.MathExt", ["java.lang.Float", "$.Number", "java.util.Date", "$.Hashtable", "$.Random", "JU.AU", "$.BS", "$.CU", "$.Lst", "$.M4", "$.Measure", "$.P3", "$.P4", "$.PT", "$.Quat", "$.SB", "$.V3", "J.api.Interface", "J.atomdata.RadiusData", "J.bspt.Bspt", "J.c.VDW", "J.i18n.GT", "JM.BondSet", "JS.SV", "$.ScriptParam", "$.T", "JU.BSUtil", "$.Escape", "$.JmolMolecule", "$.Logger", "$.Parser", "$.Point3fi", "$.SimpleUnitCell", "JV.JC"], function () {
+Clazz_load (null, "JS.MathExt", ["java.lang.Float", "$.Number", "java.util.Date", "$.Hashtable", "$.Random", "JU.AU", "$.BS", "$.CU", "$.Lst", "$.M4", "$.Measure", "$.P3", "$.P4", "$.PT", "$.Quat", "$.SB", "$.V3", "J.api.Interface", "J.atomdata.RadiusData", "J.bspt.Bspt", "J.c.VDW", "J.i18n.GT", "JM.BondSet", "JS.SV", "$.ScriptParam", "$.T", "JU.BSUtil", "$.Escape", "$.JmolMolecule", "$.Logger", "$.Parser", "$.Point3fi", "$.SimpleUnitCell", "JV.FileManager", "$.JC"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.vwr = null;
 this.e = null;
@@ -166,6 +166,8 @@ case 1275068932:
 return this.evaluateString (mp, op.intValue, args);
 case 134217751:
 return this.evaluatePoint (mp, args);
+case 134217762:
+return this.evaluatePointGroup (mp, args);
 case 134256131:
 return this.evaluatePrompt (mp, args);
 case 134219268:
@@ -194,6 +196,55 @@ return this.evaluateWrite (mp, args);
 }
 return false;
 }, "JS.ScriptMathProcessor,JS.T,~A,~N");
+Clazz_defineMethod (c$, "evaluatePointGroup", 
+ function (mp, args) {
+var pts;
+var center = null;
+var distanceTolerance = NaN;
+var linearTolerance = NaN;
+var bsAtoms;
+switch (args.length) {
+case 4:
+linearTolerance = args[3].asFloat ();
+case 3:
+distanceTolerance = args[2].asFloat ();
+case 2:
+switch (args[1].tok) {
+case 8:
+center = JS.SV.ptValue (args[1]);
+break;
+case 10:
+bsAtoms = JS.SV.getBitSet (args[0], false);
+var iatom = bsAtoms.nextSetBit (0);
+if (iatom < 0 || iatom >= this.vwr.ms.ac || bsAtoms.cardinality () != 1) return false;
+center = this.vwr.ms.at[iatom];
+break;
+}
+case 1:
+switch (args[0].tok) {
+case 7:
+var points = args[0].getList ();
+pts =  new Array (points.size ());
+for (var i = pts.length; --i >= 0; ) pts[i] = JS.SV.ptValue (points.get (i));
+
+break;
+case 10:
+bsAtoms = JS.SV.getBitSet (args[0], false);
+var atoms = this.vwr.ms.getAtomPointVector (bsAtoms);
+pts =  new Array (atoms.size ());
+for (var i = pts.length; --i >= 0; ) pts[i] = atoms.get (i);
+
+break;
+default:
+return false;
+}
+break;
+default:
+return false;
+}
+var pointGroup = this.vwr.ms.getSymTemp (true).setPointGroup (null, center, pts, null, false, Float.isNaN (distanceTolerance) ? this.vwr.getFloat (570425382) : distanceTolerance, Float.isNaN (linearTolerance) ? this.vwr.getFloat (570425384) : linearTolerance, true);
+return mp.addXMap (pointGroup.getPointGroupInfo (-1, false, true, null, 0, 1));
+}, "JS.ScriptMathProcessor,~A");
 Clazz_defineMethod (c$, "evaluateUnitCell", 
  function (mp, args) {
 var lastParam = args.length - 1;
@@ -887,16 +938,15 @@ throw ex;
 var isReverse = (flags.indexOf ("v") >= 0);
 var isCaseInsensitive = (flags.indexOf ("i") >= 0);
 var asMatch = (flags.indexOf ("m") >= 0);
-var isPattern = (args.length == 2);
+var checkEmpty = (sFind.length == 0);
+var isPattern = (!checkEmpty && args.length == 2);
 if (isList || isPattern) {
-var pm = this.getPatternMatcher ();
+var pm = (isPattern ? this.getPatternMatcher () : null);
 var pattern = null;
-var list = null;
 var svlist = (isList ? x1.getList () : null);
-if (sFind.length > 0) {
+if (isPattern) {
 try {
-pattern = (sFind.length == 0 ? null : pm.compile (sFind, isCaseInsensitive));
-list = JS.SV.strListValue (x1);
+pattern = pm.compile (sFind, isCaseInsensitive);
 } catch (ex) {
 if (Clazz_exceptionOf (ex, Exception)) {
 this.e.evalError (ex.toString (), null);
@@ -904,7 +954,8 @@ this.e.evalError (ex.toString (), null);
 throw ex;
 }
 }
-}var nlist = (list == null ? svlist.size () : list.length);
+}var list = (checkEmpty ? null : JS.SV.strListValue (x1));
+var nlist = (checkEmpty ? svlist.size () : list.length);
 if (JU.Logger.debugging) JU.Logger.debug ("finding " + sFind);
 var bs =  new JU.BS ();
 var n = 0;
@@ -913,7 +964,7 @@ var v = (asMatch ?  new JU.Lst () : null);
 var what = "";
 for (var i = 0; i < nlist; i++) {
 var isMatch;
-if (pattern == null) {
+if (checkEmpty) {
 var o = svlist.get (i);
 switch (o.tok) {
 case 6:
@@ -928,10 +979,12 @@ break;
 default:
 isMatch = true;
 }
-} else {
+} else if (isPattern) {
 what = list[i];
 matcher = pattern.matcher (what);
 isMatch = matcher.find ();
+} else {
+isMatch = (JS.SV.sValue (svlist.get (i)).indexOf (sFind) >= 0);
 }if (asMatch && isMatch || !asMatch && isMatch == !isReverse) {
 n++;
 bs.set (i);
@@ -1296,8 +1349,7 @@ case 2:
 nBytesMax = (args[1].tok == 2 ? args[1].asInt () : -1);
 asBytes = args[1].tok == 1073742335;
 case 1:
-file = JS.SV.sValue (args[0]);
-file = file.$replace ('\\', '/');
+file = JV.FileManager.fixDOSName (JS.SV.sValue (args[0]));
 break;
 default:
 return false;

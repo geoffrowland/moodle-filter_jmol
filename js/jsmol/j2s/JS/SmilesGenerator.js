@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JS");
-Clazz.load (["java.util.Hashtable", "JU.BS", "JS.VTemp"], "JS.SmilesGenerator", ["JU.Lst", "$.SB", "JS.InvalidSmilesException", "$.SmilesAtom", "$.SmilesBond", "$.SmilesParser", "$.SmilesSearch", "$.SmilesStereo", "JU.BNode", "$.BSUtil", "$.Elements", "$.JmolMolecule", "$.Logger", "JV.JC"], function () {
+Clazz.load (["java.util.Hashtable", "JU.BS", "JS.VTemp"], "JS.SmilesGenerator", ["JU.Lst", "$.SB", "JS.InvalidSmilesException", "$.SmilesAtom", "$.SmilesBond", "$.SmilesParser", "$.SmilesSearch", "$.SmilesStereo", "JU.BNode", "$.BSUtil", "$.Elements", "$.JmolMolecule", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.atoms = null;
 this.ac = 0;
@@ -43,24 +43,24 @@ var ipt = bsSelected.nextSetBit (0);
 if (ipt < 0) return "";
 this.atoms = atoms;
 this.ac = ac;
-this.addAtomComment = JV.JC.checkFlag (flags, 524288);
+this.addAtomComment = ((flags & 524288) == 524288);
 bsSelected = JU.BSUtil.copy (bsSelected);
-if (JV.JC.checkFlag (flags, 65536)) return this.getBioSmiles (bsSelected, comment, flags);
+if ((flags & 65536) == 65536) return this.getBioSmiles (bsSelected, comment, flags);
 this.bsSelected = bsSelected;
-this.explicitH = JV.JC.checkFlag (flags, 256);
-this.topologyOnly = JV.JC.checkFlag (flags, 512);
-this.getAromatic = !JV.JC.checkFlag (flags, 1024);
-this.noStereo = JV.JC.checkFlag (flags, 2048);
-this.isPolyhedral = JV.JC.checkFlag (flags, 4096);
+this.explicitH = ((flags & 256) == 256);
+this.topologyOnly = ((flags & 512) == 512);
+this.getAromatic = !((flags & 1024) == 1024);
+this.noStereo = ((flags & 2048) == 2048);
+this.isPolyhedral = ((flags & 4096) == 4096);
 return this.getSmilesComponent (atoms[ipt], bsSelected, true, false, false);
 }, "~A,~N,JU.BS,~S,~N");
 Clazz.defineMethod (c$, "getBioSmiles", 
  function (bsSelected, comment, flags) {
-this.addAtomComment = JV.JC.checkFlag (flags, 524288);
-var allowUnmatchedRings = JV.JC.checkFlag (flags, 69632);
-var noBioComments = JV.JC.checkFlag (flags, 327680);
-var crosslinkCovalent = JV.JC.checkFlag (flags, 73728);
-var crosslinkHBonds = JV.JC.checkFlag (flags, 90112);
+this.addAtomComment = ((flags & 524288) == 524288);
+var allowUnmatchedRings = ((flags & 69632) == 69632);
+var noBioComments = ((flags & 327680) == 327680);
+var crosslinkCovalent = ((flags & 73728) == 73728);
+var crosslinkHBonds = ((flags & 90112) == 90112);
 var addCrosslinks = (crosslinkCovalent || crosslinkHBonds);
 var sb =  new JU.SB ();
 var bs = bsSelected;
@@ -333,7 +333,7 @@ v.addLast (bonds[i]);
 var strBond = null;
 if (sp2Atoms == null) sp2Atoms =  new Array (5);
 if (bondPrev != null) {
-strBond = JS.SmilesBond.getBondOrderString (bondPrev.getCovalentOrder ());
+strBond = (isAromatic && this.bsAromatic.get (prevIndex) ? "" : JS.SmilesBond.getBondOrderString (bondPrev.getCovalentOrder ()));
 if (this.prevSp2Atoms == null) sp2Atoms[nSp2Atoms++] = this.prevAtom;
  else nSp2Atoms = 2;
 }nSp2Atoms += nH;

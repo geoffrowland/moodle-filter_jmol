@@ -58,6 +58,7 @@ this.eval = null;
 this.tempArray = null;
 this.allowArrayDotNotation = false;
 this.async = false;
+this.executor = null;
 this.dimScreen = null;
 this.actionStates = null;
 this.actionStatesRedo = null;
@@ -1000,7 +1001,7 @@ var s = loadScript.toString ();
 for (var i = 0; i < fileNames.length; i++) {
 var fname = fileNames[i];
 if (fileTypes != null && fileTypes[i] != null) fname = fileTypes[i] + "::" + fname;
-s = JU.PT.rep (s, "$FILENAME" + (i + 1) + "$", JU.PT.esc (fname.$replace ('\\', '/')));
+s = JU.PT.rep (s, "$FILENAME" + (i + 1) + "$", JU.PT.esc (JV.FileManager.fixDOSName (fname)));
 }
 loadScript =  new JU.SB ().append (s);
 } else if (reader == null) {
@@ -1018,7 +1019,7 @@ if (loadScript != null && !(Clazz.instanceOf (atomSetCollection, String))) {
 var fname = htParams.get ("fullPathName");
 if (fname == null) fname = "";
 if (htParams.containsKey ("loadScript")) loadScript = htParams.get ("loadScript");
-htParams.put ("loadScript", loadScript =  new JU.SB ().append (JU.PT.rep (loadScript.toString (), "$FILENAME$", JU.PT.esc (fname.$replace ('\\', '/')))));
+htParams.put ("loadScript", loadScript =  new JU.SB ().append (JU.PT.rep (loadScript.toString (), "$FILENAME$", JU.PT.esc (JV.FileManager.fixDOSName (fname)))));
 }return this.createModelSetAndReturnError (atomSetCollection, isAppend, loadScript, htParams);
 }, "~S,~S,~A,~O,~B,java.util.Map,JU.SB,JU.SB,~N,~B");
 Clazz.defineMethod (c$, "setLigandModel", 
@@ -2339,19 +2340,19 @@ return (ch == '*' || ch == '$' || ch == '=' || ch == ':');
 Clazz.defineMethod (c$, "setLoadFormat", 
 function (name, type, withPrefix) {
 var format = null;
-var f = name.substring (1);
+var id = name.substring (1);
 switch (type) {
 case '=':
 if (name.startsWith ("==")) {
-f = f.substring (1);
+id = id.substring (1);
 type = '#';
-} else if (f.indexOf ("/") > 0) {
+} else if (id.indexOf ("/") > 0) {
 try {
-var pt = f.indexOf ("/");
-var database = f.substring (0, pt);
-f = this.g.resolveDataBase (database, f.substring (pt + 1), null);
-if (f != null && f.startsWith ("'")) f = this.evaluateExpression (f).toString ();
-return (f == null || f.length == 0 ? name : f);
+var pt = id.indexOf ("/");
+var database = id.substring (0, pt);
+id = this.g.resolveDataBase (database, id.substring (pt + 1), null);
+if (id != null && id.startsWith ("'")) id = this.evaluateExpression (id).toString ();
+return (id == null || id.length == 0 ? name : id);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 return name;
@@ -2363,48 +2364,48 @@ throw e;
 format = (this.isJS && this.g.loadFormat.equals (this.g.pdbLoadFormat) ? this.g.pdbLoadFormat0 : this.g.loadFormat);
 }case '#':
 if (format == null) format = this.g.pdbLoadLigandFormat;
-if (f.indexOf (".") >= 0 && format.equals (this.g.pdbLoadFormat)) format = this.g.pdbLoadFormat0;
-return this.g.resolveDataBase (null, f, format);
+if (id.indexOf (".") >= 0 && format.equals (this.g.pdbLoadFormat)) format = this.g.pdbLoadFormat0;
+return this.g.resolveDataBase (null, id, format);
 case '*':
 var pt = name.lastIndexOf ("/");
 if (name.startsWith ("*dom/")) {
-f = name.substring (pt + 1);
+id = name.substring (pt + 1);
 format = (pt > 4 ? name.substring (5) : "mappings");
-return JU.PT.rep (this.g.resolveDataBase ("map", f, null), "%TYPE", format);
+return JU.PT.rep (this.g.resolveDataBase ("map", id, null), "%TYPE", format);
 } else if (name.startsWith ("*val/")) {
-f = name.substring (pt + 1);
+id = name.substring (pt + 1);
 format = (pt > 4 ? name.substring (5) : "validation/outliers/all");
-return JU.PT.rep (this.g.resolveDataBase ("map", f, null), "%TYPE", format);
+return JU.PT.rep (this.g.resolveDataBase ("map", id, null), "%TYPE", format);
 } else if (name.startsWith ("*rna3d/")) {
-f = name.substring (pt + 1);
+id = name.substring (pt + 1);
 format = (pt > 6 ? name.substring (6) : "loops");
-return JU.PT.rep (this.g.resolveDataBase ("rna3d", f, null), "%TYPE", format);
+return JU.PT.rep (this.g.resolveDataBase ("rna3d", id, null), "%TYPE", format);
 } else if (name.startsWith ("*dssr/")) {
-f = name.substring (pt + 1);
-return this.g.resolveDataBase ("dssr", f, null);
+id = name.substring (pt + 1);
+return this.g.resolveDataBase ("dssr", id, null);
 } else if (name.startsWith ("*dssr1/")) {
-f = name.substring (pt + 1);
-return this.g.resolveDataBase ("dssr1", f, null);
+id = name.substring (pt + 1);
+return this.g.resolveDataBase ("dssr1", id, null);
 }var pdbe = "pdbe";
-if (f.length == 5 && f.charAt (4) == '*') {
+if (id.length == 5 && id.charAt (4) == '*') {
 pdbe = "pdbe2";
-f = f.substring (0, 4);
-}return this.g.resolveDataBase (pdbe, f, null);
+id = id.substring (0, 4);
+}return this.g.resolveDataBase (pdbe, id, null);
 case ':':
 format = this.g.pubChemFormat;
-if (f.equals ("")) {
+if (id.equals ("")) {
 try {
-f = "smiles:" + this.getSmiles (this.bsA ());
+id = "smiles:" + this.getSmiles (this.bsA ());
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 } else {
 throw e;
 }
 }
-}var fl = f.toLowerCase ();
+}var fl = id.toLowerCase ();
 var fi = -2147483648;
 try {
-fi = Integer.parseInt (f);
+fi = Integer.parseInt (id);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 } else {
@@ -2412,24 +2413,24 @@ throw e;
 }
 }
 if (fi != -2147483648) {
-f = "cid/" + fi;
+id = "cid/" + fi;
 } else {
 if (fl.startsWith ("smiles:")) {
-format += "?POST?smiles=" + f.substring (7);
-f = "smiles";
-} else if (f.startsWith ("cid:") || f.startsWith ("inchikey:") || f.startsWith ("cas:")) {
-f = f.$replace (':', '/');
+format += "?POST?smiles=" + id.substring (7);
+id = "smiles";
+} else if (id.startsWith ("cid:") || id.startsWith ("inchikey:") || id.startsWith ("cas:")) {
+id = id.$replace (':', '/');
 } else {
-if (fl.startsWith ("name:")) f = f.substring (5);
-f = "name/" + JU.PT.escapeUrl (f);
-}}return JU.PT.formatStringS (format, "FILE", f);
+if (fl.startsWith ("name:")) id = id.substring (5);
+id = "name/" + JU.PT.escapeUrl (id);
+}}return JU.PT.formatStringS (format, "FILE", id);
 case '$':
 if (name.startsWith ("$$")) {
-f = f.substring (1);
+id = id.substring (1);
 format = JU.PT.rep (this.g.smilesUrlFormat, "&get3d=True", "");
-return JU.PT.formatStringS (format, "FILE", JU.PT.escapeUrl (f));
+return JU.PT.formatStringS (format, "FILE", JU.PT.escapeUrl (id));
 }if (name.equals ("$")) try {
-f = this.getSmiles (this.bsA ());
+id = this.getSmiles (this.bsA ());
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 } else {
@@ -2443,7 +2444,7 @@ case 'K':
 case 'S':
 case 'T':
 case '/':
-f = JU.PT.escapeUrl (f);
+id = JU.PT.escapeUrl (id);
 switch (type) {
 case 'N':
 format = this.g.nihResolverFormat + "/names";
@@ -2470,15 +2471,15 @@ default:
 format = this.g.smilesUrlFormat;
 break;
 }
-return (withPrefix ? "MOL3D::" : "") + JU.PT.formatStringS (format, "FILE", f);
+return (withPrefix ? "MOL3D::" : "") + JU.PT.formatStringS (format, "FILE", id);
 case '_':
-var isDiff = f.startsWith ("=");
-if (isDiff) f = f.substring (1);
-var server = JV.FileManager.fixFileNameVariables (isDiff ? this.g.edsUrlFormatDiff : this.g.edsUrlFormat, f);
-var strCutoff = (isDiff ? "" : JV.FileManager.fixFileNameVariables (this.g.edsUrlCutoff, f));
-return  Clazz.newArray (-1, [server, strCutoff, isDiff ? "diff" : null]);
+if (name.startsWith ("*")) {
+var isDiff = id.startsWith ("*");
+if (isDiff) id = id.substring (1);
+return this.g.resolveDataBase ((isDiff ? "pdbemapdiff" : "pdbemap"), id, null);
+}return this.g.fixSurfaceFileNameVariables (id);
 }
-return f;
+return id;
 }, "~S,~S,~B");
 Clazz.defineMethod (c$, "getStandardLabelFormat", 
 function (type) {
@@ -4858,6 +4859,39 @@ this.ms.invertSelected (null, plane, -1, null, bs);
 this.checkMinimization ();
 this.sm.setStatusAtomMoved (bs);
 }, "JU.P4,JU.BS");
+Clazz.defineMethod (c$, "invertRingAt", 
+function (atomIndex, isClick) {
+var bs = this.getAtomBitSet ("connected(atomIndex=" + atomIndex + ") and !within(SMARTS,'[r50,R]')");
+var nb = bs.cardinality ();
+switch (nb) {
+case 0:
+case 1:
+return;
+case 2:
+break;
+case 3:
+case 4:
+var lengths =  Clazz.newIntArray (nb, 0);
+var points =  Clazz.newIntArray (nb, 0);
+var ni = 0;
+for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1), ni++) {
+lengths[ni] = this.getBranchBitSet (i, atomIndex, true).cardinality ();
+points[ni] = i;
+}
+for (var j = 0; j < nb - 2; j++) {
+var max = -2147483648;
+var imax = 0;
+for (var i = 0; i < nb; i++) if (lengths[i] >= max && bs.get (points[i])) {
+imax = points[i];
+max = lengths[i];
+}
+bs.clear (imax);
+}
+}
+if (isClick) this.undoMoveActionClear (atomIndex, 2, true);
+this.invertSelected (null, null, atomIndex, bs);
+if (isClick) this.setStatusAtomPicked (atomIndex, "inverted: " + JU.Escape.eBS (bs), null);
+}, "~N,~B");
 Clazz.defineMethod (c$, "invertSelected", 
 function (pt, plane, iAtom, invAtoms) {
 var bs = this.bsA ();

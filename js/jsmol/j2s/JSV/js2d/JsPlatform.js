@@ -30,8 +30,7 @@ return true;
 Clazz.overrideMethod (c$, "getJsObjectInfo", 
 function (jsObject, method, args) {
 {
-if (method == "localName")return jsObject[0]["nodeName"];
-return (args == null ? jsObject[0][method] : jsObject[0][method](args[0]));
+return (method == null ? null : method == "localName" ? jsObject[0]["nodeName"] : args == null ? jsObject[0][method] : jsObject[0][method](args[0]));
 }}, "~A,~S,~A");
 Clazz.overrideMethod (c$, "isHeadless", 
 function () {

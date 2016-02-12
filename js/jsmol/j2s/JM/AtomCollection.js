@@ -848,7 +848,7 @@ return contender.sZ > 1 && !this.g3d.isClippedZ (contender.sZ) && this.g3d.isInD
 }, "JM.Atom,~N,~N,~N,JM.Atom");
 Clazz.defineMethod (c$, "fillADa", 
 function (atomData, mode) {
-atomData.atomXyz = this.at;
+atomData.xyz = atomData.atoms = this.at;
 atomData.ac = this.ac;
 atomData.atomicNumber =  Clazz.newIntArray (this.ac, 0);
 var includeRadii = ((mode & 2) != 0);

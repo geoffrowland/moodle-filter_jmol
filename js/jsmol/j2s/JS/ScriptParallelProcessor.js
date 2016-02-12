@@ -6,7 +6,6 @@ this.counter = 0;
 this.error = null;
 this.lock = null;
 this.processes = null;
-this.executor = null;
 Clazz.instantialize (this, arguments);
 }, JS, "ScriptParallelProcessor", JS.ScriptFunction, J.api.JmolParallelProcessor);
 Clazz.prepareFields (c$, function () {
@@ -105,25 +104,25 @@ this.vwr.evalParallel (context, shapeManager);
 }, "JS.ScriptContext,JV.ShapeManager");
 Clazz.defineMethod (c$, "getMyExecutor", 
  function () {
-if (this.executor != null || JV.Viewer.nProcessors < 2) return this.executor;
+if (this.vwr.executor != null || JV.Viewer.nProcessors < 2) return this.vwr.executor;
 try {
-this.executor = this.getExecutor ();
+this.vwr.executor = this.getExecutor ();
 } catch (e$$) {
 if (Clazz.exceptionOf (e$$, Exception)) {
 var e = e$$;
 {
-this.executor = null;
+this.vwr.executor = null;
 }
 } else if (Clazz.exceptionOf (e$$, Error)) {
 var er = e$$;
 {
-this.executor = null;
+this.vwr.executor = null;
 }
 } else {
 throw e$$;
 }
 }
-if (this.executor == null) JU.Logger.error ("parallel processing is not available");
-return this.executor;
+if (this.vwr.executor == null) JU.Logger.error ("parallel processing is not available");
+return this.vwr.executor;
 });
 });

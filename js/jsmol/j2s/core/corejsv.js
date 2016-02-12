@@ -63,9 +63,9 @@
 ){
 var $t$;
 //var c$;
-Jmol.___JmolDate="$Date: 2016-01-09 08:13:09 -0500 (Sat, 09 Jan 2016) $"
+Jmol.___JmolDate="$Date: 2016-02-09 20:22:20 -0600 (Tue, 09 Feb 2016) $"
 Jmol.___fullJmolProperties="src/org/jmol/viewer/Jmol.properties"
-Jmol.___JmolVersion="14.4.1_2016.01.09"
+Jmol.___JmolVersion="14.4.2_2016.02.09"
 // JSmolJavaExt.js
  
 
@@ -14241,7 +14241,7 @@ function (offset, str) {
 this.replace (offset, offset, str);
 }, "~N,~S");
 Clazz_declarePackage ("JU");
-Clazz_load (["javajs.api.JSONEncodable"], "JU.T3", ["java.lang.Float"], function () {
+Clazz_load (["javajs.api.JSONEncodable"], "JU.T3", null, function () {
 c$ = Clazz_decorateAsClass (function () {
 this.x = 0;
 this.y = 0;
@@ -14364,7 +14364,7 @@ return (bits ^ (bits >> 32));
 });
 c$.floatToIntBits0 = Clazz_defineMethod (c$, "floatToIntBits0", 
 function (f) {
-return (f == 0 ? 0 : Float.floatToIntBits (f));
+return (f == 0 ? 0 : String.valueOf (f).hashCode ());
 }, "~N");
 Clazz_overrideMethod (c$, "equals", 
 function (t1) {
@@ -26604,8 +26604,7 @@ return true;
 Clazz_overrideMethod (c$, "getJsObjectInfo", 
 function (jsObject, method, args) {
 {
-if (method == "localName")return jsObject[0]["nodeName"];
-return (args == null ? jsObject[0][method] : jsObject[0][method](args[0]));
+return (method == null ? null : method == "localName" ? jsObject[0]["nodeName"] : args == null ? jsObject[0][method] : jsObject[0][method](args[0]));
 }}, "~A,~S,~A");
 Clazz_overrideMethod (c$, "isHeadless", 
 function () {

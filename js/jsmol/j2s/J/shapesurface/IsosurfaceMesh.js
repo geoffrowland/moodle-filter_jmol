@@ -621,14 +621,21 @@ return bs;
 });
 Clazz.defineMethod (c$, "updateCoordinates", 
 function (m, bs) {
-var doUpdate = (bs == null);
-if (!doUpdate) for (var i = 0; i < this.connections.length; i++) if (this.connections[i] >= 0 && bs.get (this.connections[i])) {
+var doUpdate = (bs == null || this.isModelConnected);
+if (!doUpdate) for (var i = 0; i < this.connectedAtoms.length; i++) if (this.connectedAtoms[i] >= 0 && bs.get (this.connectedAtoms[i])) {
 doUpdate = true;
 break;
 }
 if (!doUpdate) return;
+if (this.isModelConnected) {
+this.mat4 = this.vwr.ms.am[this.modelIndex].mat4;
+} else {
 if (this.mat4 == null) this.mat4 = JU.M4.newM4 (null);
 this.mat4.mul2 (m, this.mat4);
-this.recalcAltVertices = true;
+}this.recalcAltVertices = true;
 }, "JU.M4,JU.BS");
+Clazz.defineMethod (c$, "getDataRange", 
+function () {
+return (this.jvxlData.jvxlPlane != null && this.colorEncoder == null ? null :  Clazz.newFloatArray (-1, [this.jvxlData.mappedDataMin, this.jvxlData.mappedDataMax, (this.jvxlData.isColorReversed ? this.jvxlData.valueMappedToBlue : this.jvxlData.valueMappedToRed), (this.jvxlData.isColorReversed ? this.jvxlData.valueMappedToRed : this.jvxlData.valueMappedToBlue)]));
+});
 });

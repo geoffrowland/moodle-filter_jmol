@@ -4,23 +4,15 @@ c$ = Clazz.decorateAsClass (function () {
 this.modelName = null;
 this.formula = null;
 this.phase = null;
-this.myAttributes = null;
 this.formalCharge = -2147483648;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.xml, "XmlOdysseyReader", J.adapter.readers.xml.XmlReader);
-Clazz.prepareFields (c$, function () {
-this.myAttributes =  Clazz.newArray (-1, ["id", "label", "xyz", "element", "hybrid", "a", "b", "order", "charge", "entity", "box"]);
-});
 Clazz.makeConstructor (c$, 
 function () {
 Clazz.superConstructor (this, J.adapter.readers.xml.XmlOdysseyReader, []);
 });
-Clazz.overrideMethod (c$, "getDOMAttributes", 
-function () {
-return this.myAttributes;
-});
 Clazz.overrideMethod (c$, "processStartElement", 
-function (localName) {
+function (localName, nodeName) {
 if ("structure".equals (localName)) {
 this.asc.newAtomSet ();
 return;
@@ -78,8 +70,8 @@ return;
 if (this.modelName != null && this.phase != null) this.modelName += " - " + this.phase;
 if (this.modelName != null) this.asc.setAtomSetName (this.modelName);
 if (this.formula != null) this.asc.setCurrentModelInfo ("formula", this.formula);
-}if ("title".equals (localName) || "formula".equals (localName) || "phase".equals (localName)) this.keepChars = true;
-}, "~S");
+}if ("title".equals (localName) || "formula".equals (localName) || "phase".equals (localName)) this.setKeepChars (true);
+}, "~S,~S");
 Clazz.defineMethod (c$, "parseBondToken", 
  function (str) {
 if (str.length >= 1) {
@@ -106,12 +98,11 @@ return;
 }if ("group".equals (localName)) {
 this.formalCharge = -2147483648;
 } else if ("title".equals (localName)) {
-this.modelName = this.chars;
+this.modelName = this.chars.toString ();
 } else if ("formula".equals (localName)) {
-this.formula = this.chars;
+this.formula = this.chars.toString ();
 } else if ("phase".equals (localName)) {
-this.phase = this.chars;
-}this.keepChars = false;
-this.chars = null;
+this.phase = this.chars.toString ();
+}this.setKeepChars (false);
 }, "~S");
 });

@@ -2003,13 +2003,17 @@ if (!this.chk) this.vwr.setNewRotationCenter (center);
 Clazz.defineMethod (c$, "cmdColor", 
  function () {
 var i = 1;
+var strColor = (this.tokAt (1) == 4 ? this.stringParameter (1) : null);
 if (this.isColorParam (1)) {
 this.theTok = 1140850689;
 } else {
 var argb = 0;
 i = 2;
 var tok = this.getToken (1).tok;
-switch (tok) {
+if (tok == 4) {
+tok = JS.T.getTokFromName (strColor);
+if (tok == 0) tok = 4;
+}switch (tok) {
 case 1073742330:
 this.setObjectProperty ();
 return;
@@ -2044,8 +2048,7 @@ this.theTok = 1140850689;
 i = 1;
 break;
 case 4:
-i = 1;
-var strColor = this.stringParameter (i++);
+i = 2;
 if (this.isArrayParameter (i)) {
 strColor = strColor += "=" + JS.SV.sValue (JS.SV.getVariableAS (this.stringParameterSet (i))).$replace ('\n', ' ');
 i = this.iToken + 1;
@@ -2817,6 +2820,13 @@ break;
 case 134219265:
 plane = this.hklParameter (2);
 break;
+case 1140850689:
+bs = this.atomExpressionAt (2);
+if (!this.chk) {
+for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
+this.vwr.invertRingAt (i, false);
+}
+}return;
 }
 this.checkLengthErrorPt (this.iToken + 1, 1);
 if (plane == null && pt == null && iAtom == -2147483648) this.invArg ();
@@ -2920,22 +2930,6 @@ this.vwr.setMenu (m, true);
 break;
 }
 }return;
-case 134221834:
-isData = true;
-loadScript.append (" /*data*/ data");
-var key = this.stringParameter (++i).toLowerCase ();
-var ptVar = key.indexOf ("@");
-if (ptVar >= 0) key = key.$replace ('@', '_');
-loadScript.append (" ").append (JU.PT.esc (key));
-isAppend = key.startsWith ("append");
-doOrient = (key.indexOf ("orientation") >= 0);
-var strModel = (ptVar >= 0 ? "" + this.getParameter (key.substring (ptVar + 1), 4, true) : this.paramAsStr (++i));
-strModel = JV.Viewer.fixInlineString (strModel, this.vwr.getInlineChar ());
-htParams.put ("fileData", strModel);
-htParams.put ("isData", Boolean.TRUE);
-loadScript.appendC ('\n').append (strModel).append (" end ").append (JU.PT.esc (key));
-if (ptVar < 0) i += 2;
-break;
 case 4130:
 isMutate = isAppend = true;
 appendNew = false;
@@ -3017,6 +3011,13 @@ htParams.put ("firstLastStep",  Clazz.newIntArray (-1, [0, -1, 1]));
 }
 }break;
 case 1073741824:
+break;
+case 134221834:
+var key = this.stringParameter (++i).toLowerCase ();
+isAppend = key.startsWith ("append");
+doOrient = (key.indexOf ("orientation") >= 0);
+i = this.addLoadData (loadScript, key, htParams, i);
+isData = true;
 break;
 default:
 modelName = "fileset";
@@ -3184,6 +3185,20 @@ throw  new JS.ScriptInterruption (this, "async", 1);
 }if (this.debugHigh) this.report ("Successfully loaded:" + (filenames == null ? htParams.get ("fullPathName") : modelName), false);
 this.finalizeLoad (isAppend, appendNew, isConcat, doOrient, nFiles, ac0, modelCount0);
 });
+Clazz.defineMethod (c$, "addLoadData", 
+ function (loadScript, key, htParams, i) {
+loadScript.append (" /*data*/ data");
+var ptVar = key.indexOf ("@");
+if (ptVar >= 0) key = key.$replace ('@', '_');
+loadScript.append (" ").append (JU.PT.esc (key));
+var strModel = (ptVar >= 0 ? "" + this.getParameter (key.substring (ptVar + 1), 4, true) : this.paramAsStr (++i));
+strModel = JV.Viewer.fixInlineString (strModel, this.vwr.getInlineChar ());
+htParams.put ("fileData", strModel);
+htParams.put ("isData", Boolean.TRUE);
+loadScript.appendC ('\n').append (strModel).append (" end ").append (JU.PT.esc (key));
+if (ptVar < 0) i += 2;
+return i;
+}, "JU.SB,~S,java.util.Map,~N");
 Clazz.defineMethod (c$, "loadPNGJVar", 
  function (varName, o, htParams) {
 var av =  Clazz.newArray (-1, [JS.SV.newV (6, o)]);
@@ -3265,6 +3280,7 @@ case 1073742114:
 case 1073742152:
 case 1747587102:
 case 1073742066:
+case 134221834:
 case 1073741839:
 return true;
 case 1073741940:
@@ -3311,13 +3327,14 @@ Clazz.defineMethod (c$, "finalizeLoad",
 if (isAppend && (appendNew || nFiles > 1)) {
 this.vwr.setAnimationRange (-1, -1);
 this.vwr.setCurrentModelIndex (modelCount0);
-}if (this.scriptLevel == 0 && !isAppend && (isConcat || nFiles < 2)) this.vwr.showString (this.vwr.ms.getInfoM ("modelLoadNote"), false);
+}var msg;
+if (this.scriptLevel == 0 && !isAppend && (isConcat || nFiles < 2) && (msg = this.vwr.ms.getInfoM ("modelLoadNote")) != null) this.vwr.showString (msg, false);
 var centroid = this.vwr.ms.getInfoM ("centroidMinMax");
 if (JU.AU.isAI (centroid) && this.vwr.ms.ac > 0) {
 var bs = JU.BSUtil.newBitSet2 (isAppend ? ac0 : 0, this.vwr.ms.ac);
 this.vwr.ms.setCentroid (bs, centroid);
 }var script = this.vwr.g.defaultLoadScript;
-var msg = "";
+msg = "";
 if (script.length > 0) msg += "\nUsing defaultLoadScript: " + script;
 var embeddedScript;
 var info = this.vwr.ms.msInfo;
@@ -3407,6 +3424,13 @@ return;
 case 1073742166:
 if (this.checkLength23 () > 0) if (!this.chk) this.vwr.setFrameTitleObj (this.slen == 2 ? "@{_modelName}" : (this.tokAt (2) == 7 ? JS.SV.strListValue (this.st[2]) : this.paramAsStr (2)));
 return;
+case 1073742077:
+if (this.tokAt (2) == 3 && this.tokAt (3) == 12) {
+var modelIndex = this.vwr.ms.getModelNumberIndex (this.getToken (2).intValue, false, false);
+var mat4 = this.getToken (3).value;
+if (modelIndex >= 0) this.vwr.ms.am[modelIndex].mat4 = mat4;
+return;
+}break;
 case 1073741832:
 var isNone = (this.tokAt (2) == 1073742333);
 var bs = (this.slen == 2 || isNone ? null : this.atomExpressionAt (2));
@@ -3637,7 +3661,7 @@ axis.set (1, 0, 0);
 degrees = 0;
 this.checkLength (++i);
 break;
-case 1073741859:
+case 1073741858:
 axis.set (0, 1, 0);
 degrees = 180;
 this.checkLength (++i);
@@ -5559,7 +5583,7 @@ var translucency = null;
 var colorvalue = null;
 var colorvalue1 = null;
 var bs = null;
-var prefix = (index == 2 && this.tokAt (1) == 1073741860 ? "ball" : "");
+var prefix = (index == 2 && this.tokAt (1) == 1073741859 ? "ball" : "");
 var isColor = false;
 var isIsosurface = (shapeType == 24 || shapeType == 25);
 var typeMask = 0;
@@ -5777,7 +5801,7 @@ return this.vwr.rd;
 case 1073741852:
 case 1073742116:
 case 1073741856:
-case 1073741858:
+case 1073741857:
 case 1073741991:
 value = 1;
 factorType = J.atomdata.RadiusData.EnumType.FACTOR;
@@ -6119,7 +6143,7 @@ if (i + 1 == this.slen) tok = 1073742335;
 break;
 }
 case 1073741958:
-case 1073741862:
+case 1073741861:
 case 1073741964:
 case 1073741898:
 case 1073742039:
@@ -6129,6 +6153,8 @@ case 1073742018:
 case 1073742052:
 case 1073741938:
 case 1073742046:
+case 1073741862:
+case 1073742057:
 case 1073742182:
 case 1073742060:
 case 1073741960:
@@ -6193,7 +6219,7 @@ case 28:
 iShape -= 2;
 break;
 }
-if (iShape < 22) break;
+if (iShape < 21) break;
 }
 return s;
 }, "~S,~N,~N");

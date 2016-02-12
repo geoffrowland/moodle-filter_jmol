@@ -1,7 +1,7 @@
 Clazz.declarePackage ("J.renderspecial");
-Clazz.load (["J.render.ShapeRenderer"], "J.renderspecial.PolyhedraRenderer", ["JU.P3", "JM.Atom", "JU.C"], function () {
+Clazz.load (["J.render.ShapeRenderer"], "J.renderspecial.PolyhedraRenderer", ["JU.P3", "$.V3", "JM.Atom", "JU.C"], function () {
 c$ = Clazz.decorateAsClass (function () {
-this.drawEdges = 0;
+this.$drawEdges = 0;
 this.isAll = false;
 this.frontOnly = false;
 this.screens3f = null;
@@ -15,7 +15,7 @@ Clazz.overrideMethod (c$, "render",
 function () {
 var polyhedra = this.shape;
 var polyhedrons = polyhedra.polyhedrons;
-this.drawEdges = polyhedra.drawEdges;
+this.$drawEdges = polyhedra.drawEdges;
 this.bsSelected = (this.vwr.getSelectionHalosEnabled () ? this.vwr.bsA () : null);
 this.g3d.addRenderer (1073742182);
 this.vibs = (this.ms.vibrations != null && this.tm.vibrationOn);
@@ -29,16 +29,40 @@ Clazz.defineMethod (c$, "render1",
  function (p) {
 if (p.visibilityFlags == 0) return false;
 var colixes = (this.shape).colixes;
-var iAtom = p.centralAtom.i;
-var colix = (colixes == null || iAtom >= colixes.length ? 0 : colixes[iAtom]);
+var iAtom = -1;
+var colix;
+var scale = 1;
+if (p.id == null) {
+iAtom = p.centralAtom.i;
+colix = (colixes == null || iAtom >= colixes.length ? 0 : colixes[iAtom]);
 colix = JU.C.getColixInherited (colix, p.centralAtom.colixAtom);
-var needTranslucent = false;
+} else {
+colix = p.colix;
+scale = p.scale;
+}var needTranslucent = false;
 if (JU.C.renderPass2 (colix)) {
 needTranslucent = true;
 } else if (!this.g3d.setC (colix)) {
 return false;
 }var vertices = p.vertices;
-if (this.screens3f == null || this.screens3f.length < vertices.length) {
+if (scale != 1) {
+var v =  new Array (vertices.length);
+if (scale < 0) {
+var a = JU.V3.newV (p.center);
+a.scale (-scale - 1);
+for (var i = v.length; --i >= 0; ) {
+var b = JU.V3.newV (vertices[i]);
+b.add (a);
+v[i] = b;
+}
+} else {
+for (var i = v.length; --i >= 0; ) {
+var a = JU.V3.newVsub (vertices[i], p.center);
+a.scaleAdd2 (scale, a, p.center);
+v[i] = a;
+}
+}vertices = v;
+}if (this.screens3f == null || this.screens3f.length < vertices.length) {
 this.screens3f =  new Array (vertices.length);
 for (var i = vertices.length; --i >= 0; ) this.screens3f[i] =  new JU.P3 ();
 
@@ -60,13 +84,13 @@ this.g3d.setC (4);
 this.g3d.drawStringNoSlab ("" + i, null, Clazz.floatToInt (sc[i].x), Clazz.floatToInt (sc[i].y), Clazz.floatToInt (sc[i].z) - 30, 0);
 this.g3d.setC (colix);
 }}
-this.isAll = (this.drawEdges == 1 || this.bsSelected != null);
-this.frontOnly = (this.drawEdges == 2);
+this.isAll = (this.$drawEdges == 1 || this.bsSelected != null);
+this.frontOnly = (this.$drawEdges == 2);
 var normixes = p.getNormixes ();
 if (!needTranslucent || this.g3d.setC (colix)) for (var i = planes.length; --i >= 0; ) {
 var pl = planes[i];
 try {
-this.g3d.fillTriangleTwoSided (normixes[i], sc[pl[0]], sc[pl[1]], sc[pl[2]]);
+if (!this.showNumbers || this.g3d.setC ((Math.round (Math.random () * 10) + 5))) this.g3d.fillTriangleTwoSided (normixes[i], sc[pl[0]], sc[pl[1]], sc[pl[2]]);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 System.out.println ("PolyhedraRendererError");
@@ -79,11 +103,11 @@ if (this.bsSelected != null && this.bsSelected.get (iAtom)) colix = 23;
  else if (p.colixEdge != 0) colix = p.colixEdge;
 if (this.g3d.setC (JU.C.getColixTranslucent3 (colix, false, 0))) for (var i = planes.length; --i >= 0; ) {
 var pl = planes[i];
-this.drawFace (normixes[i], sc[pl[0]], sc[pl[1]], sc[pl[2]], -pl[3]);
+this.drawEdges (normixes[i], sc[pl[0]], sc[pl[1]], sc[pl[2]], -pl[3]);
 }
 return needTranslucent;
 }, "J.shapespecial.Polyhedron");
-Clazz.defineMethod (c$, "drawFace", 
+Clazz.defineMethod (c$, "drawEdges", 
  function (normix, a, b, c, edgeMask) {
 if (this.isAll || this.frontOnly && this.vwr.gdata.isDirectedTowardsCamera (normix)) {
 var d = (this.g3d.isAntialiased () ? 6 : 3);

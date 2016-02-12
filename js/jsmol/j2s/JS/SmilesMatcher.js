@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JS");
-Clazz.load (["J.api.SmilesMatcherInterface"], "JS.SmilesMatcher", ["JU.AU", "$.BS", "$.PT", "JS.InvalidSmilesException", "$.SmilesAtom", "$.SmilesBond", "$.SmilesGenerator", "$.SmilesParser", "JU.BSUtil", "$.Elements", "$.Logger", "$.Node", "$.Point3fi", "JV.JC"], function () {
+Clazz.load (["J.api.SmilesMatcherInterface"], "JS.SmilesMatcher", ["JU.AU", "$.BS", "$.PT", "JS.InvalidSmilesException", "$.SmilesAtom", "$.SmilesBond", "$.SmilesGenerator", "$.SmilesParser", "JU.BSUtil", "$.Elements", "$.Logger", "$.Node", "$.Point3fi"], function () {
 c$ = Clazz.declareType (JS, "SmilesMatcher", null, J.api.SmilesMatcherInterface);
 Clazz.overrideMethod (c$, "getLastException", 
 function () {
@@ -145,7 +145,7 @@ var g =  new JS.SmilesGenerator ();
 if (points != null) g.stereoReference = center;
 JS.InvalidSmilesException.clear ();
 s = g.getSmiles (atoms, atomCount, JU.BSUtil.newBitSet2 (0, atomCount), null, flags | 256 | 1024 | 2048);
-if (JV.JC.checkFlag (flags, 4096)) {
+if ((flags & 4096) == 4096) {
 s = "//* " + center + " *//\t[" + JU.Elements.elementSymbolFromNumber (center.getElementNumber ()) + "@PH" + atomCount + (details == null ? "" : "/" + details + "/") + "]." + s;
 }return s;
 }, "JU.Node,~A,~N,~A,~N,~S");
@@ -163,7 +163,7 @@ Clazz.defineMethod (c$, "matchPriv",
  function (pattern, atoms, ac, bsSelected, bsAromatic, flags) {
 JS.InvalidSmilesException.clear ();
 try {
-var search = JS.SmilesParser.getMolecule (pattern, JV.JC.checkFlag (flags, 2));
+var search = JS.SmilesParser.getMolecule (pattern, ((flags & 2) == 2));
 search.jmolAtoms = atoms;
 if (Clazz.instanceOf (atoms, Array)) search.bioAtoms = atoms;
 search.jmolAtomCount = Math.abs (ac);
@@ -172,8 +172,8 @@ search.setSelected (bsSelected);
 search.getSelections ();
 search.bsRequired = null;
 search.setRingData (bsAromatic);
-search.firstMatchOnly = JV.JC.checkFlag (flags, 64);
-search.matchAllAtoms = JV.JC.checkFlag (flags, 16);
+search.firstMatchOnly = ((flags & 64) == 64);
+search.matchAllAtoms = ((flags & 16) == 16);
 switch (flags & 61440) {
 case 4096:
 search.asVector = false;

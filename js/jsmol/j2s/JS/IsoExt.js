@@ -160,7 +160,7 @@ switch (this.tokAt (1)) {
 case 1073742001:
 if (this.listIsosurface (22)) return false;
 break;
-case 1073742102:
+case 134217762:
 var pt = 2;
 var type = (this.tokAt (pt) == 1073742138 ? "" : eval.optParameterAsString (pt));
 if (type.equalsIgnoreCase ("chemicalShift")) type = "cs";
@@ -517,7 +517,7 @@ break;
 case 1073742048:
 propertyName = "nohead";
 break;
-case 1073741861:
+case 1073741860:
 propertyName = "isbarb";
 break;
 case 1073742130:
@@ -813,8 +813,8 @@ this.setNBOType (moData, nboType);
 if (lc == null && moNumber == 2147483647) return;
 }var mos = null;
 var mo;
-var f;
 var nOrb = 0;
+var f = null;
 if (lc == null || lc.length < 2) {
 if (lc != null && lc.length == 1) offset = 0;
 var lastMoNumber = (moData.containsKey ("lastMoNumber") ? (moData.get ("lastMoNumber")).intValue () : 0);
@@ -829,7 +829,7 @@ if (offset != 2147483647) {
 if (moData.containsKey ("HOMO")) {
 moNumber = (moData.get ("HOMO")).intValue () + offset;
 } else {
-moNumber = -1;
+moNumber = nOrb;
 for (var i = 0; i < nOrb; i++) {
 mo = mos.get (i);
 if ((f = mo.get ("occupancy")) != null) {
@@ -844,9 +844,9 @@ break;
 }continue;
 }break;
 }
-if (moNumber < 0) this.error (28);
+if (f == null) this.error (28);
 moNumber += offset;
-}JU.Logger.info ("MO " + moNumber);
+}if (!this.chk) JU.Logger.info ("MO " + moNumber);
 }if (moNumber < 1 || moNumber > nOrb) eval.errorStr (26, "" + nOrb);
 }moNumber = Math.abs (moNumber);
 moData.put ("lastMoNumber", Integer.$valueOf (moNumber));
@@ -938,6 +938,7 @@ var idSeen = (this.initIsosurface (iShape) != null);
 var isWild = (idSeen && this.getShapeProperty (iShape, "ID") == null);
 var isColorSchemeTranslucent = false;
 var isInline = false;
+var isSign = false;
 var onlyOneModel = null;
 var translucency = null;
 var colorScheme = null;
@@ -1224,8 +1225,8 @@ break;
 case 1073742147:
 case 1765808134:
 idSeen = true;
-var isSign = (eval.theTok == 1073742147);
-if (isSign) {
+if (eval.theTok == 1073742147) {
+isSign = true;
 sbCommand.append (" sign");
 this.addShapeProperty (propertyList, "sign", Boolean.TRUE);
 } else {
@@ -1891,7 +1892,19 @@ case 4:
 var firstPass = (!surfaceObjectSeen && !planeSeen);
 propertyName = (firstPass && !isMapped ? "readFile" : "mapColor");
 var filename = this.paramAsStr (i);
-if (filename.startsWith ("=") && filename.length > 1) {
+var checkWithin = false;
+if (filename.startsWith ("*") && filename.length > 1) {
+if (filename.startsWith ("**")) {
+if (Float.isNaN (sigma)) this.addShapeProperty (propertyList, "sigma", Float.$valueOf (sigma = 3));
+if (!isSign) {
+isSign = true;
+sbCommand.append (" sign");
+this.addShapeProperty (propertyList, "sign", Boolean.TRUE);
+}}if (!Float.isNaN (sigma)) this.showString ("using sigma=" + sigma);
+filename = this.vwr.setLoadFormat (filename, '_', false);
+checkWithin = true;
+} else if (filename.startsWith ("=") && filename.length > 1) {
+checkWithin = true;
 var info = this.vwr.setLoadFormat (filename, '_', false);
 filename = info[0];
 var strCutoff = (!firstPass || !Float.isNaN (cutoff) ? null : info[1]);
@@ -1922,8 +1935,9 @@ sigma = NaN;
 this.addShapeProperty (propertyList, "sigma", Float.$valueOf (sigma));
 }this.addShapeProperty (propertyList, "cutoff", Float.$valueOf (cutoff));
 sbCommand.append (" cutoff ").appendF (cutoff);
-}}if (ptWithin == 0) {
-onlyOneModel = "=xxxx";
+}}}if (checkWithin) {
+if (ptWithin == 0) {
+onlyOneModel = filename;
 if (modelIndex < 0) modelIndex = this.vwr.am.cmi;
 bs = this.vwr.getModelUndeletedAtomsBitSet (modelIndex);
 if (bs.nextSetBit (0) >= 0) {

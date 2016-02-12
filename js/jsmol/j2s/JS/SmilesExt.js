@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JS");
-Clazz.load (null, "JS.SmilesExt", ["java.lang.Float", "JU.AU", "$.BS", "$.Lst", "$.M4", "$.Measure", "$.P3", "J.api.Interface", "JU.Logger", "JV.JC"], function () {
+Clazz.load (null, "JS.SmilesExt", ["java.lang.Float", "JU.AU", "$.BS", "$.Lst", "$.M4", "$.Measure", "$.P3", "J.api.Interface", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.e = null;
 this.sm = null;
@@ -90,7 +90,7 @@ throw ex;
 }
 }var b;
 if (bsMatch3D == null) {
-var isSmarts = JV.JC.checkFlag (flags, 2);
+var isSmarts = ((flags & 2) == 2);
 try {
 if (smiles == null) {
 b = this.sm.getSubstructureSetArray (pattern, this.e.vwr.ms.at, this.e.vwr.ms.ac, bsSelected, null, flags);
