@@ -14,9 +14,19 @@
   height: 100% !important;
   width:100% !important;
 }
-iframe.jmoliframe
-{
-border: 1px solid lightgray;
-padding: 0;
-margin: 0;
+.resizable {
+  border: 1px solid lightgray;
+  padding: 0;
+  margin: 0;
+  min-width: 100;
+  min-height: 100;
+  max-width: 900;
+  max-height: 900;
+  overflow: hidden;
+  resize: both;
+}
+.fulliframe {
+  border: 0;
+  height: 100%;
+  width: 100%;
 }

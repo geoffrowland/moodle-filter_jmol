@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
 /**
  * Jmol filter.
  *
@@ -27,14 +26,12 @@
  * @copyright  20015 Geoffrey Rowland <rowland dot geoff at gmail dot com> Updated for Moodle 2.9
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
 defined('MOODLE_INTERNAL') || die();
-
 // Jmol/JSmol plugin filtering for viewing molecules online.
 //
 // This filter will replace any links to a chemistry structure file
 // (.mol, .sdf, .csmol, .pdb, pdb.gz .xyz, .cml, .mol2, .cif, .mcif etc)
-// with with an interactive 3D display of the structure using Jmol/JSmol/GLmol.
+// with with an interactive 3D display of the structure using Jmol/JSmol.
 //
 // If required, allows customisation of the Jmol object size (default 350 px).
 //
@@ -50,13 +47,11 @@ defined('MOODLE_INTERNAL') || die();
 // Jmol project site: http://jmol.sourceforge.net/
 // Jmol interactive scripting documentation(Use with JMOLSCRIPT{ }): http://chemapps.stolaf.edu/jmol/docs/
 // Jmol Wiki: http//wiki.jmol.org.
-
 class filter_jmol extends moodle_text_filter {
     public function filter($text, array $options = array()) {
         global $CFG, $PAGE, $bigscreenenabled;
         $wwwroot = $CFG->wwwroot;
         $host = preg_replace('~^.*://([^:/]*).*$~', '$1', $wwwroot);
-
         // Edit $jmolfiletypes to add/remove chemical structure file types that can be displayed.
         // For more detail see: http://wiki.jmol.org/index.php/File_formats.
         $jmolfiletypes = 'cif\.png|cif|cml\.png|cml|csmol.png\csmol|jmol\.png|jmol|mcif\.png|mcif|mol\.png|mol|mol2\.png|mol2';
@@ -128,26 +123,22 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $moodlelang = 'en';
     }
-
     $wwwroot = $CFG->wwwroot;
     // Generate unique id for Jmol frame.
     static $count = 0;
     $count++;
     $id = time() . $count;
-
     if (preg_match('/c=(\d{1,2})/', $matches[4], $optmatch)) {
         $controls = $optmatch[1];
     } else {
         $controls = '';
     }
-
     // Cover image - defer Jmol/JSmol object loading.
     if (preg_match('/i=(\d{1,1})/', $matches[4], $optmatch)) {
         $coverimage = $optmatch[1];
     } else {
         $coverimage = 1;
     }
-
     // JSmol size (width = height) in pixels defined by parameter appended to structure file URL e.g. ?s=200, ?s=300 (default) etc.
     if (preg_match('/s=(\d{1,3})/', $matches[4], $optmatch)) {
         $size = $optmatch[1];
@@ -166,7 +157,6 @@ function filter_jmol_replace_callback($matches) {
     $expfilename = str_replace('.png', '', $filename);
     $expfilename = str_replace('.gz', '', $expfilename);
     $expfilename = str_replace('.zip', '', $expfilename);
-
     // Controls defined by parameter appended to structure file URL ?c=0, ?c=1 (default), ?c=2 or ?c=3.
     if (count($matches) > 8) {
         $initscript = preg_replace("@(\s|<br />)+@si", " ",
@@ -188,10 +178,7 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $technol = 'HTML5';
     }
-    // Setup iframe for Jmol/JSmol.
-    return '
-<iframe id = "iframe'.$id.'" class = "jmoliframe" allowfullscreen frameborder = "0"
- src = "'.new moodle_url('/filter/jmol/iframe.php', array(
+    $iframesrc = 'src = "'.new moodle_url('/filter/jmol/iframe.php', array(
     'u' => $url,
     'n' => $filestem,
     'f' => $filetype,
@@ -201,31 +188,30 @@ function filter_jmol_replace_callback($matches) {
     'id' => $id,
     '_USE' => $technol,
     'DEFER' => $coverimage
-    )).'" style = "height: '.$size.'px; width: '.$size.'px">
-</iframe>
-<script>
-    YUI().use("node", "event", "resize", function(Y) {
-        var resize = new Y.Resize({
-            //Selector of the node to resize
-            node: "#iframe'.$id.'",
-            autoHide: false,
-            handles: "br"
-        });
-        // Fix Jmol aspect ratio and set min max size
-        resize.plug(Y.Plugin.ResizeConstrained, {
-            preserveRatio: false,
-            minWidth: 100,
-            minHeight: 100,
-            maxWidth: 1000,
-            maxHeight: 1000
-        });
-    });
-    // Fullscreen function, using bigscreen polyfill, called from child iframe.
+    )).'"';
+
+    // CSS resize does not work on an iframe, alone, in Firefox. Requires an iframe, sized at 100%, inside a resizable div.
+    if (strpos($browser, 'firefox')) {
+        $wrapper = '
+            <div class = "resizable" style = "height: '.$size.'px; width: '.$size.'px" position: relative>
+                <iframe id = "iframe'.$id.'" class = "fulliframe" allowfullscreen '.$iframesrc.'>
+                </iframe>
+            </div>
+        ';
+    } else {
+        // CSS resize of iframe works in Chrome, Chromium, Opera and Safari.
+        $wrapper = '
+            <iframe class = "resizable"  style = "height: '.$size.'px; width: '.$size.'px" id = "iframe'.$id.'" allowfullscreen '.$iframesrc.'>
+            </iframe>
+        ';
+    }
+    // Setup iframe for Jmol/JSmol.
+    return $wrapper.'<script>
     function fullscreen(x){
         var elem = document.getElementById(x);
         if (BigScreen.enabled) {
             BigScreen.toggle(elem);
         }
     };
-    </script>';
+</script>';
 }
