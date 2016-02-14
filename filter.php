@@ -201,7 +201,8 @@ function filter_jmol_replace_callback($matches) {
     } else {
         // CSS resize of iframe works in Chrome, Chromium, Opera and Safari.
         $wrapper = '
-            <iframe class = "resizable"  style = "height: '.$size.'px; width: '.$size.'px" id = "iframe'.$id.'" allowfullscreen '.$iframesrc.'>
+            <iframe class = "resizable"  style = "height: '.$size.'px; width: '.$size.'px" id = "iframe'.$id.'"
+            allowfullscreen '.$iframesrc.'>
             </iframe>
         ';
     }
