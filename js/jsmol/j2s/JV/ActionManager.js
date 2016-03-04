@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JV");
-Clazz.load (["javajs.api.EventManager", "J.i18n.GT", "JU.Rectangle", "JV.MouseState"], ["JV.ActionManager", "$.Gesture", "$.MotionPoint"], ["java.lang.Character", "$.Float", "JU.AU", "$.P3", "$.PT", "J.api.Interface", "J.thread.HoverWatcherThread", "JU.BSUtil", "$.Escape", "$.Logger", "$.Point3fi", "JV.binding.Binding", "$.JmolBinding"], function () {
+Clazz.load (["javajs.api.EventManager", "J.i18n.GT", "JU.Rectangle", "JV.MouseState"], ["JV.MotionPoint", "$.ActionManager", "$.Gesture"], ["java.lang.Character", "$.Float", "JU.AU", "$.P3", "$.PT", "J.api.Interface", "J.thread.HoverWatcherThread", "JU.BSUtil", "$.Escape", "$.Logger", "$.Point3fi", "JV.binding.Binding", "$.JmolBinding"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.haveMultiTouchInput = false;

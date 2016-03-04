@@ -22,7 +22,7 @@
  * @copyright  2006 Dan Stowell Original version for Moodle 1.x
  * @copyright  2010 Geoffrey Rowland <rowland.geoff@gmail.com> Update for Moodle 2.x
  * @copyright  2013 Geoffrey Rowland <rowland.geoff@gmail.com> Update for JavaScript/HTML5 JSmol
- * @copyright  2015 Geoffrey Rowland <rowland.geoff@gmail.com> Update for Moodle 2.9 
+ * @copyright  2015 Geoffrey Rowland <rowland.geoff@gmail.com> Update for Moodle 2.9
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @license    For Jmol/JSmol licence, see inside the bundled jmol and jsmol folders
  */

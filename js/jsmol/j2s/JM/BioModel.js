@@ -35,35 +35,33 @@ var at = this.ms.at;
 var am = this.ms.am;
 for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
 if (at[i].group.isAdded (i)) continue;
-monomerIndexCurrent = at[i].group.setProteinStructureType (type, iLast == i - 1 ? -1 : monomerIndexCurrent);
+monomerIndexCurrent = at[i].group.setProteinStructureType (type, iLast == i - 1 ? monomerIndexCurrent : -1);
 var modelIndex = at[i].mi;
 this.ms.proteinStructureTainted = am[modelIndex].structureTainted = true;
 iLast = i = at[i].group.lastAtomIndex;
 }
 var lastStrucNo =  Clazz.newIntArray (this.ms.mc, 0);
-for (var i = 0; i < this.ms.ac; ) {
+for (var i = 0; i < this.ms.ac; i++) {
 var modelIndex = at[i].mi;
 if (!bsModels.get (modelIndex)) {
-i = am[modelIndex].firstAtomIndex + am[modelIndex].act;
+i = am[modelIndex].firstAtomIndex + am[modelIndex].act - 1;
 continue;
 }var g = at[i].group;
 if (!g.isAdded (i)) {
 iLast = g.getStrucNo ();
 if (iLast < 1000 && iLast > lastStrucNo[modelIndex]) lastStrucNo[modelIndex] = iLast;
 i = g.lastAtomIndex;
-}i++;
-}
-for (var i = 0; i < this.ms.ac; ) {
+}}
+for (var i = 0; i < this.ms.ac; i++) {
 var modelIndex = at[i].mi;
 if (!bsModels.get (modelIndex)) {
-i = am[modelIndex].firstAtomIndex + am[modelIndex].act;
+i = am[modelIndex].firstAtomIndex + am[modelIndex].act - 1;
 continue;
 }var g = at[i].group;
 if (!g.isAdded (i)) {
 i = g.lastAtomIndex;
 if (g.getStrucNo () > 1000) g.setStrucNo (++lastStrucNo[modelIndex]);
-}i++;
-}
+}}
 }, "JU.BS,J.c.STR");
 Clazz.defineMethod (c$, "modelsOf", 
  function (bsAtoms, bsAtomsRet) {

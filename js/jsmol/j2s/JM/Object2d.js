@@ -58,13 +58,13 @@ if (this.bgcolix != 0) this.bgcolix = JU.C.getColixTranslucent3 (this.bgcolix, !
 this.colix = JU.C.getColixTranslucent3 (this.colix, !Float.isNaN (level), level);
 }}, "~N,~B");
 Clazz.defineMethod (c$, "setMovableX", 
- function (x) {
+function (x) {
 this.valign = (this.valign == 4 ? 4 : 3);
 this.movableX = x;
 this.movableXPercent = 2147483647;
 }, "~N");
 Clazz.defineMethod (c$, "setMovableY", 
- function (y) {
+function (y) {
 this.valign = (this.valign == 4 ? 4 : 3);
 this.movableY = y;
 this.movableYPercent = 2147483647;
@@ -143,41 +143,4 @@ x <<= 1;
 y <<= 1;
 }return (x >= this.boxX && x <= this.boxX + this.boxWidth && y >= this.boxY && y <= this.boxY + this.boxHeight);
 }, "~B,~N,~N,JU.BS");
-c$.setProperty = Clazz.defineMethod (c$, "setProperty", 
-function (propertyName, value, currentObject) {
-if ("script" === propertyName) {
-if (currentObject != null) currentObject.setScript (value);
-return true;
-}if ("xpos" === propertyName) {
-if (currentObject != null) currentObject.setMovableX ((value).intValue ());
-return true;
-}if ("ypos" === propertyName) {
-if (currentObject != null) currentObject.setMovableY ((value).intValue ());
-return true;
-}if ("%xpos" === propertyName) {
-if (currentObject != null) currentObject.setMovableXPercent ((value).intValue ());
-return true;
-}if ("%ypos" === propertyName) {
-if (currentObject != null) currentObject.setMovableYPercent ((value).intValue ());
-return true;
-}if ("%zpos" === propertyName) {
-if (currentObject != null) currentObject.setMovableZPercent ((value).intValue ());
-return true;
-}if ("xypos" === propertyName) {
-if (currentObject == null) return true;
-var pt = value;
-currentObject.setXYZ (null, true);
-if (pt.z == 3.4028235E38) {
-currentObject.setMovableX (Clazz.floatToInt (pt.x));
-currentObject.setMovableY (Clazz.floatToInt (pt.y));
-} else {
-currentObject.setMovableXPercent (Clazz.floatToInt (pt.x));
-currentObject.setMovableYPercent (Clazz.floatToInt (pt.y));
-}return true;
-}if ("xyz" === propertyName) {
-if (currentObject != null) {
-currentObject.setXYZ (value, true);
-}return true;
-}return false;
-}, "~S,~O,JM.Object2d");
 });

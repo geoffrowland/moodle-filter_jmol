@@ -123,13 +123,13 @@ if (this.bgcolix != 0) this.bgcolix = JU.C.getColixTranslucent3 (this.bgcolix, !
 this.colix = JU.C.getColixTranslucent3 (this.colix, !Float.isNaN (level), level);
 }}, "~N,~B");
 Clazz_defineMethod (c$, "setMovableX", 
- function (x) {
+function (x) {
 this.valign = (this.valign == 4 ? 4 : 3);
 this.movableX = x;
 this.movableXPercent = 2147483647;
 }, "~N");
 Clazz_defineMethod (c$, "setMovableY", 
- function (y) {
+function (y) {
 this.valign = (this.valign == 4 ? 4 : 3);
 this.movableY = y;
 this.movableYPercent = 2147483647;
@@ -208,43 +208,6 @@ x <<= 1;
 y <<= 1;
 }return (x >= this.boxX && x <= this.boxX + this.boxWidth && y >= this.boxY && y <= this.boxY + this.boxHeight);
 }, "~B,~N,~N,JU.BS");
-c$.setProperty = Clazz_defineMethod (c$, "setProperty", 
-function (propertyName, value, currentObject) {
-if ("script" === propertyName) {
-if (currentObject != null) currentObject.setScript (value);
-return true;
-}if ("xpos" === propertyName) {
-if (currentObject != null) currentObject.setMovableX ((value).intValue ());
-return true;
-}if ("ypos" === propertyName) {
-if (currentObject != null) currentObject.setMovableY ((value).intValue ());
-return true;
-}if ("%xpos" === propertyName) {
-if (currentObject != null) currentObject.setMovableXPercent ((value).intValue ());
-return true;
-}if ("%ypos" === propertyName) {
-if (currentObject != null) currentObject.setMovableYPercent ((value).intValue ());
-return true;
-}if ("%zpos" === propertyName) {
-if (currentObject != null) currentObject.setMovableZPercent ((value).intValue ());
-return true;
-}if ("xypos" === propertyName) {
-if (currentObject == null) return true;
-var pt = value;
-currentObject.setXYZ (null, true);
-if (pt.z == 3.4028235E38) {
-currentObject.setMovableX (Clazz_floatToInt (pt.x));
-currentObject.setMovableY (Clazz_floatToInt (pt.y));
-} else {
-currentObject.setMovableXPercent (Clazz_floatToInt (pt.x));
-currentObject.setMovableYPercent (Clazz_floatToInt (pt.y));
-}return true;
-}if ("xyz" === propertyName) {
-if (currentObject != null) {
-currentObject.setXYZ (value, true);
-}return true;
-}return false;
-}, "~S,~O,JM.Object2d");
 });
 Clazz_declarePackage ("JM");
 Clazz_load (["JM.Object2d"], "JM.Text", ["javajs.awt.Font", "JU.PT", "J.shape.Shape", "JU.Txt", "JV.JC"], function () {
@@ -583,8 +546,10 @@ this.isAll = true;
 this.objects =  new java.util.Hashtable ();
 return;
 }if ("delete" === propertyName) {
-if (this.currentObject == null) {
-if (this.isAll || this.thisID != null) {
+if (this.currentObject != null) {
+this.objects.remove (this.currentObject.target);
+this.currentObject = null;
+} else if (this.isAll || this.thisID != null) {
 var e = this.objects.values ().iterator ();
 while (e.hasNext ()) {
 var text = e.next ();
@@ -592,9 +557,6 @@ if (this.isAll || JU.PT.isMatch (text.target.toUpperCase (), this.thisID, true, 
 e.remove ();
 }}
 }return;
-}this.objects.remove (this.currentObject.target);
-this.currentObject = null;
-return;
 }if ("off" === propertyName) {
 if (this.isAll) {
 this.objects =  new java.util.Hashtable ();
@@ -607,35 +569,35 @@ this.currentObject = null;
 return;
 }if ("model" === propertyName) {
 var modelIndex = (value).intValue ();
-if (this.currentObject == null) {
-if (this.isAll) for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.modelIndex = modelIndex;
+if (this.currentObject != null) {
+this.currentObject.modelIndex = modelIndex;
+} else if (this.isAll) {
+for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.modelIndex = modelIndex;
 
-return;
-}this.currentObject.modelIndex = modelIndex;
-return;
+}return;
 }if ("align" === propertyName) {
 var align = value;
-if (this.currentObject == null) {
-if (this.isAll) for (var obj, $obj = this.objects.values ().iterator (); $obj.hasNext () && ((obj = $obj.next ()) || true);) obj.setAlignmentLCR (align);
+if (this.currentObject != null) {
+if (!this.currentObject.setAlignmentLCR (align)) JU.Logger.error ("unrecognized align:" + align);
+} else if (this.isAll) {
+for (var obj, $obj = this.objects.values ().iterator (); $obj.hasNext () && ((obj = $obj.next ()) || true);) obj.setAlignmentLCR (align);
 
-return;
-}if (!this.currentObject.setAlignmentLCR (align)) JU.Logger.error ("unrecognized align:" + align);
-return;
+}return;
 }if ("bgcolor" === propertyName) {
 this.currentBgColor = value;
-if (this.currentObject == null) {
-if (this.isAll) {
+if (this.currentObject != null) {
+this.currentObject.bgcolix = JU.C.getColixO (value);
+} else if (this.isAll) {
 var e = this.objects.values ().iterator ();
 while (e.hasNext ()) {
-e.next ().colix = JU.C.getColixO (value);
+e.next ().bgcolix = JU.C.getColixO (value);
 }
 }return;
-}this.currentObject.bgcolix = JU.C.getColixO (value);
-return;
 }if ("color" === propertyName) {
 this.currentColor = value;
-if (this.currentObject == null) {
-if (this.isAll || this.thisID != null) {
+if (this.currentObject != null) {
+this.currentObject.colix = JU.C.getColixO (value);
+} else if (this.isAll || this.thisID != null) {
 var e = this.objects.values ().iterator ();
 while (e.hasNext ()) {
 var text = e.next ();
@@ -643,8 +605,6 @@ if (this.isAll || JU.PT.isMatch (text.target.toUpperCase (), this.thisID, true, 
 text.colix = JU.C.getColixO (value);
 }}
 }return;
-}this.currentObject.colix = JU.C.getColixO (value);
-return;
 }if ("target" === propertyName) {
 var target = value;
 this.isAll = target.equals ("all");
@@ -656,15 +616,14 @@ if ((isBackground = ("bgtranslucency" === propertyName)) || "translucency" === p
 var isTranslucent = ("translucent" === value);
 if (isBackground) this.currentBgTranslucentLevel = (isTranslucent ? this.translucentLevel : 0);
  else this.currentTranslucentLevel = (isTranslucent ? this.translucentLevel : 0);
-if (this.currentObject == null) {
-if (this.isAll) {
+if (this.currentObject != null) {
+this.currentObject.setTranslucent (this.translucentLevel, isBackground);
+} else if (this.isAll) {
 var e = this.objects.values ().iterator ();
 while (e.hasNext ()) {
 e.next ().setTranslucent (this.translucentLevel, isBackground);
 }
 }return;
-}this.currentObject.setTranslucent (this.translucentLevel, isBackground);
-return;
 }if (propertyName === "deleteModelAtoms") {
 var modelIndex = ((value)[2])[0];
 var e = this.objects.values ().iterator ();
@@ -734,21 +693,21 @@ Clazz_defineMethod (c$, "setPropTS",
 function (propertyName, value, bsSelected) {
 if ("text" === propertyName) {
 var text = value;
-if (this.currentObject == null) {
-if (this.isAll) for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.setText (text);
+if (this.currentObject != null) {
+(this.currentObject).setText (text);
+} else if (this.isAll) {
+for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.setText (text);
 
-return;
-}(this.currentObject).setText (text);
-return;
+}return;
 }if ("font" === propertyName) {
 this.currentFont = value;
-if (this.currentObject == null) {
-if (this.isAll) for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.setFont (this.currentFont, true);
-
-return;
-}(this.currentObject).setFont (this.currentFont, true);
+if (this.currentObject != null) {
+(this.currentObject).setFont (this.currentFont, true);
 (this.currentObject).setFontScale (0);
-return;
+} else if (this.isAll) {
+for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.setFont (this.currentFont, true);
+
+}return;
 }this.setPropOS (propertyName, value, bsSelected);
 }, "~S,~O,JU.BS");
 });
@@ -1727,7 +1686,7 @@ return this.vwr.getMeasurementState (this, this.measurements, this.measurementCo
 });
 });
 Clazz_declarePackage ("J.shape");
-Clazz_load (["J.shape.TextShape"], "J.shape.Echo", ["JU.PT", "JM.Object2d", "$.Text", "JU.C"], function () {
+Clazz_load (["J.shape.TextShape"], "J.shape.Echo", ["JU.PT", "JM.Text", "JU.C"], function () {
 c$ = Clazz_declareType (J.shape, "Echo", J.shape.TextShape);
 Clazz_overrideMethod (c$, "initShape", 
 function () {
@@ -1741,27 +1700,27 @@ var val = (value).floatValue ();
 this.currentObject.setScalePixelsPerMicron (val == 0 ? 0 : 10000 / val);
 }return;
 }if ("point" === propertyName) {
-if (this.currentObject == null) return;
+if (this.currentObject != null) {
 var t = this.currentObject;
 t.pointerPt = (value == null ? null : value);
 t.pointer = (value == null ? 0 : 1);
-return;
+}return;
 }if ("xyz" === propertyName) {
 if (this.currentObject != null && this.vwr.getBoolean (603979845)) this.currentObject.setScalePixelsPerMicron (this.vwr.getScalePixelsPerAngstrom (false) * 10000);
 }if ("scale" === propertyName) {
-if (this.currentObject == null) {
-if (this.isAll) for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.setScale ((value).floatValue ());
+if (this.currentObject != null) {
+(this.currentObject).setScale ((value).floatValue ());
+} else if (this.isAll) {
+for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.setScale ((value).floatValue ());
 
-return;
-}(this.currentObject).setScale ((value).floatValue ());
-return;
+}return;
 }if ("image" === propertyName) {
-if (this.currentObject == null) {
-if (this.isAll) for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.setImage (value);
+if (this.currentObject != null) {
+(this.currentObject).setImage (value);
+} else if (this.isAll) {
+for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.setImage (value);
 
-return;
-}(this.currentObject).setImage (value);
-return;
+}return;
 }if ("thisID" === propertyName) {
 var target = value;
 this.currentObject = this.objects.get (target);
@@ -1769,18 +1728,49 @@ if (this.currentObject == null && JU.PT.isWild (target)) this.thisID = target.to
 return;
 }if ("hidden" === propertyName) {
 var isHidden = (value).booleanValue ();
-if (this.currentObject == null) {
-if (this.isAll || this.thisID != null) for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) if (this.isAll || JU.PT.isMatch (t.target.toUpperCase (), this.thisID, true, true)) t.hidden = isHidden;
+if (this.currentObject != null) {
+(this.currentObject).hidden = isHidden;
+} else if (this.isAll || this.thisID != null) {
+for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) if (this.isAll || JU.PT.isMatch (t.target.toUpperCase (), this.thisID, true, true)) t.hidden = isHidden;
 
+}return;
+}if ("script" === propertyName) {
+if (this.currentObject != null) this.currentObject.setScript (value);
 return;
-}(this.currentObject).hidden = isHidden;
+}if ("xpos" === propertyName) {
+if (this.currentObject != null) this.currentObject.setMovableX ((value).intValue ());
 return;
-}if (JM.Object2d.setProperty (propertyName, value, this.currentObject)) return;
-if ("target" === propertyName) {
+}if ("ypos" === propertyName) {
+if (this.currentObject != null) this.currentObject.setMovableY ((value).intValue ());
+return;
+}if ("%xpos" === propertyName) {
+if (this.currentObject != null) this.currentObject.setMovableXPercent ((value).intValue ());
+return;
+}if ("%ypos" === propertyName) {
+if (this.currentObject != null) this.currentObject.setMovableYPercent ((value).intValue ());
+return;
+}if ("%zpos" === propertyName) {
+if (this.currentObject != null) this.currentObject.setMovableZPercent ((value).intValue ());
+return;
+}if ("xypos" === propertyName) {
+if (this.currentObject != null) {
+var pt = value;
+this.currentObject.setXYZ (null, true);
+if (pt.z == 3.4028235E38) {
+this.currentObject.setMovableX (Clazz_floatToInt (pt.x));
+this.currentObject.setMovableY (Clazz_floatToInt (pt.y));
+} else {
+this.currentObject.setMovableXPercent (Clazz_floatToInt (pt.x));
+this.currentObject.setMovableYPercent (Clazz_floatToInt (pt.y));
+}}return;
+}if ("xyz" === propertyName) {
+if (this.currentObject != null) {
+this.currentObject.setXYZ (value, true);
+}return;
+}if ("target" === propertyName) {
 this.thisID = null;
 var target = (value).intern ().toLowerCase ();
-if (target === "none" || target === "all") {
-} else {
+if (target !== "none" && target !== "all") {
 this.isAll = false;
 var text = this.objects.get (target);
 if (text == null) {
@@ -1822,7 +1812,7 @@ data[1] = id;
 return true;
 }}
 return false;
-}return false;
+}return this.getPropShape (property, data);
 }, "~S,~A");
 Clazz_overrideMethod (c$, "getShapeState", 
 function () {

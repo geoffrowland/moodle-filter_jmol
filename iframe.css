@@ -1,15 +1,7 @@
 .jmolConsole {
-/*
- *  top: 10px !important;
- *  left: 10px !important;
-*/
     z-index: 2147483647 !important;
 }
 .jmolPopupMenu {
-/*
- *  top: 10px !important;
- *  left: 10px !important;
-*/
     z-index: 2147483647 !important;
 }
 .jmolPopupMenu a

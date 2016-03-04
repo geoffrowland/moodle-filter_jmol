@@ -53,7 +53,7 @@ defined('MOODLE_INTERNAL') || die();
 
 class filter_jmol extends moodle_text_filter {
     public function filter($text, array $options = array()) {
-        global $CFG, $PAGE, $bigscreenenabled;
+        global $CFG, $PAGE, $jmolenabled;
         $wwwroot = $CFG->wwwroot;
         $host = preg_replace('~^.*://([^:/]*).*$~', '$1', $wwwroot);
 
@@ -67,9 +67,14 @@ class filter_jmol extends moodle_text_filter {
         $search = $search1.$search2;
         // Bigscreen loaded here, rather than in child iframe, to support Internet Explorer.
         $newtext = preg_replace_callback($search, 'filter_jmol_replace_callback', $text);
-        if (($newtext !== $text) && !isset($bigscreenenabled)) {
-            $bigscreenenabled = true;
+        if (($newtext !== $text) && !isset($jmolenabled)) {
+            $jmolenabled = true;
             $PAGE->requires->js(new moodle_url('/filter/jmol/js/bigscreen.min.js'));
+            $newtext = '
+            <script src="'.$wwwroot.'/filter/jmol/js/jsmol/jquery/jquery.min.js"></script>
+            <script src="'.$wwwroot.'/filter/jmol/js/jquery-ui/jquery-ui.min.js"></script>
+            <link rel="stylesheet" href="'.$wwwroot.'/filter/jmol/js/jquery-ui/jquery-ui.min.css" />
+            '.$newtext;
         }
         return $newtext;
     }
@@ -190,8 +195,9 @@ function filter_jmol_replace_callback($matches) {
     }
     // Setup iframe for Jmol/JSmol.
     return '
-<iframe id = "iframe'.$id.'" class = "jmoliframe" allowfullscreen frameborder = "0"
- src = "'.new moodle_url('/filter/jmol/iframe.php', array(
+<div id = "resizable'.$id.'" class = "jmoldiv" style = "height: '.$size.'px; width: '.$size.'px">
+<iframe id = "iframe'.$id.'" allowfullscreen frameborder = "0"
+src = "'.new moodle_url('/filter/jmol/iframe.php', array(
     'u' => $url,
     'n' => $filestem,
     'f' => $filetype,
@@ -201,23 +207,23 @@ function filter_jmol_replace_callback($matches) {
     'id' => $id,
     '_USE' => $technol,
     'DEFER' => $coverimage
-    )).'" style = "height: '.$size.'px; width: '.$size.'px">
+    )).'" class = "jmoliframe">
 </iframe>
+</div>
 <script>
-    YUI().use("node", "event", "resize", function(Y) {
-        var resize = new Y.Resize({
-            //Selector of the node to resize
-            node: "#iframe'.$id.'",
-            autoHide: false,
-            handles: "br"
-        });
-        // Fix Jmol aspect ratio and set min max size
-        resize.plug(Y.Plugin.ResizeConstrained, {
-            preserveRatio: false,
-            minWidth: 100,
+    $(function() {
+        $("#resizable'.$id.'").resizable({
             minHeight: 100,
+            minWidth: 100,
+            maxHeight: 1000,
             maxWidth: 1000,
-            maxHeight: 1000
+            // Required for smooth resizing of div containing iframe.
+            start: function(event, ui) {
+                $("iframe").css("pointer-events","none");
+            },
+            stop: function(event, ui) {
+                $("iframe").css("pointer-events","auto");
+            }
         });
     });
     // Fullscreen function, using bigscreen polyfill, called from child iframe.

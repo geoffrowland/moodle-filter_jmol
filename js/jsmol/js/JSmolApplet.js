@@ -1,5 +1,8 @@
 // JmolApplet.js -- Jmol._Applet and Jmol._Image
 
+// BH 2/14/2016 12:31:02 PM fixed local reader not disappearing after script call
+// BH 2/14/2016 12:30:41 PM Info.appletLoadingImage: "j2s/img/JSmol_spinner.gif", // can be set to "none" or some other image
+// BH 2/14/2016 12:27:09 PM Jmol._setCursor, proto._getSpinner 
 // BH 1/15/2016 4:23:14 PM adding Info.makeLiveImage
 // BH 4/17/2015 2:33:32 PM update for SwingJS 
 // BH 10/19/2014 8:08:51 PM moved applet._cover and applet._displayCoverImage to 
@@ -100,7 +103,8 @@
 			deferApplet: false,   // true == the model should not be loaded until the image is clicked
 			deferUncover: false,  // true == the image should remain until command execution is complete 
 			disableJ2SLoadMonitor: false,
-			disableInitialConsole: false,
+			disableInitialConsole: true, // new default since now we have the spinner 2/14/2016 12:26:28 PM
+      //appletLoadingImage: "j2s/img/JSmol_spinner.gif", // can be set to "none" or some other image
 			debug: false
 		};	 
 		Jmol._addDefaultInfo(Info, DefaultInfo);
@@ -128,9 +132,9 @@
           List.push("JAVA");
         }
 				break;
-			case "IMAGE":
-				applet = new Jmol._Image(id, Info, checkOnly);
-				break;
+//			case "IMAGE":
+//				applet = new Jmol._Image(id, Info, checkOnly);
+//				break;
 			}
 			if (applet != null)
 				break;		  
@@ -344,6 +348,7 @@
 		var app = this._2dapplet;
 		if (app && app._isEmbedded && app._ready && app.__Info.visible)
 			this._show2d(true);
+    Jmol._hideLoadingSpinner(this);
 	}
 
 	proto._showInfo = function(tf) {
@@ -374,6 +379,10 @@
 			this._2dapplet.__showContainer(true, true);
 		}
 	}
+
+  proto._getSpinner = function() {
+    return (this.__Info.appletLoadingImage || this._j2sPath + "/img/JSmol_spinner.gif");
+  }
 
   proto._getAtomCorrelation = function(molData) {
     // get the first atom mapping available by loading the model structure into model 2, 
@@ -418,6 +427,7 @@
 		if (!this._ready)
 				return this._addScript(script);
 		Jmol._setConsoleDiv(this._console);
+    Jmol._hideLocalFileReader(this);
 		this._applet.script(script);
 	}
 

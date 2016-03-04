@@ -59,7 +59,6 @@ JS.T.tokenMap.put (ident, token);
 }, "~S,JS.T");
 c$.getTokenFromName = Clazz.defineMethod (c$, "getTokenFromName", 
 function (name) {
-if (name == null) System.out.println ("???");
 return JS.T.tokenMap.get (name);
 }, "~S");
 c$.getTokFromName = Clazz.defineMethod (c$, "getTokFromName", 

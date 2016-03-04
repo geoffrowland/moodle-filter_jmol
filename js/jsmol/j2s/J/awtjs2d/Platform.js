@@ -95,11 +95,10 @@ jmol = (typeof Jmol != "undefined" && Jmol._repaint ? Jmol : null);
 }, "~O");
 Clazz.overrideMethod (c$, "setTransparentCursor", 
 function (canvas) {
-J.awtjs2d.Display.setTransparentCursor (canvas);
 }, "~O");
 Clazz.overrideMethod (c$, "setCursor", 
 function (c, canvas) {
-J.awtjs2d.Display.setCursor (c, canvas);
+J.awtjs2d.Platform.Jmol ()._setCursor ((this.vwr).html5Applet, c);
 }, "~N,~O");
 Clazz.overrideMethod (c$, "allocateRgbImage", 
 function (windowWidth, windowHeight, pBuffer, windowSize, backgroundTransparent, isImageWrite) {

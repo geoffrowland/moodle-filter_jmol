@@ -63,9 +63,9 @@
 ){
 var $t$;
 //var c$;
-Jmol.___JmolDate="$Date: 2016-02-09 20:22:20 -0600 (Tue, 09 Feb 2016) $"
+Jmol.___JmolDate="$Date: 2016-03-03 16:55:43 -0600 (Thu, 03 Mar 2016) $"
 Jmol.___fullJmolProperties="src/org/jmol/viewer/Jmol.properties"
-Jmol.___JmolVersion="14.4.2_2016.02.09"
+Jmol.___JmolVersion="14.4.3_2016.03.03b"
 // JSmolJavaExt.js
  
 
@@ -16970,6 +16970,7 @@ this.applySymmetryToBonds = false;
 this.doCheckUnitCell = false;
 this.getHeader = false;
 this.isSequential = false;
+this.isMolecular = false;
 this.templateAtomCount = 0;
 this.modelNumber = 0;
 this.vibrationNumber = 0;
@@ -19437,14 +19438,6 @@ c$.renderScreenImage = Clazz_defineMethod (c$, "renderScreenImage",
 function (vwr, g, size) {
 {
 }}, "javajs.api.PlatformViewer,~O,~O");
-c$.setTransparentCursor = Clazz_defineMethod (c$, "setTransparentCursor", 
-function (canvas) {
-{
-}}, "~O");
-c$.setCursor = Clazz_defineMethod (c$, "setCursor", 
-function (c, canvas) {
-{
-}}, "~N,~O");
 c$.prompt = Clazz_defineMethod (c$, "prompt", 
 function (label, data, list, asButtons) {
 {
@@ -20004,11 +19997,10 @@ jmol = (typeof Jmol != "undefined" && Jmol._repaint ? Jmol : null);
 }, "~O");
 Clazz_overrideMethod (c$, "setTransparentCursor", 
 function (canvas) {
-J.awtjs2d.Display.setTransparentCursor (canvas);
 }, "~O");
 Clazz_overrideMethod (c$, "setCursor", 
 function (c, canvas) {
-J.awtjs2d.Display.setCursor (c, canvas);
+J.awtjs2d.Platform.Jmol ()._setCursor ((this.vwr).html5Applet, c);
 }, "~N,~O");
 Clazz_overrideMethod (c$, "allocateRgbImage", 
 function (windowWidth, windowHeight, pBuffer, windowSize, backgroundTransparent, isImageWrite) {
@@ -25004,7 +24996,7 @@ if (!isOK) throw  new NullPointerException ();
 Clazz_overrideMethod (c$, "renderExport", 
 function (gdata, modelSet, params) {
 var isOK;
-this.shapeManager.finalizeAtoms (false, true);
+this.shapeManager.finalizeAtoms (null, true);
 var exporter3D = this.vwr.initializeExporter (params);
 isOK = (exporter3D != null);
 if (!isOK) {
@@ -25204,7 +25196,8 @@ this.a = this.a.group.getLeadAtomOr (this.a);
 this.b = this.b.group.getLeadAtomOr (this.b);
 }}if (!this.isPass2 && (!this.a.isVisible (9) || !this.b.isVisible (9) || !this.g3d.isInDisplayRange (this.a.sX, this.a.sY) || !this.g3d.isInDisplayRange (this.b.sX, this.b.sY))) return false;
 if (this.slabbing) {
-if (this.vwr.gdata.isClippedZ (this.a.sZ) && this.vwr.gdata.isClippedZ (this.b.sZ) || this.slabByAtom && (this.vwr.gdata.isClippedZ (this.a.sZ) || this.vwr.gdata.isClippedZ (this.b.sZ))) return false;
+var ba = this.vwr.gdata.isClippedZ (this.a.sZ);
+if (ba && this.vwr.gdata.isClippedZ (this.b.sZ) || this.slabByAtom && (ba || this.vwr.gdata.isClippedZ (this.b.sZ))) return false;
 }this.zA = this.a.sZ;
 this.zB = this.b.sZ;
 if (this.zA == 1 || this.zB == 1) return false;
@@ -26953,7 +26946,6 @@ JS.T.tokenMap.put (ident, token);
 }, "~S,JS.T");
 c$.getTokenFromName = Clazz_defineMethod (c$, "getTokenFromName", 
 function (name) {
-if (name == null) System.out.println ("???");
 return JS.T.tokenMap.get (name);
 }, "~S");
 c$.getTokFromName = Clazz_defineMethod (c$, "getTokFromName", 
@@ -31879,11 +31871,13 @@ Clazz_defineMethod (c$, "getVisibleSet",
 function (forceNew) {
 if (forceNew) {
 this.vwr.setModelVisibility ();
-this.vwr.shm.finalizeAtoms (false, true);
-} else if (this.haveBSVisible) return this.bsVisible;
-this.bsVisible.clearAll ();
+this.vwr.shm.finalizeAtoms (null, true);
+} else if (this.haveBSVisible) {
+return this.bsVisible;
+}this.bsVisible.clearAll ();
 for (var i = this.ac; --i >= 0; ) if (this.at[i].checkVisible ()) this.bsVisible.set (i);
 
+if (this.vwr.shm.bsSlabbedInternal != null) this.bsVisible.andNot (this.vwr.shm.bsSlabbedInternal);
 this.haveBSVisible = true;
 return this.bsVisible;
 }, "~B");
@@ -43923,7 +43917,7 @@ Clazz_defineStatics (c$,
 "TYPE_SPIN", -2);
 });
 Clazz_declarePackage ("JV");
-Clazz_load (["javajs.api.EventManager", "J.i18n.GT", "JU.Rectangle", "JV.MouseState"], ["JV.ActionManager", "$.Gesture", "$.MotionPoint"], ["java.lang.Character", "$.Float", "JU.AU", "$.P3", "$.PT", "J.api.Interface", "J.thread.HoverWatcherThread", "JU.BSUtil", "$.Escape", "$.Logger", "$.Point3fi", "JV.binding.Binding", "$.JmolBinding"], function () {
+Clazz_load (["javajs.api.EventManager", "J.i18n.GT", "JU.Rectangle", "JV.MouseState"], ["JV.MotionPoint", "$.ActionManager", "$.Gesture"], ["java.lang.Character", "$.Float", "JU.AU", "$.P3", "$.PT", "J.api.Interface", "J.thread.HoverWatcherThread", "JU.BSUtil", "$.Escape", "$.Logger", "$.Point3fi", "JV.binding.Binding", "$.JmolBinding"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.vwr = null;
 this.haveMultiTouchInput = false;
@@ -48970,6 +48964,7 @@ this.ms = null;
 this.shapes = null;
 this.vwr = null;
 this.bsRenderableAtoms = null;
+this.bsSlabbedInternal = null;
 this.navMinMax = null;
 Clazz_instantialize (this, arguments);
 }, JV, "ShapeManager");
@@ -48980,6 +48975,7 @@ Clazz_makeConstructor (c$,
 function (vwr) {
 this.vwr = vwr;
 this.bsRenderableAtoms =  new JU.BS ();
+this.bsSlabbedInternal =  new JU.BS ();
 }, "JV.Viewer");
 Clazz_defineMethod (c$, "findNearestShapeAtomIndex", 
 function (x, y, closest, bsNot) {
@@ -49193,33 +49189,36 @@ if (shape != null) shape.setAtomClickability ();
 }
 });
 Clazz_defineMethod (c$, "finalizeAtoms", 
-function (checkAtoms, finalizeParams) {
+function (bsTranslateSelected, finalizeParams) {
 var vwr = this.vwr;
-if (finalizeParams) vwr.finalizeTransformParameters ();
 var tm = vwr.tm;
-var bs = this.bsRenderableAtoms;
-var bsAtoms = (checkAtoms ? tm.bsSelectedAtoms : null);
-if (bsAtoms != null) {
-var ptCenter = this.ms.getAtomSetCenter (bsAtoms);
+if (finalizeParams) vwr.finalizeTransformParameters ();
+if (bsTranslateSelected != null) {
+var ptCenter = this.ms.getAtomSetCenter (bsTranslateSelected);
 var pt =  new JU.P3 ();
 tm.transformPt3f (ptCenter, pt);
 pt.add (tm.ptOffset);
 tm.unTransformPoint (pt, pt);
 pt.sub (ptCenter);
-vwr.setAtomCoordsRelative (pt, bsAtoms);
+vwr.setAtomCoordsRelative (pt, bsTranslateSelected);
 tm.ptOffset.set (0, 0, 0);
 tm.bsSelectedAtoms = null;
-}this.ms.getAtomsInFrame (bs);
+}var bsOK = this.bsRenderableAtoms;
+this.ms.getAtomsInFrame (bsOK);
 var vibrationVectors = this.ms.vibrations;
 var vibs = (vibrationVectors != null && tm.vibrationOn);
 var checkOccupancy = (this.ms.bsModulated != null && this.ms.occupancies != null);
 var atoms = this.ms.at;
 var occ;
 var haveMods = false;
-for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
+var bsSlabbed = this.bsSlabbedInternal;
+bsSlabbed.clearAll ();
+for (var i = bsOK.nextSetBit (0); i >= 0; i = bsOK.nextSetBit (i + 1)) {
 var atom = atoms[i];
 var screen = (vibs && atom.hasVibration () ? tm.transformPtVib (atom, vibrationVectors[i]) : tm.transformPt (atom));
-atom.sX = screen.x;
+if (screen.z == 1 && tm.internalSlab && tm.xyzIsSlabbedInternal (atom)) {
+bsSlabbed.set (i);
+}atom.sX = screen.x;
 atom.sY = screen.y;
 atom.sZ = screen.z;
 var d = Math.abs (atom.madAtom);
@@ -49246,30 +49245,30 @@ for (var i = 0; i < moleculeCount; i++) {
 var m = molecules[i];
 var j = 0;
 var pt = m.firstAtomIndex;
-if (!bs.get (pt)) continue;
+if (!bsOK.get (pt)) continue;
 for (; j < m.ac; j++, pt++) if (gdata.isClippedZ (atoms[pt].sZ - (atoms[pt].sD >> 1))) break;
 
 if (j != m.ac) {
 pt = m.firstAtomIndex;
 for (var k = 0; k < m.ac; k++) {
-bs.clear (pt);
+bsOK.clear (pt);
 atoms[pt++].sZ = 0;
 }
 }}
-}for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
+}for (var i = bsOK.nextSetBit (0); i >= 0; i = bsOK.nextSetBit (i + 1)) {
 var atom = atoms[i];
 if (gdata.isClippedZ (atom.sZ - (slabByAtom ? atoms[i].sD >> 1 : 0))) {
 atom.setClickable (0);
 var r = Clazz_doubleToInt ((slabByAtom ? -1 : 1) * atom.sD / 2);
 if (atom.sZ + r < minZ || atom.sZ - r > maxZ || !gdata.isInDisplayRange (atom.sX, atom.sY)) {
-bs.clear (i);
+bsOK.clear (i);
 }}}
 }if (this.ms.ac == 0 || !vwr.getShowNavigationPoint ()) return null;
 var minX = 2147483647;
 var maxX = -2147483648;
 var minY = 2147483647;
 var maxY = -2147483648;
-for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
+for (var i = bsOK.nextSetBit (0); i >= 0; i = bsOK.nextSetBit (i + 1)) {
 var atom = atoms[i];
 if (atom.sX < minX) minX = atom.sX;
 if (atom.sX > maxX) maxX = atom.sX;
@@ -49281,7 +49280,7 @@ this.navMinMax[1] = maxX;
 this.navMinMax[2] = minY;
 this.navMinMax[3] = maxY;
 return this.navMinMax;
-}, "~B,~B");
+}, "JU.BS,~B");
 Clazz_defineMethod (c$, "setModelSet", 
 function (modelSet) {
 this.ms = this.vwr.ms = modelSet;
@@ -49323,7 +49322,7 @@ Clazz_defineStatics (c$,
 c$.clickableMax = c$.prototype.clickableMax = JV.ShapeManager.hoverable.length - 1;
 });
 Clazz_declarePackage ("JV");
-Clazz_load (["java.util.Hashtable"], ["JV.Connections", "$.Connection", "$.StateManager", "$.Scene"], ["java.util.Arrays", "JU.BS", "$.SB", "JM.Orientation", "JU.BSUtil"], function () {
+Clazz_load (["java.util.Hashtable"], ["JV.Connection", "$.Scene", "$.StateManager", "$.Connections"], ["java.util.Arrays", "JU.BS", "$.SB", "JM.Orientation", "JU.BSUtil"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.vwr = null;
 this.saved = null;
@@ -50679,8 +50678,7 @@ this.slabRange = value;
 }, "~N");
 Clazz_defineMethod (c$, "setSlabEnabled", 
 function (slabEnabled) {
-this.slabEnabled = slabEnabled;
-this.vwr.g.setB ("slabEnabled", slabEnabled);
+this.vwr.g.setB ("slabEnabled", this.slabEnabled = slabEnabled);
 }, "~B");
 Clazz_defineMethod (c$, "setZShadeEnabled", 
 function (zShadeEnabled) {
@@ -50739,14 +50737,15 @@ this.slabDepthChanged ();
 }, "~N");
 Clazz_defineMethod (c$, "slabToPercent", 
 function (percentSlab) {
+this.slabPlane = null;
 this.vwr.setFloatProperty ("slabRange", 0);
 this.slabPercentSetting = percentSlab;
-this.slabPlane = null;
 if (this.depthPercentSetting >= this.slabPercentSetting) this.depthPercentSetting = this.slabPercentSetting - 1;
 this.slabDepthChanged ();
 }, "~N");
 Clazz_defineMethod (c$, "depthToPercent", 
 function (percentDepth) {
+this.depthPlane = null;
 this.vwr.g.setI ("depth", percentDepth);
 this.depthPercentSetting = percentDepth;
 if (this.slabPercentSetting <= this.depthPercentSetting) this.slabPercentSetting = this.depthPercentSetting + 1;
@@ -50776,16 +50775,18 @@ Clazz_defineMethod (c$, "setSlabDepthInternal",
 function (isDepth) {
 if (isDepth) this.depthPlane = null;
  else this.slabPlane = null;
+this.finalizeTransformParameters ();
 this.slabInternal (this.getSlabDepthPlane (isDepth), isDepth);
 }, "~B");
 Clazz_defineMethod (c$, "getSlabDepthPlane", 
  function (isDepth) {
 if (isDepth) {
 if (this.depthPlane != null) return this.depthPlane;
-} else {
-if (this.slabPlane != null) return this.slabPlane;
+} else if (this.slabPlane != null) {
+return this.slabPlane;
 }var m = this.matrixTransform;
-return JU.P4.new4 (-m.m20, -m.m21, -m.m22, -m.m23 + (isDepth ? this.depthValue : this.slabValue));
+var plane = JU.P4.new4 (-m.m20, -m.m21, -m.m22, -m.m23 + (isDepth ? this.depthValue : this.slabValue));
+return plane;
 }, "~B");
 Clazz_defineMethod (c$, "getCameraFactors", 
 function () {
@@ -50983,6 +50984,11 @@ function (ptXYZ, pointScreen) {
 this.transformPt (ptXYZ);
 pointScreen.setT (this.fScrPt);
 }, "JU.T3,JU.T3");
+Clazz_defineMethod (c$, "transformPt3f", 
+function (ptXYZ, screen) {
+this.applyPerspective (ptXYZ, ptXYZ);
+screen.setT (this.fScrPt);
+}, "JU.T3,JU.P3");
 Clazz_defineMethod (c$, "transformPtNoClip", 
 function (ptXYZ, pointScreen) {
 this.applyPerspective (ptXYZ, null);
@@ -51001,11 +51007,6 @@ Clazz_defineMethod (c$, "getVibrationPoint",
 function (v, pt, scale) {
 return v.setCalcPoint (pt, this.vibrationT, (Float.isNaN (scale) ? this.vibrationScale : scale), this.vwr.g.modulationScale);
 }, "JU.Vibration,JU.T3,~N");
-Clazz_defineMethod (c$, "transformPt3f", 
-function (ptXYZ, screen) {
-this.applyPerspective (ptXYZ, ptXYZ);
-screen.setT (this.fScrPt);
-}, "JU.T3,JU.P3");
 Clazz_defineMethod (c$, "transformPt2D", 
 function (ptXyp) {
 if (ptXyp.z == -3.4028235E38) {
@@ -51062,9 +51063,13 @@ if (Float.isNaN (this.fScrPt.x) && !this.haveNotifiedNaN) {
 if (JU.Logger.debugging) JU.Logger.debug ("NaN found in transformPoint ");
 this.haveNotifiedNaN = true;
 }this.iScrPt.set (Clazz_floatToInt (this.fScrPt.x), Clazz_floatToInt (this.fScrPt.y), Clazz_floatToInt (this.fScrPt.z));
-if (ptRef != null && (this.slabPlane != null && ptRef.x * this.slabPlane.x + ptRef.y * this.slabPlane.y + ptRef.z * this.slabPlane.z + this.slabPlane.w > 0 || this.depthPlane != null && ptRef.x * this.depthPlane.x + ptRef.y * this.depthPlane.y + ptRef.z * this.depthPlane.z + this.depthPlane.w < 0)) this.fScrPt.z = this.iScrPt.z = 1;
+if (ptRef != null && this.xyzIsSlabbedInternal (ptRef)) this.fScrPt.z = this.iScrPt.z = 1;
 return this.iScrPt;
 }, "JU.T3,JU.T3");
+Clazz_defineMethod (c$, "xyzIsSlabbedInternal", 
+function (ptRef) {
+return (this.slabPlane != null && ptRef.x * this.slabPlane.x + ptRef.y * this.slabPlane.y + ptRef.z * this.slabPlane.z + this.slabPlane.w > 0 || this.depthPlane != null && ptRef.x * this.depthPlane.x + ptRef.y * this.depthPlane.y + ptRef.z * this.depthPlane.z + this.depthPlane.w < 0);
+}, "JU.T3");
 Clazz_defineMethod (c$, "move", 
 function (eval, dRot, dZoom, dTrans, dSlab, floatSecondsTotal, fps) {
 this.movetoThread = J.api.Interface.getOption ("thread.MoveToThread", this.vwr, "tm");
@@ -53769,7 +53774,7 @@ function (why) {
 if (this.rm == null) return;
 if (!this.haveDisplay) {
 this.setModelVisibility ();
-this.shm.finalizeAtoms (false, true);
+this.shm.finalizeAtoms (null, true);
 return;
 }this.rm.requestRepaintAndWait (why);
 this.setSync ();
@@ -53932,7 +53937,7 @@ Clazz_defineMethod (c$, "render",
  function () {
 if (this.mm.modelSet == null || !this.mustRender || !this.refreshing && !this.creatingImage || this.rm == null) return;
 var antialias2 = this.antialiased && this.g.antialiasTranslucent;
-var navMinMax = this.shm.finalizeAtoms (true, true);
+var navMinMax = this.shm.finalizeAtoms (this.tm.bsSelectedAtoms, true);
 if (this.isWebGL) {
 this.rm.renderExport (this.gdata, this.ms, this.jsParams);
 this.notifyViewerRepaintDone ();

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JV");
-Clazz.load (["java.util.Hashtable"], ["JV.Connections", "$.Connection", "$.StateManager", "$.Scene"], ["java.util.Arrays", "JU.BS", "$.SB", "JM.Orientation", "JU.BSUtil"], function () {
+Clazz.load (["java.util.Hashtable"], ["JV.Connection", "$.Scene", "$.StateManager", "$.Connections"], ["java.util.Arrays", "JU.BS", "$.SB", "JM.Orientation", "JU.BSUtil"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.saved = null;

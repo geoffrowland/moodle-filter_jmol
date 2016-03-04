@@ -51,9 +51,10 @@ Info = {
 	jarFile: "JmolApplet.jar",
 	isSigned: false,
 	disableJ2SLoadMonitor: false,
-	disableInitialConsole: false,
+	disableInitialConsole: false, // default now is true
 	readyFunction: jmol_isReady,
-  allowjavascript: true,
+	allowjavascript: true,
+//	appletLoadingImage: "none",
 	script: "load async data/caffeine.mol;"
 //	script: "set antialiasDisplay;set showtiming;load async data/caffeine.mol;"
 	//,defaultModel: ":dopamine"

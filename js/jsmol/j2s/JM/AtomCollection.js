@@ -1765,11 +1765,13 @@ Clazz.defineMethod (c$, "getVisibleSet",
 function (forceNew) {
 if (forceNew) {
 this.vwr.setModelVisibility ();
-this.vwr.shm.finalizeAtoms (false, true);
-} else if (this.haveBSVisible) return this.bsVisible;
-this.bsVisible.clearAll ();
+this.vwr.shm.finalizeAtoms (null, true);
+} else if (this.haveBSVisible) {
+return this.bsVisible;
+}this.bsVisible.clearAll ();
 for (var i = this.ac; --i >= 0; ) if (this.at[i].checkVisible ()) this.bsVisible.set (i);
 
+if (this.vwr.shm.bsSlabbedInternal != null) this.bsVisible.andNot (this.vwr.shm.bsSlabbedInternal);
 this.haveBSVisible = true;
 return this.bsVisible;
 }, "~B");

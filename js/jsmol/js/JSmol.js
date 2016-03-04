@@ -459,9 +459,8 @@
           image.onload = function() {Jmol._loadImage(platform, echoName, path, null, fOnload, image)};
     			image.src = path;
           return null;
-        } else {
-              System.out.println("Jsmol.js Jmol._loadImage using data URI for " + id) 
         }
+        System.out.println("Jsmol.js Jmol._loadImage using data URI for " + id) 
         image.src = (typeof bytes == "string" ? bytes : 
           "data:" + JU.Rdr.guessMimeTypeForBytes(bytes) + ";base64," + JU.Base64.getBase64(bytes));
       }

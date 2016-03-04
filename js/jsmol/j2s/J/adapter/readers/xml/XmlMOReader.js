@@ -36,6 +36,7 @@ this.processXml2 (parent, saxReader);
 }, "J.adapter.readers.xml.XmlReader,~O");
 Clazz.defineMethod (c$, "processStartMO", 
 function (localName) {
+if (!this.parent.doReadMolecularOrbitals) return false;
 if (localName.equals ("molecule")) {
 var method = this.atts.get ("method");
 if (method != null) this.calcType = method + "(" + this.atts.get ("basis") + ")";

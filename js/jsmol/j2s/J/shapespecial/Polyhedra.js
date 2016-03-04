@@ -193,8 +193,9 @@ var modelIndex = ((value)[2])[0];
 for (var i = this.polyhedronCount; --i >= 0; ) {
 var p = this.polyhedrons[i];
 p.info = null;
-var mi = (p.id == null ? p.centralAtom.mi : p.modelIndex);
-if (mi == modelIndex) {
+if (p.modelIndex > modelIndex) {
+p.modelIndex--;
+} else if (p.modelIndex == modelIndex) {
 this.polyhedronCount--;
 this.polyhedrons = JU.AU.deleteElements (this.polyhedrons, i, 1);
 }}
@@ -271,14 +272,14 @@ data[2] = bs;
 return true;
 }if (property === "allInfo") {
 var info =  new JU.Lst ();
-for (var i = this.polyhedronCount; --i >= 0; ) info.addLast (this.polyhedrons[i].getInfo (this.vwr, true));
+for (var i = this.polyhedronCount; --i >= 0; ) info.addLast (this.polyhedrons[i].getInfo (this.vwr, false));
 
 data[1] = info;
 return true;
 }if (property === "info") {
 p = this.findPoly (id, iatom, true);
 if (p == null) return false;
-data[1] = p.getInfo (this.vwr, true);
+data[1] = p.getInfo (this.vwr, false);
 return true;
 }return this.getPropShape (property, data);
 }, "~S,~A");
@@ -313,7 +314,7 @@ return this.thisID != null && JU.PT.isMatch (id.toLowerCase (), this.thisID.toLo
 Clazz.overrideMethod (c$, "getShapeDetail", 
 function () {
 var lst =  new JU.Lst ();
-for (var i = 0; i < this.polyhedronCount; i++) lst.addLast (this.polyhedrons[i].getInfo (this.vwr, true));
+for (var i = 0; i < this.polyhedronCount; i++) lst.addLast (this.polyhedrons[i].getInfo (this.vwr, false));
 
 return lst;
 });
@@ -335,7 +336,7 @@ var bs = this.findPolyBS (this.centers);
 for (var i = 0; i < this.polyhedronCount; ++i) {
 var p = this.polyhedrons[i];
 if (bs.get (i)) {
-if (p.id == null) this.setColixAndPalette (0, pid, p.centralAtom.i);
+if (this.colixes != null && p.id == null) this.setColixAndPalette (0, pid, p.centralAtom.i);
 continue;
 }this.polyhedrons[newCount++] = p;
 }
@@ -672,7 +673,7 @@ for (var i = this.polyhedronCount; --i >= 0; ) {
 var p = this.polyhedrons[i];
 if (p.id == null) {
 if (this.ms.at[p.centralAtom.i].isDeleted ()) p.isValid = false;
-p.visibilityFlags = (p.visible && bsModels.get (p.centralAtom.mi) && !this.ms.isAtomHidden (p.centralAtom.i) && !this.ms.at[p.centralAtom.i].isDeleted () ? this.vf : 0);
+p.visibilityFlags = (p.visible && bsModels.get (p.modelIndex) && !this.ms.isAtomHidden (p.centralAtom.i) && !this.ms.at[p.centralAtom.i].isDeleted () ? this.vf : 0);
 if (p.visibilityFlags != 0) this.setShapeVisibility (this.atoms[p.centralAtom.i], true);
 } else {
 p.visibilityFlags = (p.visible && (p.modelIndex < 0 || bsModels.get (p.modelIndex)) ? this.vf : 0);

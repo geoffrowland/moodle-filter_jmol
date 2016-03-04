@@ -116,7 +116,8 @@ this.a = this.a.group.getLeadAtomOr (this.a);
 this.b = this.b.group.getLeadAtomOr (this.b);
 }}if (!this.isPass2 && (!this.a.isVisible (9) || !this.b.isVisible (9) || !this.g3d.isInDisplayRange (this.a.sX, this.a.sY) || !this.g3d.isInDisplayRange (this.b.sX, this.b.sY))) return false;
 if (this.slabbing) {
-if (this.vwr.gdata.isClippedZ (this.a.sZ) && this.vwr.gdata.isClippedZ (this.b.sZ) || this.slabByAtom && (this.vwr.gdata.isClippedZ (this.a.sZ) || this.vwr.gdata.isClippedZ (this.b.sZ))) return false;
+var ba = this.vwr.gdata.isClippedZ (this.a.sZ);
+if (ba && this.vwr.gdata.isClippedZ (this.b.sZ) || this.slabByAtom && (ba || this.vwr.gdata.isClippedZ (this.b.sZ))) return false;
 }this.zA = this.a.sZ;
 this.zB = this.b.sZ;
 if (this.zA == 1 || this.zB == 1) return false;

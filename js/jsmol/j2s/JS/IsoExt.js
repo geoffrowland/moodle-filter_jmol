@@ -892,7 +892,7 @@ var isIsosurface = (iShape == 24);
 var isPmesh = (iShape == 29);
 var isPlot3d = (iShape == 30);
 var isLcaoCartoon = (iShape == 26);
-var isSilent = (isLcaoCartoon || this.tokAt (1) == 12291);
+var isSilent = (isLcaoCartoon || this.tokAt (1) == 12291 || eval.$isStateScript);
 var surfaceObjectSeen = false;
 var planeSeen = false;
 var isMapped = false;

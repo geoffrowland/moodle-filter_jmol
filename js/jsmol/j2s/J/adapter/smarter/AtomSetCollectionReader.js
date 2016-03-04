@@ -34,6 +34,7 @@ this.applySymmetryToBonds = false;
 this.doCheckUnitCell = false;
 this.getHeader = false;
 this.isSequential = false;
+this.isMolecular = false;
 this.templateAtomCount = 0;
 this.modelNumber = 0;
 this.vibrationNumber = 0;

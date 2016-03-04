@@ -1995,7 +1995,7 @@ function (why) {
 if (this.rm == null) return;
 if (!this.haveDisplay) {
 this.setModelVisibility ();
-this.shm.finalizeAtoms (false, true);
+this.shm.finalizeAtoms (null, true);
 return;
 }this.rm.requestRepaintAndWait (why);
 this.setSync ();
@@ -2158,7 +2158,7 @@ Clazz.defineMethod (c$, "render",
  function () {
 if (this.mm.modelSet == null || !this.mustRender || !this.refreshing && !this.creatingImage || this.rm == null) return;
 var antialias2 = this.antialiased && this.g.antialiasTranslucent;
-var navMinMax = this.shm.finalizeAtoms (true, true);
+var navMinMax = this.shm.finalizeAtoms (this.tm.bsSelectedAtoms, true);
 if (this.isWebGL) {
 this.rm.renderExport (this.gdata, this.ms, this.jsParams);
 this.notifyViewerRepaintDone ();

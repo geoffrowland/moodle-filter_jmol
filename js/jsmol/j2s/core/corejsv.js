@@ -63,9 +63,9 @@
 ){
 var $t$;
 //var c$;
-Jmol.___JmolDate="$Date: 2016-02-09 20:22:20 -0600 (Tue, 09 Feb 2016) $"
+Jmol.___JmolDate="$Date: 2016-03-03 16:55:43 -0600 (Thu, 03 Mar 2016) $"
 Jmol.___fullJmolProperties="src/org/jmol/viewer/Jmol.properties"
-Jmol.___JmolVersion="14.4.2_2016.02.09"
+Jmol.___JmolVersion="14.4.3_2016.03.03b"
 // JSmolJavaExt.js
  
 

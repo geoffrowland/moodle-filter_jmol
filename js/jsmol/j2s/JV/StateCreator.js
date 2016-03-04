@@ -459,10 +459,11 @@ if (tm.depthPlane != null) commands.append ("  depth plane ").append (JU.Escape.
 this.getZshadeState (commands, tm, false);
 commands.append (this.getSpinState (true)).append ("\n");
 if (this.vwr.ms.modelSetHasVibrationVectors () && tm.vibrationOn) this.app (commands, "set vibrationPeriod " + tm.vibrationPeriod + ";vibration on");
+var slabInternal = (tm.depthPlane != null || tm.slabPlane != null);
 if (navigating) {
 commands.append (tm.getNavigationState ());
-if (tm.depthPlane != null || tm.slabPlane != null) commands.append ("  slab on;\n");
-}if (sfunc != null) commands.append ("}\n\n");
+}if (!tm.slabEnabled && slabInternal) commands.append ("  slab off;\n");
+if (sfunc != null) commands.append ("}\n\n");
 return commands.toString ();
 }, "JV.TransformManager,JU.SB");
 Clazz.defineMethod (c$, "getZshadeState", 

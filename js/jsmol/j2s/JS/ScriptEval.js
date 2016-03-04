@@ -5171,9 +5171,7 @@ this.setBooleanProperty ("slabEnabled", true);
 return;
 case 36867:
 this.checkLength (2);
-if (this.chk) return;
-this.vwr.tm.setSlabDepthInternal (isDepth);
-this.setBooleanProperty ("slabEnabled", true);
+if (!this.chk) this.vwr.tm.setSlabDepthInternal (isDepth);
 return;
 case 268435616:
 str = this.paramAsStr (2);

@@ -84,28 +84,28 @@ $expfilename = str_replace('.zip', '', $expfilename);
 
 $fullscreen = get_string('fullscreen', 'filter_jmol', true);
 if ($jmolfiletype === "cif" ) {
-    $loadscript = 'set zoomLarge false; load '.$pathname.' {1 1 1}; zoom 0;';
+    $loadscript = 'load '.$pathname.' {1 1 1}; zoom 0;';
     $menu = 'SimpleCryst.mnu';
     $dropmenu = 'SimpleCryst';
 } else if ($jmolfiletype === "pse") {
-    $loadscript = 'set zoomLarge false; load '.$pathname.';';
+    $loadscript = 'load '.$pathname.';';
     $menu = 'SimpleBio.mnu';
     $dropmenu = 'SimpleBio';
 } else if ($jmolfiletype === "pdb" || $jmolfiletype === "mcif") {
-    $loadscript = 'set zoomLarge false; set pdbAddHydrogens true; load '.$pathname.'; calculate hbonds; hbonds off; ssbonds off; ';
+    $loadscript = 'set pdbAddHydrogens true; load '.$pathname.'; calculate hbonds; hbonds off; ssbonds off; ';
     $loadscript = $loadscript.'display not water; select protein or nucleic; cartoons only; color structure; ';
     $loadscript = $loadscript.'set hbondsBackbone TRUE; set ssbondsbackbone TRUE; select *;';
     $menu = 'SimpleBio.mnu';
     $dropmenu = 'SimpleBio';
 } else {
-    $loadscript = 'set zoomLarge false; load '.$pathname.';';
+    $loadscript = 'load '.$pathname.';';
     $menu = 'SimpleChem.mnu';
     $dropmenu = 'SimpleChem';
 }
 if ($controls === '1') {
         $menu = 'SimpleChem.mnu';
         $dropmenu = 'SimpleChem';
-        $loadscript = 'set zoomLarge false; load '.$pathname.';';
+        $loadscript = 'load '.$pathname.';';
 } else if ($controls === '2') {
         $menu = 'SimpleCryst.mnu';
         $dropmenu = 'SimpleCryst';
@@ -356,6 +356,7 @@ echo 'debug: false,';
 echo 'addSelectionOptions: false,';
 echo 'use: "'.$technol.'",';
 echo 'deferApplet: '.$defer.',';
+echo 'makeLiveImage: "'.$wwwroot.'/filter/jmol/pix/play_256.png",';
 if ($defer == true) {
     echo 'coverImage: "'.$coverpath.'",';
 }
@@ -368,7 +369,7 @@ echo 'disableJ2SLoadMonitor: true,';
 echo 'readyFunction: null,';
 echo 'isSigned: true,';
 echo 'menuFile: "'.$wwwroot.'/filter/jmol/'.$menu.'",';
-echo 'script: "set echo top left; echo '.get_string('loading', 'filter_jmol', true).'; refresh;'.$loadscript.$initscript.'; ';
+echo 'script: "'.$loadscript.$initscript.'; ';
 echo 'set language '.$lang.'; set frank off; set zoomLarge false; set antialiasDisplay on;",';
 echo 'serverURL: "'.$wwwroot.'/filter/jmol/js/jsmol/php/jsmol.php",';
 echo 'allowJavaScript: true';
@@ -376,7 +377,6 @@ echo '};';
 echo 'fixsize();';
 // Write J(S)mol to div.
 echo '$("#jmolstructure").html(Jmol.getAppletHtml("jmolApplet0", Info));';
-echo '$("#jmolApplet0_coverclickgo").attr("src", "'.$wwwroot.'/filter/jmol/pix/play_256.png");';
 echo 'Jmol._alertNoBinary = true;';
 if ($technol === "SIGNED") {
     if ($bname == 'opr' && $bplatform == 'linux') {

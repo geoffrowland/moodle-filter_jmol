@@ -1263,7 +1263,7 @@ function (modelIndex, structureType, substructureType, structureID, serialID, st
 this.structureType = structureType;
 this.substructureType = substructureType;
 if (structureID == null) return;
-this.setModels (modelIndex, 0);
+this.modelStartEnd[0] = this.modelStartEnd[1] = modelIndex;
 this.structureID = structureID;
 this.strandCount = strandCount;
 this.serialID = serialID;
@@ -1279,11 +1279,6 @@ this.endInsertionCode = endInsertionCode;
 this.atomStartEnd[0] = istart;
 this.atomStartEnd[1] = iend;
 }, "~N,~N,~S,~N,~N,~S,~N,~N");
-Clazz_defineMethod (c$, "setModels", 
-function (model1, model2) {
-this.modelStartEnd[0] = model1;
-this.modelStartEnd[1] = (model2 == 0 ? model1 : model2);
-}, "~N,~N");
 });
 Clazz_declarePackage ("J.api");
 Clazz_declareInterface (J.api, "JmolBioResolver");
@@ -2806,6 +2801,7 @@ this.leadAtomIndices = null;
 this.type = 0;
 this.bioPolymerIndexInModel = 0;
 this.monomerCount = 0;
+this.cyclicFlag = 0;
 this.invalidLead = false;
 this.invalidControl = false;
 this.sheetSmoothing = 0;
@@ -3102,6 +3098,10 @@ function (polymer, bsA, bsB, vHBonds, nMaxPerResidue, min, checkDistances, dsspI
 Clazz_defineMethod (c$, "getType", 
 function () {
 return this.type;
+});
+Clazz_defineMethod (c$, "isCyclic", 
+function () {
+return ((this.cyclicFlag == 0 ? (this.cyclicFlag = (this.monomerCount >= 4 && this.monomers[0].isConnectedAfter (this.monomers[this.monomerCount - 1])) ? 1 : -1) : this.cyclicFlag) == 1);
 });
 Clazz_defineStatics (c$,
 "TYPE_NOBONDING", 0,
@@ -3802,35 +3802,33 @@ var at = this.ms.at;
 var am = this.ms.am;
 for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
 if (at[i].group.isAdded (i)) continue;
-monomerIndexCurrent = at[i].group.setProteinStructureType (type, iLast == i - 1 ? -1 : monomerIndexCurrent);
+monomerIndexCurrent = at[i].group.setProteinStructureType (type, iLast == i - 1 ? monomerIndexCurrent : -1);
 var modelIndex = at[i].mi;
 this.ms.proteinStructureTainted = am[modelIndex].structureTainted = true;
 iLast = i = at[i].group.lastAtomIndex;
 }
 var lastStrucNo =  Clazz_newIntArray (this.ms.mc, 0);
-for (var i = 0; i < this.ms.ac; ) {
+for (var i = 0; i < this.ms.ac; i++) {
 var modelIndex = at[i].mi;
 if (!bsModels.get (modelIndex)) {
-i = am[modelIndex].firstAtomIndex + am[modelIndex].act;
+i = am[modelIndex].firstAtomIndex + am[modelIndex].act - 1;
 continue;
 }var g = at[i].group;
 if (!g.isAdded (i)) {
 iLast = g.getStrucNo ();
 if (iLast < 1000 && iLast > lastStrucNo[modelIndex]) lastStrucNo[modelIndex] = iLast;
 i = g.lastAtomIndex;
-}i++;
-}
-for (var i = 0; i < this.ms.ac; ) {
+}}
+for (var i = 0; i < this.ms.ac; i++) {
 var modelIndex = at[i].mi;
 if (!bsModels.get (modelIndex)) {
-i = am[modelIndex].firstAtomIndex + am[modelIndex].act;
+i = am[modelIndex].firstAtomIndex + am[modelIndex].act - 1;
 continue;
 }var g = at[i].group;
 if (!g.isAdded (i)) {
 i = g.lastAtomIndex;
 if (g.getStrucNo () > 1000) g.setStrucNo (++lastStrucNo[modelIndex]);
-}i++;
-}
+}}
 }, "JU.BS,J.c.STR");
 Clazz_defineMethod (c$, "modelsOf", 
  function (bsAtoms, bsAtomsRet) {
@@ -6214,9 +6212,10 @@ var atomIndices = bioShape.bioPolymer.getLeadAtomIndices ();
 var isVisible = (mad != 0);
 if (bioShape.bsSizeSet == null) bioShape.bsSizeSet =  new JU.BS ();
 bioShape.isActive = true;
-for (var i = bioShape.monomerCount - 1; --i >= 0; ) {
+var n = bioShape.monomerCount;
+for (var i = n - (bioShape.bioPolymer.isCyclic () ? 0 : 1); --i >= 0; ) {
 var index1 = atomIndices[i];
-var index2 = atomIndices[i + 1];
+var index2 = atomIndices[(i + 1) % n];
 var isAtom1 = bsSelected.get (index1);
 var isAtom2 = bsSelected.get (index2);
 if (isAtom1 && isAtom2 || useThisBsSelected && isAtom1 || bondSelectionModeOr && (isAtom1 || isAtom2)) {
@@ -6402,6 +6401,7 @@ this.isHighRes = false;
 this.wireframeOnly = false;
 this.needTranslucent = false;
 this.meshRenderer = null;
+this.bioShape = null;
 this.pointT = null;
 this.iPrev = 0;
 this.iNext = 0;
@@ -6415,6 +6415,7 @@ this.madMid = 0;
 this.madEnd = 0;
 this.colixBack = 0;
 this.reversed = null;
+this.isCyclic = false;
 this.screenArrowTop = null;
 this.screenArrowTopPrev = null;
 this.screenArrowBot = null;
@@ -6480,11 +6481,12 @@ Clazz_defineMethod (c$, "renderShapes",
  function () {
 var mps = this.shape;
 for (var c = mps.bioShapes.length; --c >= 0; ) {
-var bioShape = mps.getBioShape (c);
-if ((bioShape.modelVisibilityFlags & this.myVisibilityFlag) == 0) continue;
-if (bioShape.monomerCount >= 2 && this.initializePolymer (bioShape)) {
+this.bioShape = mps.getBioShape (c);
+if ((this.bioShape.modelVisibilityFlags & this.myVisibilityFlag) == 0) continue;
+if (this.bioShape.monomerCount >= 2 && this.initializePolymer (this.bioShape)) {
 if (this.meshRenderer != null) this.meshRenderer.initBS ();
-this.renderBioShape (bioShape);
+this.isCyclic = this.bioShape.bioPolymer.isCyclic ();
+this.renderBioShape (this.bioShape);
 if (this.meshRenderer != null) this.meshRenderer.renderMeshes ();
 this.freeTempArrays ();
 }}
@@ -6579,11 +6581,18 @@ return (this.colixesBack == null || this.colixesBack.length <= i ? 0 : this.coli
 }, "~N");
 Clazz_defineMethod (c$, "setNeighbors", 
 function (i) {
+if (this.isCyclic) {
+i += this.monomerCount;
+this.iPrev = (i - 1) % this.monomerCount;
+this.iNext = (i + 1) % this.monomerCount;
+this.iNext2 = (i + 2) % this.monomerCount;
+this.iNext3 = (i + 3) % this.monomerCount;
+} else {
 this.iPrev = Math.max (i - 1, 0);
 this.iNext = Math.min (i + 1, this.monomerCount);
 this.iNext2 = Math.min (i + 2, this.monomerCount);
 this.iNext3 = Math.min (i + 3, this.monomerCount);
-}, "~N");
+}}, "~N");
 Clazz_defineMethod (c$, "setColix", 
 function (colix) {
 this.colix = colix;
@@ -6892,18 +6901,21 @@ function (bioShape) {
 var checkPass2 = (!this.isExport && !this.vwr.gdata.isPass2);
 var showSteps = this.vwr.getBoolean (603979811) && bioShape.bioPolymer.isNucleic ();
 this.isDataFrame = this.vwr.ms.isJmolDataFrameForModel (bioShape.modelIndex);
+var n = this.monomerCount;
+var atoms = this.ms.at;
 for (var i = this.bsVisible.nextSetBit (0); i >= 0; i = this.bsVisible.nextSetBit (i + 1)) {
-var atomA = this.ms.at[this.leadAtomIndices[i]];
+var atomA = atoms[this.leadAtomIndices[i]];
 var cA = this.colixes[i];
 this.mad = this.mads[i];
-this.drawSegment (atomA, this.ms.at[this.leadAtomIndices[i + 1]], cA, this.colixes[i + 1], 100, checkPass2);
+var i1 = (i + 1) % n;
+this.drawSegment (atomA, atoms[this.leadAtomIndices[i1]], cA, this.colixes[i1], 100, checkPass2);
 if (showSteps) {
 var g = this.monomers[i];
 var bps = g.getBasePairs ();
 if (bps != null) {
 for (var j = bps.size (); --j >= 0; ) {
 var iAtom = bps.get (j).getPartnerAtom (g);
-if (iAtom > i) this.drawSegment (atomA, this.ms.at[iAtom], cA, cA, 1000, checkPass2);
+if (iAtom > i) this.drawSegment (atomA, atoms[iAtom], cA, cA, 1000, checkPass2);
 }
 }}}
 }, "J.shapebio.BioShape");

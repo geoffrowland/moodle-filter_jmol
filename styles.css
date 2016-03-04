@@ -14,9 +14,15 @@
   height: 100% !important;
   width:100% !important;
 }
-iframe.jmoliframe
-{
-border: 1px solid lightgray;
-padding: 0;
-margin: 0;
+.jmoldiv {
+  border: 1px solid lightgray;
+  padding: 0;
+  margin: 0;
+}
+.jmoliframe {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  height: 100%;
+  width: 100%;
 }

@@ -30,6 +30,7 @@ this.isHighRes = false;
 this.wireframeOnly = false;
 this.needTranslucent = false;
 this.meshRenderer = null;
+this.bioShape = null;
 this.pointT = null;
 this.iPrev = 0;
 this.iNext = 0;
@@ -43,6 +44,7 @@ this.madMid = 0;
 this.madEnd = 0;
 this.colixBack = 0;
 this.reversed = null;
+this.isCyclic = false;
 this.screenArrowTop = null;
 this.screenArrowTopPrev = null;
 this.screenArrowBot = null;
@@ -108,11 +110,12 @@ Clazz.defineMethod (c$, "renderShapes",
  function () {
 var mps = this.shape;
 for (var c = mps.bioShapes.length; --c >= 0; ) {
-var bioShape = mps.getBioShape (c);
-if ((bioShape.modelVisibilityFlags & this.myVisibilityFlag) == 0) continue;
-if (bioShape.monomerCount >= 2 && this.initializePolymer (bioShape)) {
+this.bioShape = mps.getBioShape (c);
+if ((this.bioShape.modelVisibilityFlags & this.myVisibilityFlag) == 0) continue;
+if (this.bioShape.monomerCount >= 2 && this.initializePolymer (this.bioShape)) {
 if (this.meshRenderer != null) this.meshRenderer.initBS ();
-this.renderBioShape (bioShape);
+this.isCyclic = this.bioShape.bioPolymer.isCyclic ();
+this.renderBioShape (this.bioShape);
 if (this.meshRenderer != null) this.meshRenderer.renderMeshes ();
 this.freeTempArrays ();
 }}
@@ -207,11 +210,18 @@ return (this.colixesBack == null || this.colixesBack.length <= i ? 0 : this.coli
 }, "~N");
 Clazz.defineMethod (c$, "setNeighbors", 
 function (i) {
+if (this.isCyclic) {
+i += this.monomerCount;
+this.iPrev = (i - 1) % this.monomerCount;
+this.iNext = (i + 1) % this.monomerCount;
+this.iNext2 = (i + 2) % this.monomerCount;
+this.iNext3 = (i + 3) % this.monomerCount;
+} else {
 this.iPrev = Math.max (i - 1, 0);
 this.iNext = Math.min (i + 1, this.monomerCount);
 this.iNext2 = Math.min (i + 2, this.monomerCount);
 this.iNext3 = Math.min (i + 3, this.monomerCount);
-}, "~N");
+}}, "~N");
 Clazz.defineMethod (c$, "setColix", 
 function (colix) {
 this.colix = colix;

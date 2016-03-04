@@ -18,9 +18,11 @@ this.modelIndex = 0;
 this.chainSum = null;
 this.chainAtomCount = null;
 this.isLigandBondBug = false;
+this.requiresSorting = false;
 this.structConnMap = null;
 this.structConnList = "";
 this.doSetBonds = false;
+this.modelStrings = "";
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.cif, "MMCifReader", J.adapter.readers.cif.CifReader);
 Clazz.overrideMethod (c$, "initSubclass", 
@@ -63,6 +65,35 @@ if (this.key0.startsWith ("_chem_comp_bond.")) return this.processCompBondLoopBl
 if (this.key0.startsWith ("_struct_conn.")) return this.processStructConnLoopBlock ();
 return false;
 });
+Clazz.defineMethod (c$, "sortAssemblyModels", 
+function () {
+var natoms = this.asc.ac;
+var lastSet = -1;
+var atoms = this.asc.atoms;
+var newAtoms =  new Array (natoms);
+var ids = JU.PT.split ("," + this.modelStrings + ",", ",,");
+var bsAtomsNew = (this.asc.bsAtoms == null ? null : JU.BS.newN (this.asc.bsAtoms.size ()));
+for (var im = 1, n = 0; im < ids.length; im++) {
+var sModel = ids[im];
+var modelIndex = -1;
+for (var is = 0; is < this.asc.atomSetCount; is++) {
+var ia0 = this.asc.getAtomSetAtomIndex (is);
+var ia1 = ia0 + this.asc.getAtomSetAtomCount (is);
+var am = "" + this.modelMap.get ("_" + is);
+if (am.equals (sModel)) {
+if (modelIndex < 0 && (modelIndex = is) > lastSet) lastSet = is;
+for (var i = ia0; i < ia1; i++) {
+if (bsAtomsNew == null || this.asc.bsAtoms.get (i)) {
+if (bsAtomsNew != null) bsAtomsNew.set (n);
+atoms[i].atomSetIndex = modelIndex;
+newAtoms[n++] = atoms[i];
+}}
+}}
+}
+this.asc.atoms = newAtoms;
+this.asc.bsAtoms = bsAtomsNew;
+if (++lastSet < this.asc.atomSetCount) this.asc.atomSetCount = lastSet;
+});
 Clazz.overrideMethod (c$, "finalizeSubclass", 
 function () {
 if (this.byChain && !this.isBiomolecule) for (var id, $id = this.chainAtomMap.keySet ().iterator (); $id.hasNext () && ((id = $id.next ()) || true);) this.createParticle (id);
@@ -70,7 +101,7 @@ if (this.byChain && !this.isBiomolecule) for (var id, $id = this.chainAtomMap.ke
 if (!this.isCourseGrained && this.asc.ac == this.nAtoms) {
 this.asc.removeCurrentAtomSet ();
 } else {
-if ((this.dssr != null || this.validation != null || this.addedData != null) && !this.isCourseGrained) {
+if ((this.dssr != null || this.validation != null || this.addedData != null) && !this.isCourseGrained && !this.requiresSorting) {
 var vs = (this.getInterface ("J.adapter.readers.cif.MMCifValidationParser")).set (this);
 var note = null;
 if (this.addedData == null) {
@@ -88,7 +119,8 @@ this.setBiomolecules ();
 if (this.thisBiomolecule != null) {
 this.asc.getXSymmetry ().applySymmetryBio (this.thisBiomolecule, this.unitCellParams, this.applySymmetryToBonds, this.filter);
 this.asc.xtalSymmetry = null;
-}}return true;
+}}if (this.requiresSorting) this.sortAssemblyModels ();
+return true;
 });
 Clazz.overrideMethod (c$, "checkSubclassSymmetry", 
 function () {
@@ -294,7 +326,7 @@ if (addNote) this.appendLoadNote (groupName + " = " + hetName);
 Clazz.defineMethod (c$, "processStructConfLoopBlock", 
  function () {
 this.parseLoopParametersFor ("_struct_conf", J.adapter.readers.cif.MMCifReader.structConfFields);
-if (!this.checkAllFieldsPresent (J.adapter.readers.cif.MMCifReader.structConfFields, true)) {
+if (!this.checkAllFieldsPresent (J.adapter.readers.cif.MMCifReader.structConfFields, -1, true)) {
 this.parser.skipLoop (true);
 return false;
 }while (this.parser.getData ()) {
@@ -346,7 +378,7 @@ return true;
 Clazz.defineMethod (c$, "processStructSheetRangeLoopBlock", 
  function () {
 this.parseLoopParametersFor ("_struct_sheet_range", J.adapter.readers.cif.MMCifReader.structSheetRangeFields);
-if (!this.checkAllFieldsPresent (J.adapter.readers.cif.MMCifReader.structSheetRangeFields, true)) {
+if (!this.checkAllFieldsPresent (J.adapter.readers.cif.MMCifReader.structSheetRangeFields, -1, true)) {
 this.parser.skipLoop (true);
 return false;
 }while (this.parser.getData ()) {
@@ -560,7 +592,15 @@ function (modelField, currentModelNo) {
 this.fieldProperty (modelField);
 var modelNo = this.parseIntStr (this.field);
 if (modelNo != currentModelNo) {
-if (this.iHaveDesiredModel && this.asc.atomSetCount > 0) {
+var isAssembly = (this.thisDataSetName != null && this.thisDataSetName.indexOf ("-assembly-") >= 0);
+if (isAssembly) {
+this.useFileModelNumbers = true;
+var key = "," + modelNo + ",";
+if (this.modelStrings.indexOf (key) >= 0) {
+this.requiresSorting = true;
+} else {
+this.modelStrings += key;
+}}if (this.iHaveDesiredModel && this.asc.atomSetCount > 0 && !isAssembly) {
 this.parser.skipLoop (false);
 this.skipping = false;
 this.continuing = true;

@@ -830,7 +830,12 @@ this.theToken = null;
 if ((this.theToken = JS.T.getTokenFromName (this.ident)) == null && (this.theToken = JS.T.getTokenFromName (this.identLC)) != null) this.theToken = JS.T.tv (this.theToken.tok, this.theToken.intValue, this.ident);
 } else {
 this.theToken = JS.T.getTokenFromName (this.identLC);
-if (this.theToken != null && (this.lastToken.tok == 1073742336 || this.lastToken.tok == 268435520)) this.theToken = JS.T.o (this.theToken.tok, this.ident);
+if (this.theToken != null) switch (this.lastToken.tok) {
+case 1073742336:
+case 268435520:
+case 268435504:
+this.theToken = JS.T.o (this.theToken.tok, this.ident);
+}
 }if (this.theToken == null) {
 this.theToken = JS.SV.newSV ((this.identLC.indexOf ("property_") == 0 ? 1715472409 : 1073741824), 2147483647, this.ident).setName (myName);
 }return this.theTok = this.theToken.tok;
@@ -7797,9 +7802,7 @@ this.setBooleanProperty ("slabEnabled", true);
 return;
 case 36867:
 this.checkLength (2);
-if (this.chk) return;
-this.vwr.tm.setSlabDepthInternal (isDepth);
-this.setBooleanProperty ("slabEnabled", true);
+if (!this.chk) this.vwr.tm.setSlabDepthInternal (isDepth);
 return;
 case 268435616:
 str = this.paramAsStr (2);

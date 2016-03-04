@@ -296,6 +296,14 @@
 
 // see JSmolApi.js for public user-interface. All these are private functions
 
+// BH 2/29/2016 3:59:55 PM broken cursor_wait image path when Info.j2sPath is not "j2s"
+// BH 2/19/2016 10:32:18 AM typo fixed for makeLiveImage
+// BH 2/14/2016 12:31:02 PM fixed local reader not disappearing after script call
+// BH 2/14/2016 12:30:41 PM Info.appletLoadingImage: "j2s/img/JSmol_spinner.gif", 
+   // can be set to "none" or some other image; see Jmol._hideLoadingSpinner(applet)
+   // implemented only for JSmolApplet, not others
+// BH 2/14/2016 12:27:09 PM Jmol._setCursor 
+// BH 2/14/2016 6:48:33 AM _setCursor() and cursor_wait   http://ajaxload.info/
 // BH 1/15/2016 4:23:14 PM adding Info.makeLiveImage
 // BH 12/30/2015 8:18:42 PM adding AMS call to database list; allowing for ?ALLOWSORIGIN? to override settings here
 // BH 12/17/2015 4:43:05 PM adding Jmol._requestRepaint to allow for MSIE9 not having requestAnimationFrame
@@ -440,7 +448,7 @@ Jmol = (function(document) {
 		}
 	};
 	var j = {
-		_version: "$Date: 2016-02-06 12:27:19 -0600 (Sat, 06 Feb 2016) $", // svn.keywords:lastUpdated
+		_version: "$Date: 2016-03-02 13:00:37 -0600 (Wed, 02 Mar 2016) $", // svn.keywords:lastUpdated
 		_alertNoBinary: true,
 		// this url is used to Google Analytics tracking of Jmol use. You may remove it or modify it if you wish. 
 		_allowedJmolSize: [25, 2048, 300],   // min, max, default (pixels)
@@ -685,6 +693,10 @@ Jmol = (function(document) {
 		return Jmol._$(id).width(w).height(h);
 	}
 
+  Jmol.$is = function(id, test) { // e.g. :visible
+    return Jmol._$(id).is(test);
+  }
+  
 	Jmol.$setVisible = function(id, b) {
 		var o = Jmol._$(id);
 		return (b ? o.show() : o.hide());  
@@ -1282,6 +1294,12 @@ Jmol = (function(document) {
 		return applet && applet._z && ++applet._z[what] || ++Jmol._z[what];
 	}
 	
+  Jmol._hideLocalFileReader = function(applet, cursor) {
+    applet._localReader && Jmol.$setVisible(applet._localReader, false);
+    applet._readingLocal = false;
+    Jmol._setCursor(applet, cursor || 0);
+  }
+  
 	Jmol._loadFileAsynchronously = function(fileLoadThread, applet, fileName, appData) {
 		if (fileName.indexOf("?") != 0) {
 			// LOAD ASYNC command
@@ -1307,18 +1325,23 @@ Jmol = (function(document) {
 			var reader = new FileReader();
 			reader.onloadend = function(evt) {
 				if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-					Jmol.$css(Jmol.$(applet, "localReader"), {display : "none"});
+          Jmol._hideLocalFileReader(applet, 3);
 					Jmol._setData(fileLoadThread, file.name, file.name, evt.target.result, appData);
 				}
 			};
-			reader.readAsArrayBuffer(file);
+      try {
+			  reader.readAsArrayBuffer(file);
+      } catch (e) {
+        alert("You must select a file first.");
+      }
 		});
 		Jmol.$appEvent(applet, "localReader_cancel", "click");
 		Jmol.$appEvent(applet, "localReader_cancel", "click", function(evt) {
-			Jmol.$css(Jmol.$(applet, "localReader"), {display: "none"});
-			fileLoadThread.setData(null, null, null, appData);
+      Jmol._hideLocalFileReader(applet);
+			fileLoadThread.setData("#CANCELED#", null, null, appData);
 		});
-		Jmol.$css(Jmol.$(applet, "localReader"), {display : "block"});
+		Jmol.$setVisible(applet._localReader, true);
+    applet._readingLocal = true;
 	}
 
   Jmol._setData = function(fileLoadThread, filename, filename0, data, appData) {
@@ -1453,15 +1476,21 @@ Jmol = (function(document) {
 			var img = ""; 
 			if (applet._coverImage){
 				var more = " onclick=\"Jmol.coverApplet(ID, false)\" title=\"" + (applet._coverTitle) + "\"";
-				var play = "<image id=\"ID_coverclickgo\" src=\"" + applet._makeLiveImg + "\" style=\"width:25px;height:25px;position:absolute;bottom:10px;left:10px;"
+				var play = "<image id=\"ID_coverclickgo\" src=\"" + applet._makeLiveImage + "\" style=\"width:25px;height:25px;position:absolute;bottom:10px;left:10px;"
 					+ "z-index:" + Jmol._getZ(applet, "coverImage")+";opacity:0.5;\"" + more + " />"  
 				img = "<div id=\"ID_coverdiv\" style=\"background-color:red;z-index:" + Jmol._getZ(applet, "coverImage")+";width:100%;height:100%;display:inline;position:absolute;top:0px;left:0px\"><image id=\"ID_coverimage\" src=\""
 				 + applet._coverImage + "\" style=\"width:100%;height:100%\"" + more + "/>" + play + "</div>";
 			}
+      
+      var wait = (applet._isJava ? "" : "<image id=\"ID_waitimage\" src=\"" + applet._j2sPath + "/img/cursor_wait.gif\" style=\"display:none;position:absolute;bottom:10px;left:10px;"
+					+ "z-index:" + Jmol._getZ(applet, "coverImage")+";\" />");  
+
 			var css = Jmol._appletCssText.replace(/\'/g,'"');
-			css = (css.indexOf("style=\"") >= 0 ? css.split("style=\"")[1] : "\" " + css);
+      var spinner = applet._getSpinner && applet._getSpinner();
+      applet._spinner = spinner = (!spinner || spinner == "none" ? "" : "background-image:url("+spinner + "); background-repeat:no-repeat; background-position:center;");    
+			css = spinner + (css.indexOf("style=\"") >= 0 ? css.split("style=\"")[1] : "\" " + css);
 			s = "\
-...<div id=\"ID_appletinfotablediv\" style=\"width:Wpx;height:Hpx;position:relative;font-size:14px;text-align:left\">IMG\
+...<div id=\"ID_appletinfotablediv\" style=\"width:Wpx;height:Hpx;position:relative;font-size:14px;text-align:left\">IMG WAIT\
 ......<div id=\"ID_appletdiv\" style=\"z-index:" + Jmol._getZ(applet, "header") + ";width:100%;height:100%;position:absolute;top:0px;left:0px;" + css + ">";
 			var height = applet._height;
 			var width = applet._width;
@@ -1469,7 +1498,7 @@ Jmol = (function(document) {
 				height += "px";
 			if (typeof width !== "string" || width.indexOf("%") < 0)
 				width += "px";
-			s = s.replace(/IMG/, img).replace(/Hpx/g, height).replace(/Wpx/g, width);
+			s = s.replace(/IMG/, img).replace(/WAIT/, wait).replace(/Hpx/g, height).replace(/Wpx/g, width);
 		} else {
 			s = "\
 ......</div>\
@@ -1483,6 +1512,11 @@ Jmol = (function(document) {
 		return s.replace(/\.\.\./g,"").replace(/[\n\r]/g,"").replace(/ID/g, applet._id);
 	}
 
+  Jmol._hideLoadingSpinner = function(applet) {
+    if (applet._spinner)
+      Jmol.$css(Jmol.$(applet, "appletdiv"), {"background-image": ""});
+  }
+  
 	Jmol._documentWrite = function(text) {
 		if (Jmol._document) {
 			if (Jmol._isXHTML && !Jmol._XhtmlElement) {
@@ -1611,7 +1645,7 @@ Jmol = (function(document) {
 		Jmol._j2sPath && (Info.j2sPath = Jmol._j2sPath);
 		obj._j2sPath = Info.j2sPath;
 		obj._coverImage = Info.coverImage;
-    obj._makeLiveImage = Info.makeLiveImage || Info._j2sPath + "/img/play_make_live.jpg";
+    obj._makeLiveImage = Info.makeLiveImage || Info.j2sPath + "/img/play_make_live.jpg";
 		obj._isCovered = !!obj._coverImage; 
 		obj._deferApplet = Info.deferApplet || obj._isCovered && obj._isJava; // must do this if covered in Java
 		obj._deferUncover = Info.deferUncover && !obj._isJava; // can't do this with Java
@@ -1818,6 +1852,35 @@ Jmol = (function(document) {
 		return (x == undefined ? null : [Math.round(x), Math.round(y), Jmol._jsGetMouseModifiers(ev)]);
 	}
 
+  Jmol._setCursor = function(applet, c) {
+    if (applet._isJava || applet._readingLocal)
+      return;
+    var curs;
+    switch(c) {
+    case 1: 
+      curs = "crosshair";
+      break;
+    case 3: // wait
+      curs = "wait";
+      Jmol.$setVisible(Jmol.$(applet, "waitimage"), true);
+      break;
+    case 8: // zoom
+      curs = "ns-resize"; 
+      break;
+    case 12: // hand
+      curs = "grab"; 
+      break;
+    case 13: 
+      curs = "move";
+      break;
+    default:
+      Jmol.$setVisible(Jmol.$(applet, "waitimage"), false);
+      curs = "default";
+      break;
+    }
+    applet._canvas.style.cursor = curs;
+  }
+  
 	Jmol._gestureUpdate = function(canvas, ev) {
 		ev.stopPropagation();
 		ev.preventDefault();

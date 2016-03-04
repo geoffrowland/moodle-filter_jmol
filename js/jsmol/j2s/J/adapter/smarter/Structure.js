@@ -39,7 +39,7 @@ function (modelIndex, structureType, substructureType, structureID, serialID, st
 this.structureType = structureType;
 this.substructureType = substructureType;
 if (structureID == null) return;
-this.setModels (modelIndex, 0);
+this.modelStartEnd[0] = this.modelStartEnd[1] = modelIndex;
 this.structureID = structureID;
 this.strandCount = strandCount;
 this.serialID = serialID;
@@ -55,9 +55,4 @@ this.endInsertionCode = endInsertionCode;
 this.atomStartEnd[0] = istart;
 this.atomStartEnd[1] = iend;
 }, "~N,~N,~S,~N,~N,~S,~N,~N");
-Clazz.defineMethod (c$, "setModels", 
-function (model1, model2) {
-this.modelStartEnd[0] = model1;
-this.modelStartEnd[1] = (model2 == 0 ? model1 : model2);
-}, "~N,~N");
 });
