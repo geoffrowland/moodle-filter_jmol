@@ -357,10 +357,8 @@ echo 'addSelectionOptions: false,';
 echo 'use: "'.$technol.'",';
 echo 'deferApplet: '.$defer.',';
 echo 'makeLiveImage: "'.$wwwroot.'/filter/jmol/pix/play_256.png",';
-if ($defer == true) {
-    echo 'coverImage: "'.$coverpath.'",';
-}
-echo 'deferUncover: false,';
+echo 'coverImage: "'.$coverpath.'",';
+echo 'deferUncover: true,';
 echo 'j2sPath: "'.$wwwroot.'/filter/jmol/js/jsmol/j2s",';
 echo 'jarPath: "'.$wwwroot.'/filter/jmol/js/jsmol/java",';
 echo 'jarFile: "JmolAppletSigned.jar",';
