@@ -7,6 +7,7 @@
 // (local scope) Clazz_xxx, allowing them to be further compressed using
 // Google Closure Compiler in that same ANT task.
 
+// BH 3/9/2016 6:25:08 PM at least allow Error() by itself to work as before (inchi.js uses this)
 // BH 12/21/2015 1:31:41 PM fixing String.instantialize for generic typed array
 // BH 9/19/2015 11:05:45 PM Float.isInfinite(), Float.isNaN(), Double.isInfinite(), Double.isNaN() all not implemented
 // BH 5/31/2015 5:53:04 PM Number.compareTo added
@@ -1916,7 +1917,26 @@ buf.append(lineNum);
 }}return buf.toString();
 });
 TypeError.prototype.getMessage || (TypeError.prototype.getMessage = function(){ return (this.message || this.toString()) + (this.getStackTrace ? this.getStackTrace() : Clazz.getStackTrace())});
-c$=Clazz.declareType(java.lang,"Error",Throwable);
+
+
+Clazz.Error = Error;
+
+Clazz.declareTypeError = function (prefix, name, clazzParent, interfacez, 
+		parentClazzInstance, _declareType) {
+	var f = function () {
+		Clazz.instantialize (this, arguments);
+    return Clazz.Error();
+	};
+	return Clazz.decorateAsClass (f, prefix, name, clazzParent, interfacez, 
+			parentClazzInstance);
+};
+
+// at least allow Error() by itself to work as before
+Clazz._Error || (Clazz._Error = Error);
+Clazz.decorateAsClass (function (){Clazz.instantialize(this, arguments);return Clazz._Error();}, java.lang, "Error", Throwable);
+
+//c$=Clazz.declareTypeError(java.lang,"Error",Throwable);
+
 
 c$=Clazz.declareType(java.lang,"LinkageError",Error);
 

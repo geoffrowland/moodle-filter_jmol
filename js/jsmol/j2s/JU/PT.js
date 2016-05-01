@@ -466,9 +466,7 @@ s = info;
 {
 if (typeof s == "undefined") s = "null"
 }if (s.indexOf ("{\"") != 0) {
-s = JU.PT.rep (s, "\"", "\\\"");
-s = JU.PT.rep (s, "\n", "\\n");
-s = "\"" + s + "\"";
+s = JU.PT.esc (s);
 }break;
 }if (Clazz.instanceOf (info, javajs.api.JSONEncodable)) {
 if ((s = (info).toJSON ()) == null) s = "null";

@@ -13,27 +13,28 @@ datadir = "../data"
 //jmolInitialize("../java/","JmolAppletSigned0.jar")
 
 jmolSetMenuCssClass('" style="font-style:italic"')
+
 var Models = "=1blu {1 1 1}|P31 2 1,\
-nepheline.cif|P 61,\
-troilite.cif|P -6 2 c,\
-quartz.cif|P 32 2 1,\
+nepheline.cif packed|P 61,\
+troilite.cif packed|P -6 2 c,\
+quartz.cif packed|P 32 2 1,\
 -00=---------------------------,\
 -99=---------------------------,\
--01=04369a.cif |P n m a,\
--02=AgFUPMOS.cif|P 21/n,\
-diamond.cif|F d -3 m:2,\
-dickite.cif|C 1 c 1,\
-gold.cif|F m -3 m,\
--03=kuds0105a.ccdc.cif |P 21 21 21,\
+-01=04369a.cif {1 1 1}|P n m a,\
+-02=AgFUPMOS.cif packed|P 21/n,\
+diamond.cif packed|F d -3 m:2,\
+dickite.cif packed|C 1 c 1,\
+gold.cif packed|F m -3 m,\
+-03=kuds0105a.ccdc.cif {1 1 1}|P 21 21 21,\
 calcite.cif 1 packed|R -3 c:h,\
-Ti2O3.cif|R -3 c:h,\
+Ti2O3.cif packed|R -3 c:h,\
 icsd_200866.cif 1 packed|P 63/m m c,\
-icsd_250072.cif|P -6,\
-icsd_26520.cif|P 63 m c,\
+icsd_250072.cif packed|P -6,\
+icsd_26520.cif packed|P 63 m c,\
 maleic.cif 5 {1 1 1}|P 21/c,\
-nacl.cif|F m -3 m,\
--04=nank0104a.ccdc.cif |F d d 2,\
--05=sebi0105c.ccdc.cif |P 21 21 21\
+nacl.cif packed|F m -3 m,\
+-04=nank0104a.ccdc.cif {1 1 1}|F d d 2,\
+-05=sebi0105c.ccdc.cif {1 1 1}|P 21 21 21\
 ".split(",")
 
 var modelSelectHtml
@@ -65,10 +66,12 @@ function getModelSelectHtml() {
 		isDefault = false
 	} else if (xxxx.length > 1) {
 		selectedModel = xxxx
-		if (xxxx.indexOf(" ") < 0)xxxx += " packed"
 		isDefault = false
 		defaultScript = 'set echo top left;echo loading ' + selectedModel + '...;refresh;load ' + xxxx + ';echo "";'
-	}
+	} else {
+		selectedModel = "quartz.cif packed"
+		isDefault = false
+  }
 	var s = "<select id='modelselect' onchange=getModel() onkeypress=\"setTimeout('getModel()',50)\"><option value=''>select a model</option>"
 	if (!isDefault) {
 		var S = selectedModel.split("/")
@@ -84,11 +87,11 @@ function getModelSelectHtml() {
 		if (sg)sg =  " (" + sg + ")"
 		var isSelected = (m.indexOf("*")>=0 && isDefault)
 		m = m.replace(/\*/,"")
-		if (m.indexOf(" ") < 0)m += " packed"
 		if (isSelected)selectedModel = m
 		var n = m.split(".")[0].split(" ")[0]
 		var f = (n.indexOf("=") == 0 ? "\"" + m.replace(/ /,'" '): datadir + "/" + m)
-		if (m.indexOf("----") >= 0)f = "zap";
+		if (m.indexOf("----") >= 0)
+     f = "zap";
 		s += "<option value='" + f + "' " + (isSelected ? " selected": "") + ">" + n.replace(/\=/,"") + "</option>"
 	}
 	s += "</select>"

@@ -7,7 +7,6 @@ this.bySymop = false;
 this.chainAtomMap = null;
 this.chainAtomCounts = null;
 this.vBiomolecules = null;
-this.thisBiomolecule = null;
 this.htBiomts = null;
 this.htSites = null;
 this.htHetero = null;
@@ -98,6 +97,7 @@ Clazz.overrideMethod (c$, "finalizeSubclass",
 function () {
 if (this.byChain && !this.isBiomolecule) for (var id, $id = this.chainAtomMap.keySet ().iterator (); $id.hasNext () && ((id = $id.next ()) || true);) this.createParticle (id);
 
+var haveBiomolecule = (this.isBiomolecule && this.vBiomolecules != null && this.vBiomolecules.size () > 0);
 if (!this.isCourseGrained && this.asc.ac == this.nAtoms) {
 this.asc.removeCurrentAtomSet ();
 } else {
@@ -111,15 +111,26 @@ note = vs.finalizeRna3d (this.modelMap);
 }if (note != null) this.appendLoadNote (note);
 }this.setHetero ();
 if (this.doSetBonds) this.setBonds ();
-if (!this.isCourseGrained) this.applySymmetryAndSetTrajectory ();
-}if (this.htSites != null) this.addSites (this.htSites);
-if (this.vBiomolecules != null && this.vBiomolecules.size () > 0 && (this.isCourseGrained || this.asc.ac > 0)) {
+}if (this.asc.ac == 0 && !this.isCourseGrained) return false;
+var spaceGroup = this.sgName;
+if (this.htSites != null) this.addSites (this.htSites);
+if (haveBiomolecule) {
 this.asc.setCurrentModelInfo ("biomolecules", this.vBiomolecules);
 this.setBiomolecules ();
 if (this.thisBiomolecule != null) {
-this.asc.getXSymmetry ().applySymmetryBio (this.thisBiomolecule, this.unitCellParams, this.applySymmetryToBonds, this.filter);
+if (this.iHaveFractionalCoordinates) this.fractionalizeCoordinates (false);
+this.asc.getXSymmetry ().applySymmetryBio (this.thisBiomolecule, this.applySymmetryToBonds, this.filter);
 this.asc.xtalSymmetry = null;
-}}if (this.requiresSorting) this.sortAssemblyModels ();
+}this.doCheckUnitCell = new Boolean (this.doCheckUnitCell & (this.iHaveUnitCell && this.doApplySymmetry)).valueOf ();
+if (this.doCheckUnitCell) {
+this.ignoreFileSpaceGroupName = true;
+this.sgName = spaceGroup;
+this.fractionalizeCoordinates (true);
+this.asc.setModelInfoForSet ("biosymmetry", null, this.asc.iSet);
+this.asc.checkSpecial = false;
+if (this.byChain) return true;
+}}if (this.latticeCells != null && this.latticeCells[0] != 0) this.addJmolScript ("unitcell;");
+if (this.requiresSorting) this.sortAssemblyModels ();
 return true;
 });
 Clazz.overrideMethod (c$, "checkSubclassSymmetry", 
@@ -219,7 +230,7 @@ if (count == 3) this.addAssembly (assem);
 return true;
 });
 Clazz.defineMethod (c$, "addAssembly", 
- function (assem) {
+function (assem) {
 var id = assem[0];
 var list = assem[2];
 var operators = assem[1];
@@ -244,14 +255,18 @@ info.put ("operators",  new JU.Lst ());
 this.vBiomolecules.addLast (info);
 }(info.get ("assemblies")).addLast ("$" + list.$replace (',', '$'));
 (info.get ("operators")).addLast (this.decodeAssemblyOperators (operators));
-if (this.checkFilterKey ("ASSEMBLY " + id + ";") || this.checkFilterKey ("ASSEMBLY=" + id + ";")) this.thisBiomolecule = info;
+this.checkFilterAssembly (id, info);
 }, "~A");
+Clazz.defineMethod (c$, "checkFilterAssembly", 
+function (id, info) {
+if (this.checkFilterKey ("ASSEMBLY " + id + ";") || this.checkFilterKey ("ASSEMBLY=" + id + ";")) this.thisBiomolecule = info;
+}, "~S,java.util.Map");
 Clazz.defineMethod (c$, "decodeAssemblyOperators", 
  function (ops) {
 var pt = ops.indexOf (")(");
 if (pt >= 0) return this.crossBinary (this.decodeAssemblyOperators (ops.substring (0, pt + 1)), this.decodeAssemblyOperators (ops.substring (pt + 1)));
 if (ops.startsWith ("(")) {
-if (ops.indexOf ("-") >= 0) ops = JU.BS.unescape ("({" + ops.substring (1, ops.length - 1).$replace ('-', ':') + "})").toJSON ();
+if (ops.indexOf ("-") >= 0) ops = JU.BS.unescape ("({" + ops.substring (1, ops.length - 1).$replace ('-', ':').$replace (',', ' ') + "})").toJSON ();
 ops = JU.PT.rep (ops, " ", "");
 ops = ops.substring (1, ops.length - 1);
 }return ops;
@@ -301,11 +316,15 @@ m[3] *= this.symmetry.getUnitCellInfoType (0) / 12;
 m[7] *= this.symmetry.getUnitCellInfoType (1) / 12;
 m[11] *= this.symmetry.getUnitCellInfoType (2) / 12;
 }m4.setA (m);
-if (this.htBiomts == null) this.htBiomts =  new java.util.Hashtable ();
-this.htBiomts.put (id, m4);
+this.addBiomt (id, m4);
 }}
 return true;
 });
+Clazz.defineMethod (c$, "addBiomt", 
+function (id, m4) {
+if (this.htBiomts == null) this.htBiomts =  new java.util.Hashtable ();
+this.htBiomts.put (id, m4);
+}, "~S,JU.M4");
 Clazz.defineMethod (c$, "processChemCompLoopBlock", 
  function () {
 this.parseLoopParameters (J.adapter.readers.cif.MMCifReader.chemCompFields);
@@ -316,7 +335,7 @@ while (this.parser.getData ()) if (!this.isNull (groupName = this.getField (0)) 
 return true;
 });
 Clazz.defineMethod (c$, "addHetero", 
- function (groupName, hetName, addNote) {
+function (groupName, hetName, addNote) {
 if (!this.vwr.getJBR ().isHetero (groupName)) return;
 if (this.htHetero == null) this.htHetero =  new java.util.Hashtable ();
 if (this.htHetero.containsKey (groupName)) return;
@@ -330,7 +349,7 @@ if (!this.checkAllFieldsPresent (J.adapter.readers.cif.MMCifReader.structConfFie
 this.parser.skipLoop (true);
 return false;
 }while (this.parser.getData ()) {
-var structure =  new J.adapter.smarter.Structure (-1, J.c.STR.HELIX, J.c.STR.HELIX, null, 0, 0);
+var structure =  new J.adapter.smarter.Structure (-1, J.c.STR.HELIX, J.c.STR.HELIX, null, 0, 0, null);
 var n = this.parser.getColumnCount ();
 for (var i = 0; i < n; ++i) {
 switch (this.fieldProperty (i)) {
@@ -382,7 +401,7 @@ if (!this.checkAllFieldsPresent (J.adapter.readers.cif.MMCifReader.structSheetRa
 this.parser.skipLoop (true);
 return false;
 }while (this.parser.getData ()) {
-var structure =  new J.adapter.smarter.Structure (-1, J.c.STR.SHEET, J.c.STR.SHEET, this.getField (0), this.parseIntStr (this.getField (7)), 1);
+var structure =  new J.adapter.smarter.Structure (-1, J.c.STR.SHEET, J.c.STR.SHEET, this.getField (0), this.parseIntStr (this.getField (7)), 1, null);
 structure.startChainID = this.vwr.getChainID (this.getField (1), true);
 structure.startSequenceNumber = this.parseIntStr (this.getField (2));
 structure.startInsertionCode = this.getField (3).charAt (0);
@@ -591,7 +610,10 @@ Clazz.overrideMethod (c$, "checkPDBModelField",
 function (modelField, currentModelNo) {
 this.fieldProperty (modelField);
 var modelNo = this.parseIntStr (this.field);
-if (modelNo != currentModelNo) {
+return (modelNo == currentModelNo ? modelNo : this.incrementModel (modelNo));
+}, "~N,~N");
+Clazz.defineMethod (c$, "incrementModel", 
+function (modelNo) {
 var isAssembly = (this.thisDataSetName != null && this.thisDataSetName.indexOf ("-assembly-") >= 0);
 if (isAssembly) {
 this.useFileModelNumbers = true;
@@ -613,8 +635,8 @@ this.nextAtomSet ();
 if (this.modelMap == null || this.asc.ac == 0) this.modelMap =  new java.util.Hashtable ();
 this.modelMap.put ("" + modelNo, Integer.$valueOf (Math.max (0, this.asc.iSet)));
 this.modelMap.put ("_" + Math.max (0, this.asc.iSet), Integer.$valueOf (modelNo));
-}}return modelNo;
-}, "~N,~N");
+}return modelNo;
+}, "~N");
 Clazz.defineMethod (c$, "setHetero", 
  function () {
 if (this.htHetero != null) {

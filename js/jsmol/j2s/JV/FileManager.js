@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JV");
-Clazz.load (["javajs.api.BytePoster", "java.util.Hashtable"], "JV.FileManager", ["java.io.BufferedInputStream", "$.BufferedReader", "java.lang.Boolean", "java.net.URL", "$.URLEncoder", "java.util.Map", "JU.AU", "$.BArray", "$.Base64", "$.LimitedLineReader", "$.Lst", "$.OC", "$.PT", "$.Rdr", "$.SB", "J.api.Interface", "J.io.FileReader", "JS.SV", "JU.Logger", "JV.JmolAsyncException", "$.Viewer"], function () {
+Clazz.load (["javajs.api.BytePoster", "java.util.Hashtable"], "JV.FileManager", ["java.io.BufferedInputStream", "$.BufferedReader", "java.lang.Boolean", "java.net.URL", "$.URLEncoder", "java.util.Map", "JU.AU", "$.BArray", "$.Base64", "$.LimitedLineReader", "$.Lst", "$.OC", "$.PT", "$.Rdr", "$.SB", "J.api.Interface", "J.io.FileReader", "JS.SV", "JU.Logger", "JV.JC", "$.JmolAsyncException", "$.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.jmb = null;
@@ -333,7 +333,7 @@ return "";
 }, "~S,~B");
 Clazz.defineMethod (c$, "getFullPathNameOrError", 
 function (filename, getStream, ret) {
-var names = this.getClassifiedName (filename, true);
+var names = this.getClassifiedName (JV.JC.fixProtocol (filename), true);
 if (names == null || names[0] == null || names.length < 2) return  Clazz.newArray (-1, [null, "cannot read file name: " + filename]);
 var name = names[0];
 var fullPath = JV.FileManager.fixDOSName (names[0]);
@@ -345,6 +345,7 @@ return errMsg;
 }, "~S,~B,~A");
 Clazz.defineMethod (c$, "getBufferedReaderOrErrorMessageFromName", 
 function (name, fullPathNameReturn, isBinary, doSpecialLoad) {
+name = JV.JC.fixProtocol (name);
 var data = this.cacheGet (name, false);
 var isBytes = JU.AU.isAB (data);
 var bytes = (isBytes ? data : null);
@@ -364,7 +365,8 @@ function (name, bytes, allowZipStream, forceInputStream, isTypeCheckOnly, doSpec
 if (doSpecialLoad && bytes == null) {
 var o = this.checkOpenSpartanFile (name, isTypeCheckOnly);
 if (o != null) return o;
-}if (bytes == null && (bytes = this.getCachedPngjBytes (name)) != null && htParams != null) htParams.put ("sourcePNGJ", Boolean.TRUE);
+}name = JV.JC.fixProtocol (name);
+if (bytes == null && (bytes = this.getCachedPngjBytes (name)) != null && htParams != null) htParams.put ("sourcePNGJ", Boolean.TRUE);
 name = name.$replace ("#_DOCACHE_", "");
 var fullName = name;
 var subFileList = null;
@@ -383,7 +385,7 @@ var doc = J.api.Interface.getInterface ("JU.CompoundDocument", this.vwr, "file")
 doc.setStream (this.vwr.getJzt (), bis, true);
 var s = doc.getAllDataFiles ("Molecule", "Input").toString ();
 return (forceInputStream ? JU.Rdr.getBIS (s.getBytes ()) : JU.Rdr.getBR (s));
-}if (JU.Rdr.isPickleS (bis)) return bis;
+}if (JU.Rdr.isPickleS (bis) || JU.Rdr.isMessagePackS (bis)) return bis;
 bis = JU.Rdr.getPngZipStream (bis, true);
 if (JU.Rdr.isZipS (bis)) {
 if (allowZipStream) return this.vwr.getJzt ().newZipInputStream (bis);
@@ -880,7 +882,7 @@ this.cacheClear ();
 return -1;
 }var data;
 if (isAdd) {
-fileName = this.vwr.resolveDatabaseFormat (fileName);
+fileName = JV.JC.fixProtocol (this.vwr.resolveDatabaseFormat (fileName));
 data = this.getFileAsBytes (fileName, null);
 if (Clazz.instanceOf (data, String)) return 0;
 this.cachePut (fileName, data);

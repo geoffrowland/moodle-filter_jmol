@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.adapter.smarter");
-Clazz.load (null, "J.adapter.smarter.Resolver", ["java.lang.Float", "java.util.StringTokenizer", "javajs.api.GenericBinaryDocument", "JU.LimitedLineReader", "$.PT", "J.adapter.smarter.AtomSetCollectionReader", "$.SmarterJmolAdapter", "J.api.Interface", "JU.Logger", "JV.FileManager", "$.JC"], function () {
+Clazz.load (null, "J.adapter.smarter.Resolver", ["java.lang.Float", "java.util.StringTokenizer", "javajs.api.GenericBinaryDocument", "JU.LimitedLineReader", "$.PT", "$.Rdr", "J.adapter.smarter.AtomSetCollectionReader", "$.SmarterJmolAdapter", "J.api.Interface", "JU.Logger", "JV.FileManager", "$.JC"], function () {
 c$ = Clazz.declareType (J.adapter.smarter, "Resolver");
 c$.getReaderClassBase = Clazz.defineMethod (c$, "getReaderClassBase", 
 function (type) {
@@ -91,7 +91,8 @@ return J.adapter.smarter.Resolver.getReader ("XmlReader", htParams);
 c$.determineAtomSetCollectionReader = Clazz.defineMethod (c$, "determineAtomSetCollectionReader", 
  function (readerOrDocument, returnLines) {
 if (Clazz.instanceOf (readerOrDocument, javajs.api.GenericBinaryDocument)) {
-return "PyMOL";
+var doc = readerOrDocument;
+return (JU.Rdr.isPickleB (doc.getMagic ()) ? "PyMOL" : JU.Rdr.isMessagePackB (doc.getMagic ()) ? "MMTF" : "binary file type not recognized");
 }var readerName;
 var llr =  new JU.LimitedLineReader (readerOrDocument, 16384);
 var leader = llr.getHeader (64).trim ();
@@ -378,7 +379,7 @@ return null;
 }, "~A");
 Clazz.defineStatics (c$,
 "classBase", "J.adapter.readers.");
-c$.readerSets = c$.prototype.readerSets =  Clazz.newArray (-1, ["aflow.", ";AFLOW;", "cif.", ";Cif;MMCif;", "molxyz.", ";Mol3D;Mol;Xyz;", "more.", ";BinaryDcd;Gromacs;Jcampdx;MdCrd;MdTop;Mol2;TlsDataOnly;", "quantum.", ";Adf;Csf;Dgrid;GamessUK;GamessUS;Gaussian;GaussianFchk;GaussianWfn;Jaguar;Molden;MopacGraphf;GenNBO;NWChem;Odyssey;Psi;Qchem;Spartan;SpartanSmol;WebMO;MO;", "pdb.", ";Pdb;Pqr;P2n;JmolData;", "pymol.", ";PyMOL;", "simple.", ";Alchemy;Ampac;Cube;FoldingXyz;GhemicalMM;HyperChem;Jme;JSON;Mopac;MopacArchive;Tinker;Input;", "xtal.", ";Abinit;Aims;Bilbao;Castep;Cgd;Crystal;Dmol;Espresso;Gulp;Jana;Magres;Shelx;Siesta;VaspOutcar;VaspPoscar;Wien2k;Xcrysden;", "xml.", ";XmlArgus;XmlCml;XmlChem3d;XmlMolpro;XmlOdyssey;XmlXsd;XmlVasp;XmlQE;"]);
+c$.readerSets = c$.prototype.readerSets =  Clazz.newArray (-1, ["aflow.", ";AFLOW;", "cif.", ";Cif;MMCif;MMTF;", "molxyz.", ";Mol3D;Mol;Xyz;", "more.", ";BinaryDcd;Gromacs;Jcampdx;MdCrd;MdTop;Mol2;TlsDataOnly;", "quantum.", ";Adf;Csf;Dgrid;GamessUK;GamessUS;Gaussian;GaussianFchk;GaussianWfn;Jaguar;Molden;MopacGraphf;GenNBO;NWChem;Odyssey;Psi;Qchem;Spartan;SpartanSmol;WebMO;MO;", "pdb.", ";Pdb;Pqr;P2n;JmolData;", "pymol.", ";PyMOL;", "simple.", ";Alchemy;Ampac;Cube;FoldingXyz;GhemicalMM;HyperChem;Jme;JSON;Mopac;MopacArchive;Tinker;Input;", "xtal.", ";Abinit;Aims;Bilbao;Castep;Cgd;Crystal;Dmol;Espresso;Gulp;Jana;Magres;Shelx;Siesta;VaspOutcar;VaspPoscar;Wien2k;Xcrysden;", "xml.", ";XmlArgus;XmlCml;XmlChem3d;XmlMolpro;XmlOdyssey;XmlXsd;XmlVasp;XmlQE;"]);
 Clazz.defineStatics (c$,
 "CML_NAMESPACE_URI", "http://www.xml-cml.org/schema",
 "LEADER_CHAR_MAX", 64,

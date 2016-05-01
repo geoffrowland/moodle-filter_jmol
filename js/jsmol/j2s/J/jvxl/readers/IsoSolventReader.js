@@ -319,7 +319,7 @@ return this.htEdges.get (i < j ? i + "_" + j : j + "_" + i);
 Clazz.defineMethod (c$, "getFaces", 
  function () {
 var bs =  new JU.BS ();
-this.validSpheres =  new JU.BS ();
+this.params.surfaceAtoms = this.validSpheres =  new JU.BS ();
 this.noFaceSpheres = JU.BSUtil.setAll (this.myAtomCount);
 for (var i = this.vEdges.size (); --i >= 0; ) {
 var edge = this.vEdges.get (i);

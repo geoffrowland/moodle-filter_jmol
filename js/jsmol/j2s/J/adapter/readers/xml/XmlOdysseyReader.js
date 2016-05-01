@@ -55,16 +55,12 @@ this.parent.setUnitCellItem (3, 90);
 this.parent.setUnitCellItem (4, 90);
 this.parent.setUnitCellItem (5, 90);
 var pt = JU.P3.new3 (-x / 2, -y / 2, -z / 2);
-this.asc.setCurrentModelInfo ("periodicOriginXyz", pt);
 var atoms = this.asc.atoms;
 for (var i = this.asc.ac; --i >= 0; ) {
 atoms[i].sub (pt);
 this.parent.setAtomCoord (atoms[i]);
 }
 if (this.parent.latticeCells[0] == 0) this.parent.latticeCells[0] = this.parent.latticeCells[1] = this.parent.latticeCells[2] = 1;
-this.parent.setSymmetryOperator ("x,y,z");
-this.parent.setSpaceGroupName ("P1");
-this.parent.applySymmetryAndSetTrajectory ();
 return;
 }if ("odyssey_simulation".equals (localName)) {
 if (this.modelName != null && this.phase != null) this.modelName += " - " + this.phase;

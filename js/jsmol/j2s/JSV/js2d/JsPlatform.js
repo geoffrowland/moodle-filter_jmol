@@ -222,4 +222,8 @@ Clazz.overrideMethod (c$, "getImageDialog",
 function (title, imageMap) {
 return null;
 }, "~S,java.util.Map");
+Clazz.overrideMethod (c$, "forceAsyncLoad", 
+function (filename) {
+return false;
+}, "~S");
 });

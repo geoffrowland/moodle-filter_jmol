@@ -63,6 +63,7 @@ Clazz.defineMethod (c$, "readAtoms",
  function () {
 this.asc.newAtomSet ();
 this.setMOData (true);
+this.dFixed = this.fFixed = false;
 this.readLines (2);
 var tokens;
 while (this.rd () != null && !this.line.startsWith (" --")) {
@@ -187,7 +188,7 @@ if (!readBetas) this.betas = this.alphas;
 Clazz.defineMethod (c$, "readQchemMolecularOrbitals", 
  function () {
 var orbitalType = this.getTokens ()[0];
-this.alphaBeta = (orbitalType.equals ("RESTRICTTED") ? "" : "A");
+this.alphaBeta = (orbitalType.equals ("RESTRICTED") ? "" : "A");
 this.readMOs (orbitalType.equals ("RESTRICTED"), this.alphas);
 if (orbitalType.equals ("ALPHA")) {
 this.discardLinesUntilContains ("BETA");

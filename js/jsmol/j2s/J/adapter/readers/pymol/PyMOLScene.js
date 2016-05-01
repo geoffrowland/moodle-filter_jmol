@@ -348,6 +348,13 @@ var bs = this.getSelectionAtoms (molecules, this.thisState,  new JU.BS ());
 this.addJmolObject (1140850689, bs, null).argb = icolor;
 }
 }, "~A");
+Clazz.defineMethod (c$, "processSelection", 
+function (selection) {
+var id = selection.get (0).toString ();
+id = "_" + (id.equals ("sele") ? id : "sele_" + id);
+var g = this.getGroup (id);
+this.getSelectionAtoms (J.adapter.readers.pymol.PyMOLScene.listAt (selection, 5), 0, g.bsAtoms);
+}, "JU.Lst");
 Clazz.defineMethod (c$, "getSelectionAtoms", 
  function (molecules, istate, bs) {
 if (molecules != null) for (var j = molecules.size (); --j >= 0; ) this.selectAllAtoms (J.adapter.readers.pymol.PyMOLScene.listAt (molecules, j), istate, bs);
@@ -486,7 +493,7 @@ this.jmolObjects.clear ();
 });
 Clazz.defineMethod (c$, "offsetObjects", 
 function () {
-for (var i = 0; i < this.jmolObjects.size (); i++) this.jmolObjects.get (i).offset (this.baseModelIndex, this.baseAtomIndex);
+for (var i = 0, n = this.jmolObjects.size (); i < n; i++) this.jmolObjects.get (i).offset (this.baseModelIndex, this.baseAtomIndex);
 
 });
 Clazz.defineMethod (c$, "getJmolObject", 
@@ -532,7 +539,7 @@ if (setting != null && setting.size () == 3) return (setting.get (2)).floatValue
 return J.adapter.readers.pymol.PyMOL.getDefaultSetting (i, this.pymolVersion);
 }, "~N");
 Clazz.defineMethod (c$, "addGroup", 
-function (object, parent, type) {
+function (object, parent, type, bsAtoms) {
 if (this.groups == null) this.groups =  new java.util.Hashtable ();
 var myGroup = this.getGroup (this.objectName);
 myGroup.object = object;
@@ -543,10 +550,11 @@ if (!myGroup.visible) {
 this.occludedObjects.put (this.objectNameID, Boolean.TRUE);
 this.htHiddenObjects.put (this.objectName, Boolean.TRUE);
 }if (parent != null && parent.length != 0) this.getGroup (parent).addList (myGroup);
+if (bsAtoms != null) myGroup.addGroupAtoms (bsAtoms);
 return myGroup;
-}, "JU.Lst,~S,~N");
+}, "JU.Lst,~S,~N,JU.BS");
 Clazz.defineMethod (c$, "getGroup", 
- function (name) {
+function (name) {
 var g = this.groups.get (name);
 if (g == null) {
 this.groups.put (name, (g =  new J.adapter.readers.pymol.PyMOLGroup (name)));

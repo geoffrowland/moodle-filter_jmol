@@ -2,7 +2,6 @@ Clazz.declarePackage ("J.shape");
 Clazz.load (["J.shape.Shape"], "J.shape.FontLineShape", null, function () {
 c$ = Clazz.decorateAsClass (function () {
 this.tickInfos = null;
-this.mad = 0;
 this.font3d = null;
 Clazz.instantialize (this, arguments);
 }, J.shape, "FontLineShape", J.shape.Shape);
@@ -28,6 +27,10 @@ this.font3d = value;
 return;
 }}, "~S,~O");
 Clazz.overrideMethod (c$, "getShapeState", 
+function () {
+return this.getShapeStateFL ();
+});
+Clazz.defineMethod (c$, "getShapeStateFL", 
 function () {
 var s = this.vwr.getFontState (this.myType, this.font3d);
 return (this.tickInfos == null ? s : this.vwr.getFontLineShapeState (s, this.myType, this.tickInfos));

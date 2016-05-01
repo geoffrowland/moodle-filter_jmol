@@ -343,7 +343,6 @@ var modelProperties = modelAuxiliaryInfo.get ("modelProperties");
 this.vwr.setStringProperty ("_fileType", modelAuxiliaryInfo.get ("fileType"));
 if (modelName == null) modelName = (this.jmolData != null && this.jmolData.indexOf (";") > 2 ? this.jmolData.substring (this.jmolData.indexOf (":") + 2, this.jmolData.indexOf (";")) : this.appendNew ? "" + (modelNumber % 1000000) : "");
 this.setModelNameNumberProperties (ipt, iTrajectory, modelName, modelNumber, modelProperties, modelAuxiliaryInfo, this.jmolData);
-if (this.ms.getInfo (ipt, "periodicOriginXyz") != null) this.ms.someModelsHaveSymmetry = true;
 }
 var m = this.ms.am[this.baseModelIndex];
 this.vwr.setSmilesString (this.ms.msInfo.get ("smilesString"));

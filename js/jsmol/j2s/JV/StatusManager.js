@@ -380,7 +380,7 @@ return (this.jsl == null ? null : this.jsl.getJSpecViewProperty (myParam == null
 }, "~S");
 Clazz.defineMethod (c$, "resizeInnerPanel", 
 function (width, height) {
-return (this.jsl == null ?  Clazz.newIntArray (-1, [width, height]) : this.jsl.resizeInnerPanel ("preferredWidthHeight " + width + " " + height + ";"));
+return (this.jsl == null || width == this.vwr.getScreenWidth () && height == this.vwr.getScreenHeight () ?  Clazz.newIntArray (-1, [width, height]) : this.jsl.resizeInnerPanel ("preferredWidthHeight " + width + " " + height + ";"));
 }, "~N,~N");
 Clazz.defineStatics (c$,
 "MAXIMUM_QUEUE_LENGTH", 16,

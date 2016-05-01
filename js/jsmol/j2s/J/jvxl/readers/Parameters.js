@@ -145,6 +145,7 @@ this.isMapped = false;
 this.showTiming = false;
 this.pointSize = 0;
 this.isModelConnected = false;
+this.surfaceAtoms = null;
 Clazz.instantialize (this, arguments);
 }, J.jvxl.readers, "Parameters");
 Clazz.prepareFields (c$, function () {

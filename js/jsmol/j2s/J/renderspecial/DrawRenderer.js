@@ -242,16 +242,15 @@ this.drawEdge (-1, -2, true, pts[0], pts[1], this.pt1i, this.pt2i);
 }, "JU.Lst");
 Clazz.defineMethod (c$, "renderXyPoint", 
  function () {
+var f = (this.g3d.isAntialiased () ? 2 : 1);
 this.pt0.setT (this.vertices[0]);
 if (this.diameter == 0) this.diameter = Clazz.floatToInt (this.width);
 if (this.pt0.z == -3.4028235E38) {
 this.pt0.x *= this.vwr.tm.width / 100;
 this.pt0.y *= this.vwr.tm.height / 100;
 this.diameter = Clazz.floatToInt (this.diameter * this.vwr.getScreenDim () / 100);
-}if (this.g3d.isAntialiased ()) this.diameter *= 2;
-this.pt0.y = this.vwr.tm.height - this.pt0.y;
-this.pt0.z = this.vwr.tm.cameraDistance;
-this.pt1i.set (Clazz.floatToInt (this.pt0.x), Clazz.floatToInt (this.pt0.y), Clazz.floatToInt (this.pt0.z));
+}this.diameter *= f;
+this.pt1i.set (Clazz.floatToInt (this.pt0.x * f), Clazz.floatToInt (this.vwr.tm.height - this.pt0.y * f), Clazz.floatToInt (this.vwr.tm.cameraDistance));
 this.g3d.fillSphereI (this.diameter, this.pt1i);
 });
 Clazz.defineMethod (c$, "renderXyArrow", 

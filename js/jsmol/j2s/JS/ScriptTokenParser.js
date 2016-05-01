@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JS");
-Clazz.load (null, "JS.ScriptTokenParser", ["java.lang.Float", "JU.Lst", "$.P3", "$.PT", "J.i18n.GT", "JS.ScriptParam", "$.T", "JU.Logger", "$.SimpleUnitCell"], function () {
+Clazz.load (null, "JS.ScriptTokenParser", ["java.lang.Boolean", "$.Float", "JU.Lst", "$.P3", "$.PT", "J.i18n.GT", "JS.ScriptParam", "$.T", "JU.Logger", "$.SimpleUnitCell"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.script = null;
@@ -20,6 +20,7 @@ this.nTokens = 0;
 this.tokCommand = 0;
 this.ptNewSetModifier = 0;
 this.isNewSet = false;
+this.haveMacro = false;
 this.logMessages = true;
 this.atokenInfix = null;
 this.itokenInfix = 0;
@@ -57,7 +58,10 @@ if (this.isNewSet) {
 if (size == 1) {
 this.atokenInfix[0] = JS.T.tv (134320141, 0, this.atokenInfix[0].value);
 this.isNewSet = false;
-}}return ((this.isNewSet || this.isSetBrace) && size < this.ptNewSetModifier + 2 ? this.commandExpected () : size == 1 || !JS.T.tokAttr (this.tokCommand, 262144) ? true : this.error (0));
+}}if ((this.isNewSet || this.isSetBrace) && size < this.ptNewSetModifier + 2) {
+if (!this.isNewSet || !this.haveMacro) return this.commandExpected ();
+this.htUserFunctions.put (this.atokenInfix[0].value, Boolean.TRUE);
+}return (size == 1 || !JS.T.tokAttr (this.tokCommand, 262144) ? true : this.error (0));
 });
 Clazz.defineMethod (c$, "compileExpression", 
 function () {
@@ -508,7 +512,7 @@ case 1086324740:
 case 1073742329:
 case 1086326789:
 case 1086324742:
-case 1747587102:
+case 1814695966:
 case 136314895:
 case 1094717454:
 case 1094713360:
@@ -561,7 +565,7 @@ done = true;
 break;
 case 1086324742:
 case 1648363544:
-case 1747587102:
+case 1814695966:
 this.getToken ();
 this.addTokenToPostfix (4, JS.T.nameOf (tok));
 break;

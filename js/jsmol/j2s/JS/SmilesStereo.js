@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JS");
-Clazz.load (null, "JS.SmilesStereo", ["java.lang.Float", "java.util.Arrays", "JU.AU", "$.Measure", "$.PT", "$.T3", "$.V3", "JS.InvalidSmilesException", "$.PolyhedronStereoSorter", "$.SmilesAromatic", "$.SmilesAtom", "$.SmilesParser", "JU.Escape", "$.Logger"], function () {
+Clazz.load (null, "JS.SmilesStereo", ["java.lang.Float", "java.util.Arrays", "JU.AU", "$.Measure", "$.PT", "$.T3", "$.V3", "JS.InvalidSmilesException", "$.PolyhedronStereoSorter", "$.SmilesAtom", "$.SmilesParser", "$.SmilesSearch", "JU.Escape", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.chiralClass = -2147483648;
 this.chiralOrder = -2147483648;
@@ -15,7 +15,7 @@ Clazz.instantialize (this, arguments);
 }, JS, "SmilesStereo");
 c$.getChiralityClass = Clazz.defineMethod (c$, "getChiralityClass", 
  function (xx) {
-return Clazz.doubleToInt (("0;PH;AL;33;TH;TP;OH;77;SP;".indexOf (xx) + 1) / 3);
+return Clazz.doubleToInt (("0;PH;AL;33;TH;TB;OH;77;SP;".indexOf (xx) + 1) / 3);
 }, "~S");
 c$.newStereo = Clazz.defineMethod (c$, "newStereo", 
 function (stereo) {
@@ -94,7 +94,7 @@ this.chiralOrder = chiralOrder;
 }, "~N");
 Clazz.defineMethod (c$, "fixStereo", 
 function (sAtom) {
-var nBonds = Math.max (sAtom.missingHydrogenCount, 0) + sAtom.getBondCount ();
+var nBonds = Math.max (sAtom.explicitHydrogenCount, 0) + sAtom.getBondCount ();
 switch (this.chiralClass) {
 case 0:
 switch (nBonds) {
@@ -118,14 +118,63 @@ case 1:
 if (nBonds != 0 && nBonds != this.atomCount) sAtom.stereo = null;
 break;
 case 2:
-case 6:
 case 4:
-case 5:
 if (nBonds != this.chiralClass) sAtom.stereo = null;
+break;
+case 6:
+case 5:
+if (nBonds != this.chiralClass || !this.normalizeClass (sAtom.bonds)) sAtom.stereo = null;
 break;
 }
 if (sAtom.stereo == null) throw  new JS.InvalidSmilesException ("Incorrect number of bonds for stereochemistry descriptor");
 }, "JS.SmilesAtom");
+Clazz.defineMethod (c$, "normalizeClass", 
+ function (bonds) {
+if (this.chiralOrder < 3) return true;
+var pt = (this.chiralOrder - 1) * 3;
+var perm;
+var ilast;
+switch (this.chiralClass) {
+case 5:
+if (this.chiralOrder > 20) return false;
+perm = JS.SmilesStereo.PERM_TB;
+ilast = 4;
+break;
+case 6:
+if (this.chiralOrder > 30) return false;
+perm = JS.SmilesStereo.PERM_OCT;
+ilast = 5;
+break;
+default:
+return true;
+}
+var a = perm[pt];
+var p = Math.abs (perm[pt + 1]);
+var isAtAt = (perm[pt + 1] < 0);
+var z = perm[pt + 2];
+var b;
+if (a != 0) {
+b = bonds[a];
+for (var i = a; i > 0; --i) bonds[i] = bonds[i - 1];
+
+bonds[0] = b;
+}if (z != ilast) {
+b = bonds[z];
+for (var i = z; i < ilast; i++) bonds[i] = bonds[i + 1];
+
+bonds[ilast] = b;
+}switch (p) {
+case 1:
+break;
+default:
+var q = p % (ilast - 1) + 1;
+b = bonds[q];
+bonds[q] = bonds[p];
+bonds[p] = b;
+}
+this.chiralOrder = (isAtAt ? 2 : 1);
+return true;
+}, "~A");
 Clazz.defineMethod (c$, "setSmilesCoordinates", 
  function (atom, sAtom, sAtom2, cAtoms) {
 if (atom.stereo == null) return false;
@@ -256,7 +305,7 @@ this.search = smilesSearch;
 this.jmolAtoms = this.search.jmolAtoms;
 var isSmilesFind = smilesSearch.isSmilesFind;
 var invertStereochemistry = smilesSearch.invertStereochemistry;
-if (JU.Logger.debugging) JU.Logger.debug ("checking sstereochemistry...");
+if (JU.Logger.debugging) JU.Logger.debug ("checking stereochemistry...");
 for (var i = 0; i < smilesSearch.ac; i++) {
 var sAtom = smilesSearch.patternAtoms[i];
 if (sAtom.stereo == null) continue;
@@ -273,7 +322,7 @@ var sAtom0 = null;
 var jn;
 var atom0 = sAtom.getMatchingAtom ();
 if (isSmilesFind) sAtom0 = atom0;
-var nH = Math.max (sAtom.missingHydrogenCount, 0);
+var nH = Math.max (sAtom.explicitHydrogenCount, 0);
 var order = sAtom.stereo.chiralOrder;
 var chiralClass = sAtom.stereo.chiralClass;
 if (isSmilesFind && sAtom0.getChiralClass () != chiralClass) return false;
@@ -420,7 +469,7 @@ return (JS.SmilesStereo.checkStereochemistryAll (false, atom0, chiralClass, 1, a
 case 2:
 case 4:
 if (atom3 == null || atom4 == null) return "";
-var d = JS.SmilesAromatic.getNormalThroughPoints (atom1, atom2, atom3, v.vTemp, v.vA, v.vB);
+var d = JS.SmilesSearch.getNormalThroughPoints (atom1, atom2, atom3, v.vTemp, v.vA, v.vB);
 if (Math.abs (JS.SmilesStereo.distanceToPlane (v.vTemp, d, atom4)) < 0.2) {
 chiralClass = 8;
 if (JS.SmilesStereo.checkStereochemistryAll (false, atom0, chiralClass, 1, atom1, atom2, atom3, atom4, atom5, atom6, v)) return "@SP1";
@@ -432,7 +481,7 @@ return (JS.SmilesStereo.checkStereochemistryAll (false, atom0, chiralClass, 1, a
 return "";
 }, "JU.Node,~A,~N,JS.VTemp");
 c$.checkStereochemistryAll = Clazz.defineMethod (c$, "checkStereochemistryAll", 
-function (isNot, atom0, chiralClass, order, atom1, atom2, atom3, atom4, atom5, atom6, v) {
+ function (isNot, atom0, chiralClass, order, atom1, atom2, atom3, atom4, atom5, atom6, v) {
 switch (chiralClass) {
 default:
 return true;
@@ -444,16 +493,17 @@ case 2:
 case 4:
 return (isNot == (JS.SmilesStereo.getHandedness (atom2, atom3, atom4, atom1, v) != order));
 case 5:
-return (isNot == (!JS.SmilesStereo.isDiaxial (atom0, atom0, atom5, atom1, v, -0.95) || JS.SmilesStereo.getHandedness (atom2, atom3, atom4, atom1, v) != order));
+if (!JS.SmilesStereo.isDiaxial (atom0, atom0, atom5, atom1, v, -0.95)) return false;
+return (isNot == (JS.SmilesStereo.getHandedness (atom2, atom3, atom4, atom1, v) != order));
 case 6:
-if (isNot != (!JS.SmilesStereo.isDiaxial (atom0, atom0, atom6, atom1, v, -0.95))) return false;
+if (!JS.SmilesStereo.isDiaxial (atom0, atom0, atom6, atom1, v, -0.95) || !JS.SmilesStereo.isDiaxial (atom0, atom0, atom2, atom4, v, -0.95) || !JS.SmilesStereo.isDiaxial (atom0, atom0, atom3, atom5, v, -0.95)) return false;
 JS.SmilesStereo.getPlaneNormals (atom2, atom3, atom4, atom5, v);
-if (isNot != (v.vNorm1.dot (v.vNorm2) < 0 || v.vNorm2.dot (v.vNorm3) < 0)) return false;
-v.vNorm2.sub2 (atom0, atom1);
-return (isNot == ((v.vNorm1.dot (v.vNorm2) < 0 ? 2 : 1) == order));
+if (v.vNorm2.dot (v.vNorm3) < 0 || v.vNorm3.dot (v.vNorm4) < 0) return false;
+v.vNorm3.sub2 (atom0, atom1);
+return (isNot == ((v.vNorm2.dot (v.vNorm3) < 0 ? 2 : 1) == order));
 case 8:
 JS.SmilesStereo.getPlaneNormals (atom1, atom2, atom3, atom4, v);
-return (v.vNorm1.dot (v.vNorm2) < 0 ? isNot == (order != 3) : v.vNorm2.dot (v.vNorm3) < 0 ? isNot == (order != 2) : isNot == (order != 1));
+return (v.vNorm2.dot (v.vNorm3) < 0 ? isNot == (order != 3) : v.vNorm3.dot (v.vNorm4) < 0 ? isNot == (order != 2) : isNot == (order != 1));
 }
 }, "~B,JU.Node,~N,~N,JU.Node,JU.Node,JU.Node,JU.Node,JU.Node,JU.Node,JS.VTemp");
 c$.isDiaxial = Clazz.defineMethod (c$, "isDiaxial", 
@@ -465,15 +515,15 @@ v.vB.normalize ();
 return (v.vA.dot (v.vB) < f);
 }, "JU.Node,JU.Node,JU.Node,JU.Node,JS.VTemp,~N");
 c$.getHandedness = Clazz.defineMethod (c$, "getHandedness", 
- function (a, b, c, pt, v) {
-var d = JS.SmilesAromatic.getNormalThroughPoints (a, b, c, v.vTemp, v.vA, v.vB);
+function (a, b, c, pt, v) {
+var d = JS.SmilesSearch.getNormalThroughPoints (a, b, c, v.vTemp, v.vA, v.vB);
 return (JS.SmilesStereo.distanceToPlane (v.vTemp, d, pt) > 0 ? 1 : 2);
 }, "JU.Node,JU.Node,JU.Node,JU.Node,JS.VTemp");
 c$.getPlaneNormals = Clazz.defineMethod (c$, "getPlaneNormals", 
  function (atom1, atom2, atom3, atom4, v) {
-JS.SmilesAromatic.getNormalThroughPoints (atom1, atom2, atom3, v.vNorm1, v.vTemp1, v.vTemp2);
-JS.SmilesAromatic.getNormalThroughPoints (atom2, atom3, atom4, v.vNorm2, v.vTemp1, v.vTemp2);
-JS.SmilesAromatic.getNormalThroughPoints (atom3, atom4, atom1, v.vNorm3, v.vTemp1, v.vTemp2);
+JS.SmilesSearch.getNormalThroughPoints (atom1, atom2, atom3, v.vNorm2, v.vTemp1, v.vTemp2);
+JS.SmilesSearch.getNormalThroughPoints (atom2, atom3, atom4, v.vNorm3, v.vTemp1, v.vTemp2);
+JS.SmilesSearch.getNormalThroughPoints (atom3, atom4, atom1, v.vNorm4, v.vTemp1, v.vTemp2);
 }, "JU.Node,JU.Node,JU.Node,JU.Node,JS.VTemp");
 c$.distanceToPlane = Clazz.defineMethod (c$, "distanceToPlane", 
 function (norm, w, pt) {
@@ -551,5 +601,7 @@ Clazz.defineStatics (c$,
 "STEREOCHEMISTRY_TRIGONAL_PYRAMIDAL", 3,
 "STEREOCHEMISTRY_ALLENE", 2,
 "STEREOCHEMISTRY_POLYHEDRAL", 1,
-"STEREOCHEMISTRY_DEFAULT", 0);
+"STEREOCHEMISTRY_DEFAULT", 0,
+"PERM_TB",  Clazz.newIntArray (-1, [0, 1, 4, 0, -1, 4, 0, 1, 3, 0, -1, 3, 0, 1, 2, 0, -1, 2, 0, 1, 1, 0, -1, 1, 1, 1, 4, 1, 1, 3, 1, -1, 4, 1, -1, 3, 1, 1, 2, 1, -1, 2, 2, 1, 4, 2, 1, 3, 3, 1, 4, 3, -1, 4, 2, -1, 3, 2, -1, 4]),
+"PERM_OCT",  Clazz.newIntArray (-1, [0, 1, 5, 0, -1, 5, 0, 1, 4, 0, 3, 5, 0, 3, 4, 0, 1, 3, 0, 3, 3, 0, -4, 5, 0, -4, 4, 0, 4, 5, 0, 4, 4, 0, -4, 3, 0, 4, 3, 0, -3, 5, 0, -3, 4, 0, -1, 4, 0, -3, 3, 0, -1, 3, 0, 1, 2, 0, 3, 2, 0, -4, 2, 0, 4, 2, 0, -3, 2, 0, -1, 2, 0, 1, 1, 0, 3, 1, 0, -4, 1, 0, 4, 1, 0, -3, 1, 0, -1, 1]));
 });

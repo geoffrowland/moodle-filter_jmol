@@ -63,9 +63,9 @@
 ){
 var $t$;
 //var c$;
-Jmol.___JmolDate="$Date: 2016-03-03 16:55:43 -0600 (Thu, 03 Mar 2016) $"
+Jmol.___JmolDate="$Date: 2016-04-22 10:03:13 -0500 (Fri, 22 Apr 2016) $"
 Jmol.___fullJmolProperties="src/org/jmol/viewer/Jmol.properties"
-Jmol.___JmolVersion="14.4.3_2016.03.03b"
+Jmol.___JmolVersion="14.4.4_2016.04.22"
 // JSmolJavaExt.js
  
 
@@ -75,6 +75,7 @@ Jmol.___JmolVersion="14.4.3_2016.03.03b"
 // (local scope) Clazz_xxx, allowing them to be further compressed using
 // Google Closure Compiler in that same ANT task.
 
+// BH 3/9/2016 6:25:08 PM at least allow Error() by itself to work as before (inchi.js uses this)
 // BH 12/21/2015 1:31:41 PM fixing String.instantialize for generic typed array
 // BH 9/19/2015 11:05:45 PM Float.isInfinite(), Float.isNaN(), Double.isInfinite(), Double.isNaN() all not implemented
 // BH 5/31/2015 5:53:04 PM Number.compareTo added
@@ -1984,7 +1985,26 @@ buf.append(lineNum);
 }}return buf.toString();
 });
 TypeError.prototype.getMessage || (TypeError.prototype.getMessage = function(){ return (this.message || this.toString()) + (this.getStackTrace ? this.getStackTrace() : Clazz_getStackTrace())});
-c$=Clazz_declareType(java.lang,"Error",Throwable);
+
+
+Clazz_Error = Error;
+
+Clazz_declareTypeError = function (prefix, name, clazzParent, interfacez, 
+		parentClazzInstance, _declareType) {
+	var f = function () {
+		Clazz_instantialize (this, arguments);
+    return Clazz_Error();
+	};
+	return Clazz_decorateAsClass (f, prefix, name, clazzParent, interfacez, 
+			parentClazzInstance);
+};
+
+// at least allow Error() by itself to work as before
+Clazz._Error || (Clazz._Error = Error);
+Clazz_decorateAsClass (function (){Clazz_instantialize(this, arguments);return Clazz._Error();}, java.lang, "Error", Throwable);
+
+//c$=Clazz_declareTypeError(java.lang,"Error",Throwable);
+
 
 c$=Clazz_declareType(java.lang,"LinkageError",Error);
 
@@ -12741,7 +12761,7 @@ function () {
 return (this.m00 * this.m11 - this.m01 * this.m10) * (this.m22 * this.m33 - this.m23 * this.m32) - (this.m00 * this.m12 - this.m02 * this.m10) * (this.m21 * this.m33 - this.m23 * this.m31) + (this.m00 * this.m13 - this.m03 * this.m10) * (this.m21 * this.m32 - this.m22 * this.m31) + (this.m01 * this.m12 - this.m02 * this.m11) * (this.m20 * this.m33 - this.m23 * this.m30) - (this.m01 * this.m13 - this.m03 * this.m11) * (this.m20 * this.m32 - this.m22 * this.m30) + (this.m02 * this.m13 - this.m03 * this.m12) * (this.m20 * this.m31 - this.m21 * this.m30);
 });
 Clazz_defineMethod (c$, "scale", 
- function (scalar) {
+function (scalar) {
 this.mul33 (scalar);
 this.m03 *= scalar;
 this.m13 *= scalar;
@@ -13614,9 +13634,7 @@ s = info;
 {
 if (typeof s == "undefined") s = "null"
 }if (s.indexOf ("{\"") != 0) {
-s = JU.PT.rep (s, "\"", "\\\"");
-s = JU.PT.rep (s, "\n", "\\n");
-s = "\"" + s + "\"";
+s = JU.PT.esc (s);
 }break;
 }if (Clazz_instanceOf (info, javajs.api.JSONEncodable)) {
 if ((s = (info).toJSON ()) == null) s = "null";
@@ -14170,8 +14188,7 @@ this.s += data.toString();
 Clazz_defineMethod (c$, "appendCB", 
 function (cb, off, len) {
 {
-for (var i = len,j=off; --i >= 0;)
-this.s += cb[j++];
+this.s += cb.slice(off,off+len).join("");
 }}, "~A,~N,~N");
 Clazz_overrideMethod (c$, "toString", 
 function () {
@@ -26796,6 +26813,10 @@ Clazz_overrideMethod (c$, "getImageDialog",
 function (title, imageMap) {
 return null;
 }, "~S,java.util.Map");
+Clazz_overrideMethod (c$, "forceAsyncLoad", 
+function (filename) {
+return false;
+}, "~S");
 });
 Clazz_declarePackage ("JSV.js2d");
 Clazz_load (["JSV.api.JSVMainPanel"], "JSV.js2d.JsMainPanel", null, function () {

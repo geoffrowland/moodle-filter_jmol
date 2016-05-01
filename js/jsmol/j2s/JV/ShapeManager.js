@@ -79,7 +79,7 @@ if (this.shapes != null) this.shapes[shapeID] = null;
 }, "~N");
 Clazz.defineMethod (c$, "resetShapes", 
 function () {
-if (!this.vwr.noGraphicsAllowed) this.shapes =  new Array (37);
+this.shapes =  new Array (37);
 });
 Clazz.defineMethod (c$, "setShapeSizeBs", 
 function (shapeID, size, rd, bsSelected) {

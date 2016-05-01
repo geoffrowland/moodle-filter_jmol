@@ -140,7 +140,7 @@ i = this.iToken;
 if (isFunctionOfX && this.getToken (i++).tok != 1073742339) this.invArg ();
 var bsSelect =  new JU.BS ();
 var bsX =  new JU.BS ();
-var sout = (isFor ?  new Array (JU.BSUtil.cardinalityOf (bsAtoms)) : null);
+var sout = (isFor ?  new Array (bsAtoms.cardinality ()) : null);
 if (localVars == null) localVars =  new java.util.Hashtable ();
 bsX.set (0);
 var t = JS.SV.newV (10, bsX);
@@ -451,6 +451,7 @@ var ignoreSubset = (pcStart < 0);
 var isInMath = false;
 var nExpress = 0;
 var ac = this.vwr.ms.ac;
+var ptWithin = -10;
 if (ignoreSubset) pcStart = -pcStart;
 ignoreSubset = new Boolean (ignoreSubset | this.chk).valueOf ();
 if (pcStop == 0 && code.length > pcStart) pcStop = pcStart + 1;
@@ -517,7 +518,7 @@ var bs = JU.BS.unescape (s);
 if (bs != null) {
 rpn.addXBs (bs);
 break;
-}} else if (s.indexOf ("|") >= 0) {
+}} else if (s.indexOf ("|") >= 0 && ptWithin != pc - 4) {
 rpn.addXBs (this.vwr.ms.getAtoms (1086324744, s));
 break;
 }rpn.addX (JS.SV.newT (instruction));
@@ -525,10 +526,11 @@ if (s.equals ("hkl")) {
 rpn.addX (JS.SV.newV (9, this.hklParameter (pc + 2)));
 pc = this.iToken;
 }break;
+case 134217759:
+ptWithin = pc;
 case 134218757:
 case 134218756:
 case 1237320707:
-case 134217759:
 case 134353926:
 case 134217736:
 case 268435504:
@@ -592,7 +594,7 @@ case 1073742360:
 case 1073742355:
 case 2097196:
 case 1088421903:
-case 1747587102:
+case 1814695966:
 rpn.addXBs (this.getAtomBits (instruction.tok, value));
 break;
 case 1073742358:
@@ -917,7 +919,7 @@ var cellRange = null;
 var nOps = 0;
 var bs;
 switch (tokWhat) {
-case 1296041474:
+case 1296041986:
 switch (bitsetComparator) {
 case 268435857:
 case 268435856:
@@ -963,7 +965,7 @@ break;
 case 1094713368:
 case 1094717448:
 return JU.BSUtil.copy (this.vwr.ms.getConformation (-1, ival - 1, false, null));
-case 1296041474:
+case 1296041986:
 propertyBitSet = atom.atomSymmetry;
 if (propertyBitSet == null) continue;
 if (atom.mi != iModel) {
@@ -1559,7 +1561,7 @@ break;
 }
 break;
 case 10:
-bs = JS.SV.getBitSet (t, false);
+bs = JS.SV.getBitSet (t, true);
 var nAtoms = this.vwr.ms.ac;
 var nbs = bs.cardinality ();
 propertyName = sel.asString ();
@@ -1606,7 +1608,7 @@ this.setStringProperty (key, vv);
 }, "~N,~N,~S,~B");
 Clazz.defineMethod (c$, "setBitsetProperty", 
  function (bs, tok, iValue, fValue, tokenValue) {
-if (this.chk || JU.BSUtil.cardinalityOf (bs) == 0) return;
+if (this.chk || bs.cardinality () == 0) return;
 var list = null;
 var sValue = null;
 var fvalues = null;

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shape");
-Clazz.load (["J.shape.TextShape"], "J.shape.Echo", ["JU.PT", "JM.Text", "JU.C"], function () {
+Clazz.load (["J.shape.TextShape"], "J.shape.Echo", ["java.util.Hashtable", "JU.Lst", "$.PT", "JM.Text", "JU.C"], function () {
 c$ = Clazz.declareType (J.shape, "Echo", J.shape.TextShape);
 Clazz.overrideMethod (c$, "initShape", 
 function () {
@@ -130,6 +130,25 @@ return false;
 Clazz.overrideMethod (c$, "getShapeState", 
 function () {
 return this.vwr.getShapeState (this);
+});
+Clazz.overrideMethod (c$, "getShapeDetail", 
+function () {
+var lst =  new JU.Lst ();
+var key =  new java.util.Hashtable ();
+for (var e, $e = this.objects.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) {
+var info =  new java.util.Hashtable ();
+var t = e.getValue ();
+var name = e.getKey ();
+info.put ("name", name);
+var o = t.image;
+if (o != null) {
+info.put ("imageFile", t.text);
+info.put ("imageWidth", Integer.$valueOf (this.vwr.apiPlatform.getImageWidth (o)));
+info.put ("imageHeight", Integer.$valueOf (this.vwr.apiPlatform.getImageHeight (o)));
+key.put (name, info);
+}}
+lst.addLast (key);
+return lst;
 });
 Clazz.defineStatics (c$,
 "FONTFACE", "Serif",

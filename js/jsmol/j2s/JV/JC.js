@@ -1,6 +1,11 @@
 Clazz.declarePackage ("JV");
-Clazz.load (["JU.SB", "$.V3", "JU.Elements"], "JV.JC", null, function () {
+Clazz.load (["JU.SB", "$.V3", "JU.Elements"], "JV.JC", ["JU.PT"], function () {
 c$ = Clazz.declareType (JV, "JC");
+c$.fixProtocol = Clazz.defineMethod (c$, "fixProtocol", 
+function (name) {
+if (name == null) return name;
+return (name.indexOf ("http://www.rcsb.org/pdb/files/") == 0 && name.indexOf ("/ligand/") < 0 ? "http://files.rcsb.org/view/" + name.substring (30) : (name.indexOf ("http://pubchem") == 0 || name.indexOf ("http://cactus") == 0 || name.indexOf ("http://www.materialsproject") == 0) ? "https://" + name.substring (7) : name);
+}, "~S");
 c$.getMacroList = Clazz.defineMethod (c$, "getMacroList", 
 function () {
 var s =  new JU.SB ();
@@ -96,7 +101,7 @@ case 1611272194:
 return 34;
 case 1678381065:
 return 32;
-case 1747587102:
+case 1814695966:
 return 33;
 case 544771:
 return 35;
@@ -168,6 +173,10 @@ c$.getHorizAlignmentName = Clazz.defineMethod (c$, "getHorizAlignmentName",
 function (align) {
 return JV.JC.hAlignNames[(align >> 2) & 3];
 }, "~N");
+c$.isSmilesCanonical = Clazz.defineMethod (c$, "isSmilesCanonical", 
+function (options) {
+return (options != null && JU.PT.isOneOf (options.toLowerCase (), ";/cactvs///;/cactus///;/nci///;/canonical///;"));
+}, "~S");
 c$.getServiceCommand = Clazz.defineMethod (c$, "getServiceCommand", 
 function (script) {
 return (script.length < 7 ? -1 : ("JSPECVIPEAKS: SELECT:JSVSTR:H1SIMULNBO:MODNBO:RUNNBO:VIENBO:SEANBO:CON").indexOf (script.substring (0, 7).toUpperCase ()));
@@ -183,7 +192,7 @@ if (type.indexOf ("t") > 0) i |= 16;
 }, "~S");
 Clazz.defineStatics (c$,
 "PDB_ANNOTATIONS", ";dssr;rna3d;dom;val;",
-"databases",  Clazz.newArray (-1, ["dssr", "http://x3dna.bio.columbia.edu/dssr/report.php?id=%FILE&opts=--json=ebi-no-str-id", "dssrModel", "http://x3dna.bio.columbia.edu/dssr/report.php?POST?opts=--json=ebi-no-str-id&model=", "ligand", "http://www.rcsb.org/pdb/files/ligand/%FILE.cif", "mp", "http://www.materialsproject.org/materials/%FILE/cif", "nci", "http://cactus.nci.nih.gov/chemical/structure/%FILE", "cod", "http://www.crystallography.net/cod/cif/%c1/%c2%c3/%c4%c5/%FILE.cif", "nmr", "http://www.nmrdb.org/new_predictor?POST?molfile=", "nmrdb", "http://www.nmrdb.org/service/predictor?POST?molfile=", "pdb", "http://ftp.wwpdb.org/pub/pdb/data/structures/divided/pdb/%c2%c3/pdb%file.ent.gz", "pdb0", "http://www.rcsb.org/pdb/files/%FILE.pdb.gz", "pdbe", "http://www.ebi.ac.uk/pdbe/entry-files/download/%FILE.cif", "pdbe2", "http://www.ebi.ac.uk/pdbe/static/entry/%FILE_updated.cif", "pubchem", "http://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/%FILE/SDF?record_type=3d", "map", "http://www.ebi.ac.uk/pdbe/api/%TYPE/%FILE?pretty=false&metadata=true", "rna3d", "http://rna.bgsu.edu/rna3dhub/%TYPE/download/%FILE", "aflow", "http://aflowlib.mems.duke.edu/users/jmolers/binary_new/%FILE.aflow_binary", "ams", "'http://rruff.geo.arizona.edu/AMS/viewJmol.php?'+(0+'%file'==0? 'mineral':('%file'.length==7? 'amcsd':'id'))+'=%file&action=showcif#_DOCACHE_'", "pdbemap", "http://wwwdev.ebi.ac.uk/pdbe/coordinates/files/%file.ccp4", "pdbemapdiff", "http://wwwdev.ebi.ac.uk/pdbe/coordinates/files/%file_diff.ccp4"]),
+"databases",  Clazz.newArray (-1, ["dssr", "http://x3dna.bio.columbia.edu/dssr/report.php?id=%FILE&opts=--json=ebi", "dssrModel", "http://x3dna.bio.columbia.edu/dssr/report.php?POST?opts=--json=ebi&model=", "iucr", "http://scripts.iucr.org/cgi-bin/sendcif_yard?%FILE", "ligand", "http://www.rcsb.org/pdb/files/ligand/%FILE.cif", "mp", "https://www.materialsproject.org/materials/mp-%FILE/cif#_DOCACHE_", "nci", "https://cactus.nci.nih.gov/chemical/structure/%FILE", "cod", "http://www.crystallography.net/cod/cif/%c1/%c2%c3/%c4%c5/%FILE.cif", "nmr", "http://www.nmrdb.org/new_predictor?POST?molfile=", "nmrdb", "http://www.nmrdb.org/service/predictor?POST?molfile=", "mmtf", "http://mmtf.rcsb.org/full/%FILE", "pdb", "http://files.rcsb.org/view/%FILE.pdb", "pdb0", "http://files.rcsb.org/view/%FILE.pdb", "pdbe", "http://www.ebi.ac.uk/pdbe/entry-files/download/%FILE.cif", "pdbe2", "http://www.ebi.ac.uk/pdbe/static/entry/%FILE_updated.cif", "pubchem", "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/%FILE/SDF?record_type=3d", "map", "http://www.ebi.ac.uk/pdbe/api/%TYPE/%FILE?pretty=false&metadata=true", "rna3d", "http://rna.bgsu.edu/rna3dhub/%TYPE/download/%FILE", "aflow", "http://aflowlib.mems.duke.edu/users/jmolers/binary_new/%FILE.aflow_binary", "magndata", "http://webbdcrista1.ehu.es/magndata/mcif/%FILE.mcif", "ams", "'http://rruff.geo.arizona.edu/AMS/viewJmol.php?'+(0+'%file'==0? 'mineral':('%file'.length==7? 'amcsd':'id'))+'=%file&action=showcif#_DOCACHE_'", "pdbemap", "http://wwwdev.ebi.ac.uk/pdbe/coordinates/files/%file.ccp4", "pdbemapdiff", "http://wwwdev.ebi.ac.uk/pdbe/coordinates/files/%file_diff.ccp4"]),
 "macros",  Clazz.newArray (-1, ["aflow", "http://aflowlib.mems.duke.edu/users/jmolers/jmol/spt/AFLOW.spt"]),
 "copyright", "(C) 2015 Jmol Development",
 "version", null,
@@ -461,21 +470,21 @@ c$.IMAGE_OR_SCENE = c$.prototype.IMAGE_OR_SCENE = ";jpg;jpeg;jpg64;jpeg64;gif;gi
 "hAlignNames",  Clazz.newArray (-1, ["", "left", "center", "right"]),
 "SMILES_TYPE_SMILES", 0x1,
 "SMILES_TYPE_SMARTS", 0x2,
-"SMILES_MATCH_ALL", 0x10,
-"SMILES_MATCH_ONE", 0x20,
-"SMILES_RETURN_FIRST", 0x40,
-"SMILES_EXPLICIT_H", 0x00100,
-"SMILES_TOPOLOGY", 0x00200,
-"SMILES_NOAROMATIC", 0x00400,
-"SMILES_NOSTEREO", 0x00800,
-"SMILES_POLYHEDRAL", 0x01000,
-"SMILES_BIO", 0x10000,
-"SMILES_BIO_ALLOW_UNMATCHED_RINGS", 0x11000,
-"SMILES_BIO_COV_CROSSLINK", 0x12000,
-"SMILES_BIO_HH_CROSSLINK", 0x16000,
-"SMILES_BIO_COMMENT", 0x30000,
-"SMILES_BIO_NOCOMMENTS", 0x50000,
-"SMILES_ATOM_COMMENT", 0x80000,
+"SMILES_TYPE_OPENSMILES", 0x5,
+"SMILES_TYPE_OPENSMARTS", 0x7,
+"SMILES_MATCH_ONCE_ONLY", 0x20,
+"SMILES_GEN_EXPLICIT_H", 0x00001000,
+"SMILES_GEN_TOPOLOGY", 0x00002000,
+"SMILES_GEN_NOAROMATIC", 0x00004000,
+"SMILES_GEN_NOSTEREO", 0x00008000,
+"SMILES_GEN_POLYHEDRAL", 0x00010000,
+"SMILES_GEN_ATOM_COMMENT", 0x00020000,
+"SMILES_GEN_BIO", 0x00100000,
+"SMILES_GEN_BIO_ALLOW_UNMATCHED_RINGS", 0x00300000,
+"SMILES_GEN_BIO_COV_CROSSLINK", 0x00500000,
+"SMILES_GEN_BIO_HH_CROSSLINK", 0x00900000,
+"SMILES_GEN_BIO_COMMENT", 0x01100000,
+"SMILES_GEN_BIO_NOCOMMENTS", 0x02100000,
 "JSV_NOT", -1,
 "JSV_SEND_JDXMOL", 0,
 "JSV_SETPEAKS", 7,

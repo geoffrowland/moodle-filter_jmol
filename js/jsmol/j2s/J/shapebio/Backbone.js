@@ -61,7 +61,7 @@ if (useThisBsSelected) this.bsSelected = null;
 Clazz.defineMethod (c$, "addDisplayedBackbone", 
 function (a, isVisible) {
 a.nBackbonesDisplayed += (isVisible ? 1 : -1);
-this.setShapeVisibility (a, isVisible);
+a.setShapeVisibility (this.vf, isVisible);
 }, "JM.Atom,~B");
 Clazz.overrideMethod (c$, "setAtomClickability", 
 function () {

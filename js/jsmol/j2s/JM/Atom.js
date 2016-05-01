@@ -283,6 +283,10 @@ Clazz.overrideMethod (c$, "getImplicitHydrogenCount",
 function () {
 return this.group.chain.model.ms.getImplicitHydrogenCount (this, false);
 });
+Clazz.overrideMethod (c$, "getMissingHydrogenCount", 
+function () {
+return 0;
+});
 Clazz.defineMethod (c$, "getTargetValence", 
 function () {
 switch (this.getElementNumber ()) {
@@ -494,7 +498,7 @@ c.toFractional (ptTemp2, true);
 c.toUnitCell (ptTemp1, null);
 c.toUnitCell (ptTemp2, null);
 }return ptTemp1.distance (ptTemp2);
-}, "JU.P3,JU.P3,JU.P3");
+}, "JU.T3,JU.T3,JU.T3");
 Clazz.defineMethod (c$, "setFractionalCoord", 
 function (tok, fValue, asAbsolute) {
 var c = this.getUnitCell ();
@@ -758,7 +762,7 @@ case 1237320707:
 return this.group.getProteinStructureSubType ().getId ();
 case 1094713367:
 return this.group.getStrucNo ();
-case 1296041474:
+case 1296041986:
 return this.getSymOp ();
 case 1094715417:
 return this.getValence ();
@@ -1015,6 +1019,21 @@ function (flags) {
 var m = this.group.getModel ();
 return (m.isBioModel ? (m).getUnitID (this, flags) : "");
 }, "~N");
+Clazz.overrideMethod (c$, "getFloatProperty", 
+function (property) {
+var data = this.group.chain.model.ms.vwr.getDataObj (property, null, 1);
+var f = 0;
+if (data != null) {
+try {
+f = (data)[this.i];
+} catch (e) {
+if (Clazz.exceptionOf (e, Exception)) {
+} else {
+throw e;
+}
+}
+}return f;
+}, "~S");
 Clazz.defineStatics (c$,
 "ATOM_INFRAME", 1,
 "ATOM_VISSET", 2,

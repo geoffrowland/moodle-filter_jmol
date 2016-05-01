@@ -1522,12 +1522,14 @@ case 2097172:
 case 2097174:
 case 2097184:
 return (this.haveBioModels ? this.bioModelset.getAtomBitsBS (tokType, null, bs) : bs);
-case 1612709894:
-for (var i = this.ac; --i >= 0; ) if (this.at[i].isHetero ()) bs.set (i);
+case 1612709900:
+iSpec = 1;
+case 1094715402:
+for (var i = this.ac; --i >= 0; ) if (this.at[i].getElementNumber () == iSpec) bs.set (i);
 
 return bs;
-case 1612709900:
-for (var i = this.ac; --i >= 0; ) if (this.at[i].getElementNumber () == 1) bs.set (i);
+case 1612709894:
+for (var i = this.ac; --i >= 0; ) if (this.at[i].isHetero ()) bs.set (i);
 
 return bs;
 case 1073741824:
@@ -1589,7 +1591,7 @@ case 5:
 for (var i = this.ac; --i >= 0; ) if (this.at[i].group.getInsCode () == iSpec) bs.set (i);
 
 return bs;
-case 1296041474:
+case 1296041986:
 for (var i = this.ac; --i >= 0; ) if (this.at[i].getSymOp () == iSpec) bs.set (i);
 
 return bs;
@@ -1950,6 +1952,12 @@ for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) if (this.at[i
 
 return bs;
 }, "~N");
+Clazz.defineMethod (c$, "generateCrystalClass", 
+function (atomIndex, pt) {
+var sym = (atomIndex < 0 || atomIndex >= this.ac ? null : this.at[atomIndex].getUnitCell ());
+var isRandom = (pt != null && Float.isNaN (pt.x));
+return (sym == null ?  new JU.Lst () : sym.generateCrystalClass (isRandom ? null : pt != null ? pt : this.at[atomIndex]));
+}, "~N,JU.P3");
 c$.$AtomCollection$AtomSorter$ = function () {
 Clazz.pu$h(self.c$);
 c$ = Clazz.decorateAsClass (function () {

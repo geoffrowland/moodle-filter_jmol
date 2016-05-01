@@ -90,7 +90,7 @@ Clazz.overrideMethod (c$, "repaint",
 function (canvas) {
 var jmol = null;
 {
-jmol = (typeof Jmol != "undefined" && Jmol._repaint ? Jmol : null);
+jmol = (self.Jmol && Jmol._repaint ? Jmol : null);
 }if (jmol != null) jmol._repaint ((this.vwr).html5Applet, true);
 }, "~O");
 Clazz.overrideMethod (c$, "setTransparentCursor", 
@@ -269,4 +269,8 @@ function () {
 {
 return Jmol;
 }});
+Clazz.overrideMethod (c$, "forceAsyncLoad", 
+function (filename) {
+return J.awtjs2d.Platform.Jmol ()._isBinaryUrl (filename);
+}, "~S");
 });

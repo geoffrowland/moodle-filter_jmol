@@ -49,14 +49,14 @@ return;
 }if ("atom" === propertyName) {
 this.thisAtom = (value).intValue ();
 if (this.thisAtom >= this.atoms.length) return;
-this.setShapeVisibility (this.atoms[this.thisAtom], true);
+this.atoms[this.thisAtom].setShapeVisibility (this.vf, true);
 this.ec.allocDotsConvexMaps (this.ac);
 return;
 }if ("dots" === propertyName) {
 if (this.thisAtom >= this.atoms.length) return;
 this.isActive = true;
 this.ec.setFromBits (this.thisAtom, value);
-this.setShapeVisibility (this.atoms[this.thisAtom], true);
+this.atoms[this.thisAtom].setShapeVisibility (this.vf, true);
 if (this.mads == null) {
 this.ec.setMads (null);
 this.mads =  Clazz.newShortArray (this.ac, 0);
@@ -138,9 +138,8 @@ var isAll = (bsSelected == null);
 var i0 = (isAll ? this.ac - 1 : bsSelected.nextSetBit (0));
 for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsSelected.nextSetBit (i + 1))) this.bsOn.setBitTo (i, false);
 
-}for (var i = this.ac; --i >= 0; ) {
-this.setShapeVisibility (this.atoms[i], this.bsOn.get (i));
-}
+}for (var i = this.ac; --i >= 0; ) this.atoms[i].setShapeVisibility (this.vf, this.bsOn.get (i));
+
 if (!isVisible) return;
 if (newSet) {
 this.mads = null;

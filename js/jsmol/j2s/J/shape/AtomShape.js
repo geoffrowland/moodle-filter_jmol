@@ -58,7 +58,7 @@ function (i, rd, isVisible) {
 var atom = this.atoms[i];
 this.mads[i] = atom.calculateMad (this.vwr, rd);
 this.bsSizeSet.setBitTo (i, isVisible);
-this.setShapeVisibility (atom, isVisible);
+atom.setShapeVisibility (this.vf, isVisible);
 }, "~N,J.atomdata.RadiusData,~B");
 Clazz.defineMethod (c$, "setPropAS", 
 function (propertyName, value, bs) {
@@ -84,7 +84,6 @@ if (this.mads == null && i0 >= 0) this.mads =  Clazz.newShortArray (this.ac, 0);
 var n = this.checkColixLength (colixes == null ? 0 : 4, bs.length ());
 for (var i = i0, pt = 0; i >= 0 && i < n; i = bs.nextSetBit (i + 1), pt++) {
 var colix = (colixes == null ? 0 : colixes[pt]);
-if (colix == 0) colix = 0;
 var f = (atrans == null ? 0 : atrans[pt]);
 if (f > 0.01) colix = JU.C.getColixTranslucent3 (colix, true, f);
 this.setColixAndPalette (colix, J.c.PAL.UNKNOWN.id, i);
@@ -129,7 +128,7 @@ return n;
 Clazz.defineMethod (c$, "setColixAndPalette", 
 function (colix, paletteID, atomIndex) {
 this.colixes[atomIndex] = colix = this.getColixI (colix, paletteID, atomIndex);
-this.bsColixSet.setBitTo (atomIndex, colix != 0);
+this.bsColixSet.setBitTo (atomIndex, colix != 0 || this.shapeID == 0);
 this.paletteIDs[atomIndex] = paletteID;
 }, "~N,~N,~N");
 Clazz.overrideMethod (c$, "setAtomClickability", 

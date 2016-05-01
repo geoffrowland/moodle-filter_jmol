@@ -96,6 +96,14 @@ c$.isPickleB = Clazz.defineMethod (c$, "isPickleB",
 function (bytes) {
 return (bytes != null && bytes.length >= 2 && (bytes[0] & 0xFF) == 0x7D && (bytes[1] & 0xFF) == 0x71);
 }, "~A");
+c$.isMessagePackS = Clazz.defineMethod (c$, "isMessagePackS", 
+function (is) {
+return JU.Rdr.isMessagePackB (JU.Rdr.getMagic (is, 1));
+}, "java.io.InputStream");
+c$.isMessagePackB = Clazz.defineMethod (c$, "isMessagePackB", 
+function (bytes) {
+return (bytes != null && bytes.length >= 1 && (bytes[0] & 0xFF) == 0xDE);
+}, "~A");
 c$.isPngZipStream = Clazz.defineMethod (c$, "isPngZipStream", 
 function (is) {
 return JU.Rdr.isPngZipB (JU.Rdr.getMagic (is, 55));
@@ -113,7 +121,7 @@ function (bytes) {
 return (bytes.length >= 4 && bytes[0] == 0x50 && bytes[1] == 0x4B && bytes[2] == 0x03 && bytes[3] == 0x04);
 }, "~A");
 c$.getMagic = Clazz.defineMethod (c$, "getMagic", 
- function (is, n) {
+function (is, n) {
 var abMagic =  Clazz.newByteArray (n, 0);
 {
 is.resetStream();

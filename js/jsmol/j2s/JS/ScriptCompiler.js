@@ -727,7 +727,7 @@ return 2;
 case 134222350:
 switch (this.lastToken.tok) {
 case 4120:
-case 1296041474:
+case 1296041986:
 case 1715472409:
 case 1073877010:
 if (this.nTokens == 2) this.iHaveQuotedString = true;
@@ -746,7 +746,11 @@ case 1275072526:
 if (this.script.charAt (this.ichToken) == '@') {
 this.iHaveQuotedString = true;
 return 0;
-}if (this.tokCommand == 134222849) {
+}switch (this.tokCommand) {
+case 4124:
+this.haveMacro = true;
+break;
+case 134222849:
 if (this.nTokens == 1 || this.nTokens == 2 && (this.tokAt (1) == 1073741839)) {
 var isDataBase = JV.Viewer.isDatabaseCode (this.charAt (this.ichToken));
 if (this.lookingAtLoadFormat (isDataBase)) {
@@ -777,12 +781,14 @@ this.addTokenToPrefix (JS.T.o (tok, strFormat));
 this.iHaveQuotedString = (tok == 4);
 }}
 return 2;
-}}var bs;
+}break;
+}var bs;
 if (this.script.charAt (this.ichToken) == '{' || this.parenCount > 0) break;
 if ((bs = this.lookingAtBitset ()) != null) {
 this.addTokenToPrefix (JS.T.o (10, bs));
 return 2;
-}}if (!this.iHaveQuotedString && this.lookingAtImpliedString (this.tokCommand == 134222350, this.tokCommand == 134222849, this.nTokens > 1 || this.tokCommand != 134222850 && this.tokCommand != 4124)) {
+}}
+if (!this.iHaveQuotedString && this.lookingAtImpliedString (this.tokCommand == 134222350, this.tokCommand == 134222849, this.nTokens > 1 || this.tokCommand != 134222850 && this.tokCommand != 4124)) {
 var str = this.script.substring (this.ichToken, this.ichToken + this.cchToken);
 if (this.tokCommand == 134222850) {
 if (str.startsWith ("javascript:")) {
@@ -1134,12 +1140,13 @@ case 2:
 return 2;
 case 5:
 return 5;
-}
+case 0:
 this.theToken = this.tokenCommand;
 if (this.theTok == 102411) {
 this.addTokenToPrefix (this.tokenCommand);
 this.theToken = JS.T.tokenLeftParen;
 }return 0;
+}
 }if (this.flowContext != null && !this.haveENDIF && this.flowContext.addLine > 0) {
 this.fixFlowAddLine (this.flowContext);
 while (this.flowContext != null) {
@@ -1480,7 +1487,8 @@ if (f == null) {
 this.errorStr (1, ident);
 return 4;
 }this.setCommand (JS.T.tv (this.tokCommand, f.pt0, ident));
-return 0;
+this.theToken = this.tokenCommand;
+return 1;
 case 134320141:
 case 102436:
 if (this.flowContext != null) {

@@ -19,7 +19,6 @@ this.htSites = null;
 this.htElementsInCurrentGroup = null;
 this.htMolIds = null;
 this.vCompnds = null;
-this.thisBiomolecule = null;
 this.vBiomolecules = null;
 this.vTlsModels = null;
 this.sbTlsErrors = null;
@@ -56,6 +55,7 @@ this.maxLength = 80;
 this.pdbID = null;
 this.haveDoubleBonds = false;
 this.$cryst1 = 0;
+this.fileSgName = null;
 this.dataT = null;
 this.tlsU = null;
 this.vConnect = null;
@@ -230,7 +230,7 @@ if (this.vBiomolecules != null && this.vBiomolecules.size () > 0 && this.asc.ac 
 this.asc.setCurrentModelInfo ("biomolecules", this.vBiomolecules);
 this.setBiomoleculeAtomCounts ();
 if (this.thisBiomolecule != null && this.applySymmetry) {
-this.asc.getXSymmetry ().applySymmetryBio (this.thisBiomolecule, this.unitCellParams, this.applySymmetryToBonds, this.filter);
+this.asc.getXSymmetry ().applySymmetryBio (this.thisBiomolecule, this.applySymmetryToBonds, this.filter);
 this.vTlsModels = null;
 this.asc.xtalSymmetry = null;
 }}if (this.vTlsModels != null) {
@@ -249,7 +249,14 @@ for (var i = n; --i >= 0; ) this.setTlsGroups (0, i, symmetry);
 }if (this.sbTlsErrors != null) {
 this.asc.setInfo ("tlsErrors", this.sbTlsErrors.toString ());
 this.appendLoadNote (this.sbTlsErrors.toString ());
-}this.doCheckUnitCell = new Boolean (this.doCheckUnitCell & (this.iHaveUnitCell && (this.doApplySymmetry || this.isbiomol))).valueOf ();
+}this.doCheckUnitCell = new Boolean (this.doCheckUnitCell & (this.iHaveUnitCell && this.doApplySymmetry)).valueOf ();
+if (this.doCheckUnitCell && this.isbiomol) {
+this.ignoreFileSpaceGroupName = true;
+this.sgName = this.fileSgName;
+this.fractionalizeCoordinates (true);
+this.asc.setModelInfoForSet ("biosymmetry", null, this.asc.iSet);
+this.asc.checkSpecial = false;
+}if (this.latticeCells != null && this.latticeCells[0] != 0) this.addJmolScript ("unitcell;");
 this.finalizeReaderASCR ();
 if (this.vCompnds != null) {
 this.asc.setInfo ("compoundSource", this.vCompnds);
@@ -721,7 +728,7 @@ var endSequenceNumber = this.parseIntRange (this.line, endIndex, endIndex + 4);
 var endInsertionCode = ' ';
 if (this.lineLength > endIndex + 4) endInsertionCode = this.line.charAt (endIndex + 4);
 if (substructureType === J.c.STR.NONE) substructureType = structureType;
-var structure =  new J.adapter.smarter.Structure (-1, structureType, substructureType, structureID, serialID, strandCount);
+var structure =  new J.adapter.smarter.Structure (-1, structureType, substructureType, structureID, serialID, strandCount, null);
 structure.set (startChainID, startSequenceNumber, startInsertionCode, endChainID, endSequenceNumber, endInsertionCode, -2147483648, 2147483647);
 this.asc.addStructure (structure);
 });
@@ -758,7 +765,9 @@ Clazz.defineMethod (c$, "cryst1",
 var a = this.$cryst1 = this.getFloat (6, 9);
 if (a == 1) a = NaN;
 this.setUnitCell (a, this.getFloat (15, 9), this.getFloat (24, 9), this.getFloat (33, 7), this.getFloat (40, 7), this.getFloat (47, 7));
+if (this.isbiomol) this.doConvertToFractional = false;
 if (this.sgName == null || this.sgName.equals ("unspecified!")) this.setSpaceGroupName (JU.PT.parseTrimmedRange (this.line, 55, 66));
+this.fileSgName = this.sgName;
 });
 Clazz.defineMethod (c$, "getFloat", 
  function (ich, cch) {
@@ -773,6 +782,7 @@ this.setUnitCellItem (pt++, this.getFloat (10, 10));
 this.setUnitCellItem (pt++, this.getFloat (20, 10));
 this.setUnitCellItem (pt++, this.getFloat (30, 10));
 this.setUnitCellItem (pt++, this.getFloat (45, 10));
+if (this.isbiomol) this.doConvertToFractional = false;
 }, "~N");
 Clazz.defineMethod (c$, "expdta", 
  function () {

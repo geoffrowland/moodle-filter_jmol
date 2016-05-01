@@ -3,6 +3,7 @@
 // jsmol.php
 // Bob Hanson hansonr@stolaf.edu 1/11/2013
 //
+// 31 MAR 2016 -- https://cactus -> https://cactus
 // 09 Nov 2015 -- bug fix for www.pdb --> www.rcsb
 // 23 Mar 2015 -- checking for missing :// in queries
 // 2 Feb 2014 -- stripped of any exec calls and image options-- this was for JSmol image option - abandoned
@@ -90,7 +91,7 @@ if ($_GET['isform']=="true") {
 }
 $encoding = getValueSimple($values, "encoding", "");
 $call = getValueSimple($values, "call", "getRawDataFromDatabase");
-$query = getValueSimple($values, "query", "http://cactus.nci.nih.gov/chemical/structure/ethanol/file?format=sdf&get3d=True");
+$query = getValueSimple($values, "query", "https://cactus.nci.nih.gov/chemical/structure/ethanol/file?format=sdf&get3d=True");
 $database = getValueSimple($values, "database", "_");
 
 $imagedata = "";

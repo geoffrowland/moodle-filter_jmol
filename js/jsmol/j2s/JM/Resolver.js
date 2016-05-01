@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JM");
-Clazz.load (["J.api.JmolBioResolver", "java.util.Hashtable"], "JM.Resolver", ["java.lang.Boolean", "$.Byte", "$.NullPointerException", "$.Short", "java.util.Arrays", "JU.AU", "$.BS", "$.Measure", "$.P3", "$.P4", "$.PT", "$.SB", "$.V3", "J.c.STR", "JM.Group", "JM.AlphaMonomer", "$.AlphaPolymer", "$.AminoMonomer", "$.AminoPolymer", "$.BioModel", "$.CarbohydrateMonomer", "$.CarbohydratePolymer", "$.Monomer", "$.NucleicMonomer", "$.NucleicPolymer", "$.PhosphorusMonomer", "$.PhosphorusPolymer", "JU.BSUtil", "$.Logger"], function () {
+Clazz.load (["J.api.JmolBioResolver", "java.util.Hashtable", "J.c.STR"], "JM.Resolver", ["java.lang.Boolean", "$.Byte", "$.NullPointerException", "$.Short", "java.util.Arrays", "JU.AU", "$.BS", "$.Measure", "$.P3", "$.P4", "$.PT", "$.SB", "$.V3", "JM.Group", "JM.AlphaMonomer", "$.AlphaPolymer", "$.AminoMonomer", "$.AminoPolymer", "$.BioModel", "$.CarbohydrateMonomer", "$.CarbohydratePolymer", "$.Monomer", "$.NucleicMonomer", "$.NucleicPolymer", "$.PhosphorusMonomer", "$.PhosphorusPolymer", "JU.BSUtil", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.vAB = null;
@@ -440,7 +440,7 @@ lastData = fData[pt++];
 return newData;
 }, "JU.BS,~O,~B");
 c$.allocateBioPolymer = Clazz.defineMethod (c$, "allocateBioPolymer", 
-function (groups, firstGroupIndex, checkConnections) {
+function (groups, firstGroupIndex, checkConnections, pt0) {
 var previous = null;
 var count = 0;
 for (var i = firstGroupIndex; i < groups.length; ++i) {
@@ -454,14 +454,14 @@ if (count < 2) return null;
 var monomers =  new Array (count);
 for (var j = 0; j < count; ++j) monomers[j] = groups[firstGroupIndex + j];
 
-if (Clazz.instanceOf (previous, JM.AminoMonomer)) return  new JM.AminoPolymer (monomers);
-if (Clazz.instanceOf (previous, JM.AlphaMonomer)) return  new JM.AlphaPolymer (monomers);
+if (Clazz.instanceOf (previous, JM.AminoMonomer)) return  new JM.AminoPolymer (monomers, pt0);
+if (Clazz.instanceOf (previous, JM.AlphaMonomer)) return  new JM.AlphaPolymer (monomers, pt0);
 if (Clazz.instanceOf (previous, JM.NucleicMonomer)) return  new JM.NucleicPolymer (monomers);
 if (Clazz.instanceOf (previous, JM.PhosphorusMonomer)) return  new JM.PhosphorusPolymer (monomers);
 if (Clazz.instanceOf (previous, JM.CarbohydrateMonomer)) return  new JM.CarbohydratePolymer (monomers);
 JU.Logger.error ("Polymer.allocatePolymer() ... no matching polymer for monomor " + previous);
 throw  new NullPointerException ();
-}, "~A,~N,~B");
+}, "~A,~N,~B,~N");
 Clazz.overrideMethod (c$, "iterateOverAllNewStructures", 
 function (adapter, atomSetCollection) {
 var iterStructure = adapter.getStructureIterator (atomSetCollection);
@@ -483,26 +483,36 @@ var serID = iterStructure.getSerialID ();
 var count = iterStructure.getStrandCount ();
 var atomRange = iterStructure.getAtomIndices ();
 var modelRange = iterStructure.getModelIndices ();
-if (this.bsAssigned == null) this.bsAssigned =  new JU.BS ();
-this.defineStructure (t, id, serID, count, iterStructure.getStartChainID (), iterStructure.getStartSequenceNumber (), iterStructure.getStartInsertionCode (), iterStructure.getEndChainID (), iterStructure.getEndSequenceNumber (), iterStructure.getEndInsertionCode (), atomRange, modelRange, this.bsAssigned);
-}, "J.api.JmolAdapterStructureIterator");
-Clazz.defineMethod (c$, "defineStructure", 
- function (subType, structureID, serialID, strandCount, startChainID, startSequenceNumber, startInsertionCode, endChainID, endSequenceNumber, endInsertionCode, atomRange, modelRange, bsAssigned) {
-var type = (subType === J.c.STR.NOT ? J.c.STR.NONE : subType);
-var startSeqCode = JM.Group.getSeqcodeFor (startSequenceNumber, startInsertionCode);
-var endSeqCode = JM.Group.getSeqcodeFor (endSequenceNumber, endInsertionCode);
+var bsAll = iterStructure.getBSAll ();
+var m0;
+var m1;
 var models = this.ms.am;
 if (this.ml.isTrajectory) {
-modelRange[1] = modelRange[0];
+m0 = m1 = modelRange[0];
 } else {
-modelRange[0] += this.ml.baseModelIndex;
-modelRange[1] += this.ml.baseModelIndex;
-}this.ml.structuresDefinedInFile.setBits (modelRange[0], modelRange[1] + 1);
-for (var i = modelRange[0]; i <= modelRange[1]; i++) {
-var i0 = models[i].firstAtomIndex;
-if (Clazz.instanceOf (models[i], JM.BioModel)) (models[i]).addSecondaryStructure (type, structureID, serialID, strandCount, startChainID, startSeqCode, endChainID, endSeqCode, i0 + atomRange[0], i0 + atomRange[1], bsAssigned);
-}
-}, "J.c.STR,~S,~N,~N,~N,~N,~S,~N,~N,~S,~A,~A,JU.BS");
+m0 = modelRange[0] + this.ml.baseModelIndex;
+m1 = modelRange[1] + this.ml.baseModelIndex;
+}this.ml.structuresDefinedInFile.setBits (m0, m1 + 1);
+var bs;
+var m;
+if (bsAll != null) {
+for (var i = m0, t0; i <= m1; i++) if (Clazz.instanceOf ((m = models[i]), JM.BioModel)) for (var j = 0; j < 5; j++) if ((bs = bsAll[t0 = JM.Resolver.mytypes[j]]) != null) (m).addStructureByBS (0, t0, JM.Resolver.types[j], bs);
+
+
+return;
+}var startChainID = iterStructure.getStartChainID ();
+var startSequenceNumber = iterStructure.getStartSequenceNumber ();
+var startInsertionCode = iterStructure.getStartInsertionCode ();
+var endSequenceNumber = iterStructure.getEndSequenceNumber ();
+var endChainID = iterStructure.getEndChainID ();
+var endInsertionCode = iterStructure.getEndInsertionCode ();
+var type = (t === J.c.STR.NOT ? J.c.STR.NONE : t);
+var startSeqCode = JM.Group.getSeqcodeFor (startSequenceNumber, startInsertionCode);
+var endSeqCode = JM.Group.getSeqcodeFor (endSequenceNumber, endInsertionCode);
+if (this.bsAssigned == null) this.bsAssigned =  new JU.BS ();
+for (var i = m0, i0 = 0; i <= m1; i++) if (Clazz.instanceOf ((m = models[i]), JM.BioModel)) (m).addSecondaryStructure (type, id, serID, count, startChainID, startSeqCode, endChainID, endSeqCode, (i0 = m.firstAtomIndex) + atomRange[0], i0 + atomRange[1], this.bsAssigned);
+
+}, "J.api.JmolAdapterStructureIterator");
 Clazz.overrideMethod (c$, "setGroupLists", 
 function (ipt) {
 this.ml.group3Lists[ipt + 1] = JM.Group.standardGroupList;
@@ -722,7 +732,9 @@ return JM.Resolver.argbsChainHetero;
 return null;
 }, "~N");
 c$.htGroup = c$.prototype.htGroup =  new java.util.Hashtable ();
+c$.types = c$.prototype.types =  Clazz.newArray (-1, [J.c.STR.HELIXPI, J.c.STR.HELIXALPHA, J.c.STR.SHEET, J.c.STR.HELIX310, J.c.STR.TURN]);
 Clazz.defineStatics (c$,
+"mytypes",  Clazz.newIntArray (-1, [0, 2, 3, 4, 6]),
 "htPdbBondInfo", null,
 "pdbBondInfo",  Clazz.newArray (-1, ["", "N N CA HA C O CB HB?", "N N CA HA C O CB B CG G CD D NE HE CZ NH1 NH1 HH11@HH12 NH2 HH22@HH21", "N N CA HA C O CB B CG OD1 ND2 HD21@HD22", "N N CA HA C O CB B CG OD1", "N N CA HA C O CB B SG HG", "N N CA HA C O CB B CG G CD OE1 NE2 HE22@HE21", "N N CA HA C O CB B CG G CD OE1", "N N CA HA2@HA3 C O", "N N CA HA C O CB B CG CD2 ND1 CE1 ND1 HD1 CD2 HD2 CE1 HE1 NE2 HE2", "N N CA HA C O CB HB CG1 HG13@HG12 CG2 HG2? CD1 HD1?", "N N CA HA C O CB B CG HG CD1 HD1? CD2 HD2?", "N N CA HA C O CB B CG G CD HD2@HD3 CE HE3@HE2 NZ HZ?", "N N CA HA C O CB B CG G CE HE?", "N N CA HA C O CB B CG CD1 CD1 HD1 CD2 CE2 CD2 HD2 CE1 CZ CE1 HE1 CE2 HE2 CZ HZ", "N H CA HA C O CB B CG G CD D", "N N CA HA C O CB B OG HG", "N N CA HA C O CB HB OG1 HG1 CG2 HG2?", "N N CA HA C O CB B CG CD1 CD1 HD1 CD2 CE2 NE1 HE1 CE3 CZ3 CE3 HE3 CZ2 CH2 CZ2 HZ2 CZ3 HZ3 CH2 HH2", "N N CA HA C O CB B CG CD1 CD1 HD1 CD2 CE2 CD2 HD2 CE1 CZ CE1 HE1 CE2 HE2 OH HH", "N N CA HA C O CB HB CG1 HG1? CG2 HG2?", "N N CA HA C O CB B", "N N CA HA C O CB B CG G", "", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C8 N7 C8 H8 C5 C4 C6 O6 N1 H1 C2 N3 N2 H22@H21 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C2 O2 N3 C4 N4 H41@H42 C5 C6 C5 H5 C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C8 N7 C8 H8 C5 C4 C6 N1 N6 H61@H62 C2 N3 C2 H2 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C2 O2 N3 H3 C4 O4 C5 C6 C7 H7? C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C2 O2 N3 H3 C4 O4 C5 C6 C5 H5 C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C8 N7 C8 H8 C5 C4 C6 O6 N1 H1 C2 N3 C2 H2 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C8 N7 C8 H8 C5 C4 C6 O6 N1 H1 C2 N3 N2 H22@H21 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C2 O2 N3 C4 N4 H41@H42 C5 C6 C5 H5 C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C8 N7 C8 H8 C5 C4 C6 N1 N6 H61@H62 C2 N3 C2 H2 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C2 O2 N3 H3 C4 O4 C5 C6 C7 H7? C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C2 O2 N3 H3 C4 O4 C5 C6 C5 H5 C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C8 N7 C8 H8 C5 C4 C6 O6 N1 H1 C2 N3 C2 H2 O3' HO3' O5' HO5'"]),
 "pdbHydrogenCount",  Clazz.newIntArray (-1, [0, 6, 16, 7, 6, 6, 9, 8, 4, 9, 12, 12, 14, 10, 10, 8, 6, 8, 11, 10, 10, 3, 5, 0, 13, 13, 13, -1, 12, 12, 13, 13, 13, 14, 12, 12]),

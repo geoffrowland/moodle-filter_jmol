@@ -26,10 +26,6 @@ this.y0 = 0;
 this.pointerPt = null;
 Clazz.instantialize (this, arguments);
 }, JM, "Text", JM.Object2d);
-Clazz.defineMethod (c$, "getText", 
-function () {
-return this.text;
-});
 Clazz.defineMethod (c$, "setOffset", 
 function (offset) {
 this.offsetX = JV.JC.getXOffset (offset);

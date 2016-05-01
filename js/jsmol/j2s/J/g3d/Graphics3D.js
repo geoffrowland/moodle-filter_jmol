@@ -651,7 +651,7 @@ this.line3d.plotDashedLineBits (this.argbCurrent, run, rise, pointA, pointB);
 }, "~N,~N,JU.P3,JU.P3");
 Clazz.overrideMethod (c$, "drawDottedLineBits", 
 function (pointA, pointB) {
-this.line3d.plotDashedLineBits (this.argbCurrent, 2, 1, pointA, pointB);
+this.line3d.plotDashedLineBits (this.argbCurrent, 8, 4, pointA, pointB);
 }, "JU.P3,JU.P3");
 Clazz.overrideMethod (c$, "drawLineXYZ", 
 function (x1, y1, z1, x2, y2, z2) {

@@ -758,6 +758,7 @@ if (type.equalsIgnoreCase ("CML")) return this.getModelCml (bs, 2147483647, true
 if (type.equals ("PDB") || type.equals ("PQR")) return this.getPdbAtomData (bs, null, type.equals ("PQR"), doTransform, allTrajectories);
 var asV3000 = type.equalsIgnoreCase ("V3000");
 var asSDF = type.equalsIgnoreCase ("SDF");
+var noAromatic = type.equalsIgnoreCase ("MOL");
 var asXYZVIB = (!doTransform && type.equalsIgnoreCase ("XYZVIB"));
 var asXYZRN = type.equalsIgnoreCase ("XYZRN");
 var isXYZ = type.toUpperCase ().startsWith ("XYZ");
@@ -802,7 +803,7 @@ mol.append (header);
 var bsTemp = JU.BSUtil.copy (bsAtoms);
 bsTemp.and (ms.getModelAtomBitSetIncludingDeleted (i, false));
 bsBonds = JV.PropertyManager.getCovalentBondsForAtoms (ms.bo, ms.bondCount, bsTemp);
-if (!(isOK = this.addMolFile (i, mol, bsTemp, bsBonds, false, false, q))) break;
+if (!(isOK = this.addMolFile (i, mol, bsTemp, bsBonds, false, false, noAromatic, q))) break;
 mol.append ("$$$$\n");
 }
 } else if (isXYZ) {
@@ -842,11 +843,11 @@ mol.append (s);
 }
 }
 } else {
-isOK = this.addMolFile (-1, mol, bsAtoms, bsBonds, asV3000, asJSON, q);
+isOK = this.addMolFile (-1, mol, bsAtoms, bsBonds, asV3000, asJSON, noAromatic, q);
 }return (isOK ? mol.toString () : "ERROR: Too many atoms or bonds -- use V3000 format.");
 }, "JU.BS,~B,~B,~S,~B");
 Clazz_defineMethod (c$, "addMolFile", 
- function (iModel, mol, bsAtoms, bsBonds, asV3000, asJSON, q) {
+ function (iModel, mol, bsAtoms, bsBonds, asV3000, asJSON, noAromatic, q) {
 var nAtoms = bsAtoms.cardinality ();
 var nBonds = bsBonds.cardinality ();
 if (!asV3000 && !asJSON && (nAtoms > 999 || nBonds > 999)) return false;
@@ -870,7 +871,7 @@ if (asV3000) {
 mol.append ("M  V30 END ATOM\nM  V30 BEGIN BOND\n");
 } else if (asJSON) {
 mol.append ("],\"b\":[");
-}for (var i = bsBonds.nextSetBit (0), n = 0; i >= 0; i = bsBonds.nextSetBit (i + 1)) this.getBondRecordMOL (mol, ++n, ms.bo[i], atomMap, asV3000, asJSON);
+}for (var i = bsBonds.nextSetBit (0), n = 0; i >= 0; i = bsBonds.nextSetBit (i + 1)) this.getBondRecordMOL (mol, ++n, ms.bo[i], atomMap, asV3000, asJSON, noAromatic);
 
 if (asV3000) {
 mol.append ("M  V30 END BOND\nM  V30 END CTAB\n");
@@ -884,7 +885,7 @@ mol.append ("> <JMOL_PARTIAL_CHARGES>\n").appendI (nAtoms).appendC ('\n');
 for (var i = bsAtoms.nextSetBit (0), n = 0; i >= 0; i = bsAtoms.nextSetBit (i + 1)) mol.appendI (++n).append (" ").appendF (pc[i]).appendC ('\n');
 
 }}return true;
-}, "~N,JU.SB,JU.BS,JU.BS,~B,~B,JU.Quat");
+}, "~N,JU.SB,JU.BS,JU.BS,~B,~B,~B,JU.Quat");
 c$.getCovalentBondsForAtoms = Clazz_defineMethod (c$, "getCovalentBondsForAtoms", 
  function (bonds, bondCount, bsAtoms) {
 var bsBonds =  new JU.BS ();
@@ -931,7 +932,7 @@ if (ms.isTrajectory (i >= 0 ? i : a.mi)) ms.trajectory.getFractional (a, pTemp);
 if (q != null) q.transform2 (pTemp, pTemp);
 }, "~N,JM.ModelSet,JM.Atom,JU.Quat,JU.P3");
 Clazz_defineMethod (c$, "getBondRecordMOL", 
- function (mol, n, b, atomMap, asV3000, asJSON) {
+ function (mol, n, b, atomMap, asV3000, asJSON, noAromatic) {
 var a1 = atomMap[b.atom1.i];
 var a2 = atomMap[b.atom2.i];
 var order = b.getValence ();
@@ -944,10 +945,10 @@ case 66:
 order = (asJSON ? -3 : 5);
 break;
 case 513:
-order = (asJSON ? 1 : 6);
+order = (asJSON || noAromatic ? 1 : 6);
 break;
 case 514:
-order = (asJSON ? 2 : 7);
+order = (asJSON || noAromatic ? 2 : 7);
 break;
 case 33:
 order = (asJSON ? -1 : 8);
@@ -969,7 +970,7 @@ mol.appendI (order);
 JU.PT.rightJustify (mol, "   ", "" + a1);
 JU.PT.rightJustify (mol, "   ", "" + a2);
 mol.append ("  ").appendI (order).append ("  0  0  0\n");
-}}, "JU.SB,~N,JM.Bond,~A,~B,~B");
+}}, "JU.SB,~N,JM.Bond,~A,~B,~B,~B");
 Clazz_overrideMethod (c$, "getChimeInfo", 
 function (tok, bs) {
 switch (tok) {
@@ -1559,7 +1560,7 @@ function (bs, atomsMax, addBonds, doTransform, allTrajectories) {
 var sb =  new JU.SB ();
 var nAtoms = bs.cardinality ();
 if (nAtoms == 0) return "";
-J.api.Interface.getInterface ("JU.XmlUtil", this.vwr, "file");
+if (this.vwr.isJS) J.api.Interface.getInterface ("JU.XmlUtil", this.vwr, "file");
 JU.XmlUtil.openTag (sb, "molecule");
 JU.XmlUtil.openTag (sb, "atomArray");
 var bsAtoms =  new JU.BS ();

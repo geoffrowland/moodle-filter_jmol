@@ -207,7 +207,7 @@ tokens = tokensPDB;
 this.formats[i] = strLabel;
 this.bsSizeSet.set (i);
 if (i < nbg && !this.bsBgColixSet.get (i)) this.setBgcolix (i, this.defaultBgcolix);
-}this.setShapeVisibility (atom, this.strings != null && i < this.strings.length && this.strings[i] != null && this.mads[i] >= 0);
+}atom.setShapeVisibility (this.vf, this.strings != null && i < this.strings.length && this.strings[i] != null && this.mads[i] >= 0);
 }
 return;
 }if ("pymolLabels" === propertyName) {
@@ -270,10 +270,10 @@ this.scalePixelsPerMicron = (this.isScaled ? this.vwr.getScalePixelsPerAngstrom 
 Clazz.defineMethod (c$, "setPymolLabel", 
  function (i, t, format) {
 if (t == null) return;
-var label = t.getText ();
+var label = t.text;
 var atom = this.atoms[i];
 this.addString (atom, i, label, format == null ? JU.PT.rep (label, "%", "%%") : format);
-this.setShapeVisibility (atom, true);
+atom.setShapeVisibility (this.vf, true);
 if (t.colix >= 0) this.setLabelColix (i, t.colix, J.c.PAL.UNKNOWN.id);
 this.setFont (i, t.font.fid);
 this.putLabel (i, t);
@@ -305,7 +305,7 @@ if (this.defaultFontId != this.zeroFontId) this.setFont (i, this.defaultFontId);
 }, "~A,~S,~N,~B");
 Clazz.defineMethod (c$, "addString", 
  function (atom, i, label, strLabel) {
-this.setShapeVisibility (atom, label != null);
+atom.setShapeVisibility (this.vf, label != null);
 var notNull = (strLabel != null);
 var isNew = (this.strings[i] == null);
 this.strings[i] = label;

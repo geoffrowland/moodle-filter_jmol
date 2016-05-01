@@ -85,7 +85,7 @@ var plane = slabbingObject;
 sb.append (JU.Escape.eP4 (plane));
 this.getIntersection (0, plane, null, null, null, null, null, andCap, false, 134217750, isGhost);
 break;
-case 1747587102:
+case 1814695966:
 case 1678381065:
 var box = slabbingObject;
 sb.append ("within ").append (JU.Escape.eAP (box));

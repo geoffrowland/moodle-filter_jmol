@@ -1187,7 +1187,7 @@ if (map == null) {
 if (isAll) {
 var lst;
 var n;
-if ((lst = this.getList ()) != null && (n = lst.size ()) > 0) lst.get (n - 1).getKeyList (true, keys, prefix + n + ".");
+if ((lst = this.getList ()) != null && (n = lst.size ()) > 0) lst.get (n - 1).getKeyList (true, keys, prefix + "." + n + ".");
 }return;
 }for (var e, $e = map.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) {
 var k = e.getKey ();

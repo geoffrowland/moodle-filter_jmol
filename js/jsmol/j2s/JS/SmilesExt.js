@@ -25,7 +25,7 @@ ptsB =  new JU.Lst ();
 var c =  new JU.P3 ();
 var atoms = this.e.vwr.ms.at;
 var ac = this.e.vwr.ms.ac;
-var maps = this.sm.getCorrelationMaps (smiles, atoms, ac, bsA, flags | 64);
+var maps = this.sm.getCorrelationMaps (smiles, atoms, ac, bsA, flags | 32);
 if (maps == null) this.e.evalError (this.sm.getLastException (), null);
 if (maps.length == 0) return NaN;
 var mapFirst = maps[0];
@@ -78,9 +78,9 @@ return 0;
 }, "JU.BS,JU.BS,~S,JU.Lst,JU.Lst,JU.M4,JU.Lst,~B,~A,JU.P3,~B,~N");
 Clazz.defineMethod (c$, "getSmilesMatches", 
 function (pattern, smiles, bsSelected, bsMatch3D, flags, asOneBitset, firstMatchOnly) {
-if (pattern.length == 0 || pattern.equals ("H") || pattern.equals ("*") || (firstMatchOnly = pattern.equalsIgnoreCase ("NOAROMATIC"))) {
+if (pattern.length == 0 || pattern.endsWith ("///") || pattern.equals ("H") || pattern.equals ("*") || pattern.equalsIgnoreCase ("NOAROMATIC")) {
 try {
-return this.e.vwr.getSmilesOpt (bsSelected, 0, 0, flags | (pattern.equals ("H") ? 256 : 0) | (pattern.equals ("*") ? 512 : 0) | (firstMatchOnly ? 1024 : 0));
+return this.e.vwr.getSmilesOpt (bsSelected, 0, 0, flags | (pattern.equals ("H") ? 4096 : 0) | (pattern.equals ("*") ? 8192 : 0) | (pattern.equalsIgnoreCase ("NOAROMATIC") ? 16384 : 0), (pattern.endsWith ("///") ? pattern : null));
 } catch (ex) {
 if (Clazz.exceptionOf (ex, Exception)) {
 this.e.evalError (ex.getMessage (), null);

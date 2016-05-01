@@ -290,7 +290,7 @@ if (this.thisMesh != null) this.thisMesh.atomIndex = this.atomIndex;
 this.center.setT (value);
 } else if ("colorRGB" === propertyName) {
 var rgb = (value).intValue ();
-if (rgb == 1296041474) {
+if (rgb == 1296041986) {
 this.colorType = rgb;
 } else {
 this.colorType = 0;
@@ -461,6 +461,7 @@ var keys = (Clazz.instanceOf (data[1], JU.Lst) ? data[1] :  new JU.Lst ());
 data[1] = keys;
 keys.addLast ("info");
 keys.addLast ("data");
+keys.addLast ("atoms");
 }if (property === "colorEncoder") {
 var mesh = this.getMesh (data[0]);
 return (mesh != null && (data[1] = mesh.colorEncoder) != null);
@@ -557,6 +558,8 @@ var list = this.getMeshList ((index < 0 ? this.previousMeshID : thisMesh.thisID)
 for (var i = list.size (); --i >= 0; ) this.getMeshCommand (sb, i);
 
 return sb.toString ();
+}if (property === "atoms") {
+return thisMesh.surfaceAtoms;
 }return null;
 }, "~S,~N");
 Clazz.defineMethod (c$, "getDataRange", 
@@ -932,6 +935,7 @@ Clazz.overrideMethod (c$, "notifySurfaceGenerationCompleted",
 function () {
 this.setMeshI ();
 this.setBsVdw ();
+this.thisMesh.surfaceAtoms = this.sg.params.bsSelected;
 this.thisMesh.insideOut = this.sg.params.isInsideOut ();
 this.thisMesh.isModelConnected = this.sg.params.isModelConnected;
 this.thisMesh.vertexSource = this.sg.params.vertexSource;

@@ -72,8 +72,11 @@ Clazz.superCall (this, J.adapter.readers.pymol.PyMOLReader, "initializeReader", 
 });
 Clazz.overrideMethod (c$, "processBinaryDocument", 
 function () {
+var logFile = this.vwr.getLogFileName ();
+this.logging = (logFile.length > 0);
+JU.Logger.info (this.logging ? "PyMOL (1) file data streaming to " + logFile : "To view raw PyMOL file data, use 'set logFile \"some_filename\" ");
 var reader =  new J.adapter.readers.pymol.PickleReader (this.binaryDoc, this.vwr);
-var map = reader.getMap (this.logging);
+var map = reader.getMap (this.logging && JU.Logger.debuggingHigh);
 reader = null;
 this.process (map);
 });
@@ -168,7 +171,7 @@ height = J.adapter.readers.pymol.PyMOLReader.intAt (main, 1);
 }var note;
 if (width > 0 && height > 0) {
 note = "PyMOL dimensions width=" + width + " height=" + height;
-this.asc.setInfo ("perferredWidthHeight",  Clazz.newIntArray (-1, [width, height]));
+this.asc.setInfo ("preferredWidthHeight",  Clazz.newIntArray (-1, [width, height]));
 this.vwr.resizeInnerPanel (width, height);
 } else {
 note = "PyMOL dimensions?";
@@ -224,12 +227,16 @@ Clazz.defineMethod (c$, "fixSettings",
 var n = settings.size ();
 for (var i = 0; i < n; i++) {
 var i2 = J.adapter.readers.pymol.PyMOLReader.intAt (settings.get (i), 0);
+if (i2 == -1) {
+JU.Logger.info ("PyMOL reader adding null setting #" + i);
+settings.set (i,  new JU.Lst ());
+} else {
 while (i < i2) {
-JU.Logger.info ("PyMOL reader adding null settings #" + i);
+JU.Logger.info ("PyMOL reader adding null setting #" + i);
 settings.add (i++,  new JU.Lst ());
 n++;
 }
-}
+}}
 return settings;
 }, "JU.Lst");
 Clazz.defineMethod (c$, "getFrameScenes", 
@@ -370,7 +377,12 @@ stateSettings = this.listAt (state, 7);
 } else if (iState > 0) {
 return;
 }JU.Logger.info ("PyMOL model " + (this.nModels) + " Object " + this.objectName + (this.isHidden ? " (hidden)" : " (visible)"));
-var objectHeader = this.listAt (pymolObject, 0);
+if (!this.isHidden && !this.isMovie && !this.allStates) {
+if (this.pymolFrame > 0 && this.pymolFrame != this.nModels) {
+this.pymolFrame = this.nModels;
+this.allStates = true;
+this.pymolScene.setFrameObject (4115, Integer.$valueOf (-1));
+}}var objectHeader = this.listAt (pymolObject, 0);
 var parentGroupName = (execObject.size () < 8 ? null : J.adapter.readers.pymol.PyMOLReader.stringAt (execObject, 6));
 if (" ".equals (parentGroupName)) parentGroupName = null;
 this.pymolScene.setReaderObjectInfo (this.objectName, type, parentGroupName, this.isHidden, this.listAt (objectHeader, 8), stateSettings, (moleculeOnly ? "_" + (iState + 1) : ""));
@@ -382,6 +394,7 @@ default:
 msg = "" + type;
 break;
 case -1:
+this.pymolScene.processSelection (execObject);
 break;
 case 1:
 doExclude = false;
@@ -421,10 +434,8 @@ case 7:
 msg = "SURFACE";
 break;
 }
-if (parentGroupName != null || bsAtoms != null) {
-var group = this.pymolScene.addGroup (execObject, parentGroupName, type);
-if (bsAtoms != null) bsAtoms = group.addGroupAtoms (bsAtoms);
-}if (doExclude) {
+if (parentGroupName != null || bsAtoms != null) this.pymolScene.addGroup (execObject, parentGroupName, type, bsAtoms);
+if (doExclude) {
 var i0 = J.adapter.readers.pymol.PyMOLReader.intAt (startLen, 0);
 var len = J.adapter.readers.pymol.PyMOLReader.intAt (startLen, 1);
 this.bsBytesExcluded.setBits (i0, i0 + len);
@@ -519,18 +530,17 @@ this.setSpaceGroupName (J.adapter.readers.pymol.PyMOLReader.stringAt (cryst, 1))
 }, "JU.Lst");
 Clazz.defineMethod (c$, "getBondList", 
  function (bonds) {
-var asSingle = (this.pymolScene.booleanSetting (64) ? 0 : 65536);
+var asSingle = this.pymolScene.booleanSetting (64);
 var n = bonds.size ();
 var bondList =  new JU.Lst ();
 bondList.ensureCapacity (n);
 for (var i = 0; i < n; i++) {
 var b = this.listAt (bonds, i);
-var order = J.adapter.readers.pymol.PyMOLReader.intAt (b, 2);
-if (order < 1 || order > 3) order = 1;
 var ia = J.adapter.readers.pymol.PyMOLReader.intAt (b, 0);
 var ib = J.adapter.readers.pymol.PyMOLReader.intAt (b, 1);
-if (order > 1 && asSingle == 0) order |= 98304;
- else order |= asSingle;
+var order = J.adapter.readers.pymol.PyMOLReader.intAt (b, 2);
+if (order < 1 || order > 3) order = 1;
+order |= (asSingle || order == 1 ? 65536 : 98304);
 var bond =  new J.adapter.smarter.Bond (ia, ib, order);
 bond.uniqueID = (b.size () > 6 && J.adapter.readers.pymol.PyMOLReader.intAt (b, 6) != 0 ? J.adapter.readers.pymol.PyMOLReader.intAt (b, 5) : -1);
 bondList.addLast (bond);
@@ -663,7 +673,7 @@ continue;
 var pt = this.bsStructureDefined.nextSetBit (istart);
 if (pt >= 0 && pt <= iend) continue;
 this.bsStructureDefined.setBits (istart, iend + 1);
-var structure =  new J.adapter.smarter.Structure (imodel, type, type, type.toString (), ++this.structureCount, type === J.c.STR.SHEET ? 1 : 0);
+var structure =  new J.adapter.smarter.Structure (imodel, type, type, type.toString (), ++this.structureCount, type === J.c.STR.SHEET ? 1 : 0, null);
 var a = atoms[istart];
 var b = atoms[iend];
 var i0 = this.asc.getAtomSetAtomIndex (thisModel);
@@ -753,7 +763,7 @@ this.pymolScene.setAtomInfo (uniqueIDs, cartoonTypes, sequenceNumbers, newChain,
 });
 c$.intAt = Clazz.defineMethod (c$, "intAt", 
  function (list, i) {
-return (list.get (i)).intValue ();
+return (list == null ? -1 : (list.get (i)).intValue ());
 }, "JU.Lst,~N");
 c$.stringAt = Clazz.defineMethod (c$, "stringAt", 
  function (list, i) {

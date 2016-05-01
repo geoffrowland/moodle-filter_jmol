@@ -26,7 +26,7 @@ function (propertyName, value, bs) {
 if ("color" === propertyName) {
 var colix = JU.C.getColixO (value);
 if (colix == 0) colix = 2;
-if (this.bsColixSet == null) this.bsColixSet = JU.BS.newN (this.ac);
+if (this.bsColixSet == null) this.bsColixSet =  new JU.BS ();
 var pid = J.c.PAL.pidOf (value);
 for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
 var atom = this.atoms[i];
@@ -57,9 +57,10 @@ return;
 var data = value;
 var colixes = data[0];
 if (this.bsColixSet == null) this.bsColixSet =  new JU.BS ();
+var c;
 for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
-if (i >= colixes.length) continue;
-this.atoms[i].colixAtom = colixes[i];
+if (i >= colixes.length || (c = colixes[i]) == 0) continue;
+this.atoms[i].colixAtom = c;
 this.atoms[i].paletteID = J.c.PAL.UNKNOWN.id;
 this.bsColixSet.set (i);
 }

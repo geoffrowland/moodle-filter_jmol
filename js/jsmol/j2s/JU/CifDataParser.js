@@ -148,6 +148,7 @@ if (ret != null) ret.append (str).append ("\n");
 this.getTokenPeeked ();
 n++;
 }
+if (n == 0) n = this.columnCount;
 var m = 0;
 while ((str = this.getNextDataToken ()) != null) {
 if (ret == null) continue;

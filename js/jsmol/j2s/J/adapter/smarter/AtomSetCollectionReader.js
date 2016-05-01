@@ -16,6 +16,7 @@ this.isConcatenated = false;
 this.addedData = null;
 this.addedDataKey = null;
 this.fixJavaFloat = true;
+this.thisBiomolecule = null;
 this.line = null;
 this.prevline = null;
 this.next = null;
@@ -461,7 +462,7 @@ this.unitCellParams = this.previousUnitCell;
 }, "~N,~A");
 Clazz.defineMethod (c$, "setSpaceGroupName", 
 function (name) {
-if (this.ignoreFileSpaceGroupName) return;
+if (this.ignoreFileSpaceGroupName || name == null) return;
 var s = name.trim ();
 if (s.equals (this.sgName)) return;
 if (!s.equals ("P1")) JU.Logger.info ("Setting space group name to " + s);
@@ -554,6 +555,16 @@ if (this.unitCellOffsetFractional != this.fileCoordinatesAreFractional) {
 if (this.unitCellOffsetFractional) this.symmetry.toCartesian (this.fileOffset, false);
  else this.symmetry.toFractional (this.fileOffset, false);
 }});
+Clazz.defineMethod (c$, "fractionalizeCoordinates", 
+function (toFrac) {
+this.getSymmetry ();
+var a = this.asc.atoms;
+if (toFrac) for (var i = this.asc.ac; --i >= 0; ) this.symmetry.toFractional (a[i], false);
+
+ else for (var i = this.asc.ac; --i >= 0; ) this.symmetry.toCartesian (a[i], false);
+
+this.setFractionalCoordinates (toFrac);
+}, "~B");
 Clazz.defineMethod (c$, "getNewSymmetry", 
 function () {
 return this.symmetry = this.getInterface ("JS.Symmetry");

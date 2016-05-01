@@ -169,15 +169,16 @@ if (Clazz.instanceOf (group, JM.Monomer)) {
 if ((group).bioPolymer != null && (!modelsExcluded.get (group.chain.model.modelIndex))) (group).setBioPolymer (null, -1);
 }}
 for (var i = 0, mc = this.ms.mc; i < mc; i++) if ((modelsExcluded == null || !modelsExcluded.get (i)) && this.ms.am[i].isBioModel) {
-for (var j = baseGroupIndex; j < groupCount; ++j) {
+for (var pt = 0, j = baseGroupIndex; j < groupCount; ++j, pt++) {
 var g = groups[j];
 var model = g.getModel ();
 if (!model.isBioModel || !(Clazz.instanceOf (g, JM.Monomer))) continue;
 var doCheck = checkConnections && !this.ms.isJmolDataFrameForModel (this.ms.at[g.firstAtomIndex].mi);
-var bp = ((g).bioPolymer == null ? JM.Resolver.allocateBioPolymer (groups, j, doCheck) : null);
+var bp = ((g).bioPolymer == null ? JM.Resolver.allocateBioPolymer (groups, j, doCheck, pt) : null);
 if (bp == null || bp.monomerCount == 0) continue;
-(model).addBioPolymer (bp);
-j += bp.monomerCount - 1;
+var n = (model).addBioPolymer (bp);
+j += n - 1;
+pt += n - 1;
 }
 }
 }, "~A,~N,~N,JU.BS");
@@ -369,7 +370,7 @@ this.checkMap (maps[0], num, m.bsAtoms);
 }var bsModelChain = null;
 var lastModelChain = null;
 var bsTemp =  new JU.BS ();
-var units = JU.PT.getTokens (JU.PT.replaceAllCharacters (specInfo, ", \t\n[]\"", " "));
+var units = JU.PT.getTokens (JU.PT.replaceAllCharacters (specInfo, ", \t\n[]\"=", " "));
 var ptrs =  Clazz.newIntArray (8, 0);
 for (var i = units.length; --i >= 0; ) {
 var unit = units[i] + "|";
@@ -384,7 +385,7 @@ bsTemp.clearAll ();
 bsTemp.or (bsSelected);
 var mchain = unit.substring (0, ptrs[2]);
 if (lastModelChain != null && lastModelChain.equals (mchain)) {
-bsTemp.or (bsModelChain);
+bsTemp.and (bsModelChain);
 } else {
 if (!this.addUnit (1094717454, unit.substring (0, ptrs[1]).toUpperCase (), bsTemp, maps[0]) || !this.addUnit (1073742357, unit.substring (ptrs[1] + 1, ptrs[2]), bsTemp, maps[1])) continue;
 bsModelChain = JU.BSUtil.copy (bsTemp);
@@ -568,6 +569,13 @@ this.freezeM ();
 this.bioPolymers = JU.AU.arrayCopyObject (this.bioPolymers, this.bioPolymerCount);
 return true;
 });
+Clazz.defineMethod (c$, "addStructureByBS", 
+function (count, dsspType, type, bs) {
+for (var i = this.bioPolymerCount; --i >= 0; ) {
+var b = this.bioPolymers[i];
+if (Clazz.instanceOf (b, JM.AlphaPolymer)) count = (this.bioPolymers[i]).setStructureBS (++count, dsspType, type, bs, true);
+}
+}, "~N,~N,J.c.STR,JU.BS");
 Clazz.defineMethod (c$, "addSecondaryStructure", 
 function (type, structureID, serialID, strandCount, startChainID, startSeqcode, endChainID, endSeqcode, istart, iend, bsAssigned) {
 for (var i = this.bioPolymerCount; --i >= 0; ) if (Clazz.instanceOf (this.bioPolymers[i], JM.AlphaPolymer)) (this.bioPolymers[i]).addStructure (type, structureID, serialID, strandCount, startChainID, startSeqcode, endChainID, endSeqcode, istart, iend, bsAssigned);
@@ -633,6 +641,7 @@ if (this.bioPolymers.length == 0) this.clearBioPolymers ();
 if (this.bioPolymerCount == this.bioPolymers.length) this.bioPolymers = JU.AU.doubleLength (this.bioPolymers);
 polymer.bioPolymerIndexInModel = this.bioPolymerCount;
 this.bioPolymers[this.bioPolymerCount++] = polymer;
+return polymer.monomerCount;
 }, "JM.BioPolymer");
 Clazz.overrideMethod (c$, "getBioBranches", 
 function (biobranches) {

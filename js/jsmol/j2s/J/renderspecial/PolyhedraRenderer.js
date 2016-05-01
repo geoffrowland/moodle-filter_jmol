@@ -68,23 +68,27 @@ for (var i = vertices.length; --i >= 0; ) this.screens3f[i] =  new JU.P3 ();
 
 }var sc = this.screens3f;
 var planes = p.triangles;
+var elemNos = (p.pointScale > 0 ? p.getElemNos () : null);
 for (var i = vertices.length; --i >= 0; ) {
 var atom = (Clazz.instanceOf (vertices[i], JM.Atom) ? vertices[i] : null);
+var v = sc[i];
 if (atom == null) {
-this.tm.transformPtScrT3 (vertices[i], sc[i]);
-} else if (atom.isVisible (this.myVisibilityFlag)) {
-sc[i].set (atom.sX, atom.sY, atom.sZ);
+this.tm.transformPtScrT3 (vertices[i], v);
 } else if (this.vibs && atom.hasVibration ()) {
 this.scrVib = this.tm.transformPtVib (atom, this.ms.vibrations[atom.i]);
-sc[i].set (this.scrVib.x, this.scrVib.y, this.scrVib.z);
+v.set (this.scrVib.x, this.scrVib.y, this.scrVib.z);
 } else {
-this.tm.transformPt3f (atom, sc[i]);
-}if (this.showNumbers) {
-this.g3d.setC (4);
-this.g3d.drawStringNoSlab ("" + i, null, Clazz.floatToInt (sc[i].x), Clazz.floatToInt (sc[i].y), Clazz.floatToInt (sc[i].z) - 30, 0);
+this.tm.transformPt3f (atom, v);
+}if (elemNos != null && i + 1 < vertices.length && this.g3d.setC (elemNos[i] < 0 ? 4 : this.vwr.cm.setElementArgb (elemNos[i], 2147483647))) {
+this.g3d.fillSphereBits (Clazz.floatToInt (this.tm.scaleToScreen (Clazz.floatToInt (v.z), Clazz.floatToInt (p.pointScale * 1000))), v);
 this.g3d.setC (colix);
-}}
-this.isAll = (this.$drawEdges == 1 || this.bsSelected != null);
+}if (this.showNumbers) {
+if (this.g3d.setC (4)) {
+this.g3d.drawStringNoSlab ("" + i, null, Clazz.floatToInt (v.x), Clazz.floatToInt (v.y), Clazz.floatToInt (v.z) - 30, 0);
+this.g3d.setC (colix);
+}}}
+var isSelected = (this.bsSelected != null && this.bsSelected.get (iAtom));
+this.isAll = (this.$drawEdges == 1 || isSelected);
 this.frontOnly = (this.$drawEdges == 2);
 var normixes = p.getNormixes ();
 if (!needTranslucent || this.g3d.setC (colix)) for (var i = planes.length; --i >= 0; ) {
@@ -99,7 +103,7 @@ throw e;
 }
 }
 }
-if (this.bsSelected != null && this.bsSelected.get (iAtom)) colix = 23;
+if (isSelected) colix = 23;
  else if (p.colixEdge != 0) colix = p.colixEdge;
 if (this.g3d.setC (JU.C.getColixTranslucent3 (colix, false, 0))) for (var i = planes.length; --i >= 0; ) {
 var pl = planes[i];

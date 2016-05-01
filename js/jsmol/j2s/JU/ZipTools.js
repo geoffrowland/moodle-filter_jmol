@@ -216,18 +216,23 @@ Clazz.overrideMethod (c$, "readFileAsMap",
 function (bis, bdata, name) {
 var pt = (name == null ? -1 : name.indexOf ("|"));
 name = (pt >= 0 ? name.substring (pt + 1) : null);
+var bytes = null;
 try {
 if (JU.Rdr.isPngZipStream (bis)) {
 var isImage = "_IMAGE_".equals (name);
-if (name == null || isImage) bdata.put ((isImage ? "_DATA_" : "_IMAGE_"),  new JU.BArray (JU.ZipTools.getPngImageBytes (bis)));
-if (!isImage) this.cacheZipContents (bis, name, bdata, true);
+if (name == null || isImage) {
+bytes = JU.ZipTools.getPngImageBytes (bis);
+bdata.put ((isImage ? "_DATA_" : "_IMAGE_"),  new JU.BArray (bytes));
+}if (!isImage) this.cacheZipContents (bis, name, bdata, true);
 } else if (JU.Rdr.isZipS (bis)) {
 this.cacheZipContents (bis, name, bdata, true);
 } else if (name == null) {
-bdata.put ("_DATA_",  new JU.BArray (JU.Rdr.getLimitedStreamBytes (bis, -1)));
+bytes = JU.Rdr.getLimitedStreamBytes (JU.Rdr.getUnzippedInputStream (this, bis), -1);
+bdata.put ("_DATA_",  new JU.BArray (bytes));
 } else {
 throw  new java.io.IOException ("ZIP file " + name + " not found");
-}bdata.put ("$_BINARY_$", Boolean.TRUE);
+}if (bytes != null) bdata.put ("_LEN_", Integer.$valueOf (bytes.length));
+bdata.put ("$_BINARY_$", Boolean.TRUE);
 } catch (e) {
 if (Clazz.exceptionOf (e, java.io.IOException)) {
 bdata.clear ();

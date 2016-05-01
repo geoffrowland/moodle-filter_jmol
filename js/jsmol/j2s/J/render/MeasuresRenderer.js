@@ -211,8 +211,8 @@ var zD = d.sZ - d.sD - 10;
 var radius = this.drawLine (a.sX, a.sY, zA, b.sX, b.sY, zB, this.mad);
 radius += this.drawLine (b.sX, b.sY, zB, c.sX, c.sY, zC, this.mad);
 radius += this.drawLine (c.sX, c.sY, zC, d.sX, d.sY, zD, this.mad);
-var zLabel = Clazz.doubleToInt ((zA + zB + zC + zD) / 4);
 if (s == null) return;
+var zLabel = Clazz.doubleToInt ((zA + zB + zC + zD) / 4);
 radius /= 3;
 if (this.m.text == null) {
 this.g3d.setC (this.labelColix);

@@ -7,6 +7,7 @@ this.bioType = '\0';
 this.ringBonds = null;
 this.braceCount = 0;
 this.branchLevel = 0;
+this.ignoreStereochemistry = false;
 this.flags = 0;
 this.htMeasures = null;
 this.atomRefs = null;
@@ -34,19 +35,11 @@ function (pattern) {
 if (pattern == null) throw  new JS.InvalidSmilesException ("expression must not be null");
 var search =  new JS.SmilesSearch ();
 if (pattern.indexOf ("$(select") >= 0) pattern = this.parseNested (search, pattern, "select");
-pattern = JS.SmilesParser.cleanPattern (pattern);
-this.flags = 0;
-while (pattern.startsWith ("/")) {
-var strFlags = JS.SmilesParser.getSubPattern (pattern, 0, '/').toUpperCase ();
-pattern = pattern.substring (strFlags.length + 2);
-if (strFlags.indexOf ("NONCANONICAL") >= 0) this.flags |= 64;
-if (strFlags.indexOf ("NOAROMATIC") >= 0) this.flags |= 1;
-if (strFlags.indexOf ("AROMATICSTRICT") >= 0) this.flags |= 8;
-if (strFlags.indexOf ("AROMATICDEFINED") >= 0) this.flags |= 16;
-if (strFlags.indexOf ("AROMATICDOUBLE") >= 0) this.flags |= 32;
-if (strFlags.indexOf ("NOSTEREO") >= 0) this.flags |= 2;
- else if (strFlags.indexOf ("INVERTSTEREO") >= 0) this.flags |= 4;
-}
+var ret =  Clazz.newIntArray (1, 0);
+pattern = JS.SmilesParser.extractFlags (pattern, ret);
+this.flags = ret[0];
+this.ignoreStereochemistry = ((this.flags & 32) == 32);
+search.setFlags (this.flags);
 if (pattern.indexOf ("$") >= 0) pattern = this.parseVariables (pattern);
 if (this.isSmarts && pattern.indexOf ("[$") >= 0) pattern = this.parseVariableLength (pattern);
 if (pattern.indexOf ("||") >= 0) {
@@ -161,18 +154,20 @@ var molecule =  new JS.SmilesSearch ();
 molecule.setTop (parent);
 molecule.isSmarts = this.isSmarts;
 molecule.pattern = pattern;
-molecule.flags = flags;
+molecule.setFlags (flags);
 if (pattern.indexOf ("$(") >= 0) pattern = this.parseNested (molecule, pattern, "");
 this.parseSmiles (molecule, pattern, null, false);
 if (this.braceCount != 0) throw  new JS.InvalidSmilesException ("unmatched '{'");
 if (!this.ringBonds.isEmpty ()) throw  new JS.InvalidSmilesException ("Open ring");
 molecule.setAtomArray ();
 molecule.isTopology = true;
+molecule.patternAromatic = false;
 for (var i = molecule.ac; --i >= 0; ) {
 var atom = molecule.patternAtoms[i];
 if (molecule.isTopology && atom.isDefined ()) molecule.isTopology = false;
+if (atom.isAromatic ()) molecule.patternAromatic = true;
 atom.setBondArray ();
-if (!this.isSmarts && atom.bioType == '\0' && !atom.setHydrogenCount (molecule)) throw  new JS.InvalidSmilesException ("unbracketed atoms must be one of: B, C, N, O, P, S, F, Cl, Br, I, *,");
+if (!this.isSmarts && atom.bioType == '\0' && !atom.setHydrogenCount ()) throw  new JS.InvalidSmilesException ("unbracketed atoms must be one of: B, C, N, O, P, S, F, Cl, Br, I, *,");
 }
 if (this.isSmarts) for (var i = molecule.ac; --i >= 0; ) {
 var atom = molecule.patternAtoms[i];
@@ -202,7 +197,7 @@ Clazz.defineMethod (c$, "fixChirality",
  function (molecule) {
 for (var i = molecule.ac; --i >= 0; ) {
 var sAtom = molecule.patternAtoms[i];
-if (sAtom.stereo != null) sAtom.stereo.fixStereo (sAtom);
+if (sAtom.stereo != null && !this.ignoreStereochemistry) sAtom.stereo.fixStereo (sAtom);
 }
 }, "JS.SmilesSearch");
 Clazz.defineMethod (c$, "parseSmiles", 
@@ -515,15 +510,6 @@ index = JS.SmilesParser.getDigits (pattern, index + (isAtomNo ? 2 : 1), ret);
 if (isAtomNo) newAtom.atomNumber = ret[0];
  else newAtom.elementNumber = ret[0];
 break;
-case '(':
-var name = JS.SmilesParser.getSubPattern (pattern, index, '(');
-index += 2 + name.length;
-newAtom = this.checkReference (newAtom, name, ret);
-isNewAtom = (ret[0] == 1);
-if (!isNewAtom) {
-if (isNot) index = 0;
-isNot = true;
-}break;
 case '-':
 case '+':
 index = this.checkCharge (pattern, index, newAtom);
@@ -531,6 +517,10 @@ break;
 case '@':
 if (molecule.stereo == null) molecule.stereo = JS.SmilesStereo.newStereo (null);
 index = JS.SmilesStereo.checkChirality (pattern, index, molecule.patternAtoms[newAtom.index]);
+break;
+case ':':
+index = JS.SmilesParser.getDigits (pattern, index + 1, ret);
+newAtom.atomClass = ret[0];
 break;
 default:
 var nextChar = JS.SmilesParser.getChar (pattern, index + 1);
@@ -627,28 +617,13 @@ if (this.branchLevel == 0 && (bond.order == 17 || bond.order == 112)) this.branc
 }if (this.branchLevel == 0) molecule.lastChainAtom = newAtom;
 return newAtom;
 }, "JS.SmilesSearch,JS.SmilesAtom,~S,JS.SmilesAtom,JS.SmilesBond,~B,~B,~B");
-Clazz.defineMethod (c$, "checkReference", 
- function (newAtom, name, ret) {
-if (this.atomRefs == null) this.atomRefs =  new java.util.Hashtable ();
-var ref = this.atomRefs.get (name);
-if (ref == null) {
-this.atomRefs.put (newAtom.referance = name, ref = newAtom);
-if (!newAtom.hasSymbol) {
-if (name.length > 0) {
-var s = null;
-if (name.length >= 2 && (JU.Elements.elementNumberFromSymbol (s = name.substring (0, 2), true) > 0 || JU.Elements.elementNumberFromSymbol (s = name.substring (0, 1), true) > 0)) {
-newAtom.setSymbol (s);
-}}}ret[0] = 1;
-} else {
-ret[0] = 0;
-}return ref;
-}, "JS.SmilesAtom,~S,~A");
 Clazz.defineMethod (c$, "parseRing", 
  function (molecule, ringNum, currentAtom, bond) {
 var r = Integer.$valueOf (ringNum);
 var bond0 = this.ringBonds.get (r);
 if (bond0 == null) {
 this.ringBonds.put (r, bond);
+molecule.top.ringCount++;
 return;
 }this.ringBonds.remove (r);
 switch (bond.order) {
@@ -720,6 +695,7 @@ break;
 case 17:
 break;
 case 2:
+molecule.top.nDouble++;
 case 1:
 if (currentAtom.isAromatic ()) molecule.top.needRingData = true;
 break;
@@ -851,5 +827,23 @@ while ((i = pattern.indexOf ("//*")) >= 0 && (i2 = pattern.indexOf ("*//")) >= i
 
 pattern = JU.PT.rep (pattern, "//", "");
 return pattern;
+}, "~S");
+c$.extractFlags = Clazz.defineMethod (c$, "extractFlags", 
+function (pattern, ret) {
+pattern = JS.SmilesParser.cleanPattern (pattern);
+var flags = 0;
+while (pattern.startsWith ("/")) {
+var strFlags = JS.SmilesParser.getSubPattern (pattern, 0, '/').toUpperCase ();
+pattern = pattern.substring (strFlags.length + 2);
+flags = JS.SmilesSearch.addFlags (flags, strFlags);
+}
+ret[0] = flags;
+return pattern;
+}, "~S,~A");
+c$.getFlags = Clazz.defineMethod (c$, "getFlags", 
+function (pattern) {
+var ret =  Clazz.newIntArray (1, 0);
+JS.SmilesParser.extractFlags (pattern, ret);
+return ret[0];
 }, "~S");
 });

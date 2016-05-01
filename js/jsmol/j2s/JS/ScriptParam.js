@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JS");
-Clazz.load (["JS.ScriptError"], "JS.ScriptParam", ["java.lang.Float", "java.util.Hashtable", "JU.CU", "$.Lst", "$.Measure", "$.P3", "$.P4", "$.PT", "$.Quat", "$.SB", "$.V3", "JM.TickInfo", "JS.SV", "$.T", "JU.Edge", "$.Escape", "$.Logger"], function () {
+Clazz.load (["JS.ScriptError"], "JS.ScriptParam", ["java.lang.Float", "java.util.Hashtable", "JU.BS", "$.CU", "$.Lst", "$.Measure", "$.P3", "$.P4", "$.PT", "$.Quat", "$.SB", "$.V3", "JM.TickInfo", "JS.SV", "$.T", "JU.BSUtil", "$.Edge", "$.Escape", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.contextVariables = null;
 this.thisContext = null;
@@ -132,12 +132,15 @@ switch (this.getToken (i).tok) {
 case 10:
 case 1073742325:
 var bs = this.atomExpression (this.st, i, 0, true, false, ret, true);
-if (bs != null) {
-if (ret != null) ret[0] = bs;
-return (bs.cardinality () == 1 ? this.vwr.ms.at[bs.nextSetBit (0)] : this.vwr.ms.getAtomSetCenter (bs));
-}if (ret != null && Clazz.instanceOf (ret[0], JU.P3)) return ret[0];
-this.invArg ();
-break;
+if (bs == null) {
+if (ret == null || !(Clazz.instanceOf (ret[0], JU.P3))) this.invArg ();
+return ret[0];
+}if (ret != null) {
+if (ret.length == 2 && Clazz.instanceOf (ret[1], JU.BS)) {
+bs = JU.BSUtil.copy (bs);
+bs.and (ret[1]);
+}ret[0] = bs;
+}return (bs.cardinality () == 1 ? this.vwr.ms.at[bs.nextSetBit (0)] : this.vwr.ms.getAtomSetCenter (bs));
 case 1073742332:
 case 8:
 return this.getPoint3f (i, true);
@@ -403,6 +406,26 @@ if (isPercent) ++index;
 if (this.tokAt (index) != 268435521) return null;
 this.iToken = index;
 pt.z = (isPercent ? -1 : 1) * 3.4028235E38;
+return pt;
+}, "~N");
+Clazz.defineMethod (c$, "xyzpParameter", 
+function (index) {
+var tok = this.tokAt (index);
+if (tok == 1073742195) tok = this.tokAt (++index);
+if (tok != 268435520 || !this.isFloatParameter (++index)) return null;
+var pt =  new JU.P4 ();
+pt.x = this.floatParameter (index);
+if (this.tokAt (++index) == 268435504) index++;
+if (!this.isFloatParameter (index)) return null;
+pt.y = this.floatParameter (index);
+if (this.tokAt (++index) == 268435504) index++;
+if (!this.isFloatParameter (index)) return null;
+pt.z = this.floatParameter (index);
+var isPercent = (this.tokAt (++index) == 268435634);
+if (isPercent) ++index;
+if (this.tokAt (index) != 268435521) return null;
+this.iToken = index;
+pt.w = (isPercent ? -1 : 1) * 3.4028235E38;
 return pt;
 }, "~N");
 Clazz.defineMethod (c$, "optParameterAsString", 
@@ -861,10 +884,10 @@ tickInfo.type = str;
 this.iToken = index;
 return tickInfo;
 }tickInfo =  new JM.TickInfo (this.getPointOrPlane (index, false, true, false, false, 3, 3));
-if (this.coordinatesAreFractional || this.tokAt (this.iToken + 1) == 1747587102) {
+if (this.coordinatesAreFractional || this.tokAt (this.iToken + 1) == 1814695966) {
 tickInfo.scale = JU.P3.new3 (NaN, NaN, NaN);
 allowScale = false;
-}if (this.tokAt (this.iToken + 1) == 1747587102) this.iToken++;
+}if (this.tokAt (this.iToken + 1) == 1814695966) this.iToken++;
 tickInfo.type = str;
 if (this.tokAt (this.iToken + 1) == 1287653388) tickInfo.tickLabelFormats = this.stringParameterSet (this.iToken + 2);
 if (!allowScale) return tickInfo;

@@ -71,7 +71,7 @@ var c = mesh.colix;
 for (var j = max; --j >= 0; ) {
 var m = mesh.symops[j];
 if (m == null) continue;
-if (mesh.colorType == 1296041474) mesh.colix = mesh.symopColixes[j];
+if (mesh.colorType == 1296041986) mesh.colix = mesh.symopColixes[j];
 var normals = mesh.symopNormixes[j];
 var needNormals = (normals == null);
 verticesTemp = (needNormals ?  new Array (this.vertexCount) : null);

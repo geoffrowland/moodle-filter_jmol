@@ -39,10 +39,13 @@ this.repaintNow (why);
 }}}, "~B,~S");
 Clazz.overrideMethod (c$, "requestRepaintAndWait", 
 function (why) {
+var jmol = null;
 {
-if (typeof Jmol != "undefined" && Jmol._repaint)
-Jmol._repaint(this.vwr.html5Applet, false);
-this.repaintDone();
+jmol = (self.Jmol && Jmol._repaint ? Jmol : null);
+}if (jmol != null) {
+jmol._repaint (this.vwr.html5Applet, false);
+this.repaintDone ();
+}{
 }}, "~S");
 Clazz.overrideMethod (c$, "repaintIfReady", 
 function (why) {

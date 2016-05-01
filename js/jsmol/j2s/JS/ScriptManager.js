@@ -323,6 +323,7 @@ var type = this.getDragDropFileTypeName (fileName);
 if (type == null) {
 type = JV.FileManager.determineSurfaceTypeIs (this.vwr.getBufferedInputStream (fileName));
 if (type != null) cmd = "if (_filetype == 'Pdb') { isosurface sigma 1.0 within 2.0 {*} " + JU.PT.esc (fileName) + " mesh nofill }; else; { isosurface " + JU.PT.esc (fileName) + "}";
+return;
 } else if (type.equals ("Jmol")) {
 cmd = "script ";
 } else if (type.equals ("Cube")) {

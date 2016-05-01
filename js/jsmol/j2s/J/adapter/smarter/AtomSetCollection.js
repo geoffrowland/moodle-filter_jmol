@@ -609,6 +609,7 @@ this.setCurrentModelInfo ("title", this.collectionName);
 }, "~B");
 Clazz.defineMethod (c$, "getAtomSetAtomIndex", 
 function (i) {
+if (i < 0) System.out.println ("??");
 return this.atomSetAtomIndexes[i];
 }, "~N");
 Clazz.defineMethod (c$, "getAtomSetAtomCount", 

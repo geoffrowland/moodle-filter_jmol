@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.appletjs");
-Clazz.load (["javajs.api.JSInterface", "JU.GenericApplet"], "J.appletjs.Jmol", ["java.util.Hashtable", "JU.PT", "JU.Logger", "$.Parser"], function () {
+Clazz.load (["javajs.api.JSInterface", "JU.GenericApplet"], "J.appletjs.Jmol", ["java.util.Hashtable", "JU.PT", "J.awtjs2d.Platform", "JU.Logger", "$.Parser"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.htParams = null;
 Clazz.instantialize (this, arguments);
@@ -195,5 +195,17 @@ this.viewer.processTwoPointGesture (touches);
 Clazz.overrideMethod (c$, "setScreenDimension", 
 function (width, height) {
 this.viewer.setScreenDimension (width, height);
+}, "~N,~N");
+Clazz.overrideMethod (c$, "resizeInnerPanel", 
+function (data) {
+var dims =  Clazz.newFloatArray (2, 0);
+JU.Parser.parseStringInfestedFloatArray (data, null, dims);
+this.resizeDisplay (Clazz.floatToInt (dims[0]), Clazz.floatToInt (dims[1]));
+return  Clazz.newIntArray (-1, [Clazz.floatToInt (dims[0]), Clazz.floatToInt (dims[1])]);
+}, "~S");
+Clazz.defineMethod (c$, "resizeDisplay", 
+function (width, height) {
+var jmol = J.awtjs2d.Platform.Jmol ();
+jmol.resizeApplet (this.viewer.html5Applet,  Clazz.newIntArray (-1, [width, height]));
 }, "~N,~N");
 });

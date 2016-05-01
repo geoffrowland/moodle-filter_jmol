@@ -50,7 +50,7 @@ template = "xid='%1';zap;set echo top left;echo loading...;refresh;load %4;%3|%2
 function addModel(xxxx, load, text, script, selected) {
 	script || (script = "");
   selected || (selected = false);
-	load || (load = "=%1/dssr 1");
+	load || (load = "=%1/dssr 1;display nucleic");
   var t = template.replace(/%4/, load)
     .replace(/%1/g, xxxx)
     .replace(/%2/, text)
@@ -185,7 +185,7 @@ dssrBtn('hairpins', 'hairpins');
 dssrBtn('helices', 'helices');
 jmolBr();
 dssrBtn('internal loops', 'iloops');
-dssrBtn('isocanonical pairs', 'isocanonPairs');
+dssrBtn('isocanonical pairs', 'isoCanonPairs');
 jmolBr();
 dssrBtn('junctions', 'junctions');
 dssrBtn('kissing loops', 'kissingLoops');

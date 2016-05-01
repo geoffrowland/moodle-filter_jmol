@@ -281,7 +281,7 @@ str.append ("\nfunction _setWindowState() {\n");
 str.append ("# width ").appendI (width == 0 ? this.vwr.getScreenWidth () : width).append (";\n# height ").appendI (height == 0 ? this.vwr.getScreenHeight () : height).append (";\n");
 this.app (str, "stateVersion = " + JV.JC.versionInt);
 this.app (str, "background " + JU.Escape.escapeColor (global.objColors[0]));
-for (var i = 1; i < 8; i++) if (global.objColors[i] != 0) this.app (str, JV.StateManager.getObjectNameFromId (i) + "Color = \"" + JU.Escape.escapeColor (global.objColors[i]) + '"');
+for (var i = 1; i < 7; i++) if (global.objColors[i] != 0) this.app (str, JV.StateManager.getObjectNameFromId (i) + "Color = \"" + JU.Escape.escapeColor (global.objColors[i]) + '"');
 
 if (global.backgroundImageFileName != null) {
 this.app (str, "background IMAGE " + (global.backgroundImageFileName.startsWith (";base64,") ? "" : "/*file*/") + JU.PT.esc (global.backgroundImageFileName));
@@ -601,9 +601,9 @@ Clazz_overrideMethod (c$, "getFontState",
 function (myType, font3d) {
 var objId = JV.StateManager.getObjectIdFromName (myType.equalsIgnoreCase ("axes") ? "axis" : myType);
 if (objId < 0) return "";
-var mad = this.vwr.getObjectMad (objId);
+var mad = this.vwr.getObjectMad10 (objId);
 var s =  new JU.SB ().append ("\n");
-this.app (s, myType + (mad == 0 ? " off" : mad == 1 ? " on" : mad == -1 ? " dotted" : mad < 20 ? " " + mad : " " + (mad / 2000)));
+this.app (s, myType + (mad == 0 ? " off" : mad == 1 ? " on" : mad == -1 ? " dotted" : mad < 20 ? " " + mad : " " + (mad / 20000)));
 if (s.length () < 3) return "";
 var fcmd = J.shape.Shape.getFontCommand (myType, font3d);
 if (fcmd.length > 0) fcmd = "  " + fcmd + ";\n";
@@ -804,7 +804,7 @@ return s;
 Clazz_defineMethod (c$, "getTextState", 
  function (t) {
 var s =  new JU.SB ();
-var text = t.getText ();
+var text = t.text;
 if (text == null || t.isLabelOrHover || t.target.equals ("error")) return "";
 var isImage = (t.image != null);
 var strOff = null;
