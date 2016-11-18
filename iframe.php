@@ -318,17 +318,17 @@ if ($controls !== '0') {
     }
     echo '<select class = "jmolPanelControl" id = "use" title = "'.get_string('displaytechnology', 'filter_jmol', true).'">';
     switch ($technol){
-        case HTML5:
+        case 'HTML5':
             echo '<option title = "JSmol using HTML5" value = "HTML5" selected = "selected">JSmol</option>';
             echo '<option title = "GLmol using WebGL" value = "WEBGL">GLmol</option>';
             echo '<option title = "Jmol using Java" value = "SIGNED">Jmol</option>';
         break;
-        case WEBGL:
+        case 'WEBGL':
             echo '<option title = "JSmol using HTML5" value = "HTML5">JSmol</option>';
             echo '<option title = "GLmol using WebGL" value = "WEBGL"selected = "selected">GLmol</option>';
             echo '<option title = "Jmol using Java" value = "SIGNED">Jmol</option>';
         break;
-        case SIGNED:
+        case 'SIGNED':
             echo '<option title = "JSmol using HTML5" value = "HTML5">JSmol</option>';
             echo '<option title = "GLmol using WebGL" value = "WEBGL">GLmol</option>';
             echo '<option title = "Jmol using Java" value = "SIGNED" selected = "selected">Jmol</option>';
