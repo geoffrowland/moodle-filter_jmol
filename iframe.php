@@ -93,7 +93,7 @@ if ($jmolfiletype === "cif" ) {
     $dropmenu = 'SimpleBio';
 } else if ($jmolfiletype === "pdb" || $jmolfiletype === "mcif") {
     $loadscript = 'set pdbAddHydrogens true; load '.$pathname.'; calculate hbonds; hbonds off; ssbonds off; ';
-    $loadscript = $loadscript.'display not water; select protein or nucleic; cartoons only; color structure; ';
+    $loadscript = $loadscript.'select protein or nucleic; cartoons only; color structure; ';
     $loadscript = $loadscript.'set hbondsBackbone TRUE; set ssbondsbackbone TRUE; select *;';
     $menu = 'SimpleBio.mnu';
     $dropmenu = 'SimpleBio';
