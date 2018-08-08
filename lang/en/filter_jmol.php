@@ -298,3 +298,4 @@ $string['inosine'] = 'Inosine';
 $string['cytosine'] = 'Cytosine';
 $string['thymine'] = 'Thymine';
 $string['uracil'] = 'Uracil';
+$string['privacy:metadata'] = 'The Jmol plugin does not store any personal data.';
