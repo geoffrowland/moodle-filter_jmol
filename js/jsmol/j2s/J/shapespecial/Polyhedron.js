@@ -1,92 +1,94 @@
 Clazz.declarePackage ("J.shapespecial");
-Clazz.load (null, "J.shapespecial.Polyhedron", ["java.lang.Boolean", "$.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.Measure", "$.P3", "$.V3", "JM.Atom", "JS.SV", "JU.Escape", "$.Node", "$.Normix", "$.Point3fi"], function () {
+Clazz.load (null, "J.shapespecial.Polyhedron", ["java.lang.Boolean", "$.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.Measure", "$.P3", "$.V3", "JM.Atom", "JS.SV", "JU.C", "$.Elements", "$.Escape", "$.Logger", "$.Node", "$.Normix", "$.Point3fi"], function () {
 c$ = Clazz.decorateAsClass (function () {
-this.modelIndex = 0;
+this.info = null;
+this.id = null;
+this.center = null;
 this.centralAtom = null;
 this.vertices = null;
+this.triangles = null;
 this.faces = null;
 this.nVertices = 0;
 this.collapsed = false;
 this.bsFlat = null;
+this.distanceRef = 0;
 this.normals = null;
 this.normixes = null;
 this.smiles = null;
 this.smarts = null;
+this.polySmiles = null;
 this.pointGroup = null;
+this.pointGroupFamily = null;
 this.volume = null;
 this.visible = true;
 this.isFullyLit = false;
 this.isValid = true;
 this.colixEdge = 0;
 this.visibilityFlags = 0;
-this.info = null;
+this.colix = 23;
+this.modelIndex = -2147483648;
+this.offset = null;
+this.scale = 1;
+this.pointScale = 0;
+this.elemNos = null;
 Clazz.instantialize (this, arguments);
 }, J.shapespecial, "Polyhedron");
 Clazz.makeConstructor (c$, 
 function () {
 });
 Clazz.defineMethod (c$, "set", 
-function (centralAtom, nVertices, nPoints, planeCount, otherAtoms, normals, bsFlat, planes, collapsed) {
-this.centralAtom = centralAtom;
-this.modelIndex = centralAtom.mi;
-this.nVertices = nVertices;
+function (id, modelIndex, atomOrPt, points, nPoints, vertexCount, triangles, triangleCount, faces, normals, bsFlat, collapsed, distanceRef, pointScale) {
+this.pointScale = pointScale;
+this.distanceRef = distanceRef;
+if (id == null) {
+this.centralAtom = atomOrPt;
+this.modelIndex = this.centralAtom.mi;
+} else {
+this.id = id;
+this.center = atomOrPt;
+this.modelIndex = modelIndex;
+}this.nVertices = vertexCount;
 this.vertices =  new Array (nPoints + 1);
-this.normals =  new Array (planeCount);
+this.normals =  new Array (triangleCount);
+this.faces = faces;
 this.bsFlat = bsFlat;
-this.faces = JU.AU.newInt2 (planeCount);
-for (var i = nPoints + 1; --i >= 0; ) this.vertices[i] = otherAtoms[i];
+this.triangles = JU.AU.newInt2 (triangleCount);
+for (var i = nPoints + 1; --i >= 0; ) this.vertices[i] = points[i];
 
-for (var i = planeCount; --i >= 0; ) this.normals[i] = JU.V3.newV (normals[i]);
+for (var i = triangleCount; --i >= 0; ) this.normals[i] = JU.V3.newV (normals[i]);
 
-for (var i = planeCount; --i >= 0; ) this.faces[i] = planes[i];
+for (var i = triangleCount; --i >= 0; ) this.triangles[i] = triangles[i];
 
 this.collapsed = collapsed;
 return this;
-}, "JM.Atom,~N,~N,~N,~A,~A,JU.BS,~A,~B");
-Clazz.defineMethod (c$, "getInfo", 
-function (vwr, isAll) {
-if (isAll && this.info != null) return this.info;
-var info =  new java.util.Hashtable ();
-if (isAll) {
-this.info = info;
-info.put ("modelIndex", Integer.$valueOf (this.centralAtom.mi));
-info.put ("modelNumber", Integer.$valueOf (this.centralAtom.getModelNumber ()));
-info.put ("center", JU.P3.newP (this.centralAtom));
-info.put ("atomNumber", Integer.$valueOf (this.centralAtom.getAtomNumber ()));
-info.put ("atomName", this.centralAtom.getInfo ());
-info.put ("element", this.centralAtom.getElementSymbol ());
-info.put ("vertexCount", Integer.$valueOf (this.nVertices));
-info.put ("faceCount", Integer.$valueOf (this.faces.length));
-info.put ("volume", this.getVolume ());
-if (this.smarts != null) info.put ("smarts", this.smarts);
-if (this.smiles != null) info.put ("smiles", this.smiles);
-if (this.pointGroup != null) info.put ("pointGroup", this.pointGroup.getPointGroupName ());
-var energy = vwr.ms.getInfo (this.centralAtom.mi, "Energy");
-if (energy != null) info.put ("energy", energy);
-} else {
-info.put ("bsFlat", this.bsFlat);
-if (this.collapsed) info.put ("collapsed", Boolean.$valueOf (this.collapsed));
-info.put ("ptRef", this.vertices[this.nVertices]);
-}info.put ("atomIndex", Integer.$valueOf (this.centralAtom.i));
-info.put ("vertices", JU.AU.arrayCopyPt (this.vertices, this.nVertices));
-info.put ("faces", JU.AU.arrayCopyII (this.faces, this.faces.length));
-var elemNos =  Clazz.newIntArray (this.nVertices, 0);
-for (var i = 0; i < this.nVertices; i++) {
-var pt = this.vertices[i];
-elemNos[i] = (Clazz.instanceOf (pt, JU.Node) ? (pt).getElementNumber () : Clazz.instanceOf (pt, JU.Point3fi) ? (pt).sD : -2);
-}
-info.put ("elemNos", elemNos);
-return info;
-}, "JV.Viewer,~B");
+}, "~S,~N,JU.P3,~A,~N,~N,~A,~N,~A,~A,JU.BS,~B,~N,~N");
 Clazz.defineMethod (c$, "setInfo", 
 function (info, at) {
 try {
+this.collapsed = info.containsKey ("collapsed");
+this.id = (info.containsKey ("id") ? info.get ("id").asString () : null);
+if (this.id == null) {
 this.centralAtom = at[info.get ("atomIndex").intValue];
 this.modelIndex = this.centralAtom.mi;
-var lst = info.get ("vertices").getList ();
-this.vertices =  new Array (lst.size () + 1);
-this.nVertices = this.vertices.length - 1;
-for (var i = this.nVertices; --i >= 0; ) this.vertices[i] = JS.SV.ptValue (lst.get (i));
+} else {
+this.center = JU.P3.newP (JS.SV.ptValue (info.get ("center")));
+this.modelIndex = info.get ("modelIndex").intValue;
+this.colix = JU.C.getColixS (info.get ("color").asString ());
+this.colixEdge = JU.C.getColixS (info.get ("colorEdge").asString ());
+if (info.containsKey ("offset")) this.offset = JU.P3.newP (JS.SV.ptValue (info.get ("offset")));
+if (info.containsKey ("scale")) this.scale = JS.SV.fValue (info.get ("scale"));
+}var lst = info.get ("vertices").getList ();
+var vc = info.get ("vertexCount");
+if (vc == null) {
+this.nVertices = lst.size ();
+this.vertices =  new Array (this.nVertices + 1);
+this.vertices[this.nVertices] = JS.SV.ptValue (info.get ("ptRef"));
+} else {
+this.nVertices = vc.intValue;
+this.vertices =  new Array (lst.size ());
+vc = info.get ("r");
+if (vc != null) this.distanceRef = vc.asFloat ();
+}for (var i = lst.size (); --i >= 0; ) this.vertices[i] = JS.SV.ptValue (lst.get (i));
 
 lst = info.get ("elemNos").getList ();
 for (var i = this.nVertices; --i >= 0; ) {
@@ -97,22 +99,22 @@ p.setT (this.vertices[i]);
 p.sD = n;
 this.vertices[i] = p;
 }}
-this.vertices[this.nVertices] = JS.SV.ptValue (info.get ("ptRef"));
-lst = info.get ("faces").getList ();
-this.faces = JU.AU.newInt2 (lst.size ());
-this.normals =  new Array (this.faces.length);
+if (info.containsKey ("pointScale")) this.pointScale = Math.max (0, JS.SV.fValue (info.get ("pointScale")));
+var faces = info.get ("faces");
+var o = info.get ("triangles");
+if (o == null) {
+o = faces;
+} else {
+this.faces = this.toInt2 (faces);
+}this.triangles = this.toInt2 (o);
+this.normals =  new Array (this.triangles.length);
 var vAB =  new JU.V3 ();
-for (var i = this.faces.length; --i >= 0; ) {
-var lst2 = lst.get (i).getList ();
-var a =  Clazz.newIntArray (lst2.size (), 0);
-for (var j = a.length; --j >= 0; ) a[j] = lst2.get (j).intValue;
-
-this.faces[i] = a;
+for (var i = this.triangles.length; --i >= 0; ) {
 this.normals[i] =  new JU.V3 ();
+var a = this.triangles[i];
 JU.Measure.getNormalThroughPoints (this.vertices[a[0]], this.vertices[a[1]], this.vertices[a[2]], this.normals[i], vAB);
 }
 this.bsFlat = JS.SV.getBitSet (info.get ("bsFlat"), false);
-this.collapsed = info.containsKey ("collapsed");
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 return null;
@@ -122,21 +124,117 @@ throw e;
 }
 return this;
 }, "java.util.Map,~A");
+Clazz.defineMethod (c$, "toInt2", 
+ function (o) {
+var lst = o.getList ();
+var ai = JU.AU.newInt2 (lst.size ());
+for (var i = ai.length; --i >= 0; ) {
+var lst2 = lst.get (i).getList ();
+var a = ai[i] =  Clazz.newIntArray (lst2.size (), 0);
+for (var j = a.length; --j >= 0; ) a[j] = lst2.get (j).intValue;
+
+}
+return ai;
+}, "JS.SV");
+Clazz.defineMethod (c$, "getInfo", 
+function (vwr, isState) {
+if (!isState && this.info != null && !JU.Logger.debugging) return this.info;
+var info =  new java.util.Hashtable ();
+info.put ("vertexCount", Integer.$valueOf (this.nVertices));
+var nv = (isState ? this.vertices.length : this.nVertices);
+var pts =  new Array (nv);
+for (var i = 0; i < nv; i++) pts[i] = JU.P3.newP (this.vertices[i]);
+
+info.put ("vertices", pts);
+info.put ("elemNos", this.getElemNos ());
+if (this.id == null) {
+info.put ("atomIndex", Integer.$valueOf (this.centralAtom.i));
+} else {
+info.put ("id", this.id);
+info.put ("center", JU.P3.newP (this.center));
+info.put ("color", JU.C.getHexCode (this.colix));
+info.put ("colorEdge", JU.C.getHexCode (this.colixEdge == 0 ? this.colix : this.colixEdge));
+if (this.offset != null) info.put ("offset", this.offset);
+if (this.scale != 1) info.put ("scale", Float.$valueOf (this.scale));
+}if (this.id != null || !isState) info.put ("modelIndex", Integer.$valueOf (this.modelIndex));
+if (!isState) {
+this.info = info;
+if (this.id == null) {
+info.put ("center", JU.P3.newP (this.centralAtom));
+info.put ("modelNumber", Integer.$valueOf (this.centralAtom.getModelNumber ()));
+info.put ("atomNumber", Integer.$valueOf (this.centralAtom.getAtomNumber ()));
+info.put ("atomName", this.centralAtom.getInfo ());
+info.put ("element", this.centralAtom.getElementSymbol ());
+var energy = vwr.ms.getInfo (this.centralAtom.mi, "Energy");
+if (energy != null) info.put ("energy", energy);
+}info.put ("triangleCount", Integer.$valueOf (this.triangles.length));
+info.put ("volume", this.getVolume ());
+var names =  new Array (this.nVertices);
+var indices =  Clazz.newIntArray (this.nVertices, 0);
+for (var i = this.nVertices; --i >= 0; ) {
+var pt = this.vertices[i];
+var isNode = Clazz.instanceOf (pt, JU.Node);
+names[i] = (isNode ? (pt).getAtomName () : Clazz.instanceOf (pt, JU.Point3fi) ? JU.Elements.elementSymbolFromNumber ((pt).sD) : "");
+indices[i] = (isNode ? (pt).getIndex () : -1);
+}
+info.put ("atomNames", names);
+info.put ("vertexIndices", indices);
+if (this.faces != null) info.put ("faceCount", Integer.$valueOf (this.faces.length));
+if (this.smarts != null) info.put ("smarts", this.smarts);
+if (this.smiles != null) info.put ("smiles", this.smiles);
+if (this.polySmiles != null) info.put ("polySmiles", this.polySmiles);
+if (this.pointGroup != null) info.put ("pointGroup", this.pointGroup.getPointGroupName ());
+if (this.pointGroupFamily != null) info.put ("pointGroupFamily", this.pointGroupFamily.getPointGroupName ());
+}if (this.pointScale > 0) info.put ("pointScale", Float.$valueOf (this.pointScale));
+if (this.faces != null) info.put ("faces", this.faces);
+if (isState || JU.Logger.debugging) {
+info.put ("bsFlat", this.bsFlat);
+if (this.collapsed) info.put ("collapsed", Boolean.$valueOf (this.collapsed));
+if (this.distanceRef != 0) info.put ("r", Float.$valueOf (this.distanceRef));
+var n =  new Array (this.normals.length);
+for (var i = n.length; --i >= 0; ) n[i] = JU.P3.newP (this.normals[i]);
+
+if (!isState) info.put ("normals", n);
+info.put ("triangles", JU.AU.arrayCopyII (this.triangles, this.triangles.length));
+}return info;
+}, "JV.Viewer,~B");
+Clazz.defineMethod (c$, "getElemNos", 
+function () {
+if (this.elemNos == null) {
+this.elemNos =  Clazz.newIntArray (this.nVertices, 0);
+for (var i = 0; i < this.nVertices; i++) {
+var pt = this.vertices[i];
+this.elemNos[i] = (Clazz.instanceOf (pt, JU.Node) ? (pt).getElementNumber () : Clazz.instanceOf (pt, JU.Point3fi) ? (pt).sD : -2);
+}
+}return this.elemNos;
+});
 Clazz.defineMethod (c$, "getSymmetry", 
 function (vwr, withPointGroup) {
+if (this.id == null) {
+if (this.smarts == null) {
 this.info = null;
 var sm = vwr.getSmilesMatcher ();
 try {
-if (this.smarts == null) {
-this.smarts = sm.polyhedronToSmiles (this.faces, this.nVertices, null);
-this.smiles = sm.polyhedronToSmiles (this.faces, this.nVertices, this.vertices);
-}} catch (e) {
+var details = (this.distanceRef <= 0 ? null : "r=" + this.distanceRef);
+this.smarts = sm.polyhedronToSmiles (this.centralAtom, this.faces, this.nVertices, null, 8192, null);
+this.smiles = sm.polyhedronToSmiles (this.centralAtom, this.faces, this.nVertices, this.vertices, 1, null);
+this.polySmiles = sm.polyhedronToSmiles (this.centralAtom, this.faces, this.nVertices, this.vertices, 196609, details);
+} catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
 } else {
 throw e;
 }
 }
-if (this.pointGroup == null && withPointGroup) this.pointGroup = vwr.ms.getSymTemp (true).setPointGroup (null, this.vertices, null, false, vwr.getFloat (570425382), vwr.getFloat (570425384), true);
+}}if (!withPointGroup) return null;
+if (this.pointGroup == null) {
+var pts =  new Array (this.nVertices);
+for (var i = pts.length; --i >= 0; ) pts[i] = this.vertices[i];
+
+this.pointGroup = vwr.getSymTemp ().setPointGroup (null, null, pts, null, false, vwr.getFloat (570425382), vwr.getFloat (570425384), true);
+for (var i = pts.length; --i >= 0; ) pts[i] = JU.P3.newP (this.vertices[i]);
+
+this.pointGroupFamily = vwr.getSymTemp ().setPointGroup (null, null, pts, null, false, vwr.getFloat (570425382), vwr.getFloat (570425384), true);
+}return (this.center == null ? this.centralAtom : this.center) + "    \t" + this.pointGroup.getPointGroupName () + "\t" + this.pointGroupFamily.getPointGroupName ();
 }, "JV.Viewer,~B");
 Clazz.defineMethod (c$, "getVolume", 
  function () {
@@ -145,10 +243,9 @@ var vAB =  new JU.V3 ();
 var vAC =  new JU.V3 ();
 var vTemp =  new JU.V3 ();
 var v = 0;
-for (var i = this.faces.length; --i >= 0; ) {
-var face = this.faces[i];
-for (var j = face.length - 2; --j >= 0; ) if (face[j + 2] >= 0) v += this.triangleVolume (face[j], face[j + 1], face[j + 2], vAB, vAC, vTemp);
-
+if (this.bsFlat.cardinality () < this.triangles.length) for (var i = this.triangles.length; --i >= 0; ) {
+var face = this.triangles[i];
+v += this.triangleVolume (face[0], face[1], face[2], vAB, vAC, vTemp);
 }
 return Float.$valueOf (v / 6);
 });
@@ -162,20 +259,23 @@ return vAC.dot (vTemp);
 }, "~N,~N,~N,JU.V3,JU.V3,JU.V3");
 Clazz.defineMethod (c$, "getState", 
 function (vwr) {
-return "  var p = " + JU.Escape.e (this.getInfo (vwr, false)) + ";polyhedron @p" + (this.isFullyLit ? " fullyLit" : "") + ";" + (this.visible ? "" : "polyhedra ({" + this.centralAtom.i + "}) off;") + "\n";
+var ident = (this.id == null ? "({" + this.centralAtom.i + "})" : "ID " + JU.Escape.e (this.id));
+return "  polyhedron @{" + JU.Escape.e (this.getInfo (vwr, true)) + "} " + (this.isFullyLit ? " fullyLit" : "") + ";" + (this.visible ? "" : "polyhedra " + ident + " off;") + "\n";
 }, "JV.Viewer");
 Clazz.defineMethod (c$, "move", 
-function (mat) {
+function (mat, bsMoved) {
 this.info = null;
 for (var i = 0; i < this.nVertices; i++) {
 var p = this.vertices[i];
-if (Clazz.instanceOf (p, JM.Atom)) p = this.vertices[i] = JU.P3.newP (p);
-mat.rotTrans (p);
+if (Clazz.instanceOf (p, JM.Atom)) {
+if (bsMoved.get ((p).i)) continue;
+p = this.vertices[i] = JU.P3.newP (p);
+}mat.rotTrans (p);
 }
 for (var i = this.normals.length; --i >= 0; ) mat.rotate (this.normals[i]);
 
 this.normixes = null;
-}, "JU.M4");
+}, "JU.M4,JU.BS");
 Clazz.defineMethod (c$, "getNormixes", 
 function () {
 if (this.normixes == null) {
@@ -185,4 +285,14 @@ for (var i = this.normals.length; --i >= 0; ) this.normixes[i] = (this.bsFlat.ge
 
 }return this.normixes;
 });
+Clazz.defineMethod (c$, "setOffset", 
+function (value) {
+if (this.center == null) return;
+var v = JU.P3.newP (value);
+if (this.offset != null) value.sub (this.offset);
+this.offset = v;
+this.center.add (value);
+for (var i = this.vertices.length; --i >= 0; ) this.vertices[i].add (value);
+
+}, "JU.P3");
 });

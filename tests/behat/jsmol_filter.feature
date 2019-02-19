@@ -17,5 +17,8 @@ Feature: Display molecules inline
   @javascript
   Scenario: Test the filter
     When I follow "Course 1"
+    And I switch to the jmol iframe
+    And I click on "#jmolApplet0_coverdiv" "css_element"
     Then "//canvas[starts-with(@id, 'jmol')]" "xpath_element" should exist
-    And I set the field "jmolMenu0" to "Spacefill"
+    And I set the field "display" to "Spacefill"
+    And I switch to the main frame

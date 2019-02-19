@@ -19,7 +19,6 @@ this.offset = 0;
 this.textAlign = 0;
 this.pointer = 0;
 this.zSlab = -2147483648;
-this.zCutoff = 0;
 this.zBox = 0;
 this.boxXY = null;
 this.scalePixelsPerMicron = 0;
@@ -39,7 +38,6 @@ var labelStrings = labels.strings;
 var fids = labels.fids;
 var offsets = labels.offsets;
 if (labelStrings == null) return false;
-this.setZcutoff ();
 var atoms = this.ms.at;
 var backgroundColixContrast = this.vwr.cm.colixBackgroundContrast;
 var backgroundColor = this.vwr.getBackgroundArgb ();
@@ -65,7 +63,6 @@ this.textAlign = JV.JC.getAlignment (this.offset);
 this.isAbsolute = JV.JC.isOffsetAbsolute (this.offset);
 this.pointer = JV.JC.getPointer (this.offset);
 this.zSlab = this.atom.sZ - Clazz.doubleToInt (this.atom.sD / 2) - 3;
-if (this.zSlab > this.zCutoff) continue;
 if (this.zSlab < 1) this.zSlab = 1;
 this.zBox = this.zSlab;
 if (labelsGroup) {
@@ -82,17 +79,14 @@ var text = labels.getLabel (i);
 this.boxXY = (!this.isExport || this.vwr.creatingImage ? labels.getBox (i) :  Clazz.newFloatArray (5, 0));
 if (this.boxXY == null) labels.putBox (i, this.boxXY =  Clazz.newFloatArray (5, 0));
 text = this.renderLabelOrMeasure (text, label);
-if (text != null) labels.putLabel (i, text);
-if (isAntialiased) {
+if (text != null) {
+labels.putLabel (i, text);
+}if (isAntialiased) {
 this.boxXY[0] /= 2;
 this.boxXY[1] /= 2;
 }this.boxXY[4] = this.zBox;
 }
 return false;
-});
-Clazz.defineMethod (c$, "setZcutoff", 
-function () {
-this.zCutoff = (this.tm.zShadeEnabled ? this.tm.zSlabValue : 2147483647);
 });
 Clazz.defineMethod (c$, "renderLabelOrMeasure", 
 function (text, label) {
@@ -107,7 +101,7 @@ text.setXYZs (this.atomPt.sX, this.atomPt.sY, this.zBox, this.zSlab);
 text.colix = this.labelColix;
 text.bgcolix = this.bgcolix;
 } else {
-if (text.pymolOffset[0] == 1) this.pTemp.setT (this.atomPt);
+if (Math.abs (text.pymolOffset[0]) == 1) this.pTemp.setT (this.atomPt);
  else this.pTemp.set (0, 0, 0);
 this.pTemp.add3 (text.pymolOffset[4], text.pymolOffset[5], text.pymolOffset[6]);
 this.tm.transformPtScr (this.pTemp, this.screen);
@@ -122,7 +116,7 @@ this.font3d = this.vwr.gdata.getFont3DCurrent ();
 if (isLeft) {
 this.ascent = this.font3d.getAscent ();
 this.descent = this.font3d.getDescent ();
-}}var isSimple = isLeft && (this.imageFontScaling == 1 && this.scalePixelsPerMicron == 0 && label.indexOf ("|") < 0 && label.indexOf ("<su") < 0 && label.indexOf ("<co") < 0);
+}}var isSimple = isLeft && (this.imageFontScaling == 1 && this.scalePixelsPerMicron == 0 && label.indexOf ("|") < 0 && label.indexOf ("\n") < 0 && label.indexOf ("<su") < 0 && label.indexOf ("<co") < 0);
 if (isSimple) {
 var doPointer = ((this.pointer & 1) != 0);
 var pointerColix = ((this.pointer & 2) != 0 && this.bgcolix != 0 ? this.bgcolix : this.labelColix);
@@ -130,7 +124,7 @@ this.boxXY[0] = this.atomPt.sX;
 this.boxXY[1] = this.atomPt.sY;
 J.render.TextRenderer.renderSimpleLabel (this.g3d, this.font3d, label, this.labelColix, this.bgcolix, this.boxXY, this.zBox, this.zSlab, JV.JC.getXOffset (this.offset), JV.JC.getYOffset (this.offset), this.ascent, this.descent, doPointer, pointerColix, this.isAbsolute);
 return null;
-}text = JM.Text.newLabel (this.vwr, this.font3d, label, this.labelColix, this.bgcolix, this.textAlign, 0, null);
+}text = JM.Text.newLabel (this.vwr, this.font3d, label, this.labelColix, this.bgcolix, this.textAlign, 0);
 text.atomX = this.atomPt.sX;
 text.atomY = this.atomPt.sY;
 text.atomZ = this.zSlab;

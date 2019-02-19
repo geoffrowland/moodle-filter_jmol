@@ -56,4 +56,15 @@ class behat_filter_jmol extends behat_base {
         $generator->create_module('label', array('course' => $courseid, 'intro' => $link));
 
     }
+
+    /**
+     * Switch to the first JMOL iframe on the page.
+     *
+     * @When /^I switch to the jmol iframe$/
+     */
+    public function switch_to_jmol_iframe() {
+        $iframe = $this->find('xpath', '//iframe[starts-with(@id, "iframe") and contains(@src, "/filter/jmol/iframe.php")]');
+        $generalcontext = behat_context_helper::get('behat_general');
+        $generalcontext->switch_to_iframe($iframe->getAttribute('id'));
+    }
 }

@@ -30,8 +30,7 @@ return true;
 Clazz.overrideMethod (c$, "getJsObjectInfo", 
 function (jsObject, method, args) {
 {
-if (method == "localName")return jsObject[0]["nodeName"];
-return (args == null ? jsObject[0][method] : jsObject[0][method](args[0]));
+return (method == null ? null : method == "localName" ? jsObject[0]["nodeName"] : args == null ? jsObject[0][method] : jsObject[0][method](args[0]));
 }}, "~A,~S,~A");
 Clazz.overrideMethod (c$, "isHeadless", 
 function () {
@@ -66,9 +65,9 @@ function (context, size) {
 JSV.js2d.Display.renderScreenImage (this.viewer, context, size);
 }, "~O,~O");
 Clazz.overrideMethod (c$, "drawImage", 
-function (context, canvas, x, y, width, height) {
+function (context, canvas, x, y, width, height, isDTI) {
 JSV.js2d.Image.drawImage (context, canvas, x, y, width, height);
-}, "~O,~O,~N,~N,~N,~N");
+}, "~O,~O,~N,~N,~N,~N,~B");
 Clazz.overrideMethod (c$, "requestFocusInWindow", 
 function (canvas) {
 JSV.js2d.Display.requestFocusInWindow (canvas);
@@ -223,4 +222,8 @@ Clazz.overrideMethod (c$, "getImageDialog",
 function (title, imageMap) {
 return null;
 }, "~S,java.util.Map");
+Clazz.overrideMethod (c$, "forceAsyncLoad", 
+function (filename) {
+return false;
+}, "~S");
 });

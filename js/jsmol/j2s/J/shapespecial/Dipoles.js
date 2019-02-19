@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shapespecial");
-Clazz.load (["J.shape.Shape", "JU.P3"], "J.shapespecial.Dipoles", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "$.SB", "$.V3", "JS.T", "J.shapespecial.Dipole", "JU.BSUtil", "$.C", "$.Logger"], function () {
+Clazz.load (["J.shape.Shape", "JU.P3"], "J.shapespecial.Dipoles", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "$.SB", "$.V3", "JS.T", "J.shapespecial.Dipole", "JU.C", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.dipoleCount = 0;
 this.dipoles = null;
@@ -22,6 +22,9 @@ Clazz.prepareFields (c$, function () {
 this.dipoles =  new Array (4);
 this.startCoord =  new JU.P3 ();
 this.endCoord =  new JU.P3 ();
+});
+Clazz.overrideMethod (c$, "initShape", 
+function () {
 });
 Clazz.overrideMethod (c$, "setProperty", 
 function (propertyName, value, bs) {
@@ -62,10 +65,10 @@ return;
 this.tempDipole.lstDipoles =  new JU.Lst ();
 return;
 }if ("on" === propertyName) {
-this.setPropertyTok (1048589, this.isBond, 0, 0);
+this.setPropertyTok (1073742335, this.isBond, 0, 0);
 return;
 }if ("off" === propertyName) {
-this.setPropertyTok (1048588, this.isBond, 0, 0);
+this.setPropertyTok (1073742334, this.isBond, 0, 0);
 return;
 }if ("delete" === propertyName) {
 if (this.wildID == null && this.currentDipole == null) {
@@ -89,21 +92,21 @@ this.currentDipole.setOffsetPt (this.tempDipole.offsetPt);
 }if ("offsetPercent" === propertyName) {
 var offsetPercent = this.tempDipole.offsetPercent = (value).intValue ();
 if (this.tempDipole.dipoleValue != 0) this.tempDipole.offsetAngstroms = offsetPercent / 100 * this.tempDipole.dipoleValue;
-if (this.currentDipole == null) this.setPropertyTok (269484210, this.isBond, 0, offsetPercent / 100);
+if (this.currentDipole == null) this.setPropertyTok (268435634, this.isBond, 0, offsetPercent / 100);
 return;
 }if ("offsetSide" === propertyName) {
 var offsetSide = (value).floatValue ();
-this.setPropertyTok (3145754, this.isBond, 0, offsetSide);
+this.setPropertyTok (2097178, this.isBond, 0, offsetSide);
 return;
 }if ("cross" === propertyName) {
-this.setPropertyTok (135267329, this.isBond, ((value).booleanValue () ? 1 : 0), 0);
+this.setPropertyTok (1275069442, this.isBond, ((value).booleanValue () ? 1 : 0), 0);
 return;
 }if ("color" === propertyName) {
 this.colix = JU.C.getColixO (value);
 if (this.isBond) {
 this.setColixDipole (this.colix, 1023, bs);
 } else if (value != null) {
-this.setPropertyTok (1766856708, false, 0, 0);
+this.setPropertyTok (1765808134, false, 0, 0);
 }return;
 }if ("translucency" === propertyName) {
 this.setPropertyTok (603979967, this.isBond, (value.equals ("translucent") ? 1 : 0), 0);
@@ -118,7 +121,7 @@ var bsAtoms = value;
 this.endCoord = null;
 this.startCoord = this.ms.getAtomSetCenter (bsAtoms);
 this.tempDipole.set2Value (this.startCoord, JU.P3.new3 (0, 0, 0), this.dipoleValue);
-if (JU.BSUtil.cardinalityOf (bsAtoms) == 1) this.atomIndex1 = bsAtoms.nextSetBit (0);
+if (bsAtoms.cardinality () == 1) this.atomIndex1 = bsAtoms.nextSetBit (0);
 return;
 }if ("atomBitset" === propertyName) {
 var atomset = value;
@@ -132,7 +135,7 @@ propertyName = "endSet";
 }if ("endSet" === propertyName) {
 this.iHaveTwoEnds = true;
 var atomset = value;
-if (this.atomIndex1 >= 0 && JU.BSUtil.cardinalityOf (atomset) == 1) {
+if (this.atomIndex1 >= 0 && atomset.cardinality () == 1) {
 this.atomIndex2 = atomset.nextSetBit (0);
 this.tempDipole.set2AtomValue (this.ms.at[this.atomIndex1], this.ms.at[this.atomIndex2], 1);
 this.currentDipole = this.findDipoleFor (this.tempDipole.thisID, this.tempDipole.dipoleInfo);
@@ -216,10 +219,10 @@ for (var i = this.dipoleCount; --i >= 0; ) if (!bondOnly || this.isBondDipole (i
 Clazz.defineMethod (c$, "setPropertyFor", 
  function (tok, dipole, iValue, fValue) {
 switch (tok) {
-case 1048589:
+case 1073742335:
 dipole.visible = true;
 return;
-case 1048588:
+case 1073742334:
 dipole.visible = false;
 return;
 case 12291:
@@ -231,16 +234,16 @@ return;
 case 1611272194:
 dipole.offsetAngstroms = fValue;
 return;
-case 269484210:
+case 268435634:
 dipole.offsetAngstroms = fValue * dipole.dipoleValue;
 return;
-case 3145754:
+case 2097178:
 dipole.offsetSide = fValue;
 return;
-case 135267329:
+case 1275069442:
 dipole.noCross = (iValue == 0);
 return;
-case 1766856708:
+case 1765808134:
 dipole.colix = this.colix;
 return;
 case 603979967:
@@ -262,7 +265,7 @@ data[1] = id;
 return true;
 }}
 return false;
-}return false;
+}return this.getPropShape (property, data);
 }, "~S,~A");
 Clazz.overrideMethod (c$, "getProperty", 
 function (property, index) {

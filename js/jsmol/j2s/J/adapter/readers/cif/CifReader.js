@@ -3,19 +3,21 @@ Clazz.load (["J.adapter.smarter.AtomSetCollectionReader", "JU.Lst", "$.P3"], "J.
 c$ = Clazz.decorateAsClass (function () {
 this.mr = null;
 this.parser = null;
-this.isMolecular = false;
 this.filterAssembly = false;
 this.allowRotations = true;
 this.readIdeal = true;
 this.configurationPtr = -2147483648;
 this.useAuthorChainID = true;
 this.thisDataSetName = "";
+this.lastDataSetName = null;
 this.chemicalName = "";
 this.thisStructuralFormula = "";
 this.thisFormula = "";
 this.iHaveDesiredModel = false;
 this.isMMCIF = false;
+this.isLigand = false;
 this.isMagCIF = false;
+this.haveHAtoms = false;
 this.molecularType = "GEOM_BOND default";
 this.lastAltLoc = '\0';
 this.haveAromatic = false;
@@ -34,17 +36,19 @@ this.latticeType = null;
 this.modDim = 0;
 this.htGroup1 = null;
 this.nAtoms0 = 0;
+this.titleAtomSet = 1;
 this.htCellTypes = null;
 this.modelMap = null;
 this.htAudit = null;
 this.symops = null;
 this.key = null;
+this.key0 = null;
 this.data = null;
-this.propertyOf = null;
-this.fieldOf = null;
+this.isLoop = false;
+this.col2key = null;
+this.key2col = null;
 this.field = null;
 this.firstChar = '\0';
-this.propertyCount = 0;
 this.atomTypes = null;
 this.bondTypes = null;
 this.disorderAssembly = ".";
@@ -52,7 +56,6 @@ this.lastDisorderAssembly = null;
 this.lattvecs = null;
 this.magCenterings = null;
 this.maxSerial = 0;
-this.htHetero = null;
 this.atomRadius = null;
 this.bsConnected = null;
 this.bsSets = null;
@@ -61,18 +64,18 @@ this.bsMolecule = null;
 this.bsExclude = null;
 this.firstAtom = 0;
 this.atoms = null;
+this.bsBondDuplicates = null;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.cif, "CifReader", J.adapter.smarter.AtomSetCollectionReader);
 Clazz.prepareFields (c$, function () {
-this.propertyOf =  Clazz.newIntArray (100, 0);
-this.fieldOf =  Clazz.newIntArray (100, 0);
+this.col2key =  Clazz.newIntArray (100, 0);
+this.key2col =  Clazz.newIntArray (100, 0);
 this.bondTypes =  new JU.Lst ();
 this.ptOffset =  new JU.P3 ();
 });
 Clazz.overrideMethod (c$, "initializeReader", 
 function () {
 this.initSubclass ();
-this.parser =  new JU.CifDataParser ().set (this, null);
 this.allowPDBFilter = true;
 this.appendedData = this.htParams.get ("appendedData");
 var conf = this.getFilter ("CONF ");
@@ -87,6 +90,7 @@ this.molecularType = "filter \"MOLECULAR\"";
 }this.asc.checkSpecial = !this.checkFilterKey ("NOSPECIAL");
 this.allowRotations = !this.checkFilterKey ("NOSYM");
 if (this.strSupercell != null && this.strSupercell.indexOf (",") >= 0) this.addCellType ("conventional", this.strSupercell, true);
+if (this.binaryDoc != null) return;
 this.readCifData ();
 this.continuing = false;
 });
@@ -95,6 +99,7 @@ function () {
 });
 Clazz.defineMethod (c$, "readCifData", 
  function () {
+this.parser =  new JU.CifDataParser ().set (this, null);
 this.line = "";
 while ((this.key = this.parser.peekToken ()) != null) if (!this.readAllData ()) break;
 
@@ -106,7 +111,10 @@ while ((this.key = this.parser.peekToken ()) != null) if (!this.readAllData ()) 
 Clazz.defineMethod (c$, "readAllData", 
  function () {
 if (this.key.startsWith ("data_")) {
+this.isLigand = false;
+if (this.asc.atomSetCount == 0) this.iHaveDesiredModel = false;
 if (this.iHaveDesiredModel) return false;
+if (this.desiredModelNumber != -2147483648) this.appendLoadNote (null);
 this.newModel (++this.modelNumber);
 this.haveCellWaveVector = false;
 if (this.auditBlockCode == null) this.modulated = false;
@@ -118,7 +126,8 @@ this.nAtoms = this.asc.ac;
 }if (this.skipping && this.key.equals ("_audit_block_code")) {
 this.iHaveDesiredModel = false;
 this.skipping = false;
-}if (this.key.startsWith ("loop_")) {
+}this.isLoop = this.key.startsWith ("loop_");
+if (this.isLoop) {
 if (this.skipping && !this.isMMCIF) {
 this.parser.getTokenPeeked ();
 this.parser.skipLoop (false);
@@ -126,13 +135,12 @@ this.parser.skipLoop (false);
 this.processLoopBlock ();
 }return true;
 }if (this.key.indexOf ("_") != 0) {
-if (this.key.equals ("DSSR:")) this.processDSSR (this, this.htGroup1);
- else JU.Logger.warn ("CIF ERROR ? should be an underscore: " + this.key);
+JU.Logger.warn ("CIF ERROR ? should be an underscore: " + this.key);
 this.parser.getTokenPeeked ();
 } else if (!this.getData ()) {
 return true;
 }if (!this.skipping) {
-this.key = this.parser.fixKey (this.key);
+this.key = this.parser.fixKey (this.key0 = this.key);
 if (this.key.startsWith ("_chemical_name") || this.key.equals ("_chem_comp_name")) {
 this.processChemicalInfo ("name");
 } else if (this.key.startsWith ("_chemical_formula_structural")) {
@@ -145,7 +153,8 @@ this.modDim = this.parseIntStr (this.data);
 this.processCellParameter ();
 } else if (this.key.startsWith ("_atom_sites_fract_tran")) {
 this.processUnitCellTransformMatrix ();
-} else if (this.key.equals ("_audit_block_code")) {
+} else if (this.key.startsWith ("_audit")) {
+if (this.key.equals ("_audit_block_code")) {
 this.auditBlockCode = this.parser.fullTrim (this.data).toUpperCase ();
 this.appendLoadNote (this.auditBlockCode);
 if (this.htAudit != null && this.auditBlockCode.contains ("_MOD_")) {
@@ -157,18 +166,27 @@ this.iHaveUnitCell = true;
 if (this.symops != null) for (var i = 0; i < this.symops.size (); i++) this.setSymmetryOperator (this.symops.get (i));
 
 }if (this.lastSpaceGroupName != null) this.setSpaceGroupName (this.lastSpaceGroupName);
-} else if (this.key.equals (J.adapter.readers.cif.CifReader.singleAtomID)) {
+} else if (this.key.equals ("_audit_creation_date")) {
+this.symmetry = null;
+}} else if (this.key.equals (J.adapter.readers.cif.CifReader.singleAtomID)) {
 this.readSingleAtom ();
 } else if (this.key.startsWith ("_symmetry_space_group_name_h-m") || this.key.startsWith ("_symmetry_space_group_name_hall") || this.key.startsWith ("_space_group_name") || this.key.contains ("_ssg_name") || this.key.contains ("_magn_name") || this.key.contains ("_bns_name")) {
 this.processSymmetrySpaceGroupName ();
 } else if (this.key.startsWith ("_space_group_transform")) {
 this.processUnitCellTransform ();
+} else if (this.key.contains ("_database_code")) {
+this.addModelTitle ("ID");
 } else if ("__citation_title__publ_section_title__active_magnetic_irreps_details__".contains ("_" + this.key + "__")) {
-this.appendLoadNote ("TITLE: " + this.parser.fullTrim (this.data) + "\n");
+this.addModelTitle ("TITLE");
 } else {
 this.processSubclassEntry ();
 }}return true;
 });
+Clazz.defineMethod (c$, "addModelTitle", 
+ function (key) {
+if (this.asc.atomSetCount > this.titleAtomSet) this.appendLoadNote ("\nMODEL: " + (this.titleAtomSet = this.asc.atomSetCount));
+this.appendLoadNote (key + ": " + this.parser.fullTrim (this.data));
+}, "~S");
 Clazz.defineMethod (c$, "processSubclassEntry", 
 function () {
 if (this.modDim > 0) this.getModulationReader ().processEntry ();
@@ -196,8 +214,8 @@ Clazz.defineMethod (c$, "readSingleAtom",
  function () {
 var atom =  new J.adapter.smarter.Atom ();
 atom.set (0, 0, 0);
-var s = atom.atomName = this.parser.fullTrim (this.data);
-atom.elementSymbol = s.length == 1 ? s : s.substring (0, 1) + s.substring (1, 2).toLowerCase ();
+atom.atomName = this.parser.fullTrim (this.data);
+atom.getElementSymbol ();
 this.asc.addAtom (atom);
 });
 Clazz.defineMethod (c$, "getModulationReader", 
@@ -230,10 +248,16 @@ this.applySymmetryAndSetTrajectory ();
 }}, "~N");
 Clazz.overrideMethod (c$, "finalizeSubclassReader", 
 function () {
-if (!this.isMMCIF || !this.finalizeSubclass ()) this.applySymmetryAndSetTrajectory ();
+if (this.asc.iSet > 0 && this.asc.getAtomSetAtomCount (this.asc.iSet) == 0) this.asc.atomSetCount--;
+ else if (!this.isMMCIF || !this.finalizeSubclass ()) this.applySymmetryAndSetTrajectory ();
 var n = this.asc.atomSetCount;
 if (n > 1) this.asc.setCollectionName ("<collection of " + n + " models>");
 this.finalizeReaderASCR ();
+this.addHeader ();
+if (this.haveAromatic) this.addJmolScript ("calculate aromatic");
+});
+Clazz.defineMethod (c$, "addHeader", 
+function () {
 var header = this.parser.getFileHeader ();
 if (header.length > 0) {
 var s = this.setLoadNote ();
@@ -242,8 +266,7 @@ this.appendLoadNote (header);
 this.appendLoadNote (s);
 this.setLoadNote ();
 this.asc.setInfo ("fileHeader", header);
-}if (this.haveAromatic) this.addJmolScript ("calculate aromatic");
-});
+}});
 Clazz.defineMethod (c$, "finalizeSubclass", 
 function () {
 return false;
@@ -268,6 +291,7 @@ for (var e, $e = this.htCellTypes.entrySet ().iterator (); $e.hasNext () && ((e 
 
 this.htCellTypes = null;
 }if (!this.haveCellWaveVector) this.modDim = 0;
+if (this.doApplySymmetry && !this.iHaveFractionalCoordinates) this.fractionalizeCoordinates (true);
 this.applySymTrajASCR ();
 if (doCheckBonding && (this.bondTypes.size () > 0 || this.isMolecular)) this.setBondingAndMolecules ();
 this.asc.setCurrentModelInfo ("fileHasUnitCell", Boolean.TRUE);
@@ -281,12 +305,13 @@ this.addLatticeVectors ();
 this.asc.setTensors ();
 this.getModulationReader ().setModulation (true, sym);
 this.mr.finalizeModulation ();
-}if (this.isMagCIF) this.asc.setNoAutoBond ();
-if (this.isMagCIF && sym != null) {
+}if (this.isMagCIF) {
+this.asc.setNoAutoBond ();
+if (sym != null) {
 this.addJmolScript ("vectors on;vectors 0.15;");
 var n = this.asc.getXSymmetry ().setSpinVectors ();
 this.appendLoadNote (n + " magnetic moments - use VECTORS ON/OFF or VECTOR MAX x.x or SELECT VXYZ>0");
-}if (sym != null && this.auditBlockCode != null && this.auditBlockCode.contains ("REFRNCE")) {
+}}if (sym != null && this.auditBlockCode != null && this.auditBlockCode.contains ("REFRNCE")) {
 if (this.htAudit == null) this.htAudit =  new java.util.Hashtable ();
 this.htAudit.put (this.auditBlockCode, sym);
 }}, "~B");
@@ -296,7 +321,7 @@ this.bondTypes.clear ();
 this.parser.getTokenPeeked ();
 this.thisDataSetName = (this.key.length < 6 ? "" : this.key.substring (5));
 if (this.thisDataSetName.length > 0) this.nextAtomSet ();
-if (JU.Logger.debugging) JU.Logger.debug (this.key);
+if (this.debugging) JU.Logger.debug (this.key);
 });
 Clazz.defineMethod (c$, "nextAtomSet", 
 function () {
@@ -317,7 +342,8 @@ if (!this.data.equals ("?")) this.asc.setInfo ("modelLoadNote", this.data);
 this.thisStructuralFormula = this.data = this.parser.fullTrim (this.data);
 } else if (type.equals ("formula")) {
 this.thisFormula = this.data = this.parser.fullTrim (this.data);
-}if (JU.Logger.debugging) {
+if (this.thisFormula.length > 1) this.appendLoadNote (this.thisFormula);
+}if (this.debugging) {
 JU.Logger.debug (type + " = " + this.data);
 }return this.data;
 }, "~S");
@@ -392,12 +418,11 @@ return false;
 }return (this.data.length == 0 || this.data.charAt (0) != '\0');
 });
 Clazz.defineMethod (c$, "processLoopBlock", 
- function () {
+function () {
 this.parser.getTokenPeeked ();
 this.key = this.parser.peekToken ();
 if (this.key == null) return;
-var isLigand = false;
-this.key = this.parser.fixKey (this.key);
+this.key = this.parser.fixKey (this.key0 = this.key);
 if (this.modDim > 0) switch (this.getModulationReader ().processLoopBlock ()) {
 case 0:
 break;
@@ -406,10 +431,14 @@ this.parser.skipLoop (false);
 case 1:
 return;
 }
+var isLigand = false;
 if (this.key.startsWith ("_atom_site") || (isLigand = this.key.equals ("_chem_comp_atom_comp_id"))) {
 if (!this.processAtomSiteLoopBlock (isLigand)) return;
+if (this.thisDataSetName.equals ("global")) this.asc.setCollectionName (this.thisDataSetName = this.chemicalName);
+if (!this.thisDataSetName.equals (this.lastDataSetName)) {
 this.asc.setAtomSetName (this.thisDataSetName);
-this.asc.setCurrentModelInfo ("chemicalName", this.chemicalName);
+this.lastDataSetName = this.thisDataSetName;
+}this.asc.setCurrentModelInfo ("chemicalName", this.chemicalName);
 this.asc.setCurrentModelInfo ("structuralFormula", this.thisStructuralFormula);
 this.asc.setCurrentModelInfo ("formula", this.thisFormula);
 return;
@@ -465,11 +494,11 @@ throw e;
 });
 Clazz.defineMethod (c$, "fieldProperty", 
 function (i) {
-return (i >= 0 && (this.field = this.parser.getLoopData (i)).length > 0 && (this.firstChar = this.field.charAt (0)) != '\0' ? this.propertyOf[i] : -1);
+return (i >= 0 && (this.field = this.parser.getColumnData (i)).length > 0 && (this.firstChar = this.field.charAt (0)) != '\0' ? this.col2key[i] : -1);
 }, "~N");
 Clazz.defineMethod (c$, "parseLoopParameters", 
 function (fields) {
-this.propertyCount = this.parser.parseLoopParameters (fields, this.fieldOf, this.propertyOf);
+this.parser.parseDataBlockParameters (fields, this.isLoop ? null : this.key0, this.data, this.key2col, this.col2key);
 }, "~A");
 Clazz.defineMethod (c$, "parseLoopParametersFor", 
 function (key, fields) {
@@ -479,63 +508,50 @@ this.parseLoopParameters (fields);
 }, "~S,~A");
 Clazz.defineMethod (c$, "disableField", 
  function (fieldIndex) {
-var i = this.fieldOf[fieldIndex];
-if (i != -1) this.propertyOf[i] = -1;
+var i = this.key2col[fieldIndex];
+if (i != -1) this.col2key[i] = -1;
 }, "~N");
 Clazz.defineMethod (c$, "processAtomTypeLoopBlock", 
  function () {
 this.parseLoopParameters (J.adapter.readers.cif.CifReader.atomTypeFields);
-for (var i = this.propertyCount; --i >= 0; ) if (this.fieldOf[i] == -1) {
+if (!this.checkAllFieldsPresent (J.adapter.readers.cif.CifReader.atomTypeFields, -1, false)) {
 this.parser.skipLoop (false);
 return;
-}
+}var atomTypeSymbol;
+var oxidationNumber = 0;
 while (this.parser.getData ()) {
-var atomTypeSymbol = null;
-var oxidationNumber = NaN;
-var n = this.parser.getFieldCount ();
-for (var i = 0; i < n; ++i) {
-switch (this.fieldProperty (i)) {
-case -1:
-break;
-case 0:
-atomTypeSymbol = this.field;
-break;
-case 1:
-oxidationNumber = this.parseFloatStr (this.field);
-break;
-}
-}
-if (atomTypeSymbol == null || Float.isNaN (oxidationNumber)) continue;
+if (this.isNull (atomTypeSymbol = this.getField (0)) || Float.isNaN (oxidationNumber = this.parseFloatStr (this.getField (1)))) continue;
 if (this.atomTypes == null) this.atomTypes =  new java.util.Hashtable ();
 this.atomTypes.put (atomTypeSymbol, Float.$valueOf (oxidationNumber));
 }
 });
 Clazz.defineMethod (c$, "processAtomSiteLoopBlock", 
 function (isLigand) {
+this.isLigand = isLigand;
 var pdbModelNo = -1;
 var haveCoord = true;
 this.parseLoopParametersFor ("_atom_site", J.adapter.readers.cif.CifReader.atomFields);
-if (this.fieldOf[55] != -1) {
+if (this.key2col[55] != -1) {
 this.setFractionalCoordinates (false);
-} else if (this.fieldOf[6] != -1 || this.fieldOf[52] != -1) {
+} else if (this.key2col[6] != -1 || this.key2col[52] != -1) {
 this.setFractionalCoordinates (false);
 this.disableField (3);
 this.disableField (4);
 this.disableField (5);
-if (this.fieldOf[16] != -1 && !this.isMMCIF) {
+if (this.key2col[16] != -1 && !this.isMMCIF) {
 this.setIsPDB ();
 this.isMMCIF = true;
-}} else if (this.fieldOf[3] != -1) {
+}} else if (this.key2col[3] != -1) {
 this.setFractionalCoordinates (true);
 this.disableField (6);
 this.disableField (7);
 this.disableField (8);
-} else if (this.fieldOf[20] != -1 || this.fieldOf[21] != -1 || this.fieldOf[63] != -1) {
+} else if (this.key2col[20] != -1 || this.key2col[21] != -1 || this.key2col[63] != -1) {
 haveCoord = false;
 } else {
 this.parser.skipLoop (false);
 return false;
-}var modelField = this.fieldOf[17];
+}var modelField = this.key2col[17];
 var siteMult = 0;
 while (this.parser.getData ()) {
 if (modelField >= 0) {
@@ -546,15 +562,15 @@ if (this.skipping) continue;
 if (haveCoord) {
 atom =  new J.adapter.smarter.Atom ();
 } else {
-if (this.fieldProperty (this.fieldOf[20]) != -1 || this.fieldProperty (this.fieldOf[21]) != -1 || this.fieldProperty (this.fieldOf[63]) != -1) {
+if (this.fieldProperty (this.key2col[20]) != -1 || this.fieldProperty (this.key2col[21]) != -1 || this.fieldProperty (this.key2col[63]) != -1) {
 if ((atom = this.asc.getAtomFromName (this.field)) == null) continue;
 } else {
 continue;
-}}var assemblyId = null;
+}}var componentId = null;
 var strChain = null;
 var id = null;
 var seqID = 0;
-var n = this.parser.getFieldCount ();
+var n = this.parser.getColumnCount ();
 for (var i = 0; i < n; ++i) {
 var tok = this.fieldProperty (i);
 switch (tok) {
@@ -573,13 +589,16 @@ if (this.field.length < 2) {
 elementSymbol = this.field;
 } else {
 var ch1 = Character.toLowerCase (this.field.charAt (1));
-if (J.adapter.smarter.Atom.isValidSym2 (this.firstChar, ch1)) elementSymbol = "" + this.firstChar + ch1;
- else elementSymbol = "" + this.firstChar;
-}atom.elementSymbol = elementSymbol;
+if (J.adapter.smarter.Atom.isValidSym2 (this.firstChar, ch1)) {
+elementSymbol = "" + this.firstChar + ch1;
+} else {
+elementSymbol = "" + this.firstChar;
+if (!this.haveHAtoms && this.firstChar == 'H') this.haveHAtoms = true;
+}}atom.elementSymbol = elementSymbol;
 if (this.atomTypes != null && this.atomTypes.containsKey (this.field)) {
 var charge = this.atomTypes.get (this.field).floatValue ();
 atom.formalCharge = Math.round (charge);
-if (Math.abs (atom.formalCharge - charge) > 0.1) if (JU.Logger.debugging) {
+if (Math.abs (atom.formalCharge - charge) > 0.1) if (this.debugging) {
 JU.Logger.debug ("CIF charge on " + this.field + " was " + charge + "; rounded to " + atom.formalCharge);
 }}break;
 case 49:
@@ -629,7 +648,7 @@ case 11:
 atom.group3 = this.field;
 break;
 case 59:
-assemblyId = this.field;
+componentId = this.field;
 if (!this.useAuthorChainID) this.setChainID (atom, strChain = this.field);
 break;
 case 12:
@@ -669,8 +688,8 @@ break;
 case 62:
 case 47:
 if (this.field.equalsIgnoreCase ("Uiso")) {
-var j = this.fieldOf[34];
-if (j != -1) this.asc.setU (atom, 7, this.parseFloatStr (this.parser.getLoopData (j)));
+var j = this.key2col[34];
+if (j != -1) this.asc.setU (atom, 7, this.parseFloatStr (this.parser.getColumnData (j)));
 }break;
 case 22:
 case 23:
@@ -684,7 +703,7 @@ case 30:
 case 31:
 case 32:
 case 33:
-this.asc.setU (atom, (this.propertyOf[i] - 22) % 6, this.parseFloatStr (this.field));
+this.asc.setU (atom, (this.col2key[i] - 22) % 6, this.parseFloatStr (this.field));
 break;
 case 35:
 case 36:
@@ -693,7 +712,7 @@ case 38:
 case 39:
 case 40:
 this.asc.setU (atom, 6, 4);
-this.asc.setU (atom, (this.propertyOf[i] - 35) % 6, this.parseFloatStr (this.field));
+this.asc.setU (atom, (this.col2key[i] - 35) % 6, this.parseFloatStr (this.field));
 break;
 case 41:
 case 42:
@@ -702,7 +721,7 @@ case 44:
 case 45:
 case 46:
 this.asc.setU (atom, 6, 0);
-this.asc.setU (atom, (this.propertyOf[i] - 41) % 6, this.parseFloatStr (this.field));
+this.asc.setU (atom, (this.col2key[i] - 41) % 6, this.parseFloatStr (this.field));
 break;
 case 64:
 case 65:
@@ -736,22 +755,17 @@ if (!haveCoord) continue;
 if (Float.isNaN (atom.x) || Float.isNaN (atom.y) || Float.isNaN (atom.z)) {
 JU.Logger.warn ("atom " + atom.atomName + " has invalid/unknown coordinates");
 continue;
-}if (atom.elementSymbol == null && atom.atomName != null) {
-var sym = atom.atomName;
-var pt = 0;
-while (pt < sym.length && JU.PT.isLetter (sym.charAt (pt))) pt++;
-
-atom.elementSymbol = (pt == 0 || pt > 2 ? "Xx" : sym.substring (0, pt));
-}if (!this.filterCIFAtom (atom, assemblyId)) continue;
+}if (atom.elementSymbol == null && atom.atomName != null) atom.getElementSymbol ();
+if (!this.filterCIFAtom (atom, componentId)) continue;
 this.setAtomCoord (atom);
-if (this.isMMCIF && !this.processSubclassAtom (atom, assemblyId, strChain)) continue;
+if (this.isMMCIF && !this.processSubclassAtom (atom, componentId, strChain)) continue;
 if (this.asc.iSet < 0) this.nextAtomSet ();
 this.asc.addAtomWithMappedName (atom);
 if (id != null) {
 this.asc.atomSymbolicMap.put (id, atom);
 if (seqID > 0) {
 var pt = atom.vib;
-if (pt == null) pt = this.asc.addVibrationVector (atom.index, 0, NaN, 1095761940);
+if (pt == null) pt = this.asc.addVibrationVector (atom.index, 0, NaN, 1094713365);
 pt.x = seqID;
 }}this.ac++;
 if (this.modDim > 0 && siteMult != 0) atom.vib = JU.V3.new3 (siteMult, 0, NaN);
@@ -767,16 +781,12 @@ return 0;
 }, "~N,~N");
 Clazz.defineMethod (c$, "processSubclassAtom", 
 function (atom, assemblyId, strChain) {
-if (atom.isHetero && this.htHetero != null) {
-this.asc.setCurrentModelInfo ("hetNames", this.htHetero);
-this.asc.setInfo ("hetNames", this.htHetero);
-this.htHetero = null;
-}return true;
+return true;
 }, "J.adapter.smarter.Atom,~S,~S");
 Clazz.defineMethod (c$, "filterCIFAtom", 
-function (atom, assemblyId) {
+function (atom, componentId) {
 if (!this.filterAtom (atom, -1)) return false;
-if (this.filterAssembly && this.filterReject (this.filter, "$", assemblyId)) return false;
+if (this.filterAssembly && this.filterReject (this.filter, "$", componentId)) return false;
 if (this.configurationPtr > 0) {
 if (!this.disorderAssembly.equals (this.lastDisorderAssembly)) {
 this.lastDisorderAssembly = this.disorderAssembly;
@@ -794,19 +804,9 @@ return false;
 Clazz.defineMethod (c$, "processCitationListBlock", 
  function () {
 this.parseLoopParameters (J.adapter.readers.cif.CifReader.citationFields);
-var m =  Clazz.newFloatArray (16, 0);
-m[15] = 1;
 while (this.parser.getData ()) {
-var n = this.parser.getFieldCount ();
-for (var i = 0; i < n; ++i) {
-switch (this.fieldProperty (i)) {
-case 0:
-break;
-case 1:
-this.appendLoadNote ("TITLE: " + this.parser.toUnicode (this.field));
-break;
-}
-}
+var title = this.getField (0);
+if (!this.isNull (title)) this.appendLoadNote ("TITLE: " + this.parser.toUnicode (title));
 }
 });
 Clazz.defineMethod (c$, "processSymmetryOperationsLoopBlock", 
@@ -814,7 +814,7 @@ Clazz.defineMethod (c$, "processSymmetryOperationsLoopBlock",
 this.parseLoopParametersFor ("_space_group_symop", J.adapter.readers.cif.CifReader.symmetryOperationsFields);
 var n;
 this.symops =  new JU.Lst ();
-for (n = this.propertyCount; --n >= 0; ) if (this.fieldOf[n] != -1) break;
+for (n = J.adapter.readers.cif.CifReader.symmetryOperationsFields.length; --n >= 0; ) if (this.key2col[n] != -1) break;
 
 if (n < 0) {
 JU.Logger.warn ("required _space_group_symop key not found");
@@ -824,8 +824,8 @@ return;
 var isMag = false;
 while (this.parser.getData ()) {
 var ssgop = false;
-var nn = this.parser.getFieldCount ();
-var timeRev = (this.fieldProperty (this.fieldOf[7]) == -1 && this.fieldProperty (this.fieldOf[8]) == -1 && this.fieldProperty (this.fieldOf[6]) == -1 ? 0 : this.field.equals ("-1") ? -1 : 1);
+var nn = this.parser.getColumnCount ();
+var timeRev = (this.fieldProperty (this.key2col[7]) == -1 && this.fieldProperty (this.key2col[8]) == -1 && this.fieldProperty (this.key2col[6]) == -1 ? 0 : this.field.equals ("-1") ? -1 : 1);
 for (var i = 0, tok; i < nn; ++i) {
 switch (tok = this.fieldProperty (i)) {
 case 5:
@@ -861,15 +861,18 @@ if (this.ms != null && !isMag) this.addLatticeVectors ();
 });
 Clazz.defineMethod (c$, "getBondOrder", 
 function (field) {
-switch (field.charAt (0)) {
+switch (field.toUpperCase ().charAt (0)) {
 default:
 JU.Logger.warn ("unknown CIF bond order: " + field);
+case '\0':
 case 'S':
 return 1;
 case 'D':
 return 2;
 case 'T':
 return 3;
+case 'Q':
+return 4;
 case 'A':
 this.haveAromatic = true;
 return 515;
@@ -877,41 +880,33 @@ return 515;
 }, "~S");
 Clazz.defineMethod (c$, "processGeomBondLoopBlock", 
  function () {
+var bondLoopBug = (this.stateScriptVersionInt >= 130304 && this.stateScriptVersionInt < 140403 || this.stateScriptVersionInt >= 150000 && this.stateScriptVersionInt < 150403);
 this.parseLoopParameters (J.adapter.readers.cif.CifReader.geomBondFields);
-for (var i = this.propertyCount; --i >= 0; ) if (this.propertyOf[i] != 3 && this.fieldOf[i] == -1) {
-JU.Logger.warn ("?que? missing property: " + J.adapter.readers.cif.CifReader.geomBondFields[i]);
+if (bondLoopBug || !this.checkAllFieldsPresent (J.adapter.readers.cif.CifReader.geomBondFields, 2, true)) {
 this.parser.skipLoop (false);
 return;
-}
-var name1 = null;
+}var bondCount = 0;
+var name1;
 var name2 = null;
-var order = Integer.$valueOf (1);
-var bondCount = 0;
 while (this.parser.getData ()) {
-var atomIndex1 = -1;
-var atomIndex2 = -1;
-var distance = 0;
-var dx = 0;
-var nn = this.parser.getFieldCount ();
-for (var i = 0; i < nn; ++i) {
-switch (this.fieldProperty (i)) {
-case -1:
-break;
-case 0:
-atomIndex1 = this.asc.getAtomIndex (name1 = this.field);
-break;
-case 1:
-atomIndex2 = this.asc.getAtomIndex (name2 = this.field);
-break;
-case 2:
-distance = this.parseFloatStr (this.field);
-var pt = this.field.indexOf ('(');
+if (this.asc.getAtomIndex (name1 = this.getField (0)) < 0 || this.asc.getAtomIndex (name2 = this.getField (1)) < 0) continue;
+var order = this.getBondOrder (this.getField (3));
+var sdist = this.getField (2);
+var distance = this.parseFloatStr (sdist);
+if (distance == 0 || Float.isNaN (distance)) {
+if (!this.iHaveFractionalCoordinates) {
+var a = this.asc.getAtomFromName (name1);
+var b = this.asc.getAtomFromName (name2);
+if (a != null && b != null) this.asc.addNewBondWithOrder (a.index, b.index, order);
+}continue;
+}var dx = 0;
+var pt = sdist.indexOf ('(');
 if (pt >= 0) {
-var data = this.field.toCharArray ();
-var sdx = this.field.substring (pt + 1, this.field.length - 1);
+var data = sdist.toCharArray ();
+var sdx = sdist.substring (pt + 1, sdist.length - 1);
 var n = sdx.length;
 for (var j = pt; --j >= 0; ) {
-if (data[j] == '.') --j;
+if (data[j] == '.' && --j < 0) break;
 data[j] = (--n < 0 ? '0' : sdx.charAt (n));
 }
 dx = this.parseFloatStr (String.valueOf (data));
@@ -920,15 +915,8 @@ JU.Logger.info ("error reading uncertainty for " + this.line);
 dx = 0.015;
 }} else {
 dx = 0.015;
-}break;
-case 3:
-order = Integer.$valueOf (this.getBondOrder (this.field));
-break;
-}
-}
-if (atomIndex1 < 0 || atomIndex2 < 0 || distance == 0) continue;
-bondCount++;
-this.bondTypes.addLast ( Clazz.newArray (-1, [name1, name2, Float.$valueOf (distance), Float.$valueOf (dx), order]));
+}bondCount++;
+this.bondTypes.addLast ( Clazz.newArray (-1, [name1, name2, Float.$valueOf (distance), Float.$valueOf (dx), Integer.$valueOf (order)]));
 }
 if (bondCount > 0) {
 JU.Logger.info (bondCount + " bonds read");
@@ -938,11 +926,11 @@ this.forceSymmetry (false);
 }}});
 Clazz.defineMethod (c$, "setBondingAndMolecules", 
  function () {
-JU.Logger.info ("CIF creating molecule " + (this.bondTypes.size () > 0 ? " using GEOM_BOND records" : ""));
 this.atoms = this.asc.atoms;
 this.firstAtom = this.asc.getLastAtomSetAtomIndex ();
 var nat = this.asc.getLastAtomSetAtomCount ();
 this.ac = this.firstAtom + nat;
+JU.Logger.info ("CIF creating molecule for " + nat + " atoms " + (this.bondTypes.size () > 0 ? " using GEOM_BOND records" : ""));
 this.bsSets =  new Array (nat);
 this.symmetry = this.asc.getSymmetry ();
 for (var i = this.firstAtom; i < this.ac; i++) {
@@ -964,17 +952,18 @@ for (var i = this.firstAtom; i < this.ac; i++) this.bsConnected[i] =  new JU.BS 
 this.bsMolecule =  new JU.BS ();
 this.bsExclude =  new JU.BS ();
 }var isFirst = true;
+this.bsBondDuplicates =  new JU.BS ();
 while (this.createBonds (isFirst)) {
 isFirst = false;
 }
-if (this.isMolecular) {
+if (this.isMolecular && this.iHaveFractionalCoordinates && !this.bsMolecule.isEmpty ()) {
 if (this.asc.bsAtoms == null) this.asc.bsAtoms =  new JU.BS ();
 this.asc.bsAtoms.clearBits (this.firstAtom, this.ac);
 this.asc.bsAtoms.or (this.bsMolecule);
 this.asc.bsAtoms.andNot (this.bsExclude);
 for (var i = this.firstAtom; i < this.ac; i++) {
 if (this.asc.bsAtoms.get (i)) this.symmetry.toCartesian (this.atoms[i], true);
- else if (JU.Logger.debugging) JU.Logger.debug (this.molecularType + " removing " + i + " " + this.atoms[i].atomName + " " + this.atoms[i]);
+ else if (this.debugging) JU.Logger.debug (this.molecularType + " removing " + i + " " + this.atoms[i].atomName + " " + this.atoms[i]);
 }
 this.asc.setCurrentModelInfo ("unitCellParams", null);
 if (this.nMolecular++ == this.asc.iSet) {
@@ -989,27 +978,44 @@ this.bsConnected = null;
 this.bsMolecule = null;
 this.bsExclude = null;
 });
+Clazz.defineMethod (c$, "fixAtomForBonding", 
+ function (pt, i) {
+pt.setT (this.atoms[i]);
+if (this.iHaveFractionalCoordinates) this.symmetry.toCartesian (pt, true);
+}, "JU.P3,~N");
 Clazz.defineMethod (c$, "createBonds", 
  function (doInit) {
+var list = "";
+var haveH = false;
 for (var i = this.bondTypes.size (); --i >= 0; ) {
+if (this.bsBondDuplicates.get (i)) continue;
 var o = this.bondTypes.get (i);
 var distance = (o[2]).floatValue ();
 var dx = (o[3]).floatValue ();
 var order = (o[4]).intValue ();
 var iatom1 = this.asc.getAtomIndex (o[0]);
 var iatom2 = this.asc.getAtomIndex (o[1]);
-var bs1 = this.bsSets[iatom1 - this.firstAtom];
+if (doInit) {
+var key = ";" + iatom1 + ";" + iatom2 + ";" + distance;
+if (list.indexOf (key) >= 0) {
+this.bsBondDuplicates.set (i);
+continue;
+}list += key;
+}var bs1 = this.bsSets[iatom1 - this.firstAtom];
 var bs2 = this.bsSets[iatom2 - this.firstAtom];
 if (bs1 == null || bs2 == null) continue;
-for (var j = bs1.nextSetBit (0); j >= 0; j = bs1.nextSetBit (j + 1)) for (var k = bs2.nextSetBit (0); k >= 0; k = bs2.nextSetBit (k + 1)) {
-if ((!this.isMolecular || !this.bsConnected[j + this.firstAtom].get (k)) && this.symmetry.checkDistance (this.atoms[j + this.firstAtom], this.atoms[k + this.firstAtom], distance, dx, 0, 0, 0, this.ptOffset)) this.addNewBond (j + this.firstAtom, k + this.firstAtom, order);
+if (this.atoms[iatom1].elementNumber == 1 || this.atoms[iatom2].elementNumber == 1) haveH = true;
+for (var j = bs1.nextSetBit (0); j >= 0; j = bs1.nextSetBit (j + 1)) {
+for (var k = bs2.nextSetBit (0); k >= 0; k = bs2.nextSetBit (k + 1)) {
+if ((!this.isMolecular || !this.bsConnected[j + this.firstAtom].get (k)) && this.checkBondDistance (this.atoms[j + this.firstAtom], this.atoms[k + this.firstAtom], distance, dx)) this.addNewBond (j + this.firstAtom, k + this.firstAtom, order);
 }
-
 }
-if (this.bondTypes.size () > 0) for (var i = this.firstAtom; i < this.ac; i++) if (this.atoms[i].elementNumber == 1) {
+}
+if (!this.iHaveFractionalCoordinates) return false;
+if (this.bondTypes.size () > 0 && !haveH) for (var i = this.firstAtom; i < this.ac; i++) if (this.atoms[i].elementNumber == 1) {
 var checkAltLoc = (this.atoms[i].altLoc != '\0');
 for (var k = this.firstAtom; k < this.ac; k++) if (k != i && this.atoms[k].elementNumber != 1 && (!checkAltLoc || this.atoms[k].altLoc == '\0' || this.atoms[k].altLoc == this.atoms[i].altLoc)) {
-if (!this.bsConnected[i].get (k) && this.symmetry.checkDistance (this.atoms[i], this.atoms[k], 1.1, 0, 0, 0, 0, this.ptOffset)) this.addNewBond (i, k, 1);
+if (!this.bsConnected[i].get (k) && this.checkBondDistance (this.atoms[i], this.atoms[k], 1.1, 0)) this.addNewBond (i, k, 1);
 }
 }
 if (!this.isMolecular) return false;
@@ -1024,13 +1030,11 @@ for (var i = this.firstAtom; i < this.ac; i++) if (!this.bsMolecule.get (i) && !
 this.setBs (this.atoms, i, this.bsConnected, bsBranch);
 for (var k = bsBranch.nextSetBit (0); k >= 0; k = bsBranch.nextSetBit (k + 1)) {
 this.atoms[k].add (this.ptOffset);
-cart1.setT (this.atoms[k]);
-this.symmetry.toCartesian (cart1, true);
+this.fixAtomForBonding (cart1, k);
 var bs = this.bsSets[this.asc.getAtomIndex (this.atoms[k].atomName) - this.firstAtom];
 if (bs != null) for (var ii = bs.nextSetBit (0); ii >= 0; ii = bs.nextSetBit (ii + 1)) {
 if (ii + this.firstAtom == k) continue;
-cart2.setT (this.atoms[ii + this.firstAtom]);
-this.symmetry.toCartesian (cart2, true);
+this.fixAtomForBonding (cart2, ii + this.firstAtom);
 if (cart2.distance (cart1) < 0.1) {
 this.bsExclude.set (k);
 break;
@@ -1042,6 +1046,12 @@ return true;
 
 return false;
 }, "~B");
+Clazz.defineMethod (c$, "checkBondDistance", 
+ function (a, b, distance, dx) {
+if (this.iHaveFractionalCoordinates) return this.symmetry.checkDistance (a, b, distance, dx, 0, 0, 0, this.ptOffset);
+var d = a.distance (b);
+return (dx > 0 ? Math.abs (d - distance) <= dx : d <= distance && d > 0.1);
+}, "J.adapter.smarter.Atom,J.adapter.smarter.Atom,~N,~N");
 Clazz.defineMethod (c$, "addNewBond", 
  function (i, j, order) {
 this.asc.addNewBondWithOrder (i, j, order);
@@ -1057,6 +1067,27 @@ for (var i = bsBond.nextSetBit (0); i >= 0; i = bsBond.nextSetBit (i + 1)) {
 if (!bs.get (i)) this.setBs (atoms, i, bsBonds, bs);
 }
 }, "~A,~N,~A,JU.BS");
+Clazz.defineMethod (c$, "checkSubclassSymmetry", 
+function () {
+return this.doCheckUnitCell;
+});
+Clazz.defineMethod (c$, "checkAllFieldsPresent", 
+function (keys, lastKey, critical) {
+for (var i = (lastKey < 0 ? keys.length : lastKey); --i >= 0; ) if (this.key2col[i] == -1) {
+if (critical) JU.Logger.warn ("CIF reader missing property: " + keys[i]);
+return false;
+}
+return true;
+}, "~A,~N,~B");
+Clazz.defineMethod (c$, "getField", 
+function (type) {
+var i = this.key2col[type];
+return (i == -1 ? "\0" : this.parser.getColumnData (i));
+}, "~N");
+Clazz.defineMethod (c$, "isNull", 
+function (key) {
+return key.equals ("\0");
+}, "~S");
 Clazz.defineStatics (c$,
 "titleRecords", "__citation_title__publ_section_title__active_magnetic_irreps_details__",
 "TransformFields",  Clazz.newArray (-1, ["x[1][1]", "x[1][2]", "x[1][3]", "r[1]", "x[2][1]", "x[2][2]", "x[2][3]", "r[2]", "x[3][1]", "x[3][2]", "x[3][3]", "r[3]"]),
@@ -1140,9 +1171,8 @@ Clazz.defineStatics (c$,
 "atomFields",  Clazz.newArray (-1, ["*_type_symbol", "*_label", "*_auth_atom_id", "*_fract_x", "*_fract_y", "*_fract_z", "*_cartn_x", "*_cartn_y", "*_cartn_z", "*_occupancy", "*_b_iso_or_equiv", "*_auth_comp_id", "*_auth_asym_id", "*_auth_seq_id", "*_pdbx_pdb_ins_code", "*_label_alt_id", "*_group_pdb", "*_pdbx_pdb_model_num", "*_calc_flag", "*_disorder_group", "*_aniso_label", "*_anisotrop_id", "*_aniso_u_11", "*_aniso_u_22", "*_aniso_u_33", "*_aniso_u_12", "*_aniso_u_13", "*_aniso_u_23", "*_anisotrop_u[1][1]", "*_anisotrop_u[2][2]", "*_anisotrop_u[3][3]", "*_anisotrop_u[1][2]", "*_anisotrop_u[1][3]", "*_anisotrop_u[2][3]", "*_u_iso_or_equiv", "*_aniso_b_11", "*_aniso_b_22", "*_aniso_b_33", "*_aniso_b_12", "*_aniso_b_13", "*_aniso_b_23", "*_aniso_beta_11", "*_aniso_beta_22", "*_aniso_beta_33", "*_aniso_beta_12", "*_aniso_beta_13", "*_aniso_beta_23", "*_adp_type", "_chem_comp_atom_comp_id", "_chem_comp_atom_atom_id", "_chem_comp_atom_type_symbol", "_chem_comp_atom_charge", "_chem_comp_atom_model_cartn_x", "_chem_comp_atom_model_cartn_y", "_chem_comp_atom_model_cartn_z", "_chem_comp_atom_pdbx_model_cartn_x_ideal", "_chem_comp_atom_pdbx_model_cartn_y_ideal", "_chem_comp_atom_pdbx_model_cartn_z_ideal", "*_disorder_assembly", "*_label_asym_id", "*_subsystem_code", "*_symmetry_multiplicity", "*_thermal_displace_type", "*_moment_label", "*_moment_crystalaxis_mx", "*_moment_crystalaxis_my", "*_moment_crystalaxis_mz", "*_moment_crystalaxis_x", "*_moment_crystalaxis_y", "*_moment_crystalaxis_z", "*_id", "*_label_seq_id"]));
 c$.singleAtomID = c$.prototype.singleAtomID = J.adapter.readers.cif.CifReader.atomFields[48];
 Clazz.defineStatics (c$,
-"CITATION_ID", 0,
-"CITATION_TITLE", 1,
-"citationFields",  Clazz.newArray (-1, ["_citation_id", "_citation_title"]),
+"CITATION_TITLE", 0,
+"citationFields",  Clazz.newArray (-1, ["_citation_title"]),
 "SYM_XYZ", 0,
 "SYM_MAGN_XYZ", 1,
 "SYM_SSG_ALG", 2,

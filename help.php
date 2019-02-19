@@ -168,6 +168,7 @@ $glutamine = get_string('glutamine', 'filter_jmol');
 $glutamic = get_string('glutamic', 'filter_jmol');
 $glycine = get_string('glycine', 'filter_jmol');
 $histidine = get_string('histidine', 'filter_jmol');
+$isoleucine = get_string('isoleucine', 'filter_jmol');
 $leucine = get_string('leucine', 'filter_jmol');
 $lysine = get_string('lysine', 'filter_jmol');
 $methionine = get_string('methionine', 'filter_jmol');
@@ -178,7 +179,7 @@ $threonine = get_string('threonine', 'filter_jmol');
 $tryptophan = get_string('tryptophan', 'filter_jmol');
 $tyrosine = get_string('tyrosine', 'filter_jmol');
 $valine = get_string('valine', 'filter_jmol');
-$aspartate = get_string('aspartate', 'filter_jmol');
+$aspartic = get_string('aspartic', 'filter_jmol');
 $glutamic = get_string('glutamic', 'filter_jmol');
 $other = get_string('other', 'filter_jmol');
 
@@ -392,66 +393,66 @@ echo '<!DOCTYPE html>
 <h5> <span class="mw-headline" id="Amino_acid_residues"> Amino acid residues </span></h5>
 <table style="text-align: center;">
 <tr>
-<td title="alanine" style="width: 2em; background-color: #8CFF8C;"> Ala
+<td title="'.$alanine.'" style="width: 2em; background-color: #8CFF8C;"> Ala
 </td>
-<td title="arginine" style="width: 2em; background-color: #00007C;"> Arg
+<td title="'.$arginine.'" style="width: 2em; background-color: #00007C;"> Arg
 </td>
-<td title="asparagine" style="width: 2em; background-color: #00A1FF;"> Asn
+<td title="'.$asparagine.'" style="width: 2em; background-color: #00A1FF;"> Asn
 </td>
-<td title="aspartic acid" style="width: 2em; background-color: #A00042"> Asp
+<td title="'.$aspartic.'" style="width: 2em; background-color: #A00042"> Asp
 </td>
-<td title="cystine" style="width: 2em; background-color: #A00042;"> Cys
+<td title="'.$cystine.'" style="width: 2em; background-color: #A00042;"> Cys
 </td>
-<td title="glutamine" style="width: 2em; background-color: #006BFF;"> Gln
+<td title="'.$glutamine.'" style="width: 2em; background-color: #006BFF;"> Gln
 </td>
-<td title="glutamic acid" style="width: 2em; background-color: #FF4C4C;"> Glu
+<td title="'.$glutamic.'" style="width: 2em; background-color: #FF4C4C;"> Glu
 </td>
-<td title="glycine" style="width: 2em; background-color: #FFFFFF; border:1px solid lightgray;"> Gly
+<td title="'.$glycine.'" style="width: 2em; background-color: #FFFFFF; border:1px solid lightgray;"> Gly
 </td>
-<td title="histidine" style="width: 2em; background-color: #7070FF;"> His
+<td title="'.$histidine.'" style="width: 2em; background-color: #7070FF;"> His
 </td>
-<td title="isoleucine" style="width: 2em; background-color: #004C00;"> Ile
+<td title="'.$isoleucine.'" style="width: 2em; background-color: #004C00;"> Ile
 </td>
-<td title="leucine" style="width: 2em; background-color: #455E45;"> Leu
+<td title="'.$leucine.'" style="width: 2em; background-color: #455E45;"> Leu
 </td>
-<td title="lysine" style="width: 2em; background-color: #4747B8;"> Lys
+<td title="'.$lysine.'" style="width: 2em; background-color: #4747B8;"> Lys
 </td>
-<td title="methionine" style="width: 2em;background-color: #B8A042;"> Met
+<td title="'.$methionine.'" style="width: 2em;background-color: #B8A042;"> Met
 </td>
-<td title="phenylalanine" style="width: 2em; background-color: #534C52;"> Phe
+<td title="'.$phenylalanine.'" style="width: 2em; background-color: #534C52;"> Phe
 </td>
-<td title="proline" style="width: 2em; background-color: #525252;"> Pro
+<td title="'.$proline.'" style="width: 2em; background-color: #525252;"> Pro
 </td>
-<td title="serine" style="width: 2em; background-color: #FF7042;"> Ser
+<td title="'.$serine.'" style="width: 2em; background-color: #FF7042;"> Ser
 </td>
-<td title="threonine" style="width: 2em; background-color: #B84C00;"> Thr
+<td title="'.$threonine.'" style="width: 2em; background-color: #B84C00;"> Thr
 </td>
-<td title="tryptophan" style="width: 2em; background-color: #4F4600;"> Trp
+<td title="'.$tryptophan.'" style="width: 2em; background-color: #4F4600;"> Trp
 </td>
-<td title="tyrosine" style="width: 2em; background-color: #8C704C;"> Tyr
+<td title="'.$tyrosine.'" style="width: 2em; background-color: #8C704C;"> Tyr
 </td>
-<td title="valine" style="width: 2em; background-color: #FF8CFF;"> Val
+<td title="'.$valine.'" style="width: 2em; background-color: #FF8CFF;"> Val
 </td>
-<td title="aspartate or asparagine" style="width: 2em; background-color: #FF00FF;"> Asx
+<td title="'.$aspartic.' or '.$asparagine.'" style="width: 2em; background-color: #FF00FF;"> Asx
 </td>
-<td title="glutamic acid or glutamine" style="width: 2em; background-color: #FF00FF;"> Glx
+<td title="'.$glutamic.' or '.$glutamine.'" style="width: 2em; background-color: #FF00FF;"> Glx
 </td>
-<td title="other" style="width: 2em; background-color: #FF00FF;"> Xxx
+<td title="'.$other.'" style="width: 2em; background-color: #FF00FF;"> Xxx
 </td></tr></table>
 <h5> <span class="mw-headline" id="Nucleotide_base_residues"> Nucleotide base residues </span></h5>
 <table>
 <tr>
-<td title="adenine" style="width:2em; background-color: #A0A0FF; text-align: center;"> A
+<td title="'.$adenine.'" style="width:2em; background-color: #A0A0FF; text-align: center;"> A
 </td>
-<td title="guanine" style="width:2em; background-color: #FF7070; text-align: center;"> G
+<td title="'.$guanine.'" style="width:2em; background-color: #FF7070; text-align: center;"> G
 </td>
-<td title="inosine" style="width:2em; background-color: #80FFFF; text-align: center;"> I
+<td title="'.$inosine.'" style="width:2em; background-color: #80FFFF; text-align: center;"> I
 </td>
-<td title="cytosine" style="width:2em; background-color: #FF8C4B; text-align: center;"> C
+<td title="'.$cytosine.'" style="width:2em; background-color: #FF8C4B; text-align: center;"> C
 </td>
-<td title="thymine" style="width:2em; background-color: #A0FFA0; text-align: center;"> T
+<td title="'.$thymine.'" style="width:2em; background-color: #A0FFA0; text-align: center;"> T
 </td>
-<td title="uracil" style="width:2em; background-color: #FF8080; text-align: center;"> U
+<td title="'.$uracil.'" style="width:2em; background-color: #FF8080; text-align: center;"> U
 </td></tr></table>
 <h4> <span class="mw-headline" id="Secondary_structure"> Secondary structure</span></h4>
 <h5> <span class="mw-headline" id="Polypeptides"> Polypeptides </span></h5>

@@ -167,9 +167,27 @@ this.doCache = doCache;
 this.surfaceInfoName = filePath + "##JmolSurfaceInfo##";
 this.setVersionSettings ();
 settings.trimToSize ();
-this.bgRgb = J.adapter.readers.pymol.PyMOLScene.colorSetting (J.adapter.readers.pymol.PyMOLScene.listAt (settings, 6));
-J.adapter.readers.pymol.PyMOLScene.pointAt (J.adapter.readers.pymol.PyMOLScene.listAt (settings, 471).get (2), 0, this.labelPosition0);
+this.bgRgb = this.colorSetting (6);
+this.labelPosition0 = this.pointSetting (471);
 }, "J.api.PymolAtomReader,JV.Viewer,JU.Lst,java.util.Map,~N,~B,~N,~N,~B,~S");
+Clazz.defineMethod (c$, "colorSetting", 
+ function (i) {
+var pos = J.adapter.readers.pymol.PyMOLScene.listAt (this.settings, i);
+var o = (pos == null || pos.size () != 3 ? null : pos.get (2));
+if (o == null) return Clazz.floatToInt (J.adapter.readers.pymol.PyMOL.getDefaultSetting (i, this.pymolVersion));
+return (Clazz.instanceOf (o, Integer) ? (o).intValue () : JU.CU.colorPtToFFRGB (J.adapter.readers.pymol.PyMOLScene.pointAt (o, 0, J.adapter.readers.pymol.PyMOLScene.ptTemp)));
+}, "~N");
+Clazz.defineMethod (c$, "pointSetting", 
+ function (i) {
+var pt =  new JU.P3 ();
+var pos = J.adapter.readers.pymol.PyMOLScene.listAt (this.settings, i);
+if (pos != null && pos.size () == 3) return J.adapter.readers.pymol.PyMOLScene.pointAt (pos.get (2), 0, pt);
+return J.adapter.readers.pymol.PyMOL.getDefaultSettingPt (i, this.pymolVersion, pt);
+}, "~N");
+Clazz.defineMethod (c$, "ensureCapacity", 
+function (n) {
+this.atomColorList.ensureCapacity (this.atomColorList.size () + n);
+}, "~N");
 Clazz.defineMethod (c$, "setReaderObjectInfo", 
 function (name, type, groupName, isHidden, listObjSettings, listStateSettings, ext) {
 this.objectName = name;
@@ -327,9 +345,16 @@ var color = (item[0]).intValue ();
 var icolor = J.adapter.readers.pymol.PyMOL.getRGB (color);
 var molecules = item[1];
 var bs = this.getSelectionAtoms (molecules, this.thisState,  new JU.BS ());
-this.addJmolObject (1141899265, bs, null).argb = icolor;
+this.addJmolObject (1140850689, bs, null).argb = icolor;
 }
 }, "~A");
+Clazz.defineMethod (c$, "processSelection", 
+function (selection) {
+var id = selection.get (0).toString ();
+id = "_" + (id.equals ("sele") ? id : "sele_" + id);
+var g = this.getGroup (id);
+this.getSelectionAtoms (J.adapter.readers.pymol.PyMOLScene.listAt (selection, 5), 0, g.bsAtoms);
+}, "JU.Lst");
 Clazz.defineMethod (c$, "getSelectionAtoms", 
  function (molecules, istate, bs) {
 if (molecules != null) for (var j = molecules.size (); --j >= 0; ) this.selectAllAtoms (J.adapter.readers.pymol.PyMOLScene.listAt (molecules, j), istate, bs);
@@ -433,16 +458,12 @@ for (var i = list.size (); --i >= 0; ) bs.set (atomMap[J.adapter.readers.pymol.P
 }, "JU.Lst,~A,JU.BS");
 c$.getColorPt = Clazz.defineMethod (c$, "getColorPt", 
 function (o) {
-return (Clazz.instanceOf (o, Integer) ? (o).intValue () : JU.CU.colorPtToFFRGB (J.adapter.readers.pymol.PyMOLScene.pointAt (o, 0, J.adapter.readers.pymol.PyMOLScene.ptTemp)));
+return (o == null ? 0 : Clazz.instanceOf (o, Integer) ? (o).intValue () : JU.CU.colorPtToFFRGB (J.adapter.readers.pymol.PyMOLScene.pointAt (o, 0, J.adapter.readers.pymol.PyMOLScene.ptTemp)));
 }, "~O");
 c$.intAt = Clazz.defineMethod (c$, "intAt", 
 function (list, i) {
 return (list.get (i)).intValue ();
 }, "JU.Lst,~N");
-c$.colorSetting = Clazz.defineMethod (c$, "colorSetting", 
-function (c) {
-return J.adapter.readers.pymol.PyMOLScene.getColorPt (c.get (2));
-}, "JU.Lst");
 Clazz.defineMethod (c$, "setReaderObjects", 
 function () {
 this.clearReaderData ();
@@ -472,7 +493,7 @@ this.jmolObjects.clear ();
 });
 Clazz.defineMethod (c$, "offsetObjects", 
 function () {
-for (var i = 0; i < this.jmolObjects.size (); i++) this.jmolObjects.get (i).offset (this.baseModelIndex, this.baseAtomIndex);
+for (var i = 0, n = this.jmolObjects.size (); i < n; i++) this.jmolObjects.get (i).offset (this.baseModelIndex, this.baseAtomIndex);
 
 });
 Clazz.defineMethod (c$, "getJmolObject", 
@@ -513,19 +534,12 @@ return pymolView;
 }, "JU.Lst,~B");
 Clazz.defineMethod (c$, "globalSetting", 
 function (i) {
-try {
 var setting = this.settings.get (i);
-return (setting.get (2)).floatValue ();
-} catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
+if (setting != null && setting.size () == 3) return (setting.get (2)).floatValue ();
 return J.adapter.readers.pymol.PyMOL.getDefaultSetting (i, this.pymolVersion);
-} else {
-throw e;
-}
-}
 }, "~N");
 Clazz.defineMethod (c$, "addGroup", 
-function (object, parent, type) {
+function (object, parent, type, bsAtoms) {
 if (this.groups == null) this.groups =  new java.util.Hashtable ();
 var myGroup = this.getGroup (this.objectName);
 myGroup.object = object;
@@ -536,10 +550,11 @@ if (!myGroup.visible) {
 this.occludedObjects.put (this.objectNameID, Boolean.TRUE);
 this.htHiddenObjects.put (this.objectName, Boolean.TRUE);
 }if (parent != null && parent.length != 0) this.getGroup (parent).addList (myGroup);
+if (bsAtoms != null) myGroup.addGroupAtoms (bsAtoms);
 return myGroup;
-}, "JU.Lst,~S,~N");
+}, "JU.Lst,~S,~N,JU.BS");
 Clazz.defineMethod (c$, "getGroup", 
- function (name) {
+function (name) {
 var g = this.groups.get (name);
 if (g == null) {
 this.groups.put (name, (g =  new J.adapter.readers.pymol.PyMOLGroup (name)));
@@ -553,7 +568,7 @@ if (this.groups != null) for (var i = this.jmolObjects.size (); --i >= 0; ) {
 var obj = this.jmolObjects.get (i);
 if (obj.jmolName != null && this.occludedObjects.containsKey (obj.jmolName)) obj.visible = false;
 }
-if (!this.bsHidden.isEmpty ()) this.addJmolObject (3145770, this.bsHidden, null);
+if (!this.bsHidden.isEmpty ()) this.addJmolObject (2097194, this.bsHidden, null);
 });
 Clazz.defineMethod (c$, "setCarveSets", 
 function (htObjNames) {
@@ -586,7 +601,7 @@ function (reps, allowSurface, ac0, ac) {
 if (ac >= 0) {
 this.bsAtoms = JU.BSUtil.newBitSet2 (ac0, ac);
 var jo;
-jo = this.addJmolObject (1141899265, this.bsAtoms, null);
+jo = this.addJmolObject (1140850689, this.bsAtoms, null);
 this.colixes = JU.AU.ensureLengthShort (this.colixes, ac);
 for (var i = ac; --i >= ac0; ) this.colixes[i] = this.atomColorList.get (i).intValue ();
 
@@ -668,36 +683,22 @@ return (this.floatSetting (i) != 0);
 }, "~N");
 Clazz.defineMethod (c$, "floatSetting", 
 function (i) {
-try {
 var setting = this.getSetting (i);
-return (setting.get (2)).floatValue ();
-} catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
+if (setting != null && setting.size () == 3) return (setting.get (2)).floatValue ();
 return J.adapter.readers.pymol.PyMOL.getDefaultSetting (i, this.pymolVersion);
-} else {
-throw e;
-}
-}
 }, "~N");
 Clazz.defineMethod (c$, "stringSetting", 
 function (i) {
-try {
 var setting = this.getSetting (i);
-return setting.get (2).toString ();
-} catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
-return null;
-} else {
-throw e;
-}
-}
+if (setting != null && setting.size () == 3) return setting.get (2).toString ();
+return J.adapter.readers.pymol.PyMOL.getDefaultSettingS (i, this.pymolVersion);
 }, "~N");
 Clazz.defineMethod (c$, "getSetting", 
  function (i) {
 var setting = null;
 if (this.stateSettings != null) setting = this.stateSettings.get (Integer.$valueOf (i));
 if (setting == null && this.objectSettings != null) setting = this.objectSettings.get (Integer.$valueOf (i));
-if (setting == null) setting = this.settings.get (i);
+if (setting == null && i < this.settings.size ()) setting = this.settings.get (i);
 return setting;
 }, "~N");
 c$.pointAt = Clazz.defineMethod (c$, "pointAt", 
@@ -773,7 +774,7 @@ offset = md.text.pymolOffset;
 }var nDigits = Clazz.floatToInt (this.floatSetting (J.adapter.readers.pymol.PyMOLScene.MEAS_DIGITS[nCoord - 2]));
 var strFormat = nCoord + ": " + (drawLabel ? "%0." + (nDigits < 0 ? 1 : nDigits) + "VALUE" : "");
 var text = this.newTextLabel (strFormat, offset, clabel, Clazz.floatToInt (this.floatSetting (328)), this.floatSetting (453));
-md.set (1060866, null, null, strFormat, "angstroms", null, false, false, null, false, Clazz.floatToInt (rad * 2000), colix, text);
+md.set (12290, null, null, strFormat, "angstroms", null, false, false, null, false, Clazz.floatToInt (rad * 2000), colix, text);
 this.addJmolObject (6, bs, md);
 }
 return true;
@@ -803,7 +804,7 @@ return JU.C.getColixTranslucent3 (colix, translucency > 0, translucency);
 }, "~N,~N");
 c$.colorSettingClamped = Clazz.defineMethod (c$, "colorSettingClamped", 
 function (c) {
-return (c.size () < 6 || J.adapter.readers.pymol.PyMOLScene.intAt (c, 4) == 0 ? J.adapter.readers.pymol.PyMOLScene.colorSetting (c) : J.adapter.readers.pymol.PyMOLScene.getColorPt (c.get (5)));
+return J.adapter.readers.pymol.PyMOLScene.getColorPt (c.get (c.size () < 6 || J.adapter.readers.pymol.PyMOLScene.intAt (c, 4) == 0 ? 2 : 5));
 }, "JU.Lst");
 Clazz.defineMethod (c$, "setAtomColor", 
 function (atomColor) {
@@ -894,7 +895,8 @@ style = "BoldItalic";
 break;
 }
 var font = this.vwr.getFont3D (face, style, fontSize == 0 ? 12 : fontSize * factor);
-var t = JM.Text.newLabel (this.vwr, font, label, this.getColix (colorIndex, 0), 0, 0, 0, labelOffset);
+var t = JM.Text.newLabel (this.vwr, font, label, this.getColix (colorIndex, 0), 0, 0, 0);
+if (t != null) t.pymolOffset = labelOffset;
 return t;
 }, "~S,~A,~N,~N,~N");
 Clazz.defineMethod (c$, "setVersionSettings", 
@@ -1091,7 +1093,7 @@ Clazz.defineMethod (c$, "createSpacefillObjects",
 for (var e, $e = this.htSpacefill.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) {
 var r = e.getKey ().floatValue ();
 var bs = e.getValue ();
-this.addJmolObject (1141899265, bs, null).rd =  new J.atomdata.RadiusData (null, r, J.atomdata.RadiusData.EnumType.ABSOLUTE, J.c.VDW.AUTO);
+this.addJmolObject (1140850689, bs, null).rd =  new J.atomdata.RadiusData (null, r, J.atomdata.RadiusData.EnumType.ABSOLUTE, J.c.VDW.AUTO);
 }
 this.htSpacefill.clear ();
 });
@@ -1119,7 +1121,7 @@ bs.andNot (bsNuc);
 Clazz.defineMethod (c$, "createPuttyObject", 
  function (bs) {
 var info =  Clazz.newFloatArray (-1, [this.floatSetting (378), this.floatSetting (377), this.floatSetting (382), this.floatSetting (379), this.floatSetting (380), this.floatSetting (381), this.floatSetting (581)]);
-this.addJmolObject (1113200654, bs, info).translucency = this.cartoonTranslucency;
+this.addJmolObject (1112152078, bs, info).translucency = this.cartoonTranslucency;
 }, "JU.BS");
 Clazz.defineMethod (c$, "createRibbonObject", 
  function (bs) {
@@ -1191,7 +1193,7 @@ for (var e, $e = this.htDefinedAtoms.entrySet ().iterator (); $e.hasNext () && (
 var bs = e.getValue ();
 if (!bs.isEmpty ()) defs.put (e.getKey (), bs);
 }
-this.addJmolObject (1060866, null, defs);
+this.addJmolObject (12290, null, defs);
 return defs;
 });
 Clazz.defineMethod (c$, "needSelections", 

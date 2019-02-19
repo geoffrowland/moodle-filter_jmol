@@ -57,9 +57,10 @@ return;
 var data = value;
 var colixes = data[0];
 if (this.bsColixSet == null) this.bsColixSet =  new JU.BS ();
+var c;
 for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
-if (i >= colixes.length) continue;
-this.atoms[i].colixAtom = colixes[i];
+if (i >= colixes.length || (c = colixes[i]) == 0) continue;
+this.atoms[i].colixAtom = c;
 this.atoms[i].paletteID = J.c.PAL.UNKNOWN.id;
 this.bsColixSet.set (i);
 }

@@ -60,11 +60,12 @@ Clazz.defineMethod (c$, "errorOrWarn",
 var strError = (this.ignoreError ? null : JS.ScriptError.errorString (iError, value, more, more2, true));
 var strUntranslated = (this.ignoreError || !J.i18n.GT.getDoTranslate () ? null : JS.ScriptError.errorString (iError, value, more, more2, false));
 if (!warningOnly) this.evalError (strError, strUntranslated);
-this.showString (strError);
+this.showStringPrint (strError, true);
 }, "~N,~S,~S,~S,~B");
 Clazz.defineMethod (c$, "evalError", 
 function (message, strUntranslated) {
 if (this.ignoreError) throw  new NullPointerException ();
+if (strUntranslated == null) strUntranslated = message;
 if (!this.chk) {
 this.setCursorWait (false);
 this.vwr.setBooleanProperty ("refreshing", true);

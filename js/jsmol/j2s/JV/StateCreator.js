@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JV");
-Clazz.load (["JV.JmolStateCreator", "java.util.Hashtable"], "JV.StateCreator", ["java.lang.Float", "java.util.Arrays", "$.Date", "javajs.awt.Font", "JU.BS", "$.P3", "$.PT", "$.SB", "J.c.PAL", "$.STER", "$.STR", "$.VDW", "JM.Atom", "$.AtomCollection", "$.Bond", "$.BondSet", "JS.T", "J.shape.Shape", "JU.BSUtil", "$.C", "$.ColorEncoder", "$.Edge", "$.Escape", "$.Logger", "JV.GlobalSettings", "$.JC", "$.StateManager", "$.Viewer"], function () {
+Clazz.load (["JV.JmolStateCreator", "java.util.Hashtable"], "JV.StateCreator", ["java.lang.Float", "java.util.Arrays", "$.Date", "javajs.awt.Font", "JU.BS", "$.P3", "$.PT", "$.SB", "J.c.PAL", "$.STR", "$.VDW", "JM.Atom", "$.AtomCollection", "$.Bond", "$.BondSet", "JS.T", "J.shape.Shape", "JU.BSUtil", "$.C", "$.ColorEncoder", "$.Edge", "$.Escape", "$.Logger", "JV.GlobalSettings", "$.JC", "$.StateManager", "$.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.temp = null;
@@ -133,7 +133,9 @@ for (var i = ms.bondCount; --i >= 0; ) if (bonds[i].mad != 0 && (bonds[i].shapeV
 if (bs.isEmpty ()) ms.haveHiddenBonds = false;
  else commands.append ("  hide ").append (JU.Escape.eBond (bs)).append (";\n");
 }this.vwr.setModelVisibility ();
-if (withProteinStructure) commands.append (ms.getProteinStructureState (null, isAll ? 1048579 : 1073742158));
+if (withProteinStructure) commands.append (ms.getProteinStructureState (null, isAll ? 1073742327 : 1073742158));
+for (var i = 0; i < modelCount; i++) if (models[i].mat4 != null) commands.append ("  frame orientation " + ms.getModelNumberDotted (i) + JU.Escape.matrixToScript (models[i].mat4) + ";\n");
+
 this.getShapeState (commands, isAll, 2147483647);
 if (isAll) {
 var needOrientations = false;
@@ -141,28 +143,32 @@ for (var i = 0; i < modelCount; i++) if (models[i].isJmolDataFrame) {
 needOrientations = true;
 break;
 }
+var sb =  new JU.SB ();
 for (var i = 0; i < modelCount; i++) {
-var fcmd = "  frame " + ms.getModelNumberDotted (i);
+var m = models[i];
+sb.setLength (0);
 var s = ms.getInfo (i, "modelID");
-if (s != null && !s.equals (ms.getInfo (i, "modelID0"))) commands.append (fcmd).append ("; frame ID ").append (JU.PT.esc (s)).append (";\n");
+if (s != null && !s.equals (ms.getInfo (i, "modelID0"))) sb.append ("  frame ID ").append (JU.PT.esc (s)).append (";\n");
 var t = ms.frameTitles[i];
-if (t != null && t.length > 0) commands.append (fcmd).append ("; frame title ").append (JU.PT.esc (t)).append (";\n");
-if (needOrientations && models[i].orientation != null && !ms.isTrajectorySubFrame (i)) commands.append (fcmd).append ("; ").append (models[i].orientation.getMoveToText (false)).append (";\n");
-if (models[i].frameDelay != 0 && !ms.isTrajectorySubFrame (i)) commands.append (fcmd).append ("; frame delay ").appendF (models[i].frameDelay / 1000).append (";\n");
-if (models[i].simpleCage != null) {
-commands.append (fcmd).append ("; unitcell ").append (JU.Escape.eAP (models[i].simpleCage.getUnitCellVectors ())).append (";\n");
-this.getShapeState (commands, isAll, 33);
-}}
+if (t != null && t.length > 0) sb.append ("  frame title ").append (JU.PT.esc (t)).append (";\n");
+if (needOrientations && m.orientation != null && !ms.isTrajectorySubFrame (i)) sb.append ("  ").append (m.orientation.getMoveToText (false)).append (";\n");
+if (m.frameDelay != 0 && !ms.isTrajectorySubFrame (i)) sb.append ("  frame delay ").appendF (m.frameDelay / 1000).append (";\n");
+if (m.simpleCage != null) {
+sb.append ("  unitcell ").append (JU.Escape.eAP (m.simpleCage.getUnitCellVectors ())).append (";\n");
+this.getShapeState (sb, isAll, 33);
+}if (sb.length () > 0) commands.append ("  frame " + ms.getModelNumberDotted (i) + ";\n").appendSB (sb);
+}
 var loadUC = false;
 if (ms.unitCells != null) {
 var haveModulation = false;
 for (var i = 0; i < modelCount; i++) {
 var symmetry = ms.getUnitCell (i);
 if (symmetry == null) continue;
-commands.append ("  frame ").append (ms.getModelNumberDotted (i));
-if (symmetry.getState (commands)) loadUC = true;
-commands.append (";\n");
-haveModulation = new Boolean (haveModulation | (this.vwr.ms.getLastVibrationVector (i, 1276121113) >= 0)).valueOf ();
+sb.setLength (0);
+if (symmetry.getState (sb)) {
+loadUC = true;
+commands.append ("  frame ").append (ms.getModelNumberDotted (i)).appendSB (sb).append (";\n");
+}haveModulation = new Boolean (haveModulation | (this.vwr.ms.getLastVibrationVector (i, 1275072532) >= 0)).valueOf ();
 }
 if (loadUC) this.vwr.shm.loadShape (33);
 this.getShapeState (commands, isAll, 33);
@@ -170,14 +176,13 @@ if (haveModulation) {
 var temp =  new java.util.Hashtable ();
 var ivib;
 for (var i = modelCount; --i >= 0; ) {
-if ((ivib = this.vwr.ms.getLastVibrationVector (i, 1276121113)) >= 0) for (var j = models[i].firstAtomIndex; j <= ivib; j++) {
+if ((ivib = this.vwr.ms.getLastVibrationVector (i, 1275072532)) >= 0) for (var j = models[i].firstAtomIndex; j <= ivib; j++) {
 var mset = ms.getModulation (j);
 if (mset != null) JU.BSUtil.setMapBitSet (temp, j, j, mset.getState ());
 }
 }
 commands.append (this.getCommands (temp, null, "select"));
 }}commands.append ("  set fontScaling " + this.vwr.getBoolean (603979845) + ";\n");
-if (this.vwr.getBoolean (603979883)) commands.append ("  set modelKitMode true;\n");
 }if (sfunc != null) commands.append ("\n}\n\n");
 return commands.toString ();
 }, "JU.SB,~B,~B");
@@ -209,7 +214,7 @@ str.append ("\nfunction _setWindowState() {\n");
 str.append ("# width ").appendI (width == 0 ? this.vwr.getScreenWidth () : width).append (";\n# height ").appendI (height == 0 ? this.vwr.getScreenHeight () : height).append (";\n");
 this.app (str, "stateVersion = " + JV.JC.versionInt);
 this.app (str, "background " + JU.Escape.escapeColor (global.objColors[0]));
-for (var i = 1; i < 8; i++) if (global.objColors[i] != 0) this.app (str, JV.StateManager.getObjectNameFromId (i) + "Color = \"" + JU.Escape.escapeColor (global.objColors[i]) + '"');
+for (var i = 1; i < 7; i++) if (global.objColors[i] != 0) this.app (str, JV.StateManager.getObjectNameFromId (i) + "Color = \"" + JU.Escape.escapeColor (global.objColors[i]) + '"');
 
 if (global.backgroundImageFileName != null) {
 this.app (str, "background IMAGE " + (global.backgroundImageFileName.startsWith (";base64,") ? "" : "/*file*/") + JU.PT.esc (global.backgroundImageFileName));
@@ -446,7 +451,6 @@ this.app (commands, this.vwr.ms.getBoundBoxCommand (false));
 this.app (commands, "center " + JU.Escape.eP (tm.fixedRotationCenter));
 commands.append (this.vwr.getOrientationText (1073742035, null));
 this.app (commands, moveToText);
-if (tm.stereoMode !== J.c.STER.NONE) this.app (commands, "stereo " + (tm.stereoColors == null ? tm.stereoMode.getName () : JU.Escape.escapeColor (tm.stereoColors[0]) + " " + JU.Escape.escapeColor (tm.stereoColors[1])) + " " + tm.stereoDegrees);
 if (!navigating && !tm.zoomEnabled) this.app (commands, "zoom off");
 commands.append ("  slab ").appendI (tm.slabPercentSetting).append (";depth ").appendI (tm.depthPercentSetting).append (tm.slabEnabled && !navigating ? ";slab on" : "").append (";\n");
 commands.append ("  set slabRange ").appendF (tm.slabRange).append (";\n");
@@ -455,10 +459,11 @@ if (tm.depthPlane != null) commands.append ("  depth plane ").append (JU.Escape.
 this.getZshadeState (commands, tm, false);
 commands.append (this.getSpinState (true)).append ("\n");
 if (this.vwr.ms.modelSetHasVibrationVectors () && tm.vibrationOn) this.app (commands, "set vibrationPeriod " + tm.vibrationPeriod + ";vibration on");
+var slabInternal = (tm.depthPlane != null || tm.slabPlane != null);
 if (navigating) {
 commands.append (tm.getNavigationState ());
-if (tm.depthPlane != null || tm.slabPlane != null) commands.append ("  slab on;\n");
-}if (sfunc != null) commands.append ("}\n\n");
+}if (!tm.slabEnabled && slabInternal) commands.append ("  slab off;\n");
+if (sfunc != null) commands.append ("}\n\n");
 return commands.toString ();
 }, "JV.TransformManager,JU.SB");
 Clazz.defineMethod (c$, "getZshadeState", 
@@ -529,9 +534,9 @@ Clazz.overrideMethod (c$, "getFontState",
 function (myType, font3d) {
 var objId = JV.StateManager.getObjectIdFromName (myType.equalsIgnoreCase ("axes") ? "axis" : myType);
 if (objId < 0) return "";
-var mad = this.vwr.getObjectMad (objId);
+var mad = this.vwr.getObjectMad10 (objId);
 var s =  new JU.SB ().append ("\n");
-this.app (s, myType + (mad == 0 ? " off" : mad == 1 ? " on" : mad == -1 ? " dotted" : mad < 20 ? " " + mad : " " + (mad / 2000)));
+this.app (s, myType + (mad == 0 ? " off" : mad == 1 ? " on" : mad == -1 ? " dotted" : mad < 20 ? " " + mad : " " + (mad / 20000)));
 if (s.length () < 3) return "";
 var fcmd = J.shape.Shape.getFontCommand (myType, font3d);
 if (fcmd.length > 0) fcmd = "  " + fcmd + ";\n";
@@ -564,20 +569,6 @@ if (!isUnitCell && tickInfo.scale != null) sb.append (" scale ").append (JU.Esca
 if (addFirst && !Float.isNaN (tickInfo.first) && tickInfo.first != 0) sb.append (" first ").appendF (tickInfo.first);
 if (tickInfo.reference != null) sb.append (" point ").append (JU.Escape.eP (tickInfo.reference));
 }, "JU.SB,JM.TickInfo,~B");
-Clazz.overrideMethod (c$, "getShapeSetState", 
-function (as, shape, monomerCount, monomers, bsSizeDefault, temp, temp2) {
-var type = JV.JC.shapeClassBases[shape.shapeID];
-for (var i = 0; i < monomerCount; i++) {
-var atomIndex1 = monomers[i].firstAtomIndex;
-var atomIndex2 = monomers[i].lastAtomIndex;
-if (as.bsSizeSet != null && (as.bsSizeSet.get (i) || as.bsColixSet != null && as.bsColixSet.get (i))) {
-if (bsSizeDefault.get (i)) {
-JU.BSUtil.setMapBitSet (temp, atomIndex1, atomIndex2, type + (as.bsSizeSet.get (i) ? " on" : " off"));
-} else {
-JU.BSUtil.setMapBitSet (temp, atomIndex1, atomIndex2, type + " " + JU.PT.escF (as.mads[i] / 2000));
-}}if (as.bsColixSet != null && as.bsColixSet.get (i)) JU.BSUtil.setMapBitSet (temp2, atomIndex1, atomIndex2, J.shape.Shape.getColorCommand (type, as.paletteIDs[i], as.colixes[i], shape.translucentAllowed));
-}
-}, "J.shape.AtomShape,J.shape.Shape,~N,~A,JU.BS,java.util.Map,java.util.Map");
 Clazz.overrideMethod (c$, "getMeasurementState", 
 function (shape, mList, measurementCount, font3d, ti) {
 var commands =  new JU.SB ();
@@ -658,19 +649,6 @@ Clazz.defineMethod (c$, "clearTemp",
 this.temp.clear ();
 this.temp2.clear ();
 });
-Clazz.overrideMethod (c$, "getAtomShapeSetState", 
-function (shape, bioShapes) {
-this.clearTemp ();
-for (var i = bioShapes.length; --i >= 0; ) {
-var bs = bioShapes[i];
-if (bs.monomerCount > 0) {
-if (!bs.isActive || bs.bsSizeSet == null && bs.bsColixSet == null) continue;
-this.vwr.getShapeSetState (bs, shape, bs.monomerCount, bs.getMonomers (), bs.bsSizeDefault, this.temp, this.temp2);
-}}
-var s = "\n" + this.getCommands (this.temp, this.temp2, shape.shapeID == 9 ? "Backbone" : "select");
-this.clearTemp ();
-return s;
-}, "J.shape.Shape,~A");
 Clazz.defineMethod (c$, "getShapeState", 
 function (shape) {
 var s;
@@ -703,12 +681,13 @@ this.clearTemp ();
 var l = shape;
 for (var i = l.bsSizeSet.nextSetBit (0); i >= 0; i = l.bsSizeSet.nextSetBit (i + 1)) {
 var t = l.getLabel (i);
-var cmd = null;
-if (t != null) {
-cmd = "label " + JU.PT.esc (t.textUnformatted);
+var cmd = "label ";
+if (t == null) {
+cmd += JU.PT.esc (l.formats[i]);
+} else {
+cmd += JU.PT.esc (t.textUnformatted);
 if (t.pymolOffset != null) cmd += ";set labelOffset " + JU.Escape.eAF (t.pymolOffset);
-}if (cmd == null) cmd = "label " + JU.PT.esc (l.formats[i]);
-JU.BSUtil.setMapBitSet (this.temp, i, i, cmd);
+}JU.BSUtil.setMapBitSet (this.temp, i, i, cmd);
 if (l.bsColixSet != null && l.bsColixSet.get (i)) JU.BSUtil.setMapBitSet (this.temp2, i, i, J.shape.Shape.getColorCommand ("label", l.paletteIDs[i], l.colixes[i], l.translucentAllowed));
 if (l.bsBgColixSet != null && l.bsBgColixSet.get (i)) JU.BSUtil.setMapBitSet (this.temp2, i, i, "background label " + J.shape.Shape.encodeColor (l.bgcolixes[i]));
 var text = l.getLabel (i);
@@ -758,7 +737,7 @@ return s;
 Clazz.defineMethod (c$, "getTextState", 
  function (t) {
 var s =  new JU.SB ();
-var text = t.getText ();
+var text = t.text;
 if (text == null || t.isLabelOrHover || t.target.equals ("error")) return "";
 var isImage = (t.image != null);
 var strOff = null;
@@ -792,9 +771,9 @@ s.append ("; color echo");
 if (JU.C.isColixTranslucent (t.colix)) s.append (JU.C.getColixTranslucencyLabel (t.colix));
 s.append (" ").append (JU.C.getHexCode (t.colix));
 if (t.bgcolix != 0) {
-s.append ("; color echo background");
-if (JU.C.isColixTranslucent (t.bgcolix)) s.append (JU.C.getColixTranslucencyLabel (t.bgcolix));
-s.append (" ").append (JU.C.getHexCode (t.bgcolix));
+s.append ("; color echo background ");
+if (JU.C.isColixTranslucent (t.bgcolix)) s.append (JU.C.getColixTranslucencyLabel (t.bgcolix)).append (" ");
+s.append (JU.C.getHexCode (t.bgcolix));
 }s.append (";\n");
 return s.toString ();
 }, "JM.Text");
@@ -1088,8 +1067,15 @@ if (syncMode != 1) disableSend = false;
 if (JU.Logger.debugging) JU.Logger.debug (this.vwr.htmlName + " syncing with script: " + script);
 if (disableSend) sm.setSyncDriver (3);
 if (script.indexOf ("Mouse: ") != 0) {
-var jsvMode = JV.JC.getJSVSyncSignal (script);
-switch (jsvMode) {
+var serviceMode = JV.JC.getServiceCommand (script);
+switch (serviceMode) {
+case 63:
+case 35:
+case 42:
+case 49:
+case 56:
+sm.syncSend (script, ".", port);
+return;
 case -1:
 break;
 case 0:
@@ -1098,7 +1084,7 @@ if (disableSend) return;
 case 21:
 case 7:
 case 14:
-if ((script = this.vwr.getJSV ().processSync (script, jsvMode)) == null) return;
+if ((script = this.vwr.getJSV ().processSync (script, serviceMode)) == null) return;
 }
 this.vwr.evalStringQuietSync (script, true, false);
 return;

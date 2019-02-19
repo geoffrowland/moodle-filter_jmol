@@ -10,14 +10,13 @@ this.atomFormats = null;
 this.specialLabel = null;
 Clazz.instantialize (this, arguments);
 }, J.shape, "Hover", J.shape.TextShape);
-Clazz.defineMethod (c$, "initShape", 
+Clazz.overrideMethod (c$, "initShape", 
 function () {
-Clazz.superCall (this, J.shape.Hover, "initShape", []);
 this.isHover = true;
 var font3d = this.vwr.gdata.getFont3DFSS ("SansSerif", "Plain", 12);
 var bgcolix = JU.C.getColixS ("#FFFFC3");
 var colix = 4;
-this.currentObject = this.hoverText = JM.Text.newLabel (this.vwr, font3d, null, colix, bgcolix, 4, 0, null);
+this.currentObject = this.hoverText = JM.Text.newLabel (this.vwr, font3d, null, colix, bgcolix, 4, 0);
 this.hoverText.adjustForWindow = true;
 });
 Clazz.overrideMethod (c$, "setProperty", 

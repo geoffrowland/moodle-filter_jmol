@@ -9,21 +9,21 @@ Clazz.defineMethod (c$, "setPropTS",
 function (propertyName, value, bsSelected) {
 if ("text" === propertyName) {
 var text = value;
-if (this.currentObject == null) {
-if (this.isAll) for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.setText (text);
+if (this.currentObject != null) {
+(this.currentObject).setText (text);
+} else if (this.isAll) {
+for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.setText (text);
 
-return;
-}(this.currentObject).setText (text);
-return;
+}return;
 }if ("font" === propertyName) {
 this.currentFont = value;
-if (this.currentObject == null) {
-if (this.isAll) for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.setFont (this.currentFont, true);
-
-return;
-}(this.currentObject).setFont (this.currentFont, true);
+if (this.currentObject != null) {
+(this.currentObject).setFont (this.currentFont, true);
 (this.currentObject).setFontScale (0);
-return;
+} else if (this.isAll) {
+for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.setFont (this.currentFont, true);
+
+}return;
 }this.setPropOS (propertyName, value, bsSelected);
 }, "~S,~O,JU.BS");
 });

@@ -2,6 +2,9 @@
 // author: Bob Hanson, hansonr@stolaf.edu	4/16/2012
 // author: Takanori Nakane biochem_fan 6/12/2012
 
+// BH 12/17/2015 4:43:05 PM adding Jmol._requestRepaint to allow for MSIE9 not having 3imationFrame
+// BH 12/13/2015 11:44:39 AM using requestAnimationFrame instead of setTimeout (fixes Chrome slowness)
+// BH 10/12/2015 1:15:39 PM fix for set echo image in JavaScript
 // BH 6/12/2015 6:08:08 AM image loading from PNGJ file bytes using data uri not working
 // BH 3/28/2015 6:18:33 AM refactoring to generalize for non-Jmol-related SwingJS applications
 // BH 9/6/2014 5:42:32 PM  two-point gestures broken
@@ -431,7 +434,7 @@
         applet._appletPanel.update(null)
     };
 		if (asNewThread) {
-			setTimeout(f);
+			requestAnimationFrame(f); // requestAnimationFrame or (MSIE 9) setTimeout
 		} else {
       f();
 		}
@@ -456,9 +459,8 @@
           image.onload = function() {Jmol._loadImage(platform, echoName, path, null, fOnload, image)};
     			image.src = path;
           return null;
-        } else {
-              System.out.println("Jsmol.js Jmol._loadImage using data URI for " + id) 
         }
+        System.out.println("Jsmol.js Jmol._loadImage using data URI for " + id) 
         image.src = (typeof bytes == "string" ? bytes : 
           "data:" + JU.Rdr.guessMimeTypeForBytes(bytes) + ";base64," + JU.Base64.getBase64(bytes));
       }
@@ -474,7 +476,7 @@
   		canvas.imageHeight = height;
   		canvas.id = id;
   		canvas.image=image;
-  		Jmol._setCanvasImage(canvas, width, height, image.width, image.height);
+  		Jmol._setCanvasImage(canvas, width, height);
 		// return a null canvas and the error in path if there is a problem
     } else {
       System.out.println("Jsmol.js Jmol._loadImage reading cached image for " + id) 
@@ -502,12 +504,12 @@ Jmol._canvasCache = {};
 		return d;
    	}
 
-	Jmol._setCanvasImage = function(canvas, width, height, imageWidth, imageHeight) {
+	Jmol._setCanvasImage = function(canvas, width, height) {
     // called from org.jmol.awtjs2d.Platform
 		canvas.buf32 = null;
 		canvas.width = width;
 		canvas.height = height;
-		canvas.getContext("2d").drawImage(canvas.image, 0, 0, imageWidth || width, imageHeight || height, 0, 0, width, height);
+		canvas.getContext("2d").drawImage(canvas.image, 0, 0, canvas.image.width, canvas.image.height, 0, 0, width, height);
 	};
   
   Jmol._apply = function(f,a) {

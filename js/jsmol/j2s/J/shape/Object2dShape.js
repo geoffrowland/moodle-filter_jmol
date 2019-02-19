@@ -24,8 +24,10 @@ this.isAll = true;
 this.objects =  new java.util.Hashtable ();
 return;
 }if ("delete" === propertyName) {
-if (this.currentObject == null) {
-if (this.isAll || this.thisID != null) {
+if (this.currentObject != null) {
+this.objects.remove (this.currentObject.target);
+this.currentObject = null;
+} else if (this.isAll || this.thisID != null) {
 var e = this.objects.values ().iterator ();
 while (e.hasNext ()) {
 var text = e.next ();
@@ -33,9 +35,6 @@ if (this.isAll || JU.PT.isMatch (text.target.toUpperCase (), this.thisID, true, 
 e.remove ();
 }}
 }return;
-}this.objects.remove (this.currentObject.target);
-this.currentObject = null;
-return;
 }if ("off" === propertyName) {
 if (this.isAll) {
 this.objects =  new java.util.Hashtable ();
@@ -48,35 +47,35 @@ this.currentObject = null;
 return;
 }if ("model" === propertyName) {
 var modelIndex = (value).intValue ();
-if (this.currentObject == null) {
-if (this.isAll) for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.modelIndex = modelIndex;
+if (this.currentObject != null) {
+this.currentObject.modelIndex = modelIndex;
+} else if (this.isAll) {
+for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.modelIndex = modelIndex;
 
-return;
-}this.currentObject.modelIndex = modelIndex;
-return;
+}return;
 }if ("align" === propertyName) {
 var align = value;
-if (this.currentObject == null) {
-if (this.isAll) for (var obj, $obj = this.objects.values ().iterator (); $obj.hasNext () && ((obj = $obj.next ()) || true);) obj.setAlignmentLCR (align);
+if (this.currentObject != null) {
+if (!this.currentObject.setAlignmentLCR (align)) JU.Logger.error ("unrecognized align:" + align);
+} else if (this.isAll) {
+for (var obj, $obj = this.objects.values ().iterator (); $obj.hasNext () && ((obj = $obj.next ()) || true);) obj.setAlignmentLCR (align);
 
-return;
-}if (!this.currentObject.setAlignmentLCR (align)) JU.Logger.error ("unrecognized align:" + align);
-return;
+}return;
 }if ("bgcolor" === propertyName) {
 this.currentBgColor = value;
-if (this.currentObject == null) {
-if (this.isAll) {
+if (this.currentObject != null) {
+this.currentObject.bgcolix = JU.C.getColixO (value);
+} else if (this.isAll) {
 var e = this.objects.values ().iterator ();
 while (e.hasNext ()) {
-e.next ().colix = JU.C.getColixO (value);
+e.next ().bgcolix = JU.C.getColixO (value);
 }
 }return;
-}this.currentObject.bgcolix = JU.C.getColixO (value);
-return;
 }if ("color" === propertyName) {
 this.currentColor = value;
-if (this.currentObject == null) {
-if (this.isAll || this.thisID != null) {
+if (this.currentObject != null) {
+this.currentObject.colix = JU.C.getColixO (value);
+} else if (this.isAll || this.thisID != null) {
 var e = this.objects.values ().iterator ();
 while (e.hasNext ()) {
 var text = e.next ();
@@ -84,8 +83,6 @@ if (this.isAll || JU.PT.isMatch (text.target.toUpperCase (), this.thisID, true, 
 text.colix = JU.C.getColixO (value);
 }}
 }return;
-}this.currentObject.colix = JU.C.getColixO (value);
-return;
 }if ("target" === propertyName) {
 var target = value;
 this.isAll = target.equals ("all");
@@ -97,15 +94,14 @@ if ((isBackground = ("bgtranslucency" === propertyName)) || "translucency" === p
 var isTranslucent = ("translucent" === value);
 if (isBackground) this.currentBgTranslucentLevel = (isTranslucent ? this.translucentLevel : 0);
  else this.currentTranslucentLevel = (isTranslucent ? this.translucentLevel : 0);
-if (this.currentObject == null) {
-if (this.isAll) {
+if (this.currentObject != null) {
+this.currentObject.setTranslucent (this.translucentLevel, isBackground);
+} else if (this.isAll) {
 var e = this.objects.values ().iterator ();
 while (e.hasNext ()) {
 e.next ().setTranslucent (this.translucentLevel, isBackground);
 }
 }return;
-}this.currentObject.setTranslucent (this.translucentLevel, isBackground);
-return;
 }if (propertyName === "deleteModelAtoms") {
 var modelIndex = ((value)[2])[0];
 var e = this.objects.values ().iterator ();

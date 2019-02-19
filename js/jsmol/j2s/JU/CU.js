@@ -24,6 +24,7 @@ c$.getArgbFromString = Clazz.defineMethod (c$, "getArgbFromString",
 function (strColor) {
 var len = 0;
 if (strColor == null || (len = strColor.length) == 0) return 0;
+strColor = strColor.toLowerCase ();
 if (strColor.charAt (0) == '[' && strColor.charAt (len - 1) == ']') {
 var check;
 if (strColor.indexOf (",") >= 0) {
@@ -56,7 +57,7 @@ return 0;
 throw e;
 }
 }
-}var boxedArgb = JU.CU.mapJavaScriptColors.get (strColor.toLowerCase ());
+}var boxedArgb = JU.CU.mapJavaScriptColors.get (strColor);
 return (boxedArgb == null ? 0 : boxedArgb.intValue ());
 }, "~S");
 c$.colorTriadToFFRGB = Clazz.defineMethod (c$, "colorTriadToFFRGB", 

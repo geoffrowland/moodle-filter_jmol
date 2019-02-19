@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.popup");
-Clazz.load (["J.popup.GenericSwingPopup", "java.util.Properties", "JU.Lst"], "J.popup.JmolGenericPopup", ["java.lang.Boolean", "java.util.Hashtable", "JU.PT", "J.i18n.GT", "JM.Group", "J.popup.MainPopupResourceBundle", "JU.Elements"], function () {
+Clazz.load (["J.popup.GenericSwingPopup", "java.util.Properties", "JU.Lst"], "J.popup.JmolGenericPopup", ["java.lang.Boolean", "java.util.Arrays", "$.Hashtable", "JU.PT", "J.i18n.GT", "JM.Group", "J.popup.MainPopupResourceBundle", "JU.Elements"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.updateMode = 0;
@@ -241,7 +241,7 @@ this.modelSetName = this.vwr.ms.modelSetName;
 this.modelSetFileName = this.vwr.getModelSetFileName ();
 var i = this.modelSetFileName.lastIndexOf (".");
 this.isZapped = ("zapped".equals (this.modelSetName));
-if (this.isZapped || "string".equals (this.modelSetFileName) || "files".equals (this.modelSetFileName) || "string[]".equals (this.modelSetFileName)) this.modelSetFileName = "";
+if (this.isZapped || "string".equals (this.modelSetFileName) || "String[]".equals (this.modelSetFileName)) this.modelSetFileName = "";
 this.modelSetRoot = this.modelSetFileName.substring (0, i < 0 ? this.modelSetFileName.length : i);
 if (this.modelSetRoot.length == 0) this.modelSetRoot = "Jmol";
 this.modelIndex = this.vwr.am.cmi;
@@ -483,10 +483,25 @@ this.menuEnable (this.htMenus.get ("PDBproteinMenu"), (nItems > 0));
 nItems = this.augmentGroup3List (menu1, "n>", false);
 this.menuEnable (menu1, nItems > 0);
 this.menuEnable (this.htMenus.get ("PDBnucleicMenu"), (nItems > 0));
+var dssr = (nItems > 0 && this.modelIndex >= 0 ? this.vwr.ms.getInfo (this.modelIndex, "dssr") : null);
+if (dssr != null) this.setSecStrucMenu (this.htMenus.get ("aaStructureMenu"), dssr);
 nItems = this.augmentGroup3List (menu2, "c>", false);
 this.menuEnable (menu2, nItems > 0);
 this.menuEnable (this.htMenus.get ("PDBcarboMenu"), (nItems > 0));
 });
+Clazz.defineMethod (c$, "setSecStrucMenu", 
+ function (menu, dssr) {
+var counts = dssr.get ("counts");
+if (counts == null) return false;
+var keys =  new Array (counts.size ());
+counts.keySet ().toArray (keys);
+java.util.Arrays.sort (keys);
+if (keys.length == 0) return false;
+menu.removeAll ();
+for (var i = 0; i < keys.length; i++) this.menuCreateItem (menu, keys[i] + " (" + counts.get (keys[i]) + ")", "select modelIndex=" + this.modelIndex + " && within('dssr', '" + keys[i] + "');", null);
+
+return true;
+}, "javajs.api.SC,java.util.Map");
 Clazz.defineMethod (c$, "updateGroup3List", 
  function (menu, name) {
 var nItems = 0;
