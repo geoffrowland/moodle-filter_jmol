@@ -10,7 +10,7 @@ Feature: Display molecules inline
       | Course 1 | C1        | topics |
     And course "C1" has a label linking to Jmol fixture "aspirina.mol"
     And I log in as "admin"
-    And I navigate to "Manage filters" node in "Site administration > Plugins > Filters"
+    And I navigate to "Plugins > Filters > Manage filters" in site administration
     And I click on "On" "option" in the "Jmol" "table_row"
     And I am on site homepage
 
