@@ -1,5 +1,7 @@
 <?php
 
+die; // CATALYST CUSTOM - WR343674.
+
 // jsmol.php
 // Bob Hanson hansonr@stolaf.edu 1/11/2013
 //
