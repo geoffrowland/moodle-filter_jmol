@@ -52,7 +52,7 @@ if (strpos($browser, 'firefox')) {
     $bversion = str_replace('.', '', $bversion);
 }
 $wwwroot = $CFG->wwwroot;
-$url = $_GET['u'];
+$url = required_param('u', PARAM_URL);
 $pathname = $url;
 $filestem = $_GET['n'];
 $filetype = $_GET['f'];
