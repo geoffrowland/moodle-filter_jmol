@@ -9,13 +9,12 @@ this.primitives = null;
 this.nPrimitives = 0;
 this.bondsOr = null;
 this.nBondsOr = 0;
+this.isRingBond = false;
 Clazz.instantialize (this, arguments);
 }, JS, "SmilesBond", JU.Edge);
 c$.getBondOrderString = Clazz.defineMethod (c$, "getBondOrderString", 
 function (order) {
 switch (order) {
-case 1:
-return "";
 case 2:
 return "=";
 case 3:
@@ -82,6 +81,13 @@ this.atom2 = atom2;
 atom2.isFirst = false;
 atom2.addBond (this);
 }}, "JS.SmilesAtom,JS.SmilesAtom");
+Clazz.defineMethod (c$, "setAtom2", 
+function (atom) {
+this.atom2 = atom;
+if (this.atom2 != null) {
+atom.addBond (this);
+this.isRingBond = true;
+}}, "JS.SmilesAtom");
 c$.isBondType = Clazz.defineMethod (c$, "isBondType", 
 function (ch, isSearch, isBioSequence) {
 if ("-=#:/\\.+!,&;@~^'".indexOf (ch) < 0) return false;
@@ -119,15 +125,13 @@ return 96;
 }
 return -1;
 }, "~S");
-Clazz.defineMethod (c$, "setAtom2", 
-function (atom) {
-this.atom2 = atom;
-if (this.atom2 != null) {
-atom.addBond (this);
-}}, "JS.SmilesAtom");
 Clazz.defineMethod (c$, "getBondType", 
 function () {
 return this.order;
+});
+Clazz.defineMethod (c$, "getValence", 
+function () {
+return (this.order & 7);
 });
 Clazz.defineMethod (c$, "getOtherAtom", 
 function (a) {
@@ -152,10 +156,6 @@ return (atom === this.atom1 ? this.atom2 : atom === this.atom2 ? this.atom1 : nu
 Clazz.overrideMethod (c$, "isCovalent", 
 function () {
 return this.order != 112;
-});
-Clazz.defineMethod (c$, "getValence", 
-function () {
-return (this.order & 7);
 });
 Clazz.overrideMethod (c$, "isHydrogen", 
 function () {
@@ -195,6 +195,6 @@ Clazz.defineStatics (c$,
 "TYPE_RING", 0x41,
 "TYPE_ANY", 0x51,
 "TYPE_BIO_SEQUENCE", 0x60,
-"TYPE_BIO_PAIR", 0x70,
+"TYPE_BIO_CROSSLINK", 0x70,
 "TYPE_MULTIPLE", 999);
 });

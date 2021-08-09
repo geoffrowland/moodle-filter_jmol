@@ -52,7 +52,7 @@ if (strpos($browser, 'firefox')) {
     $bversion = str_replace('.', '', $bversion);
 }
 $wwwroot = $CFG->wwwroot;
-$url = $_GET['u'];
+$url = required_param('u', PARAM_URL);
 $pathname = $url;
 $filestem = $_GET['n'];
 $filetype = $_GET['f'];
@@ -82,28 +82,31 @@ $expfilename = str_replace('.png', '', $filename);
 $expfilename = str_replace('.gz', '', $expfilename);
 $expfilename = str_replace('.zip', '', $expfilename);
 
-$downloadstructurefile = get_string('downloadstructurefile', 'filter_jmol', true);
 $fullscreen = get_string('fullscreen', 'filter_jmol', true);
 if ($jmolfiletype === "cif" ) {
-    $loadscript = 'set zoomLarge false; load '.$pathname.' {1 1 1}; zoom 0;';
+    $loadscript = 'load '.$pathname.' {1 1 1}; zoom 0;';
     $menu = 'SimpleCryst.mnu';
     $dropmenu = 'SimpleCryst';
 } else if ($jmolfiletype === "pse") {
-    $loadscript = 'set zoomLarge false; set pdbAddHydrogens true; load '.$pathname.';';
+    $loadscript = 'load '.$pathname.';';
     $menu = 'SimpleBio.mnu';
     $dropmenu = 'SimpleBio';
 } else if ($jmolfiletype === "pdb" || $jmolfiletype === "mcif") {
-    $loadscript = 'set zoomLarge false; set pdbAddHydrogens true; load '.$pathname.'; calculate hbonds; hbonds off; ssbonds off; ';
+    $loadscript = 'set pdbAddHydrogens true; load '.$pathname.'; calculate hbonds; hbonds off; ssbonds off; ';
     $loadscript = $loadscript.'display not water; select protein or nucleic; cartoons only; color structure; ';
-    $loadscript = $loadscript.'set hbondsBackbone TRUE; set ssbondsbackbone TRUE; select *';
+    $loadscript = $loadscript.'set hbondsBackbone TRUE; set ssbondsbackbone TRUE; select *;';
     $menu = 'SimpleBio.mnu';
     $dropmenu = 'SimpleBio';
 } else {
-    $loadscript = 'set zoomLarge false; load '.$pathname.';';
+    $loadscript = 'load '.$pathname.';';
     $menu = 'SimpleChem.mnu';
     $dropmenu = 'SimpleChem';
 }
-if ($controls === '2') {
+if ($controls === '1') {
+        $menu = 'SimpleChem.mnu';
+        $dropmenu = 'SimpleChem';
+        $loadscript = 'load '.$pathname.';';
+} else if ($controls === '2') {
         $menu = 'SimpleCryst.mnu';
         $dropmenu = 'SimpleCryst';
 } else if ($controls === '3') {
@@ -114,17 +117,17 @@ if ($controls === '2') {
         $dropmmenu = $dropmenu;
 }
 echo '<!DOCTYPE html>';
-echo '<html style="height:100%; width:100%; overflow:hidden; margin:0; padding:0">';
+echo '<html class="jmolwrapper">';
 echo '<head>';
 echo '<meta charset="utf-8">';
 echo '<title>title</title>';
-echo '<link type="text/css" rel="stylesheet" href="styles.css">';
+echo '<link type="text/css" rel="stylesheet" href="iframe.css">';
 echo '<script type="text/javascript" src="'.$wwwroot.'/filter/jmol/js/jsmol/JSmol.min.js"></script>';
 echo '<script type="text/javascript" src="'.$wwwroot.'/filter/jmol/js/jsmol/JSmol.GLmol.min.js"></script>';
 echo '</head>';
-echo '<body style="height: 100%; width: 100%; margin: 0px; padding: 0px; overflow: hidden">';
-echo '<div id = "structure" style = "width: 100%"></div>';
-echo '<div style = "width: 100%; background-color: lightgray; padding: 0px 0px 2px 2px" id = "panel">';
+echo '<body class="jmolwrapper">';
+echo '<div id = "jmolstructure"></div>';
+echo '<div id = "jmolpanel">';
 if ($controls !== '0') {
     if ($dropmenu === 'SimpleChem') {
         echo '<select class = "jmolPanelControl" id = "display" title = "'.get_string('display', 'filter_jmol', true).'">';
@@ -184,10 +187,14 @@ if ($controls !== '0') {
         echo 'set hbondsBackbone TRUE; set ssbondsbackbone TRUE; ';
         echo 'select *.CA; spacefill 0.3; select *;" title = "'.get_string('backbone_desc', 'filter_jmol', true).'">';
         echo get_string('backbone', 'filter_jmol', true).'</option>';
-        echo '<option value = "isosurface delete; display not water; select protein or nucleic; cartoon only; ';
-        echo 'set hbondsBackbone TRUE; set ssbondsbackbone TRUE; ';
+        echo '<option value = "isosurface delete; display not water; select protein or nucleic; set cartoonFancy false; ';
+        echo 'cartoon only; set hbondsBackbone TRUE; set ssbondsbackbone TRUE; ';
         echo 'select *;" selected = "selected" title = "'.get_string('cartoon_desc', 'filter_jmol', true).'">';
         echo get_string('cartoon', 'filter_jmol', true).'</option>';
+        echo '<option value = "isosurface delete; display not water; select protein or nucleic; set cartoonFancy true; ';
+        echo 'cartoon only; set hbondsBackbone TRUE; set ssbondsbackbone TRUE; ';
+        echo 'select *;" title = "'.get_string('fancy_desc', 'filter_jmol', true).'">';
+        echo get_string('fancy', 'filter_jmol', true).'</option>';
         echo '</select>';
         echo '<select class = "jmolPanelControl" id = "biochem" ';
         echo 'title = "'.get_string('colourscheme', 'filter_jmol', true).'">';
@@ -196,7 +203,7 @@ if ($controls !== '0') {
         echo get_string('atoms', 'filter_jmol', true).'</option>';
         echo '<option value = "select all; color shapely" title = "'.get_string('primary_desc', 'filter_jmol', true).'">';
         echo get_string('primary', 'filter_jmol', true).'</option>';
-        echo '<option value = "select all; colour structure"';
+        echo '<option value = "select all; color structure"';
         echo ' title = "'.get_string('secondary_desc', 'filter_jmol', true).'" selected = "selected">';
         echo get_string('secondary', 'filter_jmol', true).'</option>';
         echo '<option value = "select all; color monomer" title = "'.get_string('tertiary_desc', 'filter_jmol', true).'">';
@@ -264,21 +271,21 @@ if ($controls !== '0') {
         echo 'title = "'.get_string('molecular', 'filter_jmol', true).'">';
         echo get_string('molecular', 'filter_jmol', true).'</option>';
         echo '<option value = "load \'\' {555 555 1}; display all; zoom 0" ';
-        echo 'title = "'.get_string('1x1x1_desc', 'filter_jmol', true).'" ';
-        echo 'selected = "selected">'.get_string('1x1x1', 'filter_jmol', true).'</option>';
+        echo 'title = "'.get_string('cell_desc', 'filter_jmol', true).'" ';
+        echo 'selected = "selected">'.get_string('cell', 'filter_jmol', true).'</option>';
         echo '<option value = "load \'\' {444 666 1}; display all; zoom 0" ';
-        echo 'title = "'.get_string('3x3x3_desc', 'filter_jmol', true).'">';
-        echo get_string('3x3x3', 'filter_jmol', true).'</option>';
+        echo 'title = "'.get_string('bigcell_desc', 'filter_jmol', true).'">';
+        echo get_string('bigcell', 'filter_jmol', true).'</option>';
         echo '<option value = "load \'\' {444 666 1}; display cell=555; zoom 0" ';
-        echo 'title = "'.get_string('1x1x1filled_desc', 'filter_jmol', true).'">';
-        echo get_string('1x1x1filled', 'filter_jmol', true).'</option>';
+        echo 'title = "'.get_string('cellfilled_desc', 'filter_jmol', true).'">';
+        echo get_string('cellfilled', 'filter_jmol', true).'</option>';
         echo '<option value = "load \'\' {444 666 1}; display cell=555; zoom 0; polyhedra 4,6; ';
         echo 'color polyhedra translucent;" ';
-        echo 'title = "'.get_string('1x1x1polyhedra_desc', 'filter_jmol', true).'">';
-        echo get_string('1x1x1polyhedra', 'filter_jmol', true).'</option>';
+        echo 'title = "'.get_string('cellpolyhedra_desc', 'filter_jmol', true).'">';
+        echo get_string('cellpolyhedra', 'filter_jmol', true).'</option>';
         echo '<option value = "load \'\' {444 666 1}; display all; zoom 0; polyhedra 4,6; color polyhedra translucent;" ';
-        echo 'title = "'.get_string('3x3x3polyhedra_desc', 'filter_jmol', true).'">';
-        echo get_string('3x3x3polyhedra', 'filter_jmol', true).'</option>';
+        echo 'title = "'.get_string('bigcellpolyhedra_desc', 'filter_jmol', true).'">';
+        echo get_string('bigcellpolyhedra', 'filter_jmol', true).'</option>';
         echo '</select>';
         echo '<input type = "checkbox" id = "unitcell" ';
         echo 'title = "'.get_string('unitcell_desc', 'filter_jmol', true).'" checked>';
@@ -291,11 +298,11 @@ if ($controls !== '0') {
         echo '<select class = "jmolPanelControl" id = "color" ';
         echo 'title = "'.get_string('backgroundcolour', 'filter_jmol', true).'" style = "background-color: #FFFFFF">';
         echo '<option title = "'.get_string('whitebackground', 'filter_jmol', true).'" ';
-        echo 'value = "#FFFFFF" style = "background-color: white" selected = "selected"> </option>';
+        echo 'value = "#FFFFFF" class = "bgwhite" selected = "selected"> </option>';
         echo '<option title = "'.get_string('lightgreybackground', 'filter_jmol', true).'" value = "#D3D3D3" ';
-        echo 'style = "background-color: lightgray"> </option>';
+        echo 'class = "bglightgrey"> </option>';
         echo '<option title = "'.get_string('blackbackground', 'filter_jmol', true).'" value = "#000000" ';
-        echo 'style = "background-color: black; color: white"> </option>';
+        echo 'class = "bgblack"> </option>';
         echo '</select>';
         echo '<select class = "jmolPanelControl" id = "performance" title = "'.get_string('performance', 'filter_jmol', true).'">';
         echo '<option value = "set platformSpeed 8" title = "'.get_string('allfeatures', 'filter_jmol', true).'" ';
@@ -311,17 +318,17 @@ if ($controls !== '0') {
     }
     echo '<select class = "jmolPanelControl" id = "use" title = "'.get_string('displaytechnology', 'filter_jmol', true).'">';
     switch ($technol){
-        case HTML5:
+        case 'HTML5':
             echo '<option title = "JSmol using HTML5" value = "HTML5" selected = "selected">JSmol</option>';
             echo '<option title = "GLmol using WebGL" value = "WEBGL">GLmol</option>';
             echo '<option title = "Jmol using Java" value = "SIGNED">Jmol</option>';
         break;
-        case WEBGL:
+        case 'WEBGL':
             echo '<option title = "JSmol using HTML5" value = "HTML5">JSmol</option>';
             echo '<option title = "GLmol using WebGL" value = "WEBGL"selected = "selected">GLmol</option>';
             echo '<option title = "Jmol using Java" value = "SIGNED">Jmol</option>';
         break;
-        case SIGNED:
+        case 'SIGNED':
             echo '<option title = "JSmol using HTML5" value = "HTML5">JSmol</option>';
             echo '<option title = "GLmol using WebGL" value = "WEBGL">GLmol</option>';
             echo '<option title = "Jmol using Java" value = "SIGNED" selected = "selected">Jmol</option>';
@@ -349,10 +356,9 @@ echo 'debug: false,';
 echo 'addSelectionOptions: false,';
 echo 'use: "'.$technol.'",';
 echo 'deferApplet: '.$defer.',';
-if ($defer == true) {
-    echo 'coverImage: "'.$coverpath.'",';
-}
-echo 'deferUncover: false,';
+echo 'makeLiveImage: "'.$wwwroot.'/filter/jmol/pix/play_256.png",';
+echo 'coverImage: "'.$coverpath.'",';
+echo 'deferUncover: true,';
 echo 'j2sPath: "'.$wwwroot.'/filter/jmol/js/jsmol/j2s",';
 echo 'jarPath: "'.$wwwroot.'/filter/jmol/js/jsmol/java",';
 echo 'jarFile: "JmolAppletSigned.jar",';
@@ -361,6 +367,7 @@ echo 'disableJ2SLoadMonitor: true,';
 echo 'readyFunction: null,';
 echo 'isSigned: true,';
 echo 'menuFile: "'.$wwwroot.'/filter/jmol/'.$menu.'",';
+//echo 'script: "'.$loadscript.$initscript.'; ';
 echo 'script: "set echo top left; echo '.get_string('loading', 'filter_jmol', true).'; refresh;'.$loadscript.$initscript.'; ';
 echo 'set language '.$lang.'; set frank off; set zoomLarge false; set antialiasDisplay on;",';
 echo 'serverURL: "'.$wwwroot.'/filter/jmol/js/jsmol/php/jsmol.php",';
@@ -368,47 +375,47 @@ echo 'allowJavaScript: true';
 echo '};';
 echo 'fixsize();';
 // Write J(S)mol to div.
-echo '$("#structure").html(Jmol.getAppletHtml("jmolApplet0", Info));';
+echo '$("#jmolstructure").html(Jmol.getAppletHtml("jmolApplet0", Info));';
 echo 'Jmol._alertNoBinary = true;';
 if ($technol === "SIGNED") {
     if ($bname == 'opr' && $bplatform == 'linux') {
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nojavasupport', 'filter_jmol', true).'</div>");';
     } else if ($bname == 'chrome' && $bversion > 34 && $bplatform == 'linux') {
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nojavasupport', 'filter_jmol', true).'</div>");';
     } else if ($bname == 'chrome' && $bversion > 44 && $bplatform != '!linux') {
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nojavasupport', 'filter_jmol', true).'</div>");';
     } else if ($bname == 'edge') {
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nojavasupport', 'filter_jmol', true).'</div>");';
     } else {
         echo 'if (!navigator.javaEnabled()){';
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nojava', 'filter_jmol', true).'</div>");';
         echo '}';
     }
 } else if ($technol === "HTML5") {
     if ($bname == 'msie' && $bversion < 9) {
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nohtml5', 'filter_jmol', true).'</div>");';
     } else if ($bname == 'msie' && $binary == true ) {
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nobinary', 'filter_jmol', true).'</div>");';
     }
 } else if ($technol === "WEBGL") {
     if ($bname == 'msie' && $bversion == '11' && $binary == true ) {
-        echo '$("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nobinary', 'filter_jmol', true).'</div>");';
     } else {
         echo 'if (!!window.WebGLRenderingContext) {';
         echo '    if (!(document.createElement("canvas").getContext("webgl") ';
         echo '|| document.createElement("canvas").getContext("experimental-webgl"))) {';
-        echo '        $("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '        $("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nowebgl', 'filter_jmol', true).'</div>");';        echo '    }';
         echo '} else {';
-        echo '    $("#structure").html("<div style=\"background-color: yellow; height: 100%\">';
+        echo '    $("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nowebgl', 'filter_jmol', true).'</div>");';
         echo '}';
     }
@@ -487,7 +494,7 @@ echo '$("#pngj").click(function(){';
 echo 'Jmol.script(jmolApplet0, "write PNGJ '.$expfilename.'.png");';
 echo '});';
 echo 'function fixsize(){';
-echo '$("#structure").css({height: $(window).height() - $("#panel").height()});';
+echo '$("#jmolstructure").css({height: $(window).height() - $("#jmolpanel").height()});';
 echo '};';
 echo '$(window).resize(function(){';
 echo 'fixsize();';

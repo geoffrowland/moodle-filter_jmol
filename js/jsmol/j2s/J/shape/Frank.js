@@ -15,9 +15,8 @@ this.scaling = 0;
 this.font3d = null;
 Clazz.instantialize (this, arguments);
 }, J.shape, "Frank", J.shape.Shape);
-Clazz.defineMethod (c$, "initShape", 
+Clazz.overrideMethod (c$, "initShape", 
 function () {
-Clazz.superCall (this, J.shape.Frank, "initShape", []);
 this.myType = "frank";
 this.baseFont3d = this.font3d = this.vwr.gdata.getFont3DFSS ("SansSerif", "Plain", 16);
 this.calcMetrics ();

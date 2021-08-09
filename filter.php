@@ -34,7 +34,7 @@ defined('MOODLE_INTERNAL') || die();
 //
 // This filter will replace any links to a chemistry structure file
 // (.mol, .sdf, .csmol, .pdb, pdb.gz .xyz, .cml, .mol2, .cif, .mcif etc)
-// with with an interactive 3D display of the structure using Jmol/JSmol.
+// with with an interactive 3D display of the structure using Jmol/JSmol/GLmol.
 //
 // If required, allows customisation of the Jmol object size (default 350 px).
 //
@@ -53,7 +53,7 @@ defined('MOODLE_INTERNAL') || die();
 
 class filter_jmol extends moodle_text_filter {
     public function filter($text, array $options = array()) {
-        global $CFG, $PAGE, $bigscreenenabled;
+        global $CFG, $PAGE, $jmolenabled;
         $wwwroot = $CFG->wwwroot;
         $host = preg_replace('~^.*://([^:/]*).*$~', '$1', $wwwroot);
 
@@ -67,9 +67,14 @@ class filter_jmol extends moodle_text_filter {
         $search = $search1.$search2;
         // Bigscreen loaded here, rather than in child iframe, to support Internet Explorer.
         $newtext = preg_replace_callback($search, 'filter_jmol_replace_callback', $text);
-        if (($newtext !== $text) && !isset($bigscreenenabled)) {
-            $bigscreenenabled = true;
+        if (($newtext !== $text) && !isset($jmolenabled)) {
+            $jmolenabled = true;
             $PAGE->requires->js(new moodle_url('/filter/jmol/js/bigscreen.min.js'));
+            $newtext = '
+            <script src="'.$wwwroot.'/filter/jmol/js/jsmol/jquery/jquery.min.js"></script>
+            <script src="'.$wwwroot.'/filter/jmol/js/jquery-ui/jquery-ui.min.js"></script>
+            <link rel="stylesheet" href="'.$wwwroot.'/filter/jmol/js/jquery-ui/jquery-ui.min.css" />
+            '.$newtext;
         }
         return $newtext;
     }
@@ -135,10 +140,18 @@ function filter_jmol_replace_callback($matches) {
     $count++;
     $id = time() . $count;
 
-    if (!preg_match('/c=(\d{1,2})/', $matches[4], $optmatch)) {
-        $optmatch = array(1 => 1);
+    if (preg_match('/c=(\d{1,2})/', $matches[4], $optmatch)) {
+        $controls = $optmatch[1];
+    } else {
+        $controls = '';
     }
-    $controls = $optmatch[1];
+
+    // Cover image - defer Jmol/JSmol object loading.
+    if (preg_match('/i=(\d{1,1})/', $matches[4], $optmatch)) {
+        $coverimage = $optmatch[1];
+    } else {
+        $coverimage = 1;
+    }
 
     // JSmol size (width = height) in pixels defined by parameter appended to structure file URL e.g. ?s=200, ?s=300 (default) etc.
     if (preg_match('/s=(\d{1,3})/', $matches[4], $optmatch)) {
@@ -146,7 +159,6 @@ function filter_jmol_replace_callback($matches) {
     } else {
         $size = 350;
     }
-    $height = $size + 20;
     // Retrieve the file from the Moodle file API.
     $url = $matches[2];
     $shortpath = str_replace($wwwroot.'/pluginfile.php', '', $url);
@@ -160,14 +172,14 @@ function filter_jmol_replace_callback($matches) {
     $expfilename = str_replace('.gz', '', $expfilename);
     $expfilename = str_replace('.zip', '', $expfilename);
 
-    // Controls defined by parameter appended to structure file URL ?c=0, ?c=1 (default), ?c=2 ,?c=3 or ?c=4.
+    // Controls defined by parameter appended to structure file URL ?c=0, ?c=1 (default), ?c=2 or ?c=3.
     if (count($matches) > 8) {
         $initscript = preg_replace("@(\s|<br />)+@si", " ",
         str_replace(array("\n", '"', '<br />'), array("; ", "", ""), $matches[8]));
     } else {
         $initscript = '';
     }
-    // Force Java applet for binary files (.pdb.gz or .pse or ,jsmol) with some older browsers
+    // Force Java applet for binary files (.pdb.gz or .pse or ,jsmol) with some older browsers.
     // Defaults should work for up-to-date browsers.
     $browser = strtolower($_SERVER['HTTP_USER_AGENT']);
     if ($filetypeend === "gz" || $filetypeend === "pse" || $filetypeend === "png" || $filetypeend === "jmol") {
@@ -183,7 +195,7 @@ function filter_jmol_replace_callback($matches) {
     }
     // Setup iframe for Jmol/JSmol.
     return '
-<div style="height:100%; width:100%; border: 0; padding: 0; overflow:hidden">
+<div id = "resizable'.$id.'" class = "jmoldiv" style = "height: '.$size.'px; width: '.$size.'px">
 <iframe id = "iframe'.$id.'" allowfullscreen frameborder = "0"
 src = "'.new moodle_url('/filter/jmol/iframe.php', array(
     'u' => $url,
@@ -194,25 +206,24 @@ src = "'.new moodle_url('/filter/jmol/iframe.php', array(
     'i' => $initscript,
     'id' => $id,
     '_USE' => $technol,
-    'DEFER' => true
-    )).' "style = "border: 1px solid lightgray; padding: 0px; margin: 0px; height: '.$size.'px; width: '.$size.'px">
+    'DEFER' => $coverimage
+    )).'" class = "jmoliframe">
 </iframe>
 </div>
 <script>
-    YUI().use("node", "event", "resize", function(Y) {
-        var resize = new Y.Resize({
-            //Selector of the node to resize
-            node: "#iframe'.$id.'",
-            autoHide: false,
-            handles: "br"
-        });
-        // Fix Jmol aspect ratio and set min max size
-        resize.plug(Y.Plugin.ResizeConstrained, {
-            preserveRatio: false,
-            minWidth: 100,
+    $(function() {
+        $("#resizable'.$id.'").resizable({
             minHeight: 100,
+            minWidth: 100,
+            maxHeight: 1000,
             maxWidth: 1000,
-            maxHeight: 1000
+            // Required for smooth resizing of div containing iframe.
+            start: function(event, ui) {
+                $("iframe").css("pointer-events","none");
+            },
+            stop: function(event, ui) {
+                $("iframe").css("pointer-events","auto");
+            }
         });
     });
     // Fullscreen function, using bigscreen polyfill, called from child iframe.

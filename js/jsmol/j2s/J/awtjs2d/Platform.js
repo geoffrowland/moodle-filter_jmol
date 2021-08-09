@@ -31,8 +31,7 @@ return true;
 Clazz.overrideMethod (c$, "getJsObjectInfo", 
 function (jsObject, method, args) {
 {
-if (method == "localName")return jsObject[0]["nodeName"];
-return (args == null ? jsObject[0][method] : jsObject[0][method](args[0]));
+return (method == null ? null : method == "localName" ? jsObject[0]["nodeName"] : args == null ? jsObject[0][method] : jsObject[0][method](args[0]));
 }}, "~A,~S,~A");
 Clazz.overrideMethod (c$, "isHeadless", 
 function () {
@@ -80,9 +79,9 @@ function (context, size) {
 J.awtjs2d.Display.renderScreenImage (this.vwr, context, size);
 }, "~O,~O");
 Clazz.overrideMethod (c$, "drawImage", 
-function (context, canvas, x, y, width, height) {
-J.awtjs2d.Display.drawImage (context, canvas, x, y, width, height);
-}, "~O,~O,~N,~N,~N,~N");
+function (context, canvas, x, y, width, height, isDTI) {
+J.awtjs2d.Display.drawImage (context, canvas, x, y, width, height, isDTI);
+}, "~O,~O,~N,~N,~N,~N,~B");
 Clazz.overrideMethod (c$, "requestFocusInWindow", 
 function (canvas) {
 J.awtjs2d.Display.requestFocusInWindow (canvas);
@@ -91,16 +90,15 @@ Clazz.overrideMethod (c$, "repaint",
 function (canvas) {
 var jmol = null;
 {
-jmol = (typeof Jmol != "undefined" && Jmol._repaint ? Jmol : null);
+jmol = (self.Jmol && Jmol._repaint ? Jmol : null);
 }if (jmol != null) jmol._repaint ((this.vwr).html5Applet, true);
 }, "~O");
 Clazz.overrideMethod (c$, "setTransparentCursor", 
 function (canvas) {
-J.awtjs2d.Display.setTransparentCursor (canvas);
 }, "~O");
 Clazz.overrideMethod (c$, "setCursor", 
 function (c, canvas) {
-J.awtjs2d.Display.setCursor (c, canvas);
+J.awtjs2d.Platform.Jmol ()._setCursor ((this.vwr).html5Applet, c);
 }, "~N,~O");
 Clazz.overrideMethod (c$, "allocateRgbImage", 
 function (windowWidth, windowHeight, pBuffer, windowSize, backgroundTransparent, isImageWrite) {
@@ -271,4 +269,8 @@ function () {
 {
 return Jmol;
 }});
+Clazz.overrideMethod (c$, "forceAsyncLoad", 
+function (filename) {
+return J.awtjs2d.Platform.Jmol ()._isBinaryUrl (filename);
+}, "~S");
 });

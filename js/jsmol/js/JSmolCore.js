@@ -5,6 +5,35 @@
 
 // see JSmolApi.js for public user-interface. All these are private functions
 
+// BH 4/21/2016 9:25:39 AM adds [URL] button to file load option
+// BH 4/20/2016 2:44:50 PM fixes async load problem with Safari
+// BH 4/18/2016 10:25:08 PM adds preliminary =xxxx.mmtf reader
+// BH 4/13/2016 9:12:31 PM  url.indexOf("http://www.rcsb.org/pdb/files/") == 0 && url.indexOf("/ligand/") < 0 ? 
+// BH 4/11/2016 5:34:16 PM adds direct conversion to http://files.rcsb.org/view from http://www.rcsb.org/pdb/files/1xpb.pdb
+// BH 4/3/2016 9:10:31 PM adding materialsproject.org for AJAX.
+// BH 3/23/2016 1:21:39 PM adding http://files.rcsb.org/view/%FILE.pdb as default RCSB site for "="
+
+// BH 2/29/2016 3:59:55 PM broken cursor_wait image path when Info.j2sPath is not "j2s"
+// BH 2/19/2016 10:32:18 AM typo fixed for makeLiveImage
+// BH 2/14/2016 12:31:02 PM fixed local reader not disappearing after script call
+// BH 2/14/2016 12:30:41 PM Info.appletLoadingImage: "j2s/img/JSmol_spinner.gif", 
+   // can be set to "none" or some other image; see Jmol._hideLoadingSpinner(applet)
+   // implemented only for JSmolApplet, not others
+// BH 2/14/2016 12:27:09 PM Jmol._setCursor 
+// BH 2/14/2016 6:48:33 AM _setCursor() and cursor_wait   http://ajaxload.info/
+// BH 1/15/2016 4:23:14 PM adding Info.makeLiveImage
+// BH 12/30/2015 8:18:42 PM adding AMS call to database list; allowing for ?ALLOWSORIGIN? to override settings here
+// BH 12/17/2015 4:43:05 PM adding Jmol._requestRepaint to allow for MSIE9 not having requestAnimationFrame
+// BH 12/16/2015 3:01:06 PM adding $.ajaxSetup({ mimeType: "text/plain" });
+// BH 12/14/2015 6:42:03 PM adding check for MS Edge browser, which does not support dataURI
+// BH 12/2/2015 1:18:15 PM adding .dcd as binary file type
+// BH 12/1/2015 10:05:55 AM loading identical HTML5 page after Java page causes bad NPObject error 
+// BH 10/26/2015 12:47:16 PM adding two rcsb sites for direct access
+// BH 10/23/2015 9:20:39 PM minor coding adjustment
+// BH 10/13/2015 9:32:08 PM adding Jmol.__$ as jquery object used 
+// BH 15/09/2015 18:06:39 fixing mouse check for swingjs-ui since SVG element className is not a string 
+// BH 8/12/2015 11:43:52 PM adding isHttps2Http forcing call to server proxy
+// BH 8/9/2015 6:33:33 PM correcting bug in load ASYNC for x-domain access
 // BH 7/7/2015 1:42:31 PM Jmol._persistentMenu
 // BH 6/29/2015 10:14:47 AM adds Jmol.$getSize(obj)
 // BH 5/30/2015 9:33:12 AM adds class swingjs-ui to ignore 
@@ -136,7 +165,7 @@ Jmol = (function(document) {
 		}
 	};
 	var j = {
-		_version: "$Date: 2015-07-07 14:00:27 -0500 (Tue, 07 Jul 2015) $", // svn.keywords:lastUpdated
+		_version: "$Date: 2016-04-21 14:47:41 -0500 (Thu, 21 Apr 2016) $", // svn.keywords:lastUpdated
 		_alertNoBinary: true,
 		// this url is used to Google Analytics tracking of Jmol use. You may remove it or modify it if you wish. 
 		_allowedJmolSize: [25, 2048, 300],   // min, max, default (pixels)
@@ -164,20 +193,23 @@ Jmol = (function(document) {
 			_nciLoadScript: ";n = ({molecule=1}.length < {molecule=2}.length ? 2 : 1); select molecule=n;display selected;center selected;",
 			_pubChemLoadScript: "",
 			_DirectDatabaseCalls:{
-				// these sites are known to implement access-control-allow-origin * 
-				"cactus.nci.nih.gov": "%URL", 
-				"www.rcsb.org": "%URL",
-				"pdbe.org": "%URL", 
-				"www.ebi.ac.uk": "%URL", 
-				"wwwdev.ebi.ac.uk": "%URL", 
-				"pubchem.ncbi.nlm.nih.gov":"%URL",
-				"http://www.nmrdb.org/tools/jmol/predict.php":"%URL",
-				"$": "http://cactus.nci.nih.gov/chemical/structure/%FILENCI/file?format=sdf&get3d=True",
-				"$$": "http://cactus.nci.nih.gov/chemical/structure/%FILENCI/file?format=sdf",
-				"=": "http://www.rcsb.org/pdb/files/%FILE.pdb",
+				// these sites are known to implement access-control-allow-origin *
+        // null here means no conversion necessary 
+				"cactus.nci.nih.gov": null,
+        "rruff.geo.arizona.edu": null, 
+        ".rcsb.org": null, 
+				"ftp.wwpdb.org": null,
+				"pdbe.org": null, 
+				"materialsproject.org": null, 
+				".ebi.ac.uk": null, 
+				"pubchem.ncbi.nlm.nih.gov":null,
+				"http://www.nmrdb.org/tools/jmol/predict.php":null,
+				"$": "https://cactus.nci.nih.gov/chemical/structure/%FILENCI/file?format=sdf&get3d=True",
+				"$$": "https://cactus.nci.nih.gov/chemical/structure/%FILENCI/file?format=sdf",
+				"=": "http://files.rcsb.org/view/%FILE.pdb",
 				"*": "http://www.ebi.ac.uk/pdbe/entry-files/download/%FILE.cif",
 				"==": "http://www.rcsb.org/pdb/files/ligand/%FILE.cif",
-				":": "http://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/%FILE/SDF?record_type=3d"
+				":": "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/%FILE/SDF?record_type=3d"
 			},
 			_restQueryUrl: "http://www.rcsb.org/pdb/rest/search",
 			_restQueryXml: "<orgPdbQuery><queryType>org.pdb.query.simple.AdvancedKeywordQuery</queryType><description>Text Search</description><keywords>QUERY</keywords></orgPdbQuery>",
@@ -199,6 +231,8 @@ Jmol = (function(document) {
 	var ref = document.location.href.toLowerCase();
 	j._httpProto = (ref.indexOf("https") == 0 ? "https://" : "http://"); 
 	j._isFile = (ref.indexOf("file:") == 0);
+	if (j._isFile) // ensure no attempt to read XML in local request:
+	  $.ajaxSetup({ mimeType: "text/plain" });
 	j._ajaxTestSite = j._httpProto + "google.com";
 	var isLocal = (j._isFile || ref.indexOf("http://localhost") == 0 || ref.indexOf("http://127.") == 0);
 	j._tracker = (j._httpProto == "http://" && !isLocal && 'http://chemapps.stolaf.edu/jmol/JmolTracker.htm?id=UA-45940799-1');
@@ -206,14 +240,18 @@ Jmol = (function(document) {
 	j._isChrome = (navigator.userAgent.toLowerCase().indexOf("chrome") >= 0);
 	j._isSafari = (!j._isChrome && navigator.userAgent.toLowerCase().indexOf("safari") >= 0);
 	j._isMsie = (window.ActiveXObject !== undefined);
-	j._useDataURI = !j._isSafari && !j._isMsie; // safari may be OK here -- untested
+  j._isEdge = (navigator.userAgent.indexOf("Edge/") >= 0);
+	j._useDataURI = !j._isSafari && !j._isMsie && !j._isEdge; // safari may be OK here -- untested
 
+  window.requestAnimationFrame || (window.requestAnimationFrame = window.setTimeout);
 	for(var i in Jmol) j[i] = Jmol[i]; // allows pre-definition
 	return j;
 })(document, Jmol);
 
 
 (function (Jmol, $) {
+
+  Jmol.__$ = $; // local jQuery object -- important if any other module needs to access it (JSmolMenu, for example)
 
 // this library is organized into the following sections:
 
@@ -248,23 +286,30 @@ Jmol = (function(document) {
 
 	/// special functions:
 
-	Jmol.$ajax = function (info) {
+	Jmol.$ajax = function(info) {
 		Jmol._ajaxCall = info.url;
 		info.cache = (info.cache != "NO");
-		if (info.url.indexOf("http://pubchem.ncbi.nlm.nih") == 0)
-			info.url = "https://" + info.url.substring(7);
-			// fluke at pubchem --- requires https now from all pages 3/8/2014
+    info.url = Jmol._fixProtocol(info.url);
 		// don't let jQuery add $_=... to URL unless we 
 		// use cache:"NO"; other packages might use $.ajaxSetup() to set this to cache:false
 		return $.ajax(info);
 	}
 
+  Jmol._fixProtocol = function(url) {
+  	return (    
+    url.indexOf("http://www.rcsb.org/pdb/files/") == 0 && url.indexOf("/ligand/") < 0 ? 
+      "http://files.rcsb.org/view/" + url.substring(30).replace(/\.gz/,"")    
+    : url.indexOf("http://") == 0 && (
+      url.indexOf("http://pubchem") == 0 
+      || url.indexOf("http://cactus") == 0
+      || url.indexOf("http://www.materialsproject") == 0) 
+      ? "https" + url.substring(4) : url);
+  }
+  
 	Jmol._getNCIInfo = function(identifier, what, fCallback) {
-		return Jmol._getFileData("http://cactus.nci.nih.gov/chemical/structure/"+identifier +"/" + (what == "name" ? "names" : what));
+		return Jmol._getFileData("https://cactus.nci.nih.gov/chemical/structure/"+identifier +"/" + (what == "name" ? "names" : what));
 	}
 	
-
-
 	Jmol.$appEvent = function(app, subdiv, evt, f) {
 		var o = Jmol.$(app, subdiv); 
 		o.off(evt) && f && o.on(evt, f);
@@ -371,6 +416,10 @@ Jmol = (function(document) {
 		return Jmol._$(id).width(w).height(h);
 	}
 
+  Jmol.$is = function(id, test) { // e.g. :visible
+    return Jmol._$(id).is(test);
+  }
+  
 	Jmol.$setVisible = function(id, b) {
 		var o = Jmol._$(id);
 		return (b ? o.show() : o.hide());  
@@ -602,17 +651,16 @@ Jmol = (function(document) {
 		return (Jmol.db._databasePrefixes.indexOf(query.substring(0, 1)) >= 0);
 	}
 
-	
 	Jmol._getDirectDatabaseCall = function(query, checkXhr2) {
 		if (checkXhr2 && !Jmol.featureDetection.supportsXhr2())
 			return query;
 		var pt = 2;
-		var db;
-		var call = Jmol.db._DirectDatabaseCalls[query.substring(0,pt)];
-		if (!call)
-			call = Jmol.db._DirectDatabaseCalls[db = query.substring(0,--pt)];
+		var db = query.substring(0,pt)
+		var call = Jmol.db._DirectDatabaseCalls[db] || Jmol.db._DirectDatabaseCalls[db = query.substring(0,--pt)];
 		if (call) {
+      // one of the special set :, =, $, ==
 			if (db == ":") {
+        // PubChem
 				var ql = query.toLowerCase();
 				if (!isNaN(parseInt(query.substring(1)))) {
 					query = "cid/" + query.substring(1);
@@ -631,13 +679,15 @@ Jmol = (function(document) {
 			} else {
 				query = encodeURIComponent(query.substring(pt));		
 			}
-			if (call.indexOf("FILENCI") >= 0) {
+      if (query.indexOf(".mmtf") >= 0) {
+        query = "http://mmtf.rcsb.org/full/" + query
+			} else if (call.indexOf("FILENCI") >= 0) {
 				query = query.replace(/\%2F/g, "/");				
 				query = call.replace(/\%FILENCI/, query);
 			} else {
 				query = call.replace(/\%FILE/, query);
 			}
-		}		
+		}
 		return query;
 	}
 
@@ -704,7 +754,6 @@ Jmol = (function(document) {
 	Jmol._getInfoFromDatabase = function(applet, database, query){
 		if (database == "====") {
 			var data = Jmol.db._restQueryXml.replace(/QUERY/,query);
-
 			var info = {
 				dataType: "text",
 				type: "POST",
@@ -859,7 +908,7 @@ Jmol = (function(document) {
 		return true;  
 	}
 
-	Jmol._binaryTypes = [".gz",".jpg",".gif",".png",".zip",".jmol",".bin",".smol",".spartan",".mrc",".pse", ".map", ".omap"];
+	Jmol._binaryTypes = ["mmtf",".gz",".jpg",".gif",".png",".zip",".jmol",".bin",".smol",".spartan",".mrc",".map",".ccp4",".dn6",".delphi",".omap",".pse",".dcd"];
 
 	Jmol._isBinaryUrl = function(url) {
 		for (var i = Jmol._binaryTypes.length; --i >= 0;)
@@ -870,23 +919,28 @@ Jmol = (function(document) {
 	Jmol._getFileData = function(fileName, fSuccess, doProcess) {
 		// use host-server PHP relay if not from this host
 		var isBinary = Jmol._isBinaryUrl(fileName);
-		var isPDB = (fileName.indexOf("pdb.gz") >= 0 && fileName.indexOf("http://www.rcsb.org/pdb/files/") == 0);
-		var asBase64 = (isBinary && !Jmol._canSyncBinary(isPDB));
-		if (asBase64 && isPDB) {
+		var isPDB = (fileName.indexOf(".gz") >= 0 && fileName.indexOf("rcsb.org") >= 0);
+		if (isPDB) {
 			// avoid unnecessary binary transfer
-			fileName = fileName.replace(/pdb\.gz/,"pdb");
-			asBase64 = isBinary = false;
+			fileName = fileName.replace(/\.gz/,"");
+			isBinary = false;
 		}
+		var asBase64 = (isBinary && !fSuccess && !Jmol._canSyncBinary(isPDB));
 		var isPost = (fileName.indexOf("?POST?") >= 0);
 		if (fileName.indexOf("file:/") == 0 && fileName.indexOf("file:///") != 0)
 			fileName = "file://" + fileName.substring(5);      /// fixes IE problem
 		var isMyHost = (fileName.indexOf("://") < 0 || fileName.indexOf(document.location.protocol) == 0 && fileName.indexOf(document.location.host) >= 0);
+    var isHttps2Http = (Jmol._httpProto == "https://" && fileName.indexOf("http://") == 0);
 		var isDirectCall = Jmol._isDirectCall(fileName);
+    if (!isDirectCall && fileName.indexOf("?ALLOWSORIGIN?") >= 0) {
+      isDirectCall = true;
+			fileName = fileName.replace(/\?ALLOWSORIGIN\?/,"");
+    }
 		//if (fileName.indexOf("http://pubchem.ncbi.nlm.nih.gov/") == 0)isDirectCall = false;
 
 		var cantDoSynchronousLoad = (!isMyHost && Jmol.$supportsIECrossDomainScripting());
 		var data = null;
-		if ((!fSuccess || asBase64) && (cantDoSynchronousLoad || asBase64 || !isMyHost && !isDirectCall)) {
+		if (isHttps2Http || asBase64 || !isMyHost && !isDirectCall || !fSuccess && cantDoSynchronousLoad ) {
 				data = Jmol._getRawDataFromServer("_",fileName, fSuccess, fSuccess, asBase64, true);
 		} else {
 			fileName = fileName.replace(/file:\/\/\/\//, "file://"); // opera
@@ -927,6 +981,8 @@ Jmol = (function(document) {
 	}
 
 	Jmol._isDirectCall = function(url) {
+    if (url.indexOf("?ALLOWSORIGIN?") >= 0)
+      return true;
 		for (var key in Jmol.db._DirectDatabaseCalls) {
 			if (key.indexOf(".") >= 0 && url.indexOf(key) >= 0)
 				return true;
@@ -963,6 +1019,12 @@ Jmol = (function(document) {
 		return applet && applet._z && ++applet._z[what] || ++Jmol._z[what];
 	}
 	
+  Jmol._hideLocalFileReader = function(applet, cursor) {
+    applet._localReader && Jmol.$setVisible(applet._localReader, false);
+    applet._readingLocal = false;
+    Jmol._setCursor(applet, cursor || 0);
+  }
+  
 	Jmol._loadFileAsynchronously = function(fileLoadThread, applet, fileName, appData) {
 		if (fileName.indexOf("?") != 0) {
 			// LOAD ASYNC command
@@ -978,28 +1040,39 @@ Jmol = (function(document) {
 		if (!Jmol.featureDetection.hasFileReader)
 				return fileLoadThread.setData("Local file reading is not enabled in your browser", null, null, appData);
 		if (!applet._localReader) {
-			var div = '<div id="ID" style="z-index:'+Jmol._getZ(applet, "fileOpener") + ';position:absolute;background:#E0E0E0;left:10px;top:10px"><div style="margin:5px 5px 5px 5px;"><input type="file" id="ID_files" /><button id="ID_loadfile">load</button><button id="ID_cancel">cancel</button></div><div>'
+			var div = '<div id="ID" style="z-index:'+Jmol._getZ(applet, "fileOpener") + ';position:absolute;background:#E0E0E0;left:10px;top:10px"><div style="margin:5px 5px 5px 5px;"><button id="ID_loadurl">URL</button><input type="file" id="ID_files" /><button id="ID_loadfile">load</button><button id="ID_cancel">cancel</button></div><div>'
 			Jmol.$after("#" + applet._id + "_appletdiv", div.replace(/ID/g, applet._id + "_localReader"));
 			applet._localReader = Jmol.$(applet, "localReader");
 		}
+		Jmol.$appEvent(applet, "localReader_loadurl", "click");
+		Jmol.$appEvent(applet, "localReader_loadurl", "click", function(evt) {
+      var file = prompt("Enter a URL");
+      if (!file)return
+      applet._script("load \"" + file + "\"");
+		});
 		Jmol.$appEvent(applet, "localReader_loadfile", "click");
 		Jmol.$appEvent(applet, "localReader_loadfile", "click", function(evt) {
 			var file = Jmol.$(applet, "localReader_files")[0].files[0];   
 			var reader = new FileReader();
 			reader.onloadend = function(evt) {
 				if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-					Jmol.$css(Jmol.$(applet, "localReader"), {display : "none"});
+          Jmol._hideLocalFileReader(applet, 3);
 					Jmol._setData(fileLoadThread, file.name, file.name, evt.target.result, appData);
 				}
 			};
-			reader.readAsArrayBuffer(file);
+      try {
+			  reader.readAsArrayBuffer(file);
+      } catch (e) {
+        alert("You must select a file first.");
+      }
 		});
 		Jmol.$appEvent(applet, "localReader_cancel", "click");
 		Jmol.$appEvent(applet, "localReader_cancel", "click", function(evt) {
-			Jmol.$css(Jmol.$(applet, "localReader"), {display: "none"});
-			fileLoadThread.setData(null, null, null, appData);
+      Jmol._hideLocalFileReader(applet);
+			fileLoadThread.setData("#CANCELED#", null, null, appData);
 		});
-		Jmol.$css(Jmol.$(applet, "localReader"), {display : "block"});
+		Jmol.$setVisible(applet._localReader, true);
+    applet._readingLocal = true;
 	}
 
   Jmol._setData = function(fileLoadThread, filename, filename0, data, appData) {
@@ -1009,17 +1082,6 @@ Jmol = (function(document) {
 		fileLoadThread.setData(filename, filename0, data, appData);
   }
   
-	Jmol._toBytes = function(data) {
-	if (typeof data == "string") 
-		return data.getBytes();
-	// ArrayBuffer assumed here
-	data = new Uint8Array(data);
-	var b = Clazz.newByteArray(data.length, 0);
-		for (var i = data.length; --i >= 0;)
-			b[i] = data[i];
-	return b;
-	}
-
 	Jmol._doAjax = function(url, postOut, dataOut) {
 		// called by org.jmol.awtjs2d.JmolURLConnection.doAjax()
 		url = url.toString();
@@ -1087,7 +1149,7 @@ Jmol = (function(document) {
 
 	Jmol._strToBytes = function(s) {
 		if (Clazz.instanceOf(s, self.ArrayBuffer))
-			return Jmol._toBytes(s);
+			return Clazz.newByteArray(-1, s);
 		var b = Clazz.newByteArray(s.length, 0);
 		for (var i = s.length; --i >= 0;)
 			b[i] = s.charCodeAt(i) & 0xFF;
@@ -1102,18 +1164,20 @@ Jmol = (function(document) {
 	}
 
 	Jmol._registerApplet = function(id, applet) {
-		return window[id] = Jmol._applets[id] = Jmol._applets[applet] = Jmol._applets[id + "__" + Jmol._syncId + "__"] = applet;
+		return window[id] = Jmol._applets[id] = Jmol._applets[id + "__" + Jmol._syncId + "__"] = applet;
 	} 
 
 	Jmol._readyCallback = function (appId,fullId,isReady,javaApplet,javaAppletPanel) {
 		appId = appId.split("_object")[0];
-    javaAppletPanel || (javaAppletPanel = javaApplet);
+    var applet = Jmol._applets[appId];
 		isReady = (isReady.booleanValue ? isReady.booleanValue() : isReady);
 		// necessary for MSIE in strict mode -- apparently, we can't call 
 		// jmol._readyCallback, but we can call Jmol._readyCallback. Go figure...
-    var applet = Jmol._applets[appId];
-    applet._appletPanel = javaAppletPanel;
-    applet._applet = javaApplet;
+    if (isReady) {
+      // when leaving page, Java applet may be dead 
+      applet._appletPanel = (javaAppletPanel || javaApplet);
+      applet._applet = javaApplet;
+    }
 		Jmol._track(applet._readyCallback(appId, fullId, isReady));
 	}
 
@@ -1143,15 +1207,21 @@ Jmol = (function(document) {
 			var img = ""; 
 			if (applet._coverImage){
 				var more = " onclick=\"Jmol.coverApplet(ID, false)\" title=\"" + (applet._coverTitle) + "\"";
-				var play = "<image id=\"ID_coverclickgo\" src=\"" + applet._j2sPath + "/img/play_make_live.jpg\" style=\"width:25px;height:25px;position:absolute;bottom:10px;left:10px;"
+				var play = "<image id=\"ID_coverclickgo\" src=\"" + applet._makeLiveImage + "\" style=\"width:25px;height:25px;position:absolute;bottom:10px;left:10px;"
 					+ "z-index:" + Jmol._getZ(applet, "coverImage")+";opacity:0.5;\"" + more + " />"  
 				img = "<div id=\"ID_coverdiv\" style=\"background-color:red;z-index:" + Jmol._getZ(applet, "coverImage")+";width:100%;height:100%;display:inline;position:absolute;top:0px;left:0px\"><image id=\"ID_coverimage\" src=\""
 				 + applet._coverImage + "\" style=\"width:100%;height:100%\"" + more + "/>" + play + "</div>";
 			}
+      
+      var wait = (applet._isJava ? "" : "<image id=\"ID_waitimage\" src=\"" + applet._j2sPath + "/img/cursor_wait.gif\" style=\"display:none;position:absolute;bottom:10px;left:10px;"
+					+ "z-index:" + Jmol._getZ(applet, "coverImage")+";\" />");  
+
 			var css = Jmol._appletCssText.replace(/\'/g,'"');
-			css = (css.indexOf("style=\"") >= 0 ? css.split("style=\"")[1] : "\" " + css);
+      var spinner = applet._getSpinner && applet._getSpinner();
+      applet._spinner = spinner = (!spinner || spinner == "none" ? "" : "background-image:url("+spinner + "); background-repeat:no-repeat; background-position:center;");    
+			css = spinner + (css.indexOf("style=\"") >= 0 ? css.split("style=\"")[1] : "\" " + css);
 			s = "\
-...<div id=\"ID_appletinfotablediv\" style=\"width:Wpx;height:Hpx;position:relative;font-size:14px;text-align:left\">IMG\
+...<div id=\"ID_appletinfotablediv\" style=\"width:Wpx;height:Hpx;position:relative;font-size:14px;text-align:left\">IMG WAIT\
 ......<div id=\"ID_appletdiv\" style=\"z-index:" + Jmol._getZ(applet, "header") + ";width:100%;height:100%;position:absolute;top:0px;left:0px;" + css + ">";
 			var height = applet._height;
 			var width = applet._width;
@@ -1159,7 +1229,7 @@ Jmol = (function(document) {
 				height += "px";
 			if (typeof width !== "string" || width.indexOf("%") < 0)
 				width += "px";
-			s = s.replace(/IMG/, img).replace(/Hpx/g, height).replace(/Wpx/g, width);
+			s = s.replace(/IMG/, img).replace(/WAIT/, wait).replace(/Hpx/g, height).replace(/Wpx/g, width);
 		} else {
 			s = "\
 ......</div>\
@@ -1173,6 +1243,11 @@ Jmol = (function(document) {
 		return s.replace(/\.\.\./g,"").replace(/[\n\r]/g,"").replace(/ID/g, applet._id);
 	}
 
+  Jmol._hideLoadingSpinner = function(applet) {
+    if (applet._spinner)
+      Jmol.$css(Jmol.$(applet, "appletdiv"), {"background-image": ""});
+  }
+  
 	Jmol._documentWrite = function(text) {
 		if (Jmol._document) {
 			if (Jmol._isXHTML && !Jmol._XhtmlElement) {
@@ -1301,6 +1376,7 @@ Jmol = (function(document) {
 		Jmol._j2sPath && (Info.j2sPath = Jmol._j2sPath);
 		obj._j2sPath = Info.j2sPath;
 		obj._coverImage = Info.coverImage;
+    obj._makeLiveImage = Info.makeLiveImage || Info.j2sPath + "/img/play_make_live.jpg";
 		obj._isCovered = !!obj._coverImage; 
 		obj._deferApplet = Info.deferApplet || obj._isCovered && obj._isJava; // must do this if covered in Java
 		obj._deferUncover = Info.deferUncover && !obj._isJava; // can't do this with Java
@@ -1507,6 +1583,35 @@ Jmol = (function(document) {
 		return (x == undefined ? null : [Math.round(x), Math.round(y), Jmol._jsGetMouseModifiers(ev)]);
 	}
 
+  Jmol._setCursor = function(applet, c) {
+    if (applet._isJava || applet._readingLocal)
+      return;
+    var curs;
+    switch(c) {
+    case 1: 
+      curs = "crosshair";
+      break;
+    case 3: // wait
+      curs = "wait";
+      Jmol.$setVisible(Jmol.$(applet, "waitimage"), true);
+      break;
+    case 8: // zoom
+      curs = "ns-resize"; 
+      break;
+    case 12: // hand
+      curs = "grab"; 
+      break;
+    case 13: 
+      curs = "move";
+      break;
+    default:
+      Jmol.$setVisible(Jmol.$(applet, "waitimage"), false);
+      curs = "default";
+      break;
+    }
+    applet._canvas.style.cursor = curs;
+  }
+  
 	Jmol._gestureUpdate = function(canvas, ev) {
 		ev.stopPropagation();
 		ev.preventDefault();
@@ -1544,8 +1649,8 @@ Jmol = (function(document) {
 
 	Jmol._jsSetMouse = function(canvas) {
 
-    var doIgnore = function(ev) { return (!ev.target || ev.target.className.indexOf("swingjs-ui") >= 0) };
-         
+    var doIgnore = function(ev) { return (!ev.target || ("" + ev.target.className).indexOf("swingjs-ui") >= 0) };
+
 		Jmol.$bind(canvas, 'mousedown touchstart', function(ev) {
       if (doIgnore(ev))
         return true;
@@ -1962,12 +2067,14 @@ Jmol._track = function(applet) {
 	return applet;
 }
 
-Jmol.getProfile = function() {
-	window["j2s.doProfile"] = true;
-	if (self.Clazz && self.JSON) {
-		Clazz._profile || (Clazz._profile = {});
-		return Clazz.getProfile();
-	}
+var __profiling;
+
+Jmol.getProfile = function(doProfile) {
+  if (!self.Clazz || !self.JSON)
+    return;
+  if (!__profiling)
+    Clazz._startProfiling(__profiling = (arguments.length == 0 || doProfile));
+	return Clazz.getProfile();
 }
 
 Jmol._getInChIKey = function(applet, data) {
@@ -2211,7 +2318,7 @@ Jmol.Cache.put = function(filename, data) {
 			reader.onloadend = function(evt) {
 				if (evt.target.readyState == FileReader.DONE) {
 					var cacheName = "cache://DROP_" + file.name;
-					var bytes = Jmol._toBytes(evt.target.result);
+					var bytes = Clazz.newByteArray(-1, evt.target.result);
 					if (!cacheName.endsWith(".spt"))
 						me._appletPanel.cacheFileByName("cache://DROP_*",false);
 					if (me._viewType == "JSV" || cacheName.endsWith(".jdx")) // shared by Jmol and JSV

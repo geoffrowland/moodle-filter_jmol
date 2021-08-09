@@ -2,7 +2,6 @@ Clazz.declarePackage ("JS");
 Clazz.load (["J.api.AtomIndexIterator"], "JS.UnitCellIterator", ["JU.Lst", "$.P3", "$.P3i", "JU.BoxInfo", "$.Logger", "$.Point3fi"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.atoms = null;
-this.refAtom = null;
 this.center = null;
 this.translation = null;
 this.nFound = 0;
@@ -29,7 +28,6 @@ this.unitCell = unitCell;
 this.atoms = atoms;
 this.addAtoms (bsAtoms);
 this.p =  new JU.P3 ();
-this.refAtom = atom;
 if (distance > 0) this.setCenter (atom, distance);
 return this;
 }, "J.api.SymmetryInterface,JM.Atom,~A,JU.BS,~N");
@@ -138,6 +136,7 @@ Clazz.overrideMethod (c$, "getPosition",
 function () {
 var a = this.getAtom ();
 if (JU.Logger.debugging) JU.Logger.info ("draw ID p_" + this.nFound + " " + this.p + " //" + a + " " + this.t);
+if (this.p.distanceSquared (a) < 0.0001) return a;
 var p =  new JU.Point3fi ();
 p.setT (this.p);
 p.i = a.i;
