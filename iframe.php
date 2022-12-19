@@ -15,8 +15,17 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 // Disable moodle specific debug messages and any errors in output.
 
+/**
+ * iFrame stuff.
+ *
+ * @package    filter_jmol
+ * @copyright  2013 Geoffrey Rowland <rowland dot geoff at gmail dot com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 require(__DIR__.'/../../config.php');
 $browser = strtolower($_SERVER['HTTP_USER_AGENT']);
+
 if (strpos($browser, 'linux')) {
     $bplatform = 'linux';
 } else if (strpos($browser, 'windows')) {
@@ -367,7 +376,6 @@ echo 'disableJ2SLoadMonitor: true,';
 echo 'readyFunction: null,';
 echo 'isSigned: true,';
 echo 'menuFile: "'.$wwwroot.'/filter/jmol/'.$menu.'",';
-//echo 'script: "'.$loadscript.$initscript.'; ';
 echo 'script: "set echo top left; echo '.get_string('loading', 'filter_jmol', true).'; refresh;'.$loadscript.$initscript.'; ';
 echo 'set language '.$lang.'; set frank off; set zoomLarge false; set antialiasDisplay on;",';
 echo 'serverURL: "'.$wwwroot.'/filter/jmol/js/jsmol/php/jsmol.php",';

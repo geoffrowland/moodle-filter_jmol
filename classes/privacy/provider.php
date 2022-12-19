@@ -21,7 +21,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace filter_jmol\privacy;
-defined('MOODLE_INTERNAL') || die();
+
 /**
  * Privacy Subsystem for filter_jmol implementing null_provider.
  *

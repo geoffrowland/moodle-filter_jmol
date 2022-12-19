@@ -37,6 +37,12 @@ class behat_filter_jmol extends behat_base {
      * Add a label to a course that is a link to a file in the fixtures directory of this plugin.
      *
      * @Given /^course "(?P<COURSE_SHORTNAME>[^"]*)" has a label linking to Jmol fixture "(?P<FILE_NAME>[^"]*)"$/
+     *
+     * @param string $shortname
+     * @param string $filename
+     * @return void
+     * @throws dml_exception
+     * @throws moodle_exception
      */
     public function course_contains_label_linking_fixture($shortname, $filename) {
         global $CFG, $DB;
@@ -61,6 +67,8 @@ class behat_filter_jmol extends behat_base {
      * Switch to the first JMOL iframe on the page.
      *
      * @When /^I switch to the jmol iframe$/
+     *
+     * @return void
      */
     public function switch_to_jmol_iframe() {
         $iframe = $this->find('xpath', '//iframe[starts-with(@id, "iframe") and contains(@src, "/filter/jmol/iframe.php")]');

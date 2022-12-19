@@ -17,41 +17,59 @@
 /**
  * Jmol filter.
  *
- * @package    filter
- * @subpackage jmol
+ * @package    filter_jmol
  * @copyright  2006 Dan Stowell
  * @copyright  2007-2008 Szymon Kalasz Internationalisation strings added as part of GHOP
- * @url        http://moodle.org/mod/forum/discuss.php?d=88201
+ * @copyright  20011 Geoffrey Rowland <rowland dot geoff at gmail dot com> Updated for Moodle 2
+ * @copyright  20013 Geoffrey Rowland <rowland dot geoff at gmail dot com> Updated to use JSmol
+ * @copyright  20015 Geoffrey Rowland <rowland dot geoff at gmail dot com> Updated for Moodle 2.9
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ *
+ * http://moodle.org/mod/forum/discuss.php?d=88201
+ */
+
+/**
+ * Jmol/JSmol plugin filtering for viewing molecules online.
+ *
+ * This filter will replace any links to a chemistry structure file
+ * (.mol, .sdf, .csmol, .pdb, pdb.gz .xyz, .cml, .mol2, .cif, .mcif etc)
+ * with with an interactive 3D display of the structure using Jmol/JSmol/GLmol.
+ *
+ * If required, allows customisation of the Jmol object size (default 350 px).
+ *
+ * Similarly, allows selection of a few different Jmol control sets depending on the chemical context.
+ * e.g. small molecule, biological macromolecule, crystal
+ *
+ * Also, customisation of the initial display though Jmol scripting.
+ *
+ * To activate this filter, go to admin and enable 'jmol'.
+ *
+ * Latest JSmol version is available from http:*chemapps.stolaf.edu/jmol/jsmol.zip
+ * Unzipped jsmol folder (and contents) can be used to replace/update the jsmol folder in this bundle.
+ * Jmol project site: http:*jmol.sourceforge.net/
+ * Jmol interactive scripting documentation(Use with JMOLSCRIPT{ }): http:*chemapps.stolaf.edu/jmol/docs/
+ * Jmol Wiki: http*wiki.jmol.org.*
+ */
+
+/**
+ * The jmol filter class.
+ *
+ * @package    filter_jmol
+ * @copyright  2006 Dan Stowell
+ * @copyright  2007-2008 Szymon Kalasz Internationalisation strings added as part of GHOP
  * @copyright  20011 Geoffrey Rowland <rowland dot geoff at gmail dot com> Updated for Moodle 2
  * @copyright  20013 Geoffrey Rowland <rowland dot geoff at gmail dot com> Updated to use JSmol
  * @copyright  20015 Geoffrey Rowland <rowland dot geoff at gmail dot com> Updated for Moodle 2.9
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
-
-// Jmol/JSmol plugin filtering for viewing molecules online.
-//
-// This filter will replace any links to a chemistry structure file
-// (.mol, .sdf, .csmol, .pdb, pdb.gz .xyz, .cml, .mol2, .cif, .mcif etc)
-// with with an interactive 3D display of the structure using Jmol/JSmol/GLmol.
-//
-// If required, allows customisation of the Jmol object size (default 350 px).
-//
-// Similarly, allows selection of a few different Jmol control sets depending on the chemical context.
-// e.g. small molecule, biological macromolecule, crystal
-//
-// Also, customisation of the initial display though Jmol scripting.
-//
-// To activate this filter, go to admin and enable 'jmol'.
-//
-// Latest JSmol version is available from http://chemapps.stolaf.edu/jmol/jsmol.zip
-// Unzipped jsmol folder (and contents) can be used to replace/update the jsmol folder in this bundle.
-// Jmol project site: http://jmol.sourceforge.net/
-// Jmol interactive scripting documentation(Use with JMOLSCRIPT{ }): http://chemapps.stolaf.edu/jmol/docs/
-// Jmol Wiki: http//wiki.jmol.org.
-
 class filter_jmol extends moodle_text_filter {
+    /**
+     * The filter function.
+     *
+     * @param string $text
+     * @param array $options
+     * @return array|string|string[]|null
+     */
     public function filter($text, array $options = array()) {
         global $CFG, $PAGE, $jmolenabled;
         $wwwroot = $CFG->wwwroot;
@@ -79,6 +97,14 @@ class filter_jmol extends moodle_text_filter {
         return $newtext;
     }
 }
+
+/**
+ * The replace callback function.
+ *
+ * @param object $matches
+ * @return string
+ * @throws moodle_exception
+ */
 function filter_jmol_replace_callback($matches) {
     global $CFG;
     // Convert Moodle language codes to Jmol language codes for Jmol popup menu.
