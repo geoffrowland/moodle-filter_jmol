@@ -14,8 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * The help.
+ *
+ * @package    filter_jmol
+ * @copyright  2013 Geoffrey Rowland <rowland dot geoff at gmail dot com>
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+defined('MOODLE_INTERNAL') || die();
+
 require_once("../../config.php");
 global $CFG;
+require_login();
+
 // Elements.
 $hydrogen = get_string('hydrogen', 'filter_jmol');
 $helium = get_string('helium', 'filter_jmol');

@@ -17,8 +17,7 @@
 /**
  * Strings for filter_jmol
  *
- * @package    filter
- * @subpackage jmol
+ * @package    filter_jmol
  * @copyright  2006 Dan Stowell Original version for Moodle 1.x
  * @copyright  2010 Geoffrey Rowland <rowland.geoff@gmail.com> Update for Moodle 2.x
  * @copyright  2013 Geoffrey Rowland <rowland.geoff@gmail.com> Update for JavaScript/HTML5 JSmol
