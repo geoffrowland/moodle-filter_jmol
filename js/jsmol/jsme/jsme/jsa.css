@@ -155,7 +155,7 @@
 	border-width: medium;
 	width: auto;
 	min-width: 0;
-	//display:inline;
+	/*display:inline;*/
 	height: auto;
 	min-height: 0;
 	background-color: transparent;
@@ -171,5 +171,13 @@
 	
 }
 
-
+svg text {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
 }
+svg text::selection {
+	background: none;
+}
+
