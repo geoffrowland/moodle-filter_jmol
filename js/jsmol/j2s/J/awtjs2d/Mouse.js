@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.awtjs2d");
-Clazz.load (["javajs.api.GenericMouseInterface", "javajs.awt.event.Event"], "J.awtjs2d.Mouse", ["java.lang.Character", "JU.PT", "$.V3", "JU.Logger"], function () {
+Clazz.load (["J.api.GenericMouseInterface"], "J.awtjs2d.Mouse", ["java.lang.Character", "JU.PT", "$.V3", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.vwr = null;
 this.manager = null;
@@ -11,7 +11,7 @@ this.xWhenPressed = 0;
 this.yWhenPressed = 0;
 this.modifiersWhenPressed10 = 0;
 Clazz.instantialize (this, arguments);
-}, J.awtjs2d, "Mouse", null, javajs.api.GenericMouseInterface);
+}, J.awtjs2d, "Mouse", null, J.api.GenericMouseInterface);
 Clazz.makeConstructor (c$, 
 function (privateKey, vwr, display) {
 this.vwr = vwr;
@@ -25,9 +25,9 @@ function () {
 });
 Clazz.overrideMethod (c$, "processEvent", 
 function (id, x, y, modifiers, time) {
-if (id != -1) modifiers = J.awtjs2d.Mouse.applyLeftMouse (modifiers);
+if (id != 507) modifiers = J.awtjs2d.Mouse.applyLeftMouse (modifiers);
 switch (id) {
-case -1:
+case 507:
 this.wheeled (time, x, modifiers);
 break;
 case 501:
@@ -37,7 +37,7 @@ this.modifiersWhenPressed10 = modifiers;
 this.pressed (time, x, y, modifiers, false);
 break;
 case 506:
-this.dragged (time, x, y, modifiers);
+this.dragged (time, x, y);
 break;
 case 504:
 this.entry (time, x, y, false);
@@ -121,7 +121,7 @@ Clazz.defineMethod (c$, "mouseDragged",
 function (e) {
 var modifiers = e.getModifiers ();
 if ((modifiers & 28) == 0) modifiers |= 16;
-this.dragged (e.getWhen (), e.getX (), e.getY (), modifiers);
+this.dragged (e.getWhen (), e.getX (), e.getY ());
 }, "java.awt.event.MouseEvent");
 Clazz.defineMethod (c$, "mouseMoved", 
 function (e) {
@@ -172,7 +172,7 @@ case 2:
 this.vwr.undoMoveAction (4165, 1);
 break;
 case 3:
-this.vwr.undoMoveAction (4139, 1);
+this.vwr.undoMoveAction (4140, 1);
 break;
 }
 break;
@@ -180,7 +180,7 @@ case 25:
 case 'y':
 switch (modifiers) {
 case 2:
-this.vwr.undoMoveAction (4139, 1);
+this.vwr.undoMoveAction (4140, 1);
 break;
 }
 break;
@@ -263,13 +263,28 @@ this.wheeling = false;
 this.manager.mouseAction (5, time, x, y, 0, modifiers);
 }, "~N,~N,~N,~N");
 Clazz.defineMethod (c$, "dragged", 
- function (time, x, y, modifiers) {
+ function (time, x, y) {
 if (this.wheeling) return;
 if ((this.modifiersDown & 20) == 20) this.modifiersDown = this.modifiersDown & -5 | 2;
 this.manager.mouseAction (1, time, x, y, 0, this.modifiersDown);
-}, "~N,~N,~N,~N");
+}, "~N,~N,~N");
 c$.applyLeftMouse = Clazz.defineMethod (c$, "applyLeftMouse", 
  function (modifiers) {
 return ((modifiers & 28) == 0) ? (modifiers | 16) : modifiers;
 }, "~N");
+Clazz.overrideMethod (c$, "processKeyEvent", 
+function (event) {
+var e = event;
+switch (e.getID ()) {
+case 401:
+this.keyPressed (e);
+break;
+case 402:
+this.keyReleased (e);
+break;
+case 400:
+this.keyTyped (e);
+break;
+}
+}, "~O");
 });

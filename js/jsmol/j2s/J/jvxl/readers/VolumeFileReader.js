@@ -103,7 +103,6 @@ JU.Logger.info ("downsampling axis " + (i + 1) + " from " + n + " to " + this.vo
 }if (!this.vertexDataOnly) for (var i = 0; i < 3; ++i) {
 if (!this.isAngstroms) this.volumetricVectors[i].scale (0.5291772);
 this.line = this.voxelCounts[i] + " " + this.volumetricVectors[i].x + " " + this.volumetricVectors[i].y + " " + this.volumetricVectors[i].z;
-this.jvxlFileHeaderBuffer.append (this.line).appendC ('\n');
 JU.Logger.info ("voxel grid count/vector:" + this.line);
 }
 this.scaleIsosurface (this.params.scale);
@@ -146,11 +145,15 @@ this.nSkipZ = this.downsampleRemainders[1] * this.nSkipZ + (this.downsampleFacto
 }if (this.params.thePlane != null) {
 this.params.cutoff = 0;
 } else if (this.isJvxl) {
-this.params.cutoff = (this.params.isBicolorMap || this.params.colorBySign ? 0.01 : 0.5);
+this.params.cutoff = (this.params.isBicolorMap || this.params.colorBySign ? 0.01 : this.getJVXLCutoff ());
 }this.nDataPoints = 0;
 this.next[0] = 0;
 this.line = "";
 this.jvxlNSurfaceInts = 0;
+});
+Clazz.defineMethod (c$, "getJVXLCutoff", 
+function () {
+return 0.5;
 });
 Clazz.overrideMethod (c$, "readSurfaceData", 
 function (isMapData) {

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JSV.export");
-Clazz.load (["java.util.Hashtable", "JU.Lst"], "JSV.export.FormContext", ["java.lang.Character", "$.Double", "java.util.Map", "JU.PT", "JSV.common.Coordinate", "JU.Logger"], function () {
+Clazz.load (["java.util.Hashtable", "JU.Lst"], "JSV.export.FormContext", ["java.lang.Character", "$.Double", "java.util.Map", "JU.DF", "$.PT", "JSV.common.Coordinate", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.tokens = null;
 this.context = null;
@@ -106,8 +106,8 @@ var c = varData;
 this.context.put ("pointCount",  new Integer (vt.pointCount));
 this.context.put (vt.$var + ".xVal",  new Double (c.getXVal ()));
 this.context.put (vt.$var + ".yVal",  new Double (c.getYVal ()));
-this.context.put (vt.$var + ".getXString()", c.getXString ());
-this.context.put (vt.$var + ".getYString()", c.getYString ());
+this.context.put (vt.$var + ".getXString()", this.getXString (c));
+this.context.put (vt.$var + ".getYString()", this.getYString (c));
 } else if (Clazz.instanceOf (varData, java.util.Map)) {
 for (var entry, $entry = (varData).entrySet ().iterator (); $entry.hasNext () && ((entry = $entry.next ()) || true);) this.context.put (vt.$var + "." + entry.getKey (), entry.getValue ());
 
@@ -117,6 +117,14 @@ continue;
 }
 return (this.strError != null ? this.strError : out != null ? out.toString () : null);
 }, "JU.OC");
+Clazz.defineMethod (c$, "getXString", 
+function (c) {
+return JU.DF.formatDecimalTrimmed0 (c.getXVal (), 8);
+}, "JSV.common.Coordinate");
+Clazz.defineMethod (c$, "getYString", 
+function (c) {
+return JU.DF.formatDecimalTrimmed0 (c.getYVal (), 8);
+}, "JSV.common.Coordinate");
 Clazz.defineMethod (c$, "foreach", 
  function (vt) {
 var data = vt.data;
@@ -260,7 +268,7 @@ this.b$["JSV.export.FormContext"].commandLevel--;
 if (this.b$["JSV.export.FormContext"].commandLevel < 0) {
 this.b$["JSV.export.FormContext"].strError = "misplaced #end";
 return;
-}this.cmdPtr = this.b$["JSV.export.FormContext"].cmds.remove (0).intValue ();
+}this.cmdPtr = this.b$["JSV.export.FormContext"].cmds.removeItemAt (0).intValue ();
 this.b$["JSV.export.FormContext"].formTokens.get (this.cmdPtr).endPtr = this.ptr;
 } else {
 this.b$["JSV.export.FormContext"].commandLevel++;
@@ -283,7 +291,7 @@ if (this.b$["JSV.export.FormContext"].cmds.size () == 0) {
 this.b$["JSV.export.FormContext"].strError = "misplaced #elseif";
 return;
 }this.cmdType = 3;
-this.cmdPtr = this.b$["JSV.export.FormContext"].cmds.remove (0).intValue ();
+this.cmdPtr = this.b$["JSV.export.FormContext"].cmds.removeItemAt (0).intValue ();
 var d = this.b$["JSV.export.FormContext"].formTokens.get (this.cmdPtr);
 c = true;
 d.endPtr = this.ptr;
@@ -294,7 +302,7 @@ this.b$["JSV.export.FormContext"].strError = "misplaced #else";
 return;
 }this.cmdType = 2;
 c = true;
-this.cmdPtr = this.b$["JSV.export.FormContext"].cmds.remove (0).intValue ();
+this.cmdPtr = this.b$["JSV.export.FormContext"].cmds.removeItemAt (0).intValue ();
 this.b$["JSV.export.FormContext"].formTokens.get (this.cmdPtr).endPtr = this.ptr;
 this.b$["JSV.export.FormContext"].cmds.add (0,  new Integer (this.ptr));
 } else {

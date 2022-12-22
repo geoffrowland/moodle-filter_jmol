@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.dssx");
-Clazz.load (["J.api.JmolAnnotationParser"], "J.dssx.AnnotationParser", ["java.lang.Boolean", "$.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "$.PT", "$.SB", "JM.Group", "JM.Resolver", "JS.SV", "JU.BSUtil", "$.Logger"], function () {
+Clazz.load (["J.api.JmolAnnotationParser"], "J.dssx.AnnotationParser", ["java.lang.Boolean", "$.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "$.PT", "$.SB", "JM.Group", "JM.BioResolver", "JS.SV", "JU.BSUtil", "$.Logger"], function () {
 c$ = Clazz.declareType (J.dssx, "AnnotationParser", null, J.api.JmolAnnotationParser);
 Clazz.makeConstructor (c$, 
 function () {
@@ -366,8 +366,8 @@ if (name.charAt (0) == 'H') {
 if (J.dssx.AnnotationParser.pdbAtomForH == null) {
 J.dssx.AnnotationParser.pdbAtomForH =  new java.util.Hashtable ();
 this.assignPDBH ("", "N H H1 H2 H3 CB HB2 HB3 CD HD2 HD3 CG HG2 HG3 C2' H2'' H2' C5' H5'' H5' OXT HXT");
-for (var i = JM.Resolver.pdbBondInfo.length; --i >= 1; ) {
-this.assignPDBH (JM.Group.group3Names[i], JM.Resolver.pdbBondInfo[i]);
+for (var i = JM.BioResolver.pdbBondInfo.length; --i >= 1; ) {
+this.assignPDBH (JM.Group.group3Names[i], JM.BioResolver.pdbBondInfo[i]);
 }
 }var a = J.dssx.AnnotationParser.pdbAtomForH.get (name);
 if (a == null) a = J.dssx.AnnotationParser.pdbAtomForH.get (group3 + name);
@@ -417,9 +417,16 @@ Clazz.overrideMethod (c$, "getHBonds",
 function (ms, modelIndex, vHBonds, doReport) {
 return null;
 }, "JM.ModelSet,~N,JU.Lst,~B");
+Clazz.overrideMethod (c$, "getAtomicDSSRData", 
+function (ms, modelIndex, dssrData, dataType) {
+}, "JM.ModelSet,~N,~A,~S");
 Clazz.overrideMethod (c$, "setGroup1", 
 function (ms, modelIndex) {
 }, "JM.ModelSet,~N");
+Clazz.overrideMethod (c$, "getDSSRFrame", 
+function (dssrNT) {
+return null;
+}, "java.util.Map");
 Clazz.defineStatics (c$,
 "pdbAtomForH", null);
 });

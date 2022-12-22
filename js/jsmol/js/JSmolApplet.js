@@ -1,8 +1,11 @@
 // JmolApplet.js -- Jmol._Applet and Jmol._Image
 
+// BH 2022.08.25 fixing ?j2sdebugcode to allow menu and console
+// BH 2022.01.23 updated _availableParams callbacks
+// BH 1/28/2018 7:15:09 AM adding _notifyAudioEnded
 // BH 2/14/2016 12:31:02 PM fixed local reader not disappearing after script call
 // BH 2/14/2016 12:30:41 PM Info.appletLoadingImage: "j2s/img/JSmol_spinner.gif", // can be set to "none" or some other image
-// BH 2/14/2016 12:27:09 PM Jmol._setCursor, proto._getSpinner 
+// BH 2/14/2016 12:27:09 PM Jmol.setCursor, proto._getSpinner 
 // BH 1/15/2016 4:23:14 PM adding Info.makeLiveImage
 // BH 4/17/2015 2:33:32 PM update for SwingJS 
 // BH 10/19/2014 8:08:51 PM moved applet._cover and applet._displayCoverImage to 
@@ -29,10 +32,11 @@
 		this._isJava = true;
 		this._syncKeyword = "Select:";
 		this._availableParams = ";progressbar;progresscolor;boxbgcolor;boxfgcolor;allowjavascript;boxmessage;\
-									;messagecallback;pickcallback;animframecallback;appletreadycallback;atommovedcallback;\
-									;echocallback;evalcallback;hovercallback;language;loadstructcallback;measurecallback;\
-									;minimizationcallback;resizecallback;scriptcallback;statusform;statustext;statustextarea;\
-									;synccallback;usecommandthread;syncid;appletid;startupscript;menufile;";
+			;animframecallback;appletreadycallback;atommovedcallback;audiocallback;\
+			;clickcallback;dragdropcallback;echocallback;errorcallback;evalcallback;hovercallback;\
+			;imagecallback;loadstructcallback;measurecallback;messagecallback;minimizationcallback;modelkitcallback;pickcallback;\
+			;resizecallback;scriptcallback;selectcallback;servicecallback;structuremodifiedcallback;synccallback;\
+			;statusform;statustext;statustextarea;usecommandthread;syncid;appletid;startupscript;language;menufile;";
 		if (checkOnly)
 			return this;
 		this._isSigned = Info.isSigned;
@@ -249,13 +253,17 @@
 	}
 	
 	proto._addCoreFiles = function() {
-		Jmol._addCoreFile("jmol", this._j2sPath, this.__Info.preloadCore);
+		Jmol._addCoreFile("jmol" + (Jmol._debugCode ? "debug" : ""), this._j2sPath, this.__Info.preloadCore);
+		if (Jmol._debugCode) {
+			Jmol._addCoreFile("jmoldebug", this._j2sPath, this.__Info.preloadCore);
+		}
 		if (!this._is2D) {
 	 		Jmol._addExec([this, null, "J.export.JSExporter","load JSExporter"])
 	//		Jmol._addExec([this, this.__addExportHook, null, "addExportHook"])
 		}
-		if (Jmol._debugCode)
+		if (Jmol._debugCode) {
 			Jmol._addExec([this, null, "J.appletjs.Jmol", "load Jmol"]);
+		}
   }
   
 	proto._create = function(id, Info){
@@ -328,6 +336,10 @@
 		}
 	}
 
+  proto._notifyAudioEnded = function(htParams) {
+    this._applet.notifyAudioEnded(htParams);
+  }
+  
 	proto._readyCallback = function(id, fullid, isReady) {
 		if (!isReady)
 			return; // ignore -- page is closing
@@ -342,12 +354,15 @@
 			this._script('load "' + this._src + '"');
 		this._showInfo(true);
 		this._showInfo(false);
-		Jmol.Cache.setDragDrop(this);
+		Jmol.Cache.setDragDrop(this, "appletdiv");
 		this._readyFunction && this._readyFunction(this);
 		Jmol._setReady(this);
 		var app = this._2dapplet;
-		if (app && app._isEmbedded && app._ready && app.__Info.visible)
-			this._show2d(true);
+		if (app && app._isEmbedded && app._ready && app.__Info.visible) {
+      var me = this;
+      // for some reason, JSME doesn't get the width/height correctly the first time
+			me._show2d(true);me._show2d(false);me._show2d(true);
+    }
     Jmol._hideLoadingSpinner(this);
 	}
 
@@ -384,11 +399,14 @@
     return (this.__Info.appletLoadingImage || this._j2sPath + "/img/JSmol_spinner.gif");
   }
 
-  proto._getAtomCorrelation = function(molData) {
+  proto._getAtomCorrelation = function(molData, isC13) {
     // get the first atom mapping available by loading the model structure into model 2, 
-    this._loadMolData(molData, "atommap = compare({1.1} {2.1} 'MAP' 'H'); zap 2.1", true);
-    var map = this._evaluate("atommap");
+
     var n = this._evaluate("{*}.count");
+    if (n == 0)return;
+
+    this._loadMolData(molData, "atommap = compare({1.1} {2.1} 'MAP' " + (isC13 ? "" : "'H'") + "); zap 2.1", true);
+    var map = this._evaluate("atommap");
     var A = [];
     var B = [];
     // these are Jmol atom indexes. The second number will be >= n, and all must be incremented by 1.
@@ -423,11 +441,15 @@
 		return true;
 	}
 
+	proto._setCallback = function(name, func) {
+		this._applet.setCallback(name, func);
+	}
+
 	proto._script = function(script) {
 		if (!this._ready)
 				return this._addScript(script);
 		Jmol._setConsoleDiv(this._console);
-    Jmol._hideLocalFileReader(this);
+		Jmol._hideLocalFileReader(this);
 		this._applet.script(script);
 	}
 
@@ -607,7 +629,7 @@
 		this._containerWidth = sz[0];
 		this._containerHeight = sz[1];
 		if (this._is2D)
-			Jmol._repaint(this, true);
+			Jmol.repaint(this, true);
 	}
 
 	proto._search = function(query, script){
@@ -704,12 +726,16 @@
 		}
 	}
 
+  proto._reset = function(_jmol_resetView) {
+    this._scriptWait("zap", true);
+  }
+  
 	proto._updateView = function(_jmol_updateView) {
 		if (this._viewSet == null || !this._applet)
 			return;
 		// called from model change without chemical identifier, possibly by user action and call to Jmol.updateView(applet)
 		chemID = "" + this._getPropertyAsJavaObject("variableInfo","script('show chemical inchiKey')");
-		if (chemID.length() < 36) // InChIKey=RZVAJINKPMORJF-BGGKNDAXNA-N
+		if (chemID.length < 36) // InChIKey=RZVAJINKPMORJF-BGGKNDAXNA-N
 			chemID = null;
 		else
 			chemID = chemID.substring(36).split('\n')[0];
@@ -785,7 +811,7 @@
   }
 
   proto._getMol2D = function() {
-		return jmol._evaluate("script('select visible;show chemical sdf')"); // 2D equivalent
+		return this._evaluate("script('select visible;show chemical sdf')"); // 2D equivalent no longer!
   }
   
   

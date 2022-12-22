@@ -9,6 +9,9 @@
 * 
 */
 
+// BH 2019.04.27 fixes 1H+13C viewing
+// BH 1/14/2017 7:12:47 PM adds proto._showTooltip
+// BH 4/24/2016 4:42:06 PM working around Resolver 2D issues
 // BH 2/2/2014 11:39:44 AM Jmol/JSME/JSV working triad
 // BH 1/30/2014 1:04:09 PM adds Info.viewSet 
 // BH 10/10/2013 1:25:28 PM JSV HTML5 option
@@ -167,7 +170,7 @@
 		this._showInfo(true);
 		this._showInfo(false);
 		this._readyFunction && this._readyFunction(this);
-		Jmol.Cache.setDragDrop(this);
+		Jmol.Cache.setDragDrop(this, "appletdiv");
 		Jmol._setReady(this);
 	}	
 		
@@ -203,7 +206,7 @@
 	}
 
 	proto._searchDatabase = function(query, database) {
-		return this._applet.runScript("load ID \"" + query + "\" " + database + query)
+		return this._applet.runScript("load ID \"" + query + "\" \"" + database + query + "\"")
 	}
 
 	proto._script = function(script) {
@@ -247,6 +250,26 @@
 		Jmol._loadFileData(this, fileName, function(data){me._loadInline(data)}, function(data){me._loadInline(null)});
 	}
 
+  proto._showTooltip = function(text) {
+    var s = "<span id='" + this._id + "_tooltip' style='position:absolute;z-index:10000000;left:0px;top:0px;background-color:yellow'></span>";
+    var t = this._tooltip;
+    if (!t) {    
+      Jmol.$after("body",s);
+      t = this._tooltip = Jmol.$(this, "tooltip");
+    }
+    t.hide();
+    this._tooltipTimer && clearTimeout(this._tooltipTimer);
+    this._tooltipTimer1 && clearTimeout(this._tooltipTimer1); 
+    var me = this;
+    this._tooltipTimer1 = setTimeout(function(){
+      t[0].style.left = (Jmol._mousePageX+10) + "px";
+      t[0].style.top = (Jmol._mousePageY+20) + "px";
+      t[0].innerHTML = text;
+      t.show();
+      me._tooltipTimer = setTimeout(function(){t.hide()},4000);
+    },50);
+  }
+  
 	proto._loadInline = function(data) {
 		// called when loading JDX data
 		this._currentView = null;
@@ -289,12 +312,15 @@
 			this._applet.runScriptNow("SELECT ID \"" + view.info.viewID + "\"");
 			return;
 		}
-		
 		// get the simulation into JSpecView
 		var script = this.__Info.preloadScript;
-		if (script == null) 
+		if (this._addC13)
+			script = "CLOSE ALL";
+		else if (script == null)
 			script = "CLOSE VIEWS;CLOSE SIMULATIONS > 1";
 		script += "; LOAD ID \"" + view.info.viewID + "\" APPEND \"http://SIMULATION/MOL=" + molData.replace(/\n/g,"\\n") + "\"";
+  	if (this._addC13)
+      script += "; LOAD ID \"" + view.info.viewID + "__C13\" APPEND \"http://SIMULATION/C13/MOL=" + molData.replace(/\n/g,"\\n") + "\"";
 		this._applet.runScriptNow(script);
 		// update Jmol and/or JME to correspond with the model returned.
 		molData = this._getAppletInfo("DATA_mol");
@@ -304,7 +330,7 @@
 		this._propagateView(view, molData);
 	}
 
-	proto._propagateView = function(view, molData) {
+	proto._propagateView = function(view, molData, _jsv_propagateView) {
 		var vJmol = view.Jmol;
 		var vJME = view.JME;
 		if (vJmol) {
@@ -312,7 +338,7 @@
 			if (vJmol.applet)
 				vJmol.applet._loadModelFromView(this._currentView);
 			if (vJME)
-				vJME.applet._loadFromJmol(vJmol.applet);
+				vJME.applet._loadFromJmol(vJmol.applet, "jmeh");
 		} else if (vJME) {
 			vJME.data = molData;
 			vJME.applet._loadModelFromView(this._currentView);
@@ -320,6 +346,11 @@
 		this.__selectSpectrum();
 	}
 	
+  proto._reset = function(_jmol_resetView) {
+    this._script("view clear");
+  }
+  
+
 	proto._updateView = function(msgOrPanel, peakData, _jsv_updateView) {
 		if (this._viewSet == null || !this._applet || msgOrPanel && msgOrPanel.vwr)
 			return;
@@ -332,11 +363,11 @@
 			if (msg && (msg.indexOf("http://SIMULATION" >= 0) || msg.indexOf("cache://") >= 0)) {
 				var molData = this._getAppletInfo("DATA_mol");
 				if (molData) {
-					Jmol.View.updateView(this, { chemID: "", viewID: Jmol._getAttr(msg, "file"), data:molData});
+					Jmol.View.updateView(this, { chemID: "", viewID: Jmol._getAttr(msg, "sourceID") || Jmol._getAttr(msg, "file"), data:molData});
 					this._propagateView(this._currentView, molData);
 				}
 			}
-			return;		 
+			return;
 		}
  		// called from file load or panel selection or peak selection
 		Jmol.View.updateFromSync(this, peakData);
@@ -585,17 +616,19 @@
 		return applet._code;
 	}
 	
-Jmol._newGrayScaleImage = function(context, image, width, height, grayBuffer) {
+Jmol.newGrayScaleImage = function(context, image, width, height, grayBuffer) {
 	var c;
+  image || (image = Jmol.$(context.canvas.applet, "image")[0]);
 	if (image == null) {
-		var id = ("" + Math.random()).substring(3);
+		var appId = context.canvas.applet._id;
+    var id = appId + "_imagediv";
 		c = document.createElement("canvas");
 		c.id = id;
 		c.style.width = width + "px";
 		c.style.height = height + "px";
 		c.width = width;
 		c.height = height;
-		var appId = context.canvas.applet._id;
+
 		var layer = document.getElementById(appId + "_contentLayer");
 		image = new Image();
 		image.canvas = c;
@@ -611,7 +644,7 @@ Jmol._newGrayScaleImage = function(context, image, width, height, grayBuffer) {
 		};
 		var div = document.createElement("div");
 		image.div = div;
-		div.style.position="relative";
+		div.style.position="absolute";
 		layer.appendChild(div);
 		div.appendChild(image);
 	}

@@ -1,6 +1,132 @@
- TODO: 
-     - scaling picture: still buggy for very small depiction
+JSME-2015-12-06
+    - Bug fix bond rubberbanding
 
+JSME-2015-11-22
+    - Refactoring of JME code: bond creation bug fix
+    
+JSME-2015-11-15
+    - Refactoring of JME code
+    
+JSME-2015-11-04
+    - Tool chain bug fix
+    - Applet resizes automatically when the browser window resizes
+    
+JSME-2015-11-01
+    - Empty mol return a valid MOL with 0 atoms and bonds
+    - After importing a reaction with atom mapping, the numbering atom tool will use the largest atom map + 1
+    - Refactoring of JME code
+
+JSME-2015-10-04:
+   - Bug fix: clicking on NEW and 123 does not generate structure change events
+   - Disable logging of null events
+   - Changing atom type using the keyboard while the cursor is over an atom does not change the atom type menu selection
+   - Using the ring keyboard shortcuts while the cursor is over an atom or a bond does not change the menu
+   
+JSME-2015-06-25
+   - depictAction bug fix
+    
+JSME-2015-06-20
+   - new generic callback
+   - atom clicked and bond clicked callback
+
+JSME-2015-06-14
+    - New button for I/O
+    - Updated smaller icon for drag and drop
+JSME-2015-05-28
+    - fixed broken links in doc.html
+JSME-2015-05-14
+    - bug fix: read JSME string with more than 10 marked atoms
+    - replaced the star by a circle
+    - jsa,css bug fix
+
+JSME-2015-05-07
+    - depict mode:leave 16 px for the DnD icon to avoid overlap
+JSME 2015-05-03
+    - bug fix: autonumber was not working anymore after array optimization (123)
+    - remove linker name (e.g xsiframe) from the name of the distribution
+    - Microsoft Edge compatibility test performed: Window clipboard is not supported anymore
+JSME 2015-03-19
+    - Fixed many bugs in the depict mode in order to allow to switch back and forth between depict and edit mode 
+    - new methods isDepictMode(), addMouseOutHandler()
+JSME 2015-03-01
+    - Enable touch events on a ChromeBook
+    - JavaScript Bootstrap library compatibility fix (computation of character height)
+    - R4 to R9 smiles generation fix
+JSME 2015-02-25
+    - R4 to R9
+
+JSME 2015-02-09
+    - bug fix for SMILES generation of pyrrole [nH], H was missing
+JSME 2015-01-28
+    - Ctr V shortcut fixed
+JSME 2015-01-22
+   - file out browse button
+   - V3000 export
+
+- bug fix: missing event record for closing a bond on an atom
+JSME 2014-12-24
+    - bug fix: missing event record for paste
+JSME 2014-12-20
+    - reenable older event callback
+JSME 2014-12-07
+    - missing event record for more keyboard events, improve undo/redo record event
+JSME 2014-12-04
+    - missing event record for set atom type with keyboard
+
+JSME_2014-11-19:
+   - BUG: copy SDF of a multipart: invalid ISO
+   - array JavaScript optimization
+   - Record an event during add chain for each bond
+
+JSME_2014-10-16
+   - template bug fix
+JSME_2014-10-13
+   - Bug fix: JSME in a hidden DIV would not be visible
+JSME_2014-09-21
+   - Drag and Drop enabled on IE6 to IE9 (does not work with files)
+   - Template 1st implementation
+   - Missing new lines in doc.html
+
+JSME_2014-08-26
+   - incorrect atom mapping read from RXN when numbering option is set - fixed
+   - export SMIRKS with "a" did not works with atom mapping - fixed
+
+JSME_2014-07-14
+    - Paste behavior changed: if current status is multipart or reaction, then the new structure will be added and will be the selected structure
+    - new linker (xsiframe) for CDT testing
+
+JSME_2014-06-28
+    - Paste behavior changed: if current status is multipart or reaction, then the new structure will be added
+    - remove H bug fix
+    - bug fix: structure underneath the menu region: highlight must dissapear
+JSME_2014-05-20
+    - new resize method
+JSME_2014-03-30
+    - bond marking allowed
+    - bug fix: paste of a multipart structure with isotopic atom
+JSME_2014-03-12
+    - setAction, depictaction
+JSME_2014-02-20
+    - Font size can be changed with setAtomMolecularAreaFontSize
+JSME_2014-02-03
+    - bug fix: date in exported MOL
+    - new callback setAfterStructureModifiedCallback
+JSME_2014-01-27
+     - isotopic atoms implementation
+     - star marker: the MOL generation now set the atom map for each marked atom
+
+JSME_2014-01-05
+     - smaller initial download size by about 25 %
+     - scaling picture: further improved for very small depiction
+     - high precision 2D coordinates
+
+JSME_2013-11-06
+     - removehsc new 
+     - scaling picture: improved for very small depiction
+
+JSME_2013-10-27:
+     - initialization error will not open an alert but write a message to the console instead
+     
 JSME_2013-10-13:
      - small refactoring inside the JME code
      - bug fix in doc.html

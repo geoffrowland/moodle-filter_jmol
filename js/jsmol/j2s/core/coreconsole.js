@@ -1,4 +1,5 @@
 (function(Clazz
+,Clazz_getClassName
 ,Clazz_newLongArray
 ,Clazz_doubleToByte
 ,Clazz_doubleToInt
@@ -78,7 +79,7 @@ var $t$;
 // BH 6/1/2014 8:32:12 AM added Help button; better mouse/keypress handling
 // BH 1/5/2013 12:45:19 PM
 
-Jmol.Console = {
+;Jmol.Console = {
 	buttons:{},
 	buttonWidth:100,
 	click:function(id) {
@@ -86,7 +87,7 @@ Jmol.Console = {
 	}	
 }
 
-Jmol._consoleGetImageDialog = function(vwr, title, imageMap) {
+Jmol.consoleGetImageDialog = function(vwr, title, imageMap) {
   // JmolObjectInterface
   return new Jmol.Console.Image(vwr, title, imageMap);
 }
@@ -247,6 +248,9 @@ Jmol.Console.JSConsole = function(appletConsole) {
   }
 	Jmol.$html(id + "_inputdiv", '<textarea id="' + id + '_input" style="width:'+w+'px;height:'+h+'px"></textarea>');
 	Jmol.$html(id + "_outputdiv", '<textarea id="' + id + '_output" style="width:'+w+'px;height:'+(h*2)+'px"></textarea>');
+
+		Jmol.Cache.setDragDrop(this.applet, "console_output");
+		Jmol.Cache.setDragDrop(this.applet, "console_input");
 
 	Jmol.$bind("#" + id + "_input", "keydown keypress keyup", function(event) { console.input.keyEvent(event) });
 	Jmol.$bind("#" + id + "_input", "mousedown touchstart", function(event) { console.ignoreMouse=true });
@@ -417,7 +421,7 @@ Jmol.Console.Button.prototype.html = function() {
 	return s;
 }
 
-Clazz_declarePackage ("J.console");
+;Clazz_declarePackage ("J.console");
 Clazz_declareInterface (J.console, "GenericTextArea");
 Clazz_declarePackage ("J.console");
 Clazz_load (["J.api.JmolAppConsoleInterface", "$.JmolCallbackListener", "java.util.Hashtable"], "J.console.GenericConsole", ["java.lang.Boolean", "JU.PT", "J.c.CBK", "J.i18n.GT", "JS.T", "JV.Viewer"], function () {
@@ -447,7 +451,7 @@ function (vwr) {
 this.vwr = vwr;
 if (J.console.GenericConsole.labels == null) {
 var l =  new java.util.Hashtable ();
-l.put ("title", J.i18n.GT._ ("Jmol Script Console") + " " + JV.Viewer.getJmolVersion ());
+l.put ("title", J.i18n.GT.$ ("Jmol Script Console") + " " + JV.Viewer.getJmolVersion ());
 this.setupLabels (l);
 J.console.GenericConsole.labels = l;
 }}, "JV.Viewer");
@@ -463,28 +467,28 @@ return null;
 });
 Clazz_defineMethod (c$, "setupLabels", 
 function (labels) {
-labels.put ("saveas", J.i18n.GT._ ("&Save As..."));
-labels.put ("file", J.i18n.GT._ ("&File"));
-labels.put ("close", J.i18n.GT._ ("&Close"));
+labels.put ("saveas", J.i18n.GT.$ ("&Save As..."));
+labels.put ("file", J.i18n.GT.$ ("&File"));
+labels.put ("close", J.i18n.GT.$ ("&Close"));
 this.setupLabels0 (labels);
 }, "java.util.Map");
 Clazz_defineMethod (c$, "setupLabels0", 
 function (labels) {
-labels.put ("help", J.i18n.GT._ ("&Help"));
-labels.put ("search", J.i18n.GT._ ("&Search..."));
-labels.put ("commands", J.i18n.GT._ ("&Commands"));
-labels.put ("functions", J.i18n.GT._ ("Math &Functions"));
-labels.put ("parameters", J.i18n.GT._ ("Set &Parameters"));
-labels.put ("more", J.i18n.GT._ ("&More"));
-labels.put ("Editor", J.i18n.GT._ ("Editor"));
-labels.put ("State", J.i18n.GT._ ("State"));
-labels.put ("Run", J.i18n.GT._ ("Run"));
-labels.put ("Clear Output", J.i18n.GT._ ("Clear Output"));
-labels.put ("Clear Input", J.i18n.GT._ ("Clear Input"));
-labels.put ("History", J.i18n.GT._ ("History"));
-labels.put ("Load", J.i18n.GT._ ("Load"));
-labels.put ("label1", J.i18n.GT._ ("press CTRL-ENTER for new line or paste model data and press Load"));
-labels.put ("default", J.i18n.GT._ ("Messages will appear here. Enter commands in the box below. Click the console Help menu item for on-line help, which will appear in a new browser window."));
+labels.put ("help", J.i18n.GT.$ ("&Help"));
+labels.put ("search", J.i18n.GT.$ ("&Search..."));
+labels.put ("commands", J.i18n.GT.$ ("&Commands"));
+labels.put ("functions", J.i18n.GT.$ ("Math &Functions"));
+labels.put ("parameters", J.i18n.GT.$ ("Set &Parameters"));
+labels.put ("more", J.i18n.GT.$ ("&More"));
+labels.put ("Editor", J.i18n.GT.$ ("Editor"));
+labels.put ("State", J.i18n.GT.$ ("State"));
+labels.put ("Run", J.i18n.GT.$ ("Run"));
+labels.put ("Clear Output", J.i18n.GT.$ ("Clear Output"));
+labels.put ("Clear Input", J.i18n.GT.$ ("Clear Input"));
+labels.put ("History", J.i18n.GT.$ ("History"));
+labels.put ("Load", J.i18n.GT.$ ("Load"));
+labels.put ("label1", J.i18n.GT.$ ("press CTRL-ENTER for new line or paste model data and press Load"));
+labels.put ("default", J.i18n.GT.$ ("Messages will appear here. Enter commands in the box below. Click the console Help menu item for on-line help, which will appear in a new browser window."));
 }, "java.util.Map");
 Clazz_defineMethod (c$, "setLabels", 
 function () {
@@ -574,7 +578,7 @@ Clazz_defineMethod (c$, "execute",
 function (strCommand) {
 var cmd = (strCommand == null ? this.input.getText () : strCommand);
 if (strCommand == null) this.input.setText (null);
-var strErrorMessage = this.vwr.script (cmd + "\u0001## EDITOR_IGNORE ##");
+var strErrorMessage = this.vwr.script (cmd + "; ## GUI ##" + "\u0001## EDITOR_IGNORE ##");
 if (strErrorMessage != null && !strErrorMessage.equals ("pending")) this.outputMsg (strErrorMessage);
 }, "~S");
 Clazz_defineMethod (c$, "destroyConsole", 
@@ -630,6 +634,7 @@ return true;
 case J.c.CBK.ANIMFRAME:
 case J.c.CBK.APPLETREADY:
 case J.c.CBK.ATOMMOVED:
+case J.c.CBK.AUDIO:
 case J.c.CBK.CLICK:
 case J.c.CBK.DRAGDROP:
 case J.c.CBK.ERROR:
@@ -638,11 +643,13 @@ case J.c.CBK.HOVER:
 case J.c.CBK.IMAGE:
 case J.c.CBK.LOADSTRUCT:
 case J.c.CBK.MINIMIZATION:
+case J.c.CBK.MODELKIT:
 case J.c.CBK.SERVICE:
 case J.c.CBK.RESIZE:
 case J.c.CBK.SCRIPT:
-case J.c.CBK.SYNC:
+case J.c.CBK.SELECT:
 case J.c.CBK.STRUCTUREMODIFIED:
+case J.c.CBK.SYNC:
 break;
 }
 return false;
@@ -713,10 +720,18 @@ Clazz_overrideMethod (c$, "zap",
 function () {
 });
 Clazz_defineMethod (c$, "recallCommand", 
-function (up) {
+function (up, pageUp) {
 var cmd = this.vwr.getSetHistory (up ? -1 : 1);
-if (cmd != null) this.input.setText (JU.PT.escUnicode (cmd));
-}, "~B");
+if (cmd != null) {
+cmd = this.trimGUI (cmd);
+this.input.setText (JU.PT.escUnicode (cmd));
+}}, "~B,~B");
+Clazz_defineMethod (c$, "trimGUI", 
+function (cmd) {
+var pt = cmd.indexOf ("; ## GUI ##");
+if (pt >= 0) cmd = cmd.substring (0, pt);
+return JU.PT.trim (cmd, "; ");
+}, "~S");
 Clazz_defineMethod (c$, "processKey", 
 function (kcode, kid, isControlDown) {
 var mode = 0;
@@ -743,7 +758,7 @@ if (kcode == 10 && !isControlDown) {
 this.execute (null);
 return mode;
 }if (kcode == 38 || kcode == 40) {
-this.recallCommand (kcode == 38);
+this.recallCommand (kcode == 38, false);
 return mode;
 }break;
 case 402:
@@ -872,6 +887,7 @@ return null;
 }, "~S");
 });
 })(Clazz
+,Clazz.getClassName
 ,Clazz.newLongArray
 ,Clazz.doubleToByte
 ,Clazz.doubleToInt

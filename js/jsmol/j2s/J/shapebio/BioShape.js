@@ -228,6 +228,10 @@ if (this.colixesBack != null && this.colixesBack.length > i && this.colixesBack[
 JU.BSUtil.setMapBitSet (temp2, atomIndex1, atomIndex2, s);
 }
 }}, "~S,~B,java.util.Map,java.util.Map");
+Clazz.overrideMethod (c$, "getShapeState", 
+function () {
+return null;
+});
 Clazz.defineStatics (c$,
 "eightPiSquared100", 7895.6835208714865);
 });

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JM");
-Clazz.load (["JM.AtomCollection"], "JM.BondCollection", ["JU.AU", "$.BS", "JM.Bond", "$.BondIteratorSelected", "$.BondSet", "$.HBond", "JU.BSUtil", "$.C", "$.Edge", "$.Logger"], function () {
+Clazz.load (["JM.AtomCollection"], "JM.BondCollection", ["JU.AU", "$.BS", "JM.Bond", "$.BondIteratorSelected", "$.BondSet", "$.HBond", "JU.BSUtil", "$.C", "$.Edge"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.bo = null;
 this.bondCount = 0;
@@ -12,6 +12,7 @@ this.bsAromaticSingle = null;
 this.bsAromaticDouble = null;
 this.bsAromatic = null;
 this.haveHiddenBonds = false;
+this.haveAtropicBonds = false;
 Clazz.instantialize (this, arguments);
 }, JM, "BondCollection", JM.AtomCollection);
 Clazz.defineMethod (c$, "setupBC", 
@@ -23,20 +24,11 @@ for (var i = 5; --i > 0; ) this.freeBonds[i] =  new Array (200);
 
 this.setupAC ();
 });
-Clazz.overrideMethod (c$, "releaseModelSet", 
-function () {
-this.releaseModelSetBC ();
-});
 Clazz.defineMethod (c$, "releaseModelSetBC", 
 function () {
 this.bo = null;
 this.freeBonds = null;
 this.releaseModelSetAC ();
-});
-Clazz.defineMethod (c$, "resetMolecules", 
-function () {
-this.molecules = null;
-this.moleculeCount = 0;
 });
 Clazz.defineMethod (c$, "getBondIteratorForType", 
 function (bondType, bsAtoms) {
@@ -105,7 +97,7 @@ return this.bo[bond.index = index] = bond;
 Clazz.defineMethod (c$, "bondMutually", 
 function (atom, atomOther, order, mad, energy) {
 var bond;
-if (JM.Bond.isOrderH (order)) {
+if (JU.Edge.isOrderH (order)) {
 bond =  new JM.HBond (atom, atomOther, order, mad, 0, energy);
 } else {
 bond =  new JM.Bond (atom, atomOther, order, mad, 0);
@@ -155,7 +147,7 @@ this.bondCount = 0;
 });
 Clazz.defineMethod (c$, "getDefaultMadFromOrder", 
 function (order) {
-return (JM.Bond.isOrderH (order) ? 1 : order == 32768 ? Clazz.doubleToInt (Math.floor (this.vwr.getFloat (570425406) * 2000)) : this.defaultCovalentMad);
+return (JU.Edge.isOrderH (order) ? 1 : order == 32768 ? Clazz.doubleToInt (Math.floor (this.vwr.getFloat (570425406) * 2000)) : this.defaultCovalentMad);
 }, "~N");
 Clazz.defineMethod (c$, "deleteConnections", 
 function (minD, maxD, order, bsA, bsB, isBonds, matchNull) {
@@ -167,7 +159,7 @@ maxD = this.fixD (maxD, maxDIsFraction);
 var bsDelete =  new JU.BS ();
 var nDeleted = 0;
 var newOrder = order |= 131072;
-if (!matchNull && JM.Bond.isOrderH (order)) order = 30720;
+if (!matchNull && JU.Edge.isOrderH (order)) order = 30720;
 var bsBonds;
 if (isBonds) {
 bsBonds = bsA;
@@ -185,7 +177,7 @@ if (matchNull || newOrder == (bond.order & -257 | 131072) || (order & bond.order
 bsDelete.set (i);
 nDeleted++;
 }}
-if (nDeleted > 0) this.dBm (bsDelete, false);
+if (nDeleted > 0) (this).deleteBonds (bsDelete, false);
 return  Clazz.newIntArray (-1, [0, nDeleted]);
 }, "~N,~N,~N,JU.BS,JU.BS,~B,~B");
 Clazz.defineMethod (c$, "fixD", 
@@ -201,15 +193,11 @@ var dABcalc = atom1.getBondingRadius () + atom2.getBondingRadius ();
 return ((minFrac ? dAB >= dABcalc * minD : d2 >= minD) && (maxfrac ? dAB <= dABcalc * maxD : d2 <= maxD));
 }return (d2 >= minD && d2 <= maxD);
 }, "JM.Atom,JM.Atom,~N,~N,~B,~B,~B");
-Clazz.defineMethod (c$, "dBm", 
-function (bsBonds, isFullModel) {
-(this).deleteBonds (bsBonds, isFullModel);
-}, "JU.BS,~B");
 Clazz.defineMethod (c$, "dBb", 
 function (bsBond, isFullModel) {
 var iDst = bsBond.nextSetBit (0);
 if (iDst < 0) return;
-this.resetMolecules ();
+(this).resetMolecules ();
 var modelIndexLast = -1;
 var n = bsBond.cardinality ();
 for (var iSrc = iDst; iSrc < this.bondCount; ++iSrc) {
@@ -248,10 +236,12 @@ var i0 = (isAll ? this.bondCount - 1 : bsBonds.nextSetBit (0));
 for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsBonds.nextSetBit (i + 1))) {
 var bond = this.bo[i];
 if (this.bsAromatic.get (i)) bond.setOrder (515);
-switch (bond.order & -131073) {
+switch (bond.order & 131071) {
 case 515:
+if (!this.assignAromaticMustBeSingle (bond.atom1) && !this.assignAromaticMustBeSingle (bond.atom2)) {
 this.bsAromatic.set (i);
 break;
+}bond.order = 513;
 case 513:
 this.bsAromaticSingle.set (i);
 break;
@@ -442,49 +432,6 @@ bs.set (this.bo[i].atom2.i);
 return bs;
 }
 }, "~N,~O");
-Clazz.defineMethod (c$, "setBondOrder", 
-function (bondIndex, type) {
-var bondOrder = type.charCodeAt (0) - 48;
-var bond = this.bo[bondIndex];
-switch (type) {
-case '0':
-case '1':
-case '2':
-case '3':
-break;
-case 'p':
-case 'm':
-bondOrder = JU.Edge.getBondOrderNumberFromOrder (bond.getCovalentOrder ()).charCodeAt (0) - 48 + (type == 'p' ? 1 : -1);
-if (bondOrder > 3) bondOrder = 1;
- else if (bondOrder < 0) bondOrder = 3;
-break;
-default:
-return null;
-}
-var bsAtoms =  new JU.BS ();
-try {
-if (bondOrder == 0) {
-var bs =  new JU.BS ();
-bs.set (bond.index);
-bsAtoms.set (bond.atom1.i);
-bsAtoms.set (bond.atom2.i);
-this.dBm (bs, false);
-return bsAtoms;
-}bond.setOrder (bondOrder | 131072);
-if (bond.atom1.getElementNumber () != 1 && bond.atom2.getElementNumber () != 1) {
-this.removeUnnecessaryBonds (bond.atom1, false);
-this.removeUnnecessaryBonds (bond.atom2, false);
-}bsAtoms.set (bond.atom1.i);
-bsAtoms.set (bond.atom2.i);
-} catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
-JU.Logger.error ("Exception in seBondOrder: " + e.toString ());
-} else {
-throw e;
-}
-}
-return bsAtoms;
-}, "~N,~S");
 Clazz.defineMethod (c$, "removeUnnecessaryBonds", 
 function (atom, deleteAtom) {
 var bs =  new JU.BS ();
@@ -497,7 +444,7 @@ if (atom2.getElementNumber () == 1) bs.set (bonds[i].getOtherAtom (atom).i);
 } else {
 bsBonds.set (bonds[i].index);
 }
-if (bsBonds.nextSetBit (0) >= 0) this.dBm (bsBonds, false);
+if (bsBonds.nextSetBit (0) >= 0) (this).deleteBonds (bsBonds, false);
 if (deleteAtom) bs.set (atom.i);
 if (bs.nextSetBit (0) >= 0) this.vwr.deleteAtoms (bs, false);
 }, "JM.Atom,~B");
@@ -532,7 +479,7 @@ if (isBonds) return bsResult;
 var nonbonded = (min == 0);
 for (i = this.ac; --i >= 0; ) {
 var n = nBonded[i];
-if (n < min || n > max) bsResult.clear (i);
+if (this.at[i] == null || n < min || n > max) bsResult.clear (i);
  else if (nonbonded && n == 0) bsResult.set (i);
 }
 return bsResult;

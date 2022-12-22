@@ -1,4 +1,5 @@
 (function(Clazz
+,Clazz_getClassName
 ,Clazz_newLongArray
 ,Clazz_doubleToByte
 ,Clazz_doubleToInt
@@ -138,6 +139,7 @@ function () {
 this.allowPDBFilter = true;
 this.pdbHeader = (this.getHeader ?  new JU.SB () : null);
 this.applySymmetry = !this.checkFilterKey ("NOSYMMETRY");
+if (this.isDSSP1) this.asc.setInfo ("isDSSP1", Boolean.TRUE);
 this.getTlsGroups = this.checkFilterKey ("TLS");
 if (this.checkFilterKey ("ASSEMBLY")) this.filter = JU.PT.rep (this.filter, "ASSEMBLY", "BIOMOLECULE");
 this.isbiomol = this.checkFilterKey ("BIOMOLECULE");
@@ -181,6 +183,7 @@ if (isAtom || isModel) this.getHeader = false;
 this.isMultiModel = isModel;
 this.getHeader = false;
 var modelNo = (forceNewModel ? this.modelNumber + 1 : this.getModelNumber ());
+var modelName = this.getModelName ();
 this.modelNumber = (this.useFileModelNumbers ? modelNo : this.modelNumber + 1);
 if (!this.doGetModel (this.modelNumber, null)) {
 this.handleTlsMissingModels ();
@@ -189,7 +192,7 @@ if (!isOK && this.isConcatenated) isOK = this.continuing = true;
 return isOK;
 }if (!this.isCourseGrained) this.connectAll (this.maxSerial, this.isConnectStateBug);
 if (this.ac > 0) this.applySymmetryAndSetTrajectory ();
-this.model (modelNo);
+this.model (modelNo, modelName);
 if (this.isLegacyModelType || !isAtom) return true;
 }if (this.isMultiModel && !this.doProcessLines) {
 return true;
@@ -204,7 +207,7 @@ return true;
 case 4:
 case 5:
 case 6:
-this.structure ();
+if (!this.ignoreStructure) this.structure ();
 return true;
 case 7:
 this.het ();
@@ -233,13 +236,10 @@ case 16:
 this.formul ();
 return true;
 case 17:
-if (this.line.startsWith ("REMARK 350")) {
-this.remark350 ();
-return false;
-}if (this.line.startsWith ("REMARK 290")) {
-this.remark290 ();
-return false;
-}if (this.line.contains ("This file does not adhere to the PDB standard")) {
+if (this.line.startsWith ("REMARK 285")) return this.remark285 ();
+if (this.line.startsWith ("REMARK 350")) return this.remark350 ();
+if (this.line.startsWith ("REMARK 290")) return this.remark290 ();
+if (this.line.contains ("This file does not adhere to the PDB standard")) {
 this.gromacsWideFormat = true;
 }if (this.getTlsGroups) {
 if (this.line.indexOf ("TLS DETAILS") > 0) return this.remarkTls ();
@@ -288,7 +288,10 @@ this.finalizeReaderPDB ();
 Clazz_defineMethod (c$, "finalizeReaderPDB", 
 function () {
 this.checkNotPDB ();
-this.checkUnitCellParams ();
+if (this.pdbID != null && this.pdbID.length > 0) {
+if (!this.isMultiModel) this.asc.setAtomSetName (this.pdbID);
+this.asc.setCurrentModelInfo ("pdbID", this.pdbID);
+}this.checkUnitCellParams ();
 if (!this.isCourseGrained) this.connectAll (this.maxSerial, this.isConnectStateBug);
 var symmetry;
 if (this.vBiomolecules != null && this.vBiomolecules.size () > 0 && this.asc.ac > 0) {
@@ -321,7 +324,7 @@ this.sgName = this.fileSgName;
 this.fractionalizeCoordinates (true);
 this.asc.setModelInfoForSet ("biosymmetry", null, this.asc.iSet);
 this.asc.checkSpecial = false;
-}if (this.latticeCells != null && this.latticeCells[0] != 0) this.addJmolScript ("unitcell;");
+}if (this.latticeCells != null && this.latticeCells[0] != 0) this.addJmolScript ("unitcell;axes on;axes unitcell;");
 this.finalizeReaderASCR ();
 if (this.vCompnds != null) {
 this.asc.setInfo ("compoundSource", this.vCompnds);
@@ -489,9 +492,10 @@ while (this.readHeader (true) != null && this.line.indexOf ("BIOMT") < 0 && this
 
 chainlist += ";";
 if (this.checkFilterKey ("BIOMOLECULE " + id + ";") || this.checkFilterKey ("BIOMOLECULE=" + id + ";")) {
-this.setFilter (this.filter + chainlist);
+this.setFilter (this.filterCased + chainlist);
 JU.Logger.info ("filter set to \"" + this.filter + "\"");
 this.thisBiomolecule = info;
+this.haveMappedSerials = this.applySymmetry;
 }continue;
 }if (this.line.startsWith ("REMARK 350   BIOMT1 ")) {
 nBiomt++;
@@ -518,13 +522,18 @@ biomtchains.addLast (chainlist);
 if (Clazz_exceptionOf (e, Exception)) {
 this.thisBiomolecule = null;
 this.vBiomolecules = null;
-return;
+return false;
 } else {
 throw e;
 }
 }
 }
 if (nBiomt > 0) JU.Logger.info ("biomolecule " + id + ": number of transforms: " + nBiomt);
+return false;
+});
+Clazz_defineMethod (c$, "remark285", 
+ function () {
+return true;
 });
 Clazz_defineMethod (c$, "remark290", 
  function () {
@@ -536,6 +545,7 @@ if (tokens.length < 4) break;
 if (this.doApplySymmetry || this.isbiomol) this.setSymmetryOperator (tokens[3]);
 }
 }}
+return false;
 });
 Clazz_defineMethod (c$, "getSerial", 
  function (i, j) {
@@ -794,7 +804,7 @@ var endInsertionCode = ' ';
 if (this.lineLength > endIndex + 4) endInsertionCode = this.line.charAt (endIndex + 4);
 if (substructureType === J.c.STR.NONE) substructureType = structureType;
 var structure =  new J.adapter.smarter.Structure (-1, structureType, substructureType, structureID, serialID, strandCount, null);
-structure.set (startChainID, startSequenceNumber, startInsertionCode, endChainID, endSequenceNumber, endInsertionCode, -2147483648, 2147483647);
+structure.set (startChainID, startSequenceNumber, startInsertionCode, endChainID, endSequenceNumber, endInsertionCode, 0, 0);
 this.asc.addStructure (structure);
 });
 Clazz_defineMethod (c$, "getModelNumber", 
@@ -805,17 +815,28 @@ if (endModelColumn > this.lineLength) endModelColumn = this.lineLength;
 var iModel = this.parseIntRange (this.line, startModelColumn, endModelColumn);
 return (iModel == -2147483648 ? 0 : iModel);
 });
+Clazz_defineMethod (c$, "getModelName", 
+ function () {
+if (this.lineLength < 16) return null;
+if (this.line.startsWith ("ATOM")) return "";
+var name = this.line.substring (15, this.lineLength).trim ();
+return (name.length == 0 ? null : name);
+});
 Clazz_defineMethod (c$, "model", 
-function (modelNumber) {
+function (modelNumber, name) {
 this.checkNotPDB ();
-this.haveMappedSerials = false;
+if (name == null) name = this.pdbID;
+this.haveMappedSerials = (this.thisBiomolecule != null && this.applySymmetry);
 this.sbConect = null;
 this.asc.newAtomSet ();
+this.asc.setCurrentModelInfo ("pdbID", this.pdbID);
+if (this.asc.iSet == 0 || this.isTrajectory) this.asc.setAtomSetName (this.pdbID);
+this.asc.setCurrentModelInfo ("name", name);
 this.checkUnitCellParams ();
 if (!this.isCourseGrained) this.setModelPDB (true);
 this.asc.setCurrentAtomSetNumber (modelNumber);
 if (this.isCourseGrained) this.asc.setCurrentModelInfo ("courseGrained", Boolean.TRUE);
-}, "~N");
+}, "~N,~S");
 Clazz_defineMethod (c$, "checkNotPDB", 
  function () {
 var isPDB = (!this.isCourseGrained && (this.nRes == 0 || this.nUNK != this.nRes));
@@ -823,7 +844,6 @@ this.asc.checkSpecial = !isPDB;
 this.setModelPDB (isPDB);
 this.nUNK = this.nRes = 0;
 this.currentGroup3 = null;
-if (this.pdbID != null) this.asc.setAtomSetName (this.pdbID);
 });
 Clazz_defineMethod (c$, "cryst1", 
  function () {
@@ -899,6 +919,7 @@ return;
 if (htName != null) {
 hetName = htName + hetName;
 }this.htHetero.put (groupName, hetName);
+this.appendLoadNote (groupName + " = " + hetName);
 });
 Clazz_defineMethod (c$, "anisou", 
  function () {
@@ -1242,17 +1263,15 @@ this.serialID = 0;
 this.strandCount = 0;
 this.startSequenceNumber = 0;
 this.startChainID = 0;
-this.startChainStr = null;
 this.startInsertionCode = '\0';
 this.endSequenceNumber = 0;
 this.endChainID = 0;
-this.endChainStr = null;
 this.endInsertionCode = '\0';
 this.atomStartEnd = null;
 this.modelStartEnd = null;
 this.bsAll = null;
 Clazz_instantialize (this, arguments);
-}, J.adapter.smarter, "Structure");
+}, J.adapter.smarter, "Structure", null, Cloneable);
 Clazz_prepareFields (c$, function () {
 this.atomStartEnd =  Clazz_newIntArray (2, 0);
 this.modelStartEnd =  Clazz_newIntArray (-1, [-1, -1]);
@@ -1294,774 +1313,22 @@ this.endInsertionCode = endInsertionCode;
 this.atomStartEnd[0] = istart;
 this.atomStartEnd[1] = iend;
 }, "~N,~N,~S,~N,~N,~S,~N,~N");
-});
-Clazz_declarePackage ("J.api");
-Clazz_declareInterface (J.api, "JmolBioResolver");
-Clazz_declarePackage ("JM");
-Clazz_declareInterface (JM, "JmolBioModel");
-Clazz_declarePackage ("JM");
-Clazz_declareInterface (JM, "JmolBioModelSet");
-Clazz_declarePackage ("JM");
-Clazz_load (["J.api.JmolBioResolver", "java.util.Hashtable", "J.c.STR"], "JM.Resolver", ["java.lang.Boolean", "$.Byte", "$.NullPointerException", "$.Short", "java.util.Arrays", "JU.AU", "$.BS", "$.Measure", "$.P3", "$.P4", "$.PT", "$.SB", "$.V3", "JM.Group", "JM.AlphaMonomer", "$.AlphaPolymer", "$.AminoMonomer", "$.AminoPolymer", "$.BioModel", "$.CarbohydrateMonomer", "$.CarbohydratePolymer", "$.Monomer", "$.NucleicMonomer", "$.NucleicPolymer", "$.PhosphorusMonomer", "$.PhosphorusPolymer", "JU.BSUtil", "$.Logger"], function () {
-c$ = Clazz_decorateAsClass (function () {
-this.vwr = null;
-this.vAB = null;
-this.vNorm = null;
-this.plane = null;
-this.ml = null;
-this.ms = null;
-this.bsAddedMask = null;
-this.lastSetH = -2147483648;
-this.maxSerial = 0;
-this.haveHsAlready = false;
-this.bsAddedHydrogens = null;
-this.bsAtomsForHs = null;
-this.htBondMap = null;
-this.htGroupBonds = null;
-this.hNames = null;
-this.baseBondIndex = 0;
-this.bsAssigned = null;
-Clazz_instantialize (this, arguments);
-}, JM, "Resolver", null, [J.api.JmolBioResolver, java.util.Comparator]);
-Clazz_makeConstructor (c$, 
+Clazz_defineMethod (c$, "clone", 
 function () {
-});
-Clazz_overrideMethod (c$, "setLoader", 
-function (modelLoader) {
-this.ml = modelLoader;
-this.bsAddedMask = null;
-this.lastSetH = -2147483648;
-this.maxSerial = 0;
-this.haveHsAlready = false;
-if (modelLoader == null) {
-this.ms = null;
-this.bsAddedHydrogens = this.bsAtomsForHs = this.bsAssigned = null;
-this.htBondMap = null;
-this.htGroupBonds = null;
-this.hNames = null;
+var s = null;
+try {
+s = Clazz_superCall (this, J.adapter.smarter.Structure, "clone", []);
+} catch (e) {
+if (Clazz_exceptionOf (e, CloneNotSupportedException)) {
 } else {
-JM.Group.specialAtomNames = JM.Resolver.specialAtomNames;
-this.ms = modelLoader.ms;
-this.vwr = modelLoader.ms.vwr;
-modelLoader.specialAtomIndexes =  Clazz_newIntArray (JM.Resolver.ATOMID_MAX, 0);
-}return this;
-}, "JM.ModelLoader");
-Clazz_overrideMethod (c$, "setViewer", 
-function (vwr) {
-this.vwr = vwr;
-if (JM.Group.standardGroupList == null) {
-var s =  new JU.SB ();
-for (var i = 1; i < 42; i++) s.append (",[").append (JM.Resolver.predefinedGroup3Names[i]).append ("]");
-
-s.append (",[AHR],[ALL],[AMU],[ARA],[ARB],[BDF],[BDR],[BGC],[BMA],[FCA],[FCB],[FRU],[FUC],[FUL],[GAL],[GLA],[GLC],[GXL],[GUP],[LXC],[MAN],[RAM],[RIB],[RIP],[XYP],[XYS],[CBI],[CT3],[CTR],[CTT],[LAT],[MAB],[MAL],[MLR],[MTT],[SUC],[TRE],[GCU],[MTL],[NAG],[NDG],[RHA],[SOR],[SOL],[SOE],[XYL],[A2G],[LBT],[NGA],[SIA],[SLB],[AFL],[AGC],[GLB],[NAN],[RAA]");
-JM.Resolver.group3Count = Clazz_doubleToInt (s.length () / 6);
-JM.Group.standardGroupList = s.toString ();
-for (var i = 0, n = JM.Resolver.predefinedGroup3Names.length; i < n; ++i) JM.Resolver.addGroup3Name (JM.Resolver.predefinedGroup3Names[i].trim ());
-
-}return this;
-}, "JV.Viewer");
-Clazz_overrideMethod (c$, "getBioModel", 
-function (modelIndex, trajectoryBaseIndex, jmolData, modelProperties, modelAuxiliaryInfo) {
-return  new JM.BioModel (this.ms, modelIndex, trajectoryBaseIndex, jmolData, modelProperties, modelAuxiliaryInfo);
-}, "~N,~N,~S,java.util.Properties,java.util.Map");
-Clazz_overrideMethod (c$, "distinguishAndPropagateGroup", 
-function (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, modelIndex, specialAtomIndexes, atoms) {
-var mask = 0;
-for (var i = JM.Resolver.ATOMID_MAX; --i >= 0; ) specialAtomIndexes[i] = -2147483648;
-
-for (var i = lastAtomIndex; i >= firstAtomIndex; --i) {
-var specialAtomID = atoms[i].atomID;
-if (specialAtomID <= 0) continue;
-if (specialAtomID < 14) {
-mask |= (1 << specialAtomID);
-}specialAtomIndexes[specialAtomID] = i;
+throw e;
 }
-var m = null;
-if ((mask & 14) == 14) m = JM.AminoMonomer.validateAndAllocate (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, specialAtomIndexes, atoms);
- else if (mask == 4) m = JM.AlphaMonomer.validateAndAllocateA (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, specialAtomIndexes);
- else if (((mask & 8128) == 8128)) m = JM.NucleicMonomer.validateAndAllocate (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, specialAtomIndexes);
- else if (mask == 8192) m = JM.PhosphorusMonomer.validateAndAllocateP (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, specialAtomIndexes);
- else if (JM.Resolver.checkCarbohydrate (group3)) m = JM.CarbohydrateMonomer.validateAndAllocate (chain, group3, seqcode, firstAtomIndex, lastAtomIndex);
-return (m != null && m.leadAtomIndex >= 0 ? m : null);
-}, "JM.Chain,~S,~N,~N,~N,~N,~A,~A");
-Clazz_overrideMethod (c$, "setHaveHsAlready", 
-function (b) {
-this.haveHsAlready = b;
-}, "~B");
-Clazz_overrideMethod (c$, "initializeHydrogenAddition", 
-function () {
-this.baseBondIndex = this.ms.bondCount;
-this.bsAddedHydrogens =  new JU.BS ();
-this.bsAtomsForHs =  new JU.BS ();
-this.htBondMap =  new java.util.Hashtable ();
-this.htGroupBonds =  new java.util.Hashtable ();
-this.hNames =  new Array (3);
-this.vAB =  new JU.V3 ();
-this.vNorm =  new JU.V3 ();
-this.plane =  new JU.P4 ();
+}
+return s;
 });
-Clazz_overrideMethod (c$, "addImplicitHydrogenAtoms", 
-function (adapter, iGroup, nH) {
-var group3 = this.ml.getGroup3 (iGroup);
-var nH1;
-if (this.haveHsAlready || group3 == null || (nH1 = JM.Resolver.getStandardPdbHydrogenCount (group3)) == 0) return;
-nH = (nH1 < 0 ? -1 : nH1 + nH);
-var model = null;
-var iFirst = this.ml.getFirstAtomIndex (iGroup);
-var ac = this.ms.ac;
-if (nH < 0) {
-if (ac - iFirst == 1) return;
-model = this.vwr.getLigandModel (group3, "ligand_", "_data", null);
-if (model == null) return;
-nH = adapter.getHydrogenAtomCount (model);
-if (nH < 1) return;
-}this.getBondInfo (adapter, group3, model);
-this.ms.am[this.ms.at[iFirst].mi].isPdbWithMultipleBonds = true;
-this.bsAtomsForHs.setBits (iFirst, ac);
-this.bsAddedHydrogens.setBits (ac, ac + nH);
-var isHetero = this.ms.at[iFirst].isHetero ();
-var xyz = JU.P3.new3 (NaN, NaN, NaN);
-var a = this.ms.at[iFirst];
-for (var i = 0; i < nH; i++) this.ms.addAtom (a.mi, a.group, 1, "H", null, 0, a.getSeqID (), 0, xyz, NaN, null, 0, 0, 1, 0, null, isHetero, 0, null).$delete (null);
-
-}, "J.api.JmolAdapter,~N,~N");
-Clazz_defineMethod (c$, "getBondInfo", 
- function (adapter, group3, model) {
-if (this.htGroupBonds.get (group3) != null) return;
-var bondInfo = (model == null ? this.getPdbBondInfo (group3, this.vwr.g.legacyHAddition) : this.getLigandBondInfo (adapter, model, group3));
-if (bondInfo == null) return;
-this.htGroupBonds.put (group3, Boolean.TRUE);
-for (var i = 0; i < bondInfo.length; i++) {
-if (bondInfo[i] == null) continue;
-if (bondInfo[i][1].charAt (0) == 'H') this.htBondMap.put (group3 + "." + bondInfo[i][0], bondInfo[i][1]);
- else this.htBondMap.put (group3 + ":" + bondInfo[i][0] + ":" + bondInfo[i][1], bondInfo[i][2]);
-}
-}, "J.api.JmolAdapter,~S,~O");
-Clazz_defineMethod (c$, "getLigandBondInfo", 
- function (adapter, model, group3) {
-var dataIn = adapter.getBondList (model);
-var htAtoms =  new java.util.Hashtable ();
-var iterAtom = adapter.getAtomIterator (model);
-while (iterAtom.hasNext ()) htAtoms.put (iterAtom.getAtomName (), iterAtom.getXYZ ());
-
-var bondInfo =  new Array (dataIn.length * 2);
-var n = 0;
-for (var i = 0; i < dataIn.length; i++) {
-var b = dataIn[i];
-if (b[0].charAt (0) != 'H') bondInfo[n++] =  Clazz_newArray (-1, [b[0], b[1], b[2], b[1].startsWith ("H") ? "0" : "1"]);
-if (b[1].charAt (0) != 'H') bondInfo[n++] =  Clazz_newArray (-1, [b[1], b[0], b[2], b[0].startsWith ("H") ? "0" : "1"]);
-}
-java.util.Arrays.sort (bondInfo, this);
-var t;
-for (var i = 0; i < n; ) {
-t = bondInfo[i];
-var a1 = t[0];
-var nH = 0;
-var nC = 0;
-for (; i < n && (t = bondInfo[i])[0].equals (a1); i++) {
-if (t[3].equals ("0")) {
-nH++;
-continue;
-}if (t[3].equals ("1")) nC++;
-}
-var pt = i - nH - nC;
-if (nH == 1) continue;
-switch (nC) {
-case 1:
-var sep = (nH == 2 ? '@' : '|');
-for (var j = 1; j < nH; j++) {
-bondInfo[pt][1] += sep + bondInfo[pt + j][1];
-bondInfo[pt + j] = null;
-}
-continue;
-case 2:
-if (nH != 2) continue;
-var name = bondInfo[pt][0];
-var name1 = bondInfo[pt + nH][1];
-var name2 = bondInfo[pt + nH + 1][1];
-var factor = name1.compareTo (name2);
-JU.Measure.getPlaneThroughPoints (htAtoms.get (name1), htAtoms.get (name), htAtoms.get (name2), this.vNorm, this.vAB, this.plane);
-var d = JU.Measure.distanceToPlane (this.plane, htAtoms.get (bondInfo[pt][1])) * factor;
-bondInfo[pt][1] = (d > 0 ? bondInfo[pt][1] + "@" + bondInfo[pt + 1][1] : bondInfo[pt + 1][1] + "@" + bondInfo[pt][1]);
-bondInfo[pt + 1] = null;
-}
-}
-for (var i = 0; i < n; i++) {
-if ((t = bondInfo[i]) != null && t[1].charAt (0) != 'H' && t[0].compareTo (t[1]) > 0) {
-bondInfo[i] = null;
-continue;
-}if (t != null) JU.Logger.info (" ligand " + group3 + ": " + bondInfo[i][0] + " - " + bondInfo[i][1] + " order " + bondInfo[i][2]);
-}
-return bondInfo;
-}, "J.api.JmolAdapter,~O,~S");
-Clazz_overrideMethod (c$, "compare", 
-function (a, b) {
-return (b == null ? (a == null ? 0 : -1) : a == null ? 1 : a[0].compareTo (b[0]) < 0 ? -1 : a[0].compareTo (b[0]) > 0 ? 1 : a[3].compareTo (b[3]) < 0 ? -1 : a[3].compareTo (b[3]) > 0 ? 1 : a[1].compareTo (b[1]) < 0 ? -1 : a[1].compareTo (b[1]) > 0 ? 1 : 0);
-}, "~A,~A");
-Clazz_overrideMethod (c$, "finalizeHydrogens", 
-function () {
-this.vwr.getLigandModel (null, null, null, null);
-this.finalizePdbMultipleBonds ();
-this.addHydrogens ();
 });
-Clazz_defineMethod (c$, "addHydrogens", 
- function () {
-if (this.bsAddedHydrogens.nextSetBit (0) < 0) return;
-this.bsAddedMask = JU.BSUtil.copy (this.bsAddedHydrogens);
-this.finalizePdbCharges ();
-var nTotal =  Clazz_newIntArray (1, 0);
-var pts = this.ms.calculateHydrogens (this.bsAtomsForHs, nTotal, true, false, null);
-var groupLast = null;
-var ipt = 0;
-for (var i = 0; i < pts.length; i++) {
-if (pts[i] == null) continue;
-var atom = this.ms.at[i];
-var g = atom.group;
-if (g !== groupLast) {
-groupLast = g;
-ipt = g.lastAtomIndex;
-while (this.bsAddedHydrogens.get (ipt)) ipt--;
-
-}var gName = atom.getGroup3 (false);
-var aName = atom.getAtomName ();
-var hName = this.htBondMap.get (gName + "." + aName);
-if (hName == null) continue;
-var isChiral = hName.contains ("@");
-var isMethyl = (hName.endsWith ("?") || hName.indexOf ("|") >= 0);
-var n = pts[i].length;
-if (n == 3 && !isMethyl && hName.equals ("H@H2")) {
-hName = "H|H2|H3";
-isMethyl = true;
-isChiral = false;
-}if (isChiral && n == 3 || isMethyl != (n == 3)) {
-JU.Logger.info ("Error adding H atoms to " + gName + g.getResno () + ": " + pts[i].length + " atoms should not be added to " + aName);
-continue;
-}var pt = hName.indexOf ("@");
-switch (pts[i].length) {
-case 1:
-if (pt > 0) hName = hName.substring (0, pt);
-this.setHydrogen (i, ++ipt, hName, pts[i][0]);
-break;
-case 2:
-var hName1;
-var hName2;
-var d = -1;
-var bonds = atom.bonds;
-if (bonds != null) switch (bonds.length) {
-case 2:
-var atom1 = bonds[0].getOtherAtom (atom);
-var atom2 = bonds[1].getOtherAtom (atom);
-var factor = atom1.getAtomName ().compareTo (atom2.getAtomName ());
-d = JU.Measure.distanceToPlane (JU.Measure.getPlaneThroughPoints (atom1, atom, atom2, this.vNorm, this.vAB, this.plane), pts[i][0]) * factor;
-break;
-}
-if (pt < 0) {
-JU.Logger.info ("Error adding H atoms to " + gName + g.getResno () + ": expected to only need 1 H but needed 2");
-hName1 = hName2 = "H";
-} else if (d < 0) {
-hName2 = hName.substring (0, pt);
-hName1 = hName.substring (pt + 1);
-} else {
-hName1 = hName.substring (0, pt);
-hName2 = hName.substring (pt + 1);
-}this.setHydrogen (i, ++ipt, hName1, pts[i][0]);
-this.setHydrogen (i, ++ipt, hName2, pts[i][1]);
-break;
-case 3:
-var pt1 = hName.indexOf ('|');
-if (pt1 >= 0) {
-var pt2 = hName.lastIndexOf ('|');
-this.hNames[0] = hName.substring (0, pt1);
-this.hNames[1] = hName.substring (pt1 + 1, pt2);
-this.hNames[2] = hName.substring (pt2 + 1);
-} else {
-this.hNames[0] = hName.$replace ('?', '1');
-this.hNames[1] = hName.$replace ('?', '2');
-this.hNames[2] = hName.$replace ('?', '3');
-}this.setHydrogen (i, ++ipt, this.hNames[0], pts[i][0]);
-this.setHydrogen (i, ++ipt, this.hNames[1], pts[i][2]);
-this.setHydrogen (i, ++ipt, this.hNames[2], pts[i][1]);
-break;
-}
-}
-this.deleteUnneededAtoms ();
-this.ms.fixFormalCharges (JU.BSUtil.newBitSet2 (this.ml.baseAtomIndex, this.ml.ms.ac));
-});
-Clazz_defineMethod (c$, "deleteUnneededAtoms", 
- function () {
-var bsBondsDeleted =  new JU.BS ();
-for (var i = this.bsAtomsForHs.nextSetBit (0); i >= 0; i = this.bsAtomsForHs.nextSetBit (i + 1)) {
-var atom = this.ms.at[i];
-if (!atom.isHetero () || atom.getElementNumber () != 8 || atom.getFormalCharge () != 0 || atom.getCovalentBondCount () != 2) continue;
-var bonds = atom.bonds;
-var atom1 = bonds[0].getOtherAtom (atom);
-var atomH = bonds[1].getOtherAtom (atom);
-if (atom1.getElementNumber () == 1) {
-var a = atom1;
-atom1 = atomH;
-atomH = a;
-}if (atomH.getElementNumber () != 1) continue;
-var bonds1 = atom1.bonds;
-for (var j = 0; j < bonds1.length; j++) {
-if (bonds1[j].order == 2) {
-var atomO = bonds1[j].getOtherAtom (atom1);
-if (atomO.getElementNumber () == 8) {
-this.bsAddedHydrogens.set (atomH.i);
-atomH.$delete (bsBondsDeleted);
-break;
-}}}
-}
-this.ms.deleteBonds (bsBondsDeleted, true);
-this.deleteAtoms (this.bsAddedHydrogens);
-});
-Clazz_defineMethod (c$, "deleteAtoms", 
- function (bsDeletedAtoms) {
-var mapOldToNew =  Clazz_newIntArray (this.ms.ac, 0);
-var mapNewToOld =  Clazz_newIntArray (this.ms.ac - bsDeletedAtoms.cardinality (), 0);
-var n = this.ml.baseAtomIndex;
-var models = this.ms.am;
-var atoms = this.ms.at;
-for (var i = this.ml.baseAtomIndex; i < this.ms.ac; i++) {
-models[atoms[i].mi].bsAtoms.clear (i);
-models[atoms[i].mi].bsAtomsDeleted.clear (i);
-if (bsDeletedAtoms.get (i)) {
-mapOldToNew[i] = n - 1;
-models[atoms[i].mi].act--;
-} else {
-mapNewToOld[n] = i;
-mapOldToNew[i] = n++;
-}}
-this.ms.msInfo.put ("bsDeletedAtoms", bsDeletedAtoms);
-for (var i = this.ml.baseGroupIndex; i < this.ml.groups.length; i++) {
-var g = this.ml.groups[i];
-if (g.firstAtomIndex >= this.ml.baseAtomIndex) {
-g.firstAtomIndex = mapOldToNew[g.firstAtomIndex];
-g.lastAtomIndex = mapOldToNew[g.lastAtomIndex];
-if (g.leadAtomIndex >= 0) g.leadAtomIndex = mapOldToNew[g.leadAtomIndex];
-}}
-this.ms.adjustAtomArrays (mapNewToOld, this.ml.baseAtomIndex, n);
-this.ms.calcBoundBoxDimensions (null, 1);
-this.ms.resetMolecules ();
-this.ms.validateBspf (false);
-this.bsAddedMask = JU.BSUtil.deleteBits (this.bsAddedMask, bsDeletedAtoms);
-for (var i = this.ml.baseModelIndex; i < this.ms.mc; i++) {
-this.fixAnnotations (i, "domains", 1073741925);
-this.fixAnnotations (i, "validation", 1073742189);
-}
-}, "JU.BS");
-Clazz_defineMethod (c$, "fixAnnotations", 
- function (i, name, type) {
-var o = this.ml.ms.getInfo (i, name);
-if (o != null) {
-var dbObj = (this.ml.ms.bioModelset).getCachedAnnotationMap (name, o);
-if (dbObj != null) this.vwr.getAnnotationParser (false).fixAtoms (i, dbObj, this.bsAddedMask, type, 20);
-}}, "~N,~S,~N");
-Clazz_defineMethod (c$, "finalizePdbCharges", 
- function () {
-var atoms = this.ms.at;
-for (var i = this.bsAtomsForHs.nextSetBit (0); i >= 0; i = this.bsAtomsForHs.nextSetBit (i + 1)) {
-var a = atoms[i];
-if (a.group.getNitrogenAtom () === a && a.getCovalentBondCount () == 1) a.setFormalCharge (1);
-if ((i = this.bsAtomsForHs.nextClearBit (i + 1)) < 0) break;
-}
-});
-Clazz_defineMethod (c$, "finalizePdbMultipleBonds", 
- function () {
-var htKeysUsed =  new java.util.Hashtable ();
-var bondCount = this.ms.bondCount;
-var bonds = this.ms.bo;
-for (var i = this.baseBondIndex; i < bondCount; i++) {
-var a1 = bonds[i].atom1;
-var a2 = bonds[i].atom2;
-var g = a1.group;
-if (g !== a2.group) continue;
-var key =  new JU.SB ().append (g.getGroup3 ());
-key.append (":");
-var n1 = a1.getAtomName ();
-var n2 = a2.getAtomName ();
-if (n1.compareTo (n2) > 0) key.append (n2).append (":").append (n1);
- else key.append (n1).append (":").append (n2);
-var skey = key.toString ();
-var type = this.htBondMap.get (skey);
-if (type == null) continue;
-htKeysUsed.put (skey, Boolean.TRUE);
-bonds[i].setOrder (JU.PT.parseInt (type));
-}
-for (var key, $key = this.htBondMap.keySet ().iterator (); $key.hasNext () && ((key = $key.next ()) || true);) {
-if (htKeysUsed.get (key) != null) continue;
-if (key.indexOf (":") < 0) {
-htKeysUsed.put (key, Boolean.TRUE);
-continue;
-}var value = this.htBondMap.get (key);
-JU.Logger.info ("bond " + key + " was not used; order=" + value);
-if (this.htBondMap.get (key).equals ("1")) {
-htKeysUsed.put (key, Boolean.TRUE);
-continue;
-}}
-var htKeysBad =  new java.util.Hashtable ();
-for (var key, $key = this.htBondMap.keySet ().iterator (); $key.hasNext () && ((key = $key.next ()) || true);) {
-if (htKeysUsed.get (key) != null) continue;
-htKeysBad.put (key.substring (0, key.lastIndexOf (":")), this.htBondMap.get (key));
-}
-if (htKeysBad.isEmpty ()) return;
-for (var i = 0; i < bondCount; i++) {
-var a1 = bonds[i].atom1;
-var a2 = bonds[i].atom2;
-if (a1.group === a2.group) continue;
-var value;
-if ((value = htKeysBad.get (a1.getGroup3 (false) + ":" + a1.getAtomName ())) == null && ((value = htKeysBad.get (a2.getGroup3 (false) + ":" + a2.getAtomName ())) == null)) continue;
-bonds[i].setOrder (JU.PT.parseInt (value));
-JU.Logger.info ("assigning order " + bonds[i].order + " to bond " + bonds[i]);
-}
-});
-Clazz_defineMethod (c$, "setHydrogen", 
- function (iTo, iAtom, name, pt) {
-if (!this.bsAddedHydrogens.get (iAtom)) return;
-var atoms = this.ms.at;
-if (this.lastSetH == -2147483648 || atoms[iAtom].mi != atoms[this.lastSetH].mi) this.maxSerial = (this.ms.getInfo (atoms[this.lastSetH = iAtom].mi, "PDB_CONECT_firstAtom_count_max"))[2];
-this.bsAddedHydrogens.clear (iAtom);
-this.ms.setAtomName (iAtom, name);
-atoms[iAtom].setT (pt);
-this.ms.setAtomNumber (iAtom, ++this.maxSerial);
-atoms[iAtom].atomSymmetry = atoms[iTo].atomSymmetry;
-this.ml.undeleteAtom (iAtom);
-this.ms.bondAtoms (atoms[iTo], atoms[iAtom], 1, this.ms.getDefaultMadFromOrder (1), null, 0, true, false);
-}, "~N,~N,~S,JU.P3");
-Clazz_overrideMethod (c$, "fixPropertyValue", 
-function (bsAtoms, data, toHydrogens) {
-var atoms = this.ms.at;
-var fData = data;
-var newData =  Clazz_newFloatArray (bsAtoms.cardinality (), 0);
-var lastData = 0;
-for (var pt = 0, iAtom = 0, i = bsAtoms.nextSetBit (0); i >= 0; i = bsAtoms.nextSetBit (i + 1), iAtom++) {
-if (atoms[i].getElementNumber () == 1) {
-if (!toHydrogens) continue;
-} else {
-lastData = fData[pt++];
-}newData[iAtom] = lastData;
-}
-return newData;
-}, "JU.BS,~O,~B");
-c$.allocateBioPolymer = Clazz_defineMethod (c$, "allocateBioPolymer", 
-function (groups, firstGroupIndex, checkConnections, pt0) {
-var previous = null;
-var count = 0;
-for (var i = firstGroupIndex; i < groups.length; ++i) {
-var group = groups[i];
-var current;
-if (!(Clazz_instanceOf (group, JM.Monomer)) || (current = group).bioPolymer != null || previous != null && previous.getClass () !== current.getClass () || checkConnections && !current.isConnectedAfter (previous)) break;
-previous = current;
-count++;
-}
-if (count < 2) return null;
-var monomers =  new Array (count);
-for (var j = 0; j < count; ++j) monomers[j] = groups[firstGroupIndex + j];
-
-if (Clazz_instanceOf (previous, JM.AminoMonomer)) return  new JM.AminoPolymer (monomers, pt0);
-if (Clazz_instanceOf (previous, JM.AlphaMonomer)) return  new JM.AlphaPolymer (monomers, pt0);
-if (Clazz_instanceOf (previous, JM.NucleicMonomer)) return  new JM.NucleicPolymer (monomers);
-if (Clazz_instanceOf (previous, JM.PhosphorusMonomer)) return  new JM.PhosphorusPolymer (monomers);
-if (Clazz_instanceOf (previous, JM.CarbohydrateMonomer)) return  new JM.CarbohydratePolymer (monomers);
-JU.Logger.error ("Polymer.allocatePolymer() ... no matching polymer for monomor " + previous);
-throw  new NullPointerException ();
-}, "~A,~N,~B,~N");
-Clazz_overrideMethod (c$, "iterateOverAllNewStructures", 
-function (adapter, atomSetCollection) {
-var iterStructure = adapter.getStructureIterator (atomSetCollection);
-if (iterStructure == null) return;
-var bs = iterStructure.getStructuredModels ();
-if (bs != null) for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) this.ml.structuresDefinedInFile.set (this.ml.baseModelIndex + i);
-
-while (iterStructure.hasNext ()) if (iterStructure.getStructureType () !== J.c.STR.TURN) this.setStructure (iterStructure);
-
-iterStructure = adapter.getStructureIterator (atomSetCollection);
-while (iterStructure.hasNext ()) if (iterStructure.getStructureType () === J.c.STR.TURN) this.setStructure (iterStructure);
-
-}, "J.api.JmolAdapter,~O");
-Clazz_defineMethod (c$, "setStructure", 
- function (iterStructure) {
-var t = iterStructure.getSubstructureType ();
-var id = iterStructure.getStructureID ();
-var serID = iterStructure.getSerialID ();
-var count = iterStructure.getStrandCount ();
-var atomRange = iterStructure.getAtomIndices ();
-var modelRange = iterStructure.getModelIndices ();
-var bsAll = iterStructure.getBSAll ();
-var m0;
-var m1;
-var models = this.ms.am;
-if (this.ml.isTrajectory) {
-m0 = m1 = modelRange[0];
-} else {
-m0 = modelRange[0] + this.ml.baseModelIndex;
-m1 = modelRange[1] + this.ml.baseModelIndex;
-}this.ml.structuresDefinedInFile.setBits (m0, m1 + 1);
-var bs;
-var m;
-if (bsAll != null) {
-for (var i = m0, t0; i <= m1; i++) if (Clazz_instanceOf ((m = models[i]), JM.BioModel)) for (var j = 0; j < 5; j++) if ((bs = bsAll[t0 = JM.Resolver.mytypes[j]]) != null) (m).addStructureByBS (0, t0, JM.Resolver.types[j], bs);
-
-
-return;
-}var startChainID = iterStructure.getStartChainID ();
-var startSequenceNumber = iterStructure.getStartSequenceNumber ();
-var startInsertionCode = iterStructure.getStartInsertionCode ();
-var endSequenceNumber = iterStructure.getEndSequenceNumber ();
-var endChainID = iterStructure.getEndChainID ();
-var endInsertionCode = iterStructure.getEndInsertionCode ();
-var type = (t === J.c.STR.NOT ? J.c.STR.NONE : t);
-var startSeqCode = JM.Group.getSeqcodeFor (startSequenceNumber, startInsertionCode);
-var endSeqCode = JM.Group.getSeqcodeFor (endSequenceNumber, endInsertionCode);
-if (this.bsAssigned == null) this.bsAssigned =  new JU.BS ();
-for (var i = m0, i0 = 0; i <= m1; i++) if (Clazz_instanceOf ((m = models[i]), JM.BioModel)) (m).addSecondaryStructure (type, id, serID, count, startChainID, startSeqCode, endChainID, endSeqCode, (i0 = m.firstAtomIndex) + atomRange[0], i0 + atomRange[1], this.bsAssigned);
-
-}, "J.api.JmolAdapterStructureIterator");
-Clazz_overrideMethod (c$, "setGroupLists", 
-function (ipt) {
-this.ml.group3Lists[ipt + 1] = JM.Group.standardGroupList;
-this.ml.group3Counts[ipt + 1] =  Clazz_newIntArray (JM.Resolver.group3Count + 10, 0);
-if (this.ml.group3Lists[0] == null) {
-this.ml.group3Lists[0] = JM.Group.standardGroupList;
-this.ml.group3Counts[0] =  Clazz_newIntArray (JM.Resolver.group3Count + 10, 0);
-}}, "~N");
-Clazz_overrideMethod (c$, "isKnownPDBGroup", 
-function (g3, max) {
-var pt = JM.Resolver.knownGroupID (g3);
-return (pt > 0 ? pt < max : max == 2147483647 && JM.Resolver.checkCarbohydrate (g3));
-}, "~S,~N");
-Clazz_overrideMethod (c$, "lookupSpecialAtomID", 
-function (name) {
-if (JM.Resolver.htSpecialAtoms == null) {
-JM.Resolver.htSpecialAtoms =  new java.util.Hashtable ();
-for (var i = JM.Resolver.specialAtomNames.length; --i >= 0; ) {
-var specialAtomName = JM.Resolver.specialAtomNames[i];
-if (specialAtomName != null) JM.Resolver.htSpecialAtoms.put (specialAtomName, Byte.$valueOf (i));
-}
-}var boxedAtomID = JM.Resolver.htSpecialAtoms.get (name);
-return (boxedAtomID == null ? 0 : boxedAtomID.byteValue ());
-}, "~S");
-Clazz_defineMethod (c$, "getPdbBondInfo", 
- function (group3, isLegacy) {
-if (JM.Resolver.htPdbBondInfo == null) JM.Resolver.htPdbBondInfo =  new java.util.Hashtable ();
-var info = JM.Resolver.htPdbBondInfo.get (group3);
-if (info != null) return info;
-var pt = JM.Resolver.knownGroupID (group3);
-if (pt < 0 || pt > JM.Resolver.pdbBondInfo.length) return null;
-var s = JM.Resolver.pdbBondInfo[pt];
-if (isLegacy && (pt = s.indexOf ("O3'")) >= 0) s = s.substring (0, pt);
-var temp = JU.PT.getTokens (s);
-info =  new Array (Clazz_doubleToInt (temp.length / 2));
-for (var i = 0, p = 0; i < info.length; i++) {
-var source = temp[p++];
-var target = temp[p++];
-if (target.length == 1) switch (target.charAt (0)) {
-case 'N':
-target = "H@H2";
-break;
-case 'B':
-target = "HB3@HB2";
-break;
-case 'D':
-target = "HD3@HD2";
-break;
-case 'G':
-target = "HG3@HG2";
-break;
-case '2':
-target = "H2'@H2''";
-break;
-case '5':
-target = "H5''@H5'";
-break;
-}
-if (target.charAt (0) != 'H' && source.compareTo (target) > 0) {
-s = target;
-target = source;
-source = s;
-}info[i] =  Clazz_newArray (-1, [source, target, (target.startsWith ("H") ? "1" : "2")]);
-}
-JM.Resolver.htPdbBondInfo.put (group3, info);
-return info;
-}, "~S,~B");
-c$.knownGroupID = Clazz_defineMethod (c$, "knownGroupID", 
-function (group3) {
-if (group3 == null || group3.length == 0) return 0;
-var boxedGroupID = JM.Resolver.htGroup.get (group3);
-return (boxedGroupID == null ? -1 : boxedGroupID.shortValue ());
-}, "~S");
-c$.checkCarbohydrate = Clazz_defineMethod (c$, "checkCarbohydrate", 
- function (group3) {
-return (group3 != null && ",[AHR],[ALL],[AMU],[ARA],[ARB],[BDF],[BDR],[BGC],[BMA],[FCA],[FCB],[FRU],[FUC],[FUL],[GAL],[GLA],[GLC],[GXL],[GUP],[LXC],[MAN],[RAM],[RIB],[RIP],[XYP],[XYS],[CBI],[CT3],[CTR],[CTT],[LAT],[MAB],[MAL],[MLR],[MTT],[SUC],[TRE],[GCU],[MTL],[NAG],[NDG],[RHA],[SOR],[SOL],[SOE],[XYL],[A2G],[LBT],[NGA],[SIA],[SLB],[AFL],[AGC],[GLB],[NAN],[RAA]".indexOf ("[" + group3.toUpperCase () + "]") >= 0);
-}, "~S");
-Clazz_overrideMethod (c$, "isHetero", 
-function (group3) {
-switch (group3.length) {
-case 1:
-group3 += "  ";
-break;
-case 2:
-group3 += " ";
-break;
-case 3:
-break;
-default:
-return true;
-}
-var pt = JM.Group.standardGroupList.indexOf (group3);
-return (pt < 0 || Clazz_doubleToInt (pt / 6) + 1 >= 42);
-}, "~S");
-Clazz_overrideMethod (c$, "toStdAmino3", 
-function (g1) {
-if (g1.length == 0) return "";
-var s =  new JU.SB ();
-var pt = JM.Resolver.knownGroupID ("==A");
-if (pt < 0) {
-for (var i = 1; i <= 20; i++) {
-pt = JM.Resolver.knownGroupID (JM.Resolver.predefinedGroup3Names[i]);
-JM.Resolver.htGroup.put ("==" + JM.Resolver.predefinedGroup1Names[i], Short.$valueOf (pt));
-}
-}for (var i = 0, n = g1.length; i < n; i++) {
-var ch = g1.charAt (i);
-pt = JM.Resolver.knownGroupID ("==" + ch);
-if (pt < 0) pt = 23;
-s.append (" ").append (JM.Resolver.predefinedGroup3Names[pt]);
-}
-return s.toString ().substring (1);
-}, "~S");
-Clazz_overrideMethod (c$, "getGroupID", 
-function (g3) {
-return JM.Resolver.getGroupIdFor (g3);
-}, "~S");
-c$.getGroupIdFor = Clazz_defineMethod (c$, "getGroupIdFor", 
-function (group3) {
-if (group3 != null) group3 = group3.trim ();
-var groupID = JM.Resolver.knownGroupID (group3);
-return (groupID == -1 ? JM.Resolver.addGroup3Name (group3) : groupID);
-}, "~S");
-c$.addGroup3Name = Clazz_defineMethod (c$, "addGroup3Name", 
- function (group3) {
-if (JM.Resolver.group3NameCount == JM.Group.group3Names.length) JM.Group.group3Names = JU.AU.doubleLengthS (JM.Group.group3Names);
-var groupID = JM.Resolver.group3NameCount++;
-JM.Group.group3Names[groupID] = group3;
-JM.Resolver.htGroup.put (group3, Short.$valueOf (groupID));
-return groupID;
-}, "~S");
-c$.getStandardPdbHydrogenCount = Clazz_defineMethod (c$, "getStandardPdbHydrogenCount", 
- function (group3) {
-var pt = JM.Resolver.knownGroupID (group3);
-return (pt < 0 || pt >= JM.Resolver.pdbHydrogenCount.length ? -1 : JM.Resolver.pdbHydrogenCount[pt]);
-}, "~S");
-Clazz_overrideMethod (c$, "getAminoAcidValenceAndCharge", 
-function (res, name, ret) {
-if (res == null || res.length == 0 || res.length > 3 || name.equals ("CA") || name.equals ("CB")) return false;
-var ch0 = name.charAt (0);
-var ch1 = (name.length == 1 ? '\0' : name.charAt (1));
-var isSp2 = false;
-var bondCount = ret[3];
-switch (res.length) {
-case 3:
-if (name.length == 1) {
-switch (ch0) {
-case 'N':
-if (bondCount > 1) return false;
-ret[1] = 1;
-break;
-case 'O':
-isSp2 = ("HOH;DOD;WAT".indexOf (res) < 0);
-break;
-default:
-isSp2 = true;
-}
-} else {
-var id = res + ch0;
-isSp2 = ("ARGN;ASNN;ASNO;ASPO;GLNN;GLNO;GLUO;HISN;HISC;PHECTRPC;TRPN;TYRC".indexOf (id) >= 0);
-if ("LYSN".indexOf (id) >= 0) {
-ret[1] = 1;
-} else if (ch0 == 'O' && ch1 == 'X') {
-ret[1] = -1;
-}}break;
-case 1:
-case 2:
-if (name.length > 2 && name.charAt (2) == '\'') return false;
-switch (ch0) {
-case 'C':
-if (ch1 == '7') return false;
-break;
-case 'N':
-switch (ch1) {
-case '1':
-case '3':
-if ("A3;A1;C3;G3;I3".indexOf ("" + res.charAt (res.length - 1) + ch1) >= 0) ret[0]--;
-break;
-case '7':
-ret[0]--;
-break;
-}
-break;
-}
-isSp2 = true;
-}
-if (isSp2) {
-switch (ch0) {
-case 'N':
-ret[2] = 2;
-break;
-case 'C':
-ret[2] = 2;
-ret[0]--;
-break;
-case 'O':
-ret[0]--;
-break;
-}
-}return true;
-}, "~S,~S,~A");
-c$.getSpecialAtomName = Clazz_defineMethod (c$, "getSpecialAtomName", 
-function (atomID) {
-return JM.Resolver.specialAtomNames[atomID];
-}, "~N");
-Clazz_overrideMethod (c$, "getArgbs", 
-function (tok) {
-switch (tok) {
-case 2097154:
-return JM.Resolver.argbsAmino;
-case 1073742144:
-return JM.Resolver.argbsShapely;
-case 1140850689:
-return JM.Resolver.argbsChainAtom;
-case 1612709894:
-return JM.Resolver.argbsChainHetero;
-}
-return null;
-}, "~N");
-c$.htGroup = c$.prototype.htGroup =  new java.util.Hashtable ();
-c$.types = c$.prototype.types =  Clazz_newArray (-1, [J.c.STR.HELIXPI, J.c.STR.HELIXALPHA, J.c.STR.SHEET, J.c.STR.HELIX310, J.c.STR.TURN]);
-Clazz_defineStatics (c$,
-"mytypes",  Clazz_newIntArray (-1, [0, 2, 3, 4, 6]),
-"htPdbBondInfo", null,
-"pdbBondInfo",  Clazz_newArray (-1, ["", "N N CA HA C O CB HB?", "N N CA HA C O CB B CG G CD D NE HE CZ NH1 NH1 HH11@HH12 NH2 HH22@HH21", "N N CA HA C O CB B CG OD1 ND2 HD21@HD22", "N N CA HA C O CB B CG OD1", "N N CA HA C O CB B SG HG", "N N CA HA C O CB B CG G CD OE1 NE2 HE22@HE21", "N N CA HA C O CB B CG G CD OE1", "N N CA HA2@HA3 C O", "N N CA HA C O CB B CG CD2 ND1 CE1 ND1 HD1 CD2 HD2 CE1 HE1 NE2 HE2", "N N CA HA C O CB HB CG1 HG13@HG12 CG2 HG2? CD1 HD1?", "N N CA HA C O CB B CG HG CD1 HD1? CD2 HD2?", "N N CA HA C O CB B CG G CD HD2@HD3 CE HE3@HE2 NZ HZ?", "N N CA HA C O CB B CG G CE HE?", "N N CA HA C O CB B CG CD1 CD1 HD1 CD2 CE2 CD2 HD2 CE1 CZ CE1 HE1 CE2 HE2 CZ HZ", "N H CA HA C O CB B CG G CD D", "N N CA HA C O CB B OG HG", "N N CA HA C O CB HB OG1 HG1 CG2 HG2?", "N N CA HA C O CB B CG CD1 CD1 HD1 CD2 CE2 NE1 HE1 CE3 CZ3 CE3 HE3 CZ2 CH2 CZ2 HZ2 CZ3 HZ3 CH2 HH2", "N N CA HA C O CB B CG CD1 CD1 HD1 CD2 CE2 CD2 HD2 CE1 CZ CE1 HE1 CE2 HE2 OH HH", "N N CA HA C O CB HB CG1 HG1? CG2 HG2?", "N N CA HA C O CB B", "N N CA HA C O CB B CG G", "", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C8 N7 C8 H8 C5 C4 C6 O6 N1 H1 C2 N3 N2 H22@H21 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C2 O2 N3 C4 N4 H41@H42 C5 C6 C5 H5 C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C8 N7 C8 H8 C5 C4 C6 N1 N6 H61@H62 C2 N3 C2 H2 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C2 O2 N3 H3 C4 O4 C5 C6 C7 H7? C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C2 O2 N3 H3 C4 O4 C5 C6 C5 H5 C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C8 N7 C8 H8 C5 C4 C6 O6 N1 H1 C2 N3 C2 H2 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C8 N7 C8 H8 C5 C4 C6 O6 N1 H1 C2 N3 N2 H22@H21 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C2 O2 N3 C4 N4 H41@H42 C5 C6 C5 H5 C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C8 N7 C8 H8 C5 C4 C6 N1 N6 H61@H62 C2 N3 C2 H2 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C2 O2 N3 H3 C4 O4 C5 C6 C7 H7? C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C2 O2 N3 H3 C4 O4 C5 C6 C5 H5 C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C8 N7 C8 H8 C5 C4 C6 O6 N1 H1 C2 N3 C2 H2 O3' HO3' O5' HO5'"]),
-"pdbHydrogenCount",  Clazz_newIntArray (-1, [0, 6, 16, 7, 6, 6, 9, 8, 4, 9, 12, 12, 14, 10, 10, 8, 6, 8, 11, 10, 10, 3, 5, 0, 13, 13, 13, -1, 12, 12, 13, 13, 13, 14, 12, 12]),
-"allCarbohydrates", ",[AHR],[ALL],[AMU],[ARA],[ARB],[BDF],[BDR],[BGC],[BMA],[FCA],[FCB],[FRU],[FUC],[FUL],[GAL],[GLA],[GLC],[GXL],[GUP],[LXC],[MAN],[RAM],[RIB],[RIP],[XYP],[XYS],[CBI],[CT3],[CTR],[CTT],[LAT],[MAB],[MAL],[MLR],[MTT],[SUC],[TRE],[GCU],[MTL],[NAG],[NDG],[RHA],[SOR],[SOL],[SOE],[XYL],[A2G],[LBT],[NGA],[SIA],[SLB],[AFL],[AGC],[GLB],[NAN],[RAA]",
-"group3Count", 0,
-"predefinedGroup1Names",  Clazz_newCharArray (-1, ['\0', 'A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'A', 'G', '?', 'G', 'C', 'A', 'T', 'U', 'I', 'G', 'C', 'A', 'T', 'U', 'I', 'G', 'C', 'A', 'T', 'U', 'I']),
-"group3NameCount", 0,
-"predefinedGroup3Names",  Clazz_newArray (-1, ["   ", "ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL", "ASX", "GLX", "UNK", "G  ", "C  ", "A  ", "T  ", "U  ", "I  ", "DG ", "DC ", "DA ", "DT ", "DU ", "DI ", "+G ", "+C ", "+A ", "+T ", "+U ", "+I ", "HOH", "DOD", "WAT", "UREA", "PO4", "SO4", "UNL"]),
-"naNoH", "A3;A1;C3;G3;I3",
-"aaSp2", "ARGN;ASNN;ASNO;ASPO;GLNN;GLNO;GLUO;HISN;HISC;PHECTRPC;TRPN;TYRC",
-"aaPlus", "LYSN",
-"specialAtomNames",  Clazz_newArray (-1, [null, "N", "CA", "C", "O", "O1", "O5'", "C5'", "C4'", "C3'", "O3'", "C2'", "C1'", "P", "OD1", "OD2", "OE1", "OE2", "SG", null, null, null, null, null, null, null, null, null, null, null, null, null, "N1", "C2", "N3", "C4", "C5", "C6", "O2", "N7", "C8", "N9", "N4", "N2", "N6", "C5M", "O6", "O4", "S4", "C7", "H1", "H2", "H3", null, null, null, null, null, null, null, null, null, null, null, "OXT", "H", "1H", "2H", "3H", "HA", "1HA", "2HA", "H5T", "O5T", "O1P", "OP1", "O2P", "OP2", "O4'", "O2'", "1H5'", "2H5'", "H4'", "H3'", "1H2'", "2H2'", "2HO'", "H1'", "H3T", "HO3'", "HO5'", "HA2", "HA3", "HA2", "H5'", "H5''", "H2'", "H2''", "HO2'", "O3P", "OP3"]));
-c$.ATOMID_MAX = c$.prototype.ATOMID_MAX = JM.Resolver.specialAtomNames.length;
-Clazz_defineStatics (c$,
-"htSpecialAtoms", null,
-"argbsAmino",  Clazz_newIntArray (-1, [0xFFBEA06E, 0xFFC8C8C8, 0xFF145AFF, 0xFF00DCDC, 0xFFE60A0A, 0xFFE6E600, 0xFF00DCDC, 0xFFE60A0A, 0xFFEBEBEB, 0xFF8282D2, 0xFF0F820F, 0xFF0F820F, 0xFF145AFF, 0xFFE6E600, 0xFF3232AA, 0xFFDC9682, 0xFFFA9600, 0xFFFA9600, 0xFFB45AB4, 0xFF3232AA, 0xFF0F820F, 0xFFFF69B4, 0xFFFF69B4, 0xFFBEA06E]),
-"argbsChainAtom",  Clazz_newIntArray (-1, [0xFFffffff, 0xFFC0D0FF, 0xFFB0FFB0, 0xFFFFC0C8, 0xFFFFFF80, 0xFFFFC0FF, 0xFFB0F0F0, 0xFFFFD070, 0xFFF08080, 0xFFF5DEB3, 0xFF00BFFF, 0xFFCD5C5C, 0xFF66CDAA, 0xFF9ACD32, 0xFFEE82EE, 0xFF00CED1, 0xFF00FF7F, 0xFF3CB371, 0xFF00008B, 0xFFBDB76B, 0xFF006400, 0xFF800000, 0xFF808000, 0xFF800080, 0xFF008080, 0xFFB8860B, 0xFFB22222]),
-"argbsChainHetero",  Clazz_newIntArray (-1, [0xFFffffff, -7298865, -8335464, -3174224, -3158160, -3174193, -8339264, -3170208, -4173712, -3821949, -16734257, -4895668, -11094638, -7686870, -4296002, -16730463, -16724113, -13329567, -16777029, -5922981, -16739328, -5242880, -5197824, -5242704, -16731984, -1526253, -4050382]),
-"argbsShapely",  Clazz_newIntArray (-1, [0xFFFF00FF, 0xFF00007C, 0xFFFF7C70, 0xFF8CFF8C, 0xFFA00042, 0xFFFFFF70, 0xFFFF4C4C, 0xFF660000, 0xFFFFFFFF, 0xFF7070FF, 0xFF004C00, 0xFF455E45, 0xFF4747B8, 0xFF534C52, 0xFFB8A042, 0xFF525252, 0xFFFF7042, 0xFFB84C00, 0xFF4F4600, 0xFF8C704C, 0xFFFF8CFF, 0xFFFF00FF, 0xFFFF00FF, 0xFFFF00FF, 0xFFFF7070, 0xFFFF8C4B, 0xFFA0A0FF, 0xFFA0FFA0, 0xFFFF8080, 0xFF80FFFF, 0xFFFF7070, 0xFFFF8C4B, 0xFFA0A0FF, 0xFFA0FFA0, 0xFFFF8080, 0xFF80FFFF, 0xFFFF7070, 0xFFFF8C4B, 0xFFA0A0FF, 0xFFA0FFA0, 0xFFFF8080, 0xFF80FFFF]));
-{
-{
-}}});
 Clazz_declarePackage ("JM");
-Clazz_load (["JM.Group"], "JM.Monomer", ["java.lang.Float", "JU.Measure", "$.P3", "$.Quat", "J.c.STR", "JM.ProteinStructure", "$.Resolver", "JU.Escape", "$.Logger", "JV.JC"], function () {
+Clazz_load (["JM.Group"], "JM.Monomer", ["java.lang.Float", "JU.Measure", "$.P3", "$.Quat", "J.c.STR", "JM.BioResolver", "$.ProteinStructure", "JU.Escape", "$.Logger", "JV.JC"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.bioPolymer = null;
 this.offsets = null;
@@ -2072,6 +1339,7 @@ this.omega = NaN;
 this.straightness = NaN;
 this.mu = NaN;
 this.theta = NaN;
+this.backboneBlockVis = false;
 Clazz_instantialize (this, arguments);
 }, JM, "Monomer", JM.Group);
 Clazz_makeConstructor (c$, 
@@ -2125,7 +1393,7 @@ var m = groups[ipt];
 if (offset == 1 && !m.isConnectedPrevious ()) return -1;
 if ("\0".equals (name)) return m.leadAtomIndex;
 var atoms = this.chain.model.ms.at;
-for (var i = m.firstAtomIndex; i <= m.lastAtomIndex; i++) if (name == null || name.equalsIgnoreCase (atoms[i].getAtomName ())) return i;
+for (var i = m.firstAtomIndex; i <= m.lastAtomIndex; i++) if (atoms[i] != null && (name == null || name.equalsIgnoreCase (atoms[i].getAtomName ()))) return i;
 
 }}return -1;
 }, "~S,~N");
@@ -2299,7 +1567,7 @@ var iPrev = this.monomerIndex - mStep;
 var prev = (mStep < 1 || this.monomerIndex <= 0 ? null : this.bioPolymer.monomers[iPrev]);
 var q2 = this.getQuaternion (qType);
 var q1 = (mStep < 1 ? JU.Quat.getQuaternionFrameV (JV.JC.axisX, JV.JC.axisY, JV.JC.axisZ, false) : prev == null ? null : prev.getQuaternion (qType));
-if (q1 == null || q2 == null) return this.getHelixData (tokType, qType, mStep);
+if (q1 == null || q2 == null) return Clazz_superCall (this, JM.Monomer, "getHelixData", [tokType, qType, mStep]);
 var a = (mStep < 1 ? JU.P3.new3 (0, 0, 0) : prev.getQuaternionFrameCenter (qType));
 var b = this.getQuaternionFrameCenter (qType);
 return (a == null || b == null ? this.getHelixData (tokType, qType, mStep) : JU.Escape.escapeHelical ((tokType == 135176 ? "helixaxis" + this.getUniqueID () : null), tokType, a, b, JU.Measure.computeHelicalAxis (a, b, q2.div (q1))));
@@ -2404,7 +1672,7 @@ return NaN;
 }, "~N");
 Clazz_overrideMethod (c$, "getGroup1", 
 function () {
-return (this.groupID < JM.Resolver.predefinedGroup1Names.length ? JM.Resolver.predefinedGroup1Names[this.groupID] : this.group1.charCodeAt (0) > 1 ? this.group1 : this.group1.charCodeAt (0) == 1 ? '?' : (this.group1 = this.getGroup1b ()));
+return (this.groupID < JM.BioResolver.predefinedGroup1Names.length ? JM.BioResolver.predefinedGroup1Names[this.groupID] : this.group1.charCodeAt (0) > 1 ? this.group1 : this.group1.charCodeAt (0) == 1 ? '?' : (this.group1 = this.getGroup1b ()));
 });
 Clazz_defineMethod (c$, "getGroup1b", 
 function () {
@@ -2412,8 +1680,12 @@ return '?';
 });
 Clazz_overrideMethod (c$, "setGroupID", 
 function (group3) {
-this.groupID = JM.Resolver.getGroupIdFor (group3);
+this.groupID = JM.BioResolver.getGroupIdFor (group3);
 }, "~S");
+Clazz_overrideMethod (c$, "toString", 
+function () {
+return "[" + this.getGroup3 () + "-" + this.getSeqcodeString () + " " + this.getStructure () + "]";
+});
 });
 Clazz_declarePackage ("JM");
 Clazz_load (["JM.Monomer"], "JM.AlphaMonomer", ["JU.Quat", "$.V3", "J.c.STR", "JM.Helix", "$.Sheet", "$.Turn"], function () {
@@ -2580,6 +1852,7 @@ this.structureID = null;
 this.strucNo = 0;
 this.serialID = 0;
 this.strandCount = 1;
+this.id = 0;
 this.nRes = 0;
 this.apolymer = null;
 this.monomerIndexFirst = 0;
@@ -2592,6 +1865,10 @@ this.segments = null;
 this.resMap = null;
 Clazz_instantialize (this, arguments);
 }, JM, "ProteinStructure", null, JM.Structure);
+Clazz_makeConstructor (c$, 
+function () {
+this.id = ++JM.ProteinStructure.ids;
+});
 Clazz_defineMethod (c$, "setupPS", 
 function (apolymer, type, monomerIndex, monomerCount) {
 this.strucNo = ++JM.ProteinStructure.globalStrucNo;
@@ -2600,7 +1877,7 @@ this.type = type;
 this.vectorProjection =  new JU.V3 ();
 this.monomerIndexFirst = monomerIndex;
 this.addMonomer (monomerIndex + monomerCount - 1);
-if (JU.Logger.debugging) JU.Logger.info ("Creating ProteinStructure " + this.strucNo + " " + type.getBioStructureTypeName (false) + " from " + this.monomerIndexFirst + " through " + this.monomerIndexLast + " in polymer " + apolymer);
+if (JU.Logger.debugging) JU.Logger.info ("Creating ProteinStructure " + this.strucNo + " " + type.getBioStructureTypeName (false) + " from " + apolymer.monomers[this.monomerIndexFirst] + " through " + apolymer.monomers[this.monomerIndexLast] + " in polymer " + apolymer);
 }, "JM.AlphaPolymer,J.c.STR,~N,~N");
 Clazz_defineMethod (c$, "addMonomer", 
 function (index) {
@@ -2703,6 +1980,7 @@ for (var i = this.monomerIndexFirst; i <= this.monomerIndexLast; i++) ms[i].setA
 Clazz_defineMethod (c$, "findMonomer", 
 function (bsAtoms, isFirst) {
 var ms = this.apolymer.monomers;
+if (this.monomerIndexFirst < 0) return null;
 if (isFirst) {
 for (var i = this.monomerIndexFirst; i <= this.monomerIndexLast; i++) if (bsAtoms == null || bsAtoms.get (ms[i].leadAtomIndex)) return ms[i];
 
@@ -2711,7 +1989,12 @@ for (var i = this.monomerIndexLast; i >= this.monomerIndexFirst; --i) if (bsAtom
 
 }return null;
 }, "JU.BS,~B");
+Clazz_overrideMethod (c$, "toString", 
+function () {
+return "[" + this.id + " " + this.type + (this.subtype == null ? "" : " " + this.subtype) + " (" + this.monomerIndexFirst + "-" + this.monomerIndexLast + ")]";
+});
 Clazz_defineStatics (c$,
+"ids", 0,
 "globalStrucNo", 1000);
 });
 Clazz_declarePackage ("JM");
@@ -2730,7 +2013,7 @@ for (var i = 0; i <= this.nRes; i++) this.apolymer.getLeadMidPoint (this.monomer
 
 this.axisA =  new JU.P3 ();
 this.axisUnitVector =  new JU.V3 ();
-JU.Measure.calcBestAxisThroughPoints (points, this.axisA, this.axisUnitVector, this.vectorProjection, 4);
+JU.Measure.calcBestAxisThroughPoints (points, points.length, this.axisA, this.axisUnitVector, this.vectorProjection, 4);
 this.axisB = JU.P3.newP (points[this.nRes]);
 JU.Measure.projectOntoAxis (this.axisB, this.axisA, this.axisUnitVector, this.vectorProjection);
 });
@@ -2996,7 +2279,10 @@ this.leadPoints[0] = leadPoint = this.getLeadPoint (0);
 var previousVectorD = null;
 for (var i = 1; i < this.monomerCount; ++i) {
 leadPointPrev = leadPoint;
-this.leadPoints[i] = leadPoint = this.getLeadPoint (i);
+leadPoint = this.getLeadPoint (i);
+if (leadPoint == null) {
+return;
+}this.leadPoints[i] = leadPoint;
 var midpoint =  new JU.P3 ();
 midpoint.ave (leadPoint, leadPointPrev);
 this.leadMidpoints[i] = midpoint;
@@ -3020,10 +2306,13 @@ var previousVectorC = null;
 for (var i = 1; i < this.monomerCount; ++i) {
 vectorA.sub2 (this.leadMidpoints[i], this.leadPoints[i]);
 vectorB.sub2 (this.leadPoints[i], this.leadMidpoints[i + 1]);
+if (vectorB.length () == 0) {
+vectorC = previousVectorC;
+} else {
 vectorC.cross (vectorA, vectorB);
 vectorC.normalize ();
 if (previousVectorC != null && previousVectorC.angle (vectorC) > 1.5707963267948966) vectorC.scale (-1);
-previousVectorC = this.wingVectors[i] = JU.V3.newV (vectorC);
+}previousVectorC = this.wingVectors[i] = JU.V3.newV (vectorC);
 }
 }}this.wingVectors[0] = this.wingVectors[1];
 this.wingVectors[this.monomerCount] = this.wingVectors[this.monomerCount - 1];
@@ -3129,6 +2418,10 @@ return this.type;
 Clazz_defineMethod (c$, "isCyclic", 
 function () {
 return ((this.cyclicFlag == 0 ? (this.cyclicFlag = (this.monomerCount >= 4 && this.monomers[0].isConnectedAfter (this.monomers[this.monomerCount - 1])) ? 1 : -1) : this.cyclicFlag) == 1);
+});
+Clazz_overrideMethod (c$, "toString", 
+function () {
+return "[Polymer type " + this.type + " n=" + this.monomerCount + " " + (this.monomerCount > 0 ? this.monomers[0] + " " + this.monomers[this.monomerCount - 1] : "") + "]";
 });
 Clazz_defineStatics (c$,
 "TYPE_NOBONDING", 0,
@@ -3253,7 +2546,7 @@ var tag = J.c.STR.NONE;
 var code = JM.AlphaPolymer.Code.NADA;
 var runLength = 0;
 for (var i = 0; i < this.monomerCount; ++i) {
-if (codes[i] === code && code !== JM.AlphaPolymer.Code.NADA && code !== JM.AlphaPolymer.Code.BETA_SHEET) {
+if (codes[i] === code && code !== JM.AlphaPolymer.Code.NADA) {
 ++runLength;
 if (runLength == 4) {
 tag = (code === JM.AlphaPolymer.Code.BETA_SHEET ? J.c.STR.SHEET : J.c.STR.HELIX);
@@ -3807,18 +3100,119 @@ Clazz_defineStatics (c$,
 "minimumHbondDistance2", 0.25);
 });
 Clazz_declarePackage ("JM");
-Clazz_load (["JM.JmolBioModel", "$.JmolBioModelSet", "$.Model"], "JM.BioModel", ["java.lang.Boolean", "$.Character", "$.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "$.PT", "$.SB", "J.api.Interface", "J.c.STR", "JM.Group", "JM.AlphaMonomer", "$.AlphaPolymer", "$.AminoPolymer", "$.Monomer", "$.Resolver", "JS.SV", "$.T", "JU.BSUtil", "$.Escape", "$.Logger"], function () {
+Clazz_load (null, "JM.BioModelSet", ["java.lang.Boolean", "$.Character", "$.Float", "java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "$.PT", "$.SB", "J.api.Interface", "J.c.STR", "JM.Group", "JM.AlphaMonomer", "$.AminoPolymer", "$.BioResolver", "$.Monomer", "JS.T", "JU.BSUtil", "$.Escape", "$.Logger"], function () {
 c$ = Clazz_decorateAsClass (function () {
-this.bioPolymerCount = 0;
-this.bioPolymers = null;
-this.isMutated = false;
-this.defaultStructure = null;
 this.vwr = null;
+this.ms = null;
+this.ext = null;
 this.unitIdSets = null;
-this.bx = null;
 Clazz_instantialize (this, arguments);
-}, JM, "BioModel", JM.Model, [JM.JmolBioModelSet, JM.JmolBioModel]);
-Clazz_overrideMethod (c$, "getAllHeteroList", 
+}, JM, "BioModelSet");
+Clazz_defineMethod (c$, "getBioExt", 
+function () {
+return (this.ext == null ? (this.ext = (J.api.Interface.getInterface ("JM.BioExt", this.vwr, "script"))).set (this.vwr, this.vwr.ms) : this.ext);
+});
+Clazz_defineMethod (c$, "set", 
+function (vwr, ms) {
+this.vwr = vwr;
+this.ms = ms;
+this.unitIdSets = null;
+if (this.ext != null) this.ext.set (vwr, ms);
+return this;
+}, "JV.Viewer,JM.ModelSet");
+Clazz_defineMethod (c$, "calcAllRasmolHydrogenBonds", 
+function (bsA, bsB, vHBonds, nucleicOnly, nMax, dsspIgnoreHydrogens, bsHBonds, dsspVersion) {
+var am = this.ms.am;
+if (vHBonds == null) {
+var bsAtoms = bsA;
+if (bsB != null && !bsA.equals (bsB)) (bsAtoms = JU.BSUtil.copy (bsA)).or (bsB);
+var bsDelete =  new JU.BS ();
+var bsOK =  new JU.BS ();
+var models = this.ms.am;
+var bonds = this.ms.bo;
+for (var i = this.ms.bondCount; --i >= 0; ) {
+var bond = bonds[i];
+if ((bond.order & 28672) == 0) continue;
+if (bsAtoms.get (bond.atom1.i)) bsDelete.set (i);
+ else bsOK.set (models[bond.atom1.mi].trajectoryBaseIndex);
+}
+for (var i = this.ms.mc; --i >= 0; ) if (models[i].isBioModel) models[i].hasRasmolHBonds = bsOK.get (i);
+
+if (bsDelete.nextSetBit (0) >= 0) this.ms.deleteBonds (bsDelete, false);
+}for (var i = this.ms.mc; --i >= 0; ) if (am[i].isBioModel && !this.ms.isTrajectorySubFrame (i)) (am[i]).getRasmolHydrogenBonds (bsA, bsB, vHBonds, nucleicOnly, nMax, dsspIgnoreHydrogens, bsHBonds, dsspVersion);
+
+}, "JU.BS,JU.BS,JU.Lst,~B,~N,~B,JU.BS,~N");
+Clazz_defineMethod (c$, "calcSelectedMonomersCount", 
+function () {
+var bsSelected = this.vwr.bsA ();
+for (var i = this.ms.mc; --i >= 0; ) if (this.ms.am[i].isBioModel) {
+var m = this.ms.am[i];
+for (var j = m.bioPolymerCount; --j >= 0; ) m.bioPolymers[j].calcSelectedMonomersCount (bsSelected);
+
+}
+});
+Clazz_defineMethod (c$, "calculateAllPolymers", 
+function (groups, groupCount, baseGroupIndex, modelsExcluded) {
+var checkConnections = !this.vwr.getBoolean (603979896);
+if (groupCount < 0) groupCount = groups.length;
+if (modelsExcluded != null) for (var j = 0; j < groupCount; ++j) {
+var group = groups[j];
+if (Clazz_instanceOf (group, JM.Monomer)) {
+if ((group).bioPolymer != null && (!modelsExcluded.get (group.chain.model.modelIndex))) (group).setBioPolymer (null, -1);
+}}
+for (var i = 0, mc = this.ms.mc; i < mc; i++) if ((modelsExcluded == null || !modelsExcluded.get (i)) && this.ms.am[i].isBioModel) {
+for (var pt = 0, j = baseGroupIndex; j < groupCount; ++j, pt++) {
+var g = groups[j];
+var model = g.getModel ();
+if (!model.isBioModel || !(Clazz_instanceOf (g, JM.Monomer)) || g.getLeadAtom () == null) continue;
+var doCheck = checkConnections && !this.ms.isJmolDataFrameForModel (this.ms.at[g.getLeadAtom ().i].mi);
+var bp = ((g).bioPolymer == null ? JM.BioResolver.allocateBioPolymer (groups, j, doCheck, pt) : null);
+if (bp == null || bp.monomerCount == 0) continue;
+var n = (model).addBioPolymer (bp);
+j += n - 1;
+pt += n - 1;
+}
+}
+}, "~A,~N,~N,JU.BS");
+Clazz_defineMethod (c$, "calculateAllStructuresExcept", 
+function (alreadyDefined, asDSSP, doReport, dsspIgnoreHydrogen, setStructure, includeAlpha, version) {
+var ret = "";
+var bsModels = JU.BSUtil.copyInvert (alreadyDefined, this.ms.mc);
+if (setStructure) this.setAllDefaultStructure (bsModels);
+for (var i = bsModels.nextSetBit (0); i >= 0; i = bsModels.nextSetBit (i + 1)) if (this.ms.am[i].isBioModel) ret += (this.ms.am[i]).calculateStructures (asDSSP, doReport, dsspIgnoreHydrogen, setStructure, includeAlpha, version);
+
+if (setStructure) this.ms.setStructureIndexes ();
+return ret;
+}, "JU.BS,~B,~B,~B,~B,~B,~N");
+Clazz_defineMethod (c$, "calculateAllStuctures", 
+function (bsAtoms, asDSSP, doReport, dsspIgnoreHydrogen, setStructure, version) {
+if (version <= 0) version = 2;
+var bsAllAtoms =  new JU.BS ();
+var bsModelsExcluded = JU.BSUtil.copyInvert (this.modelsOf (bsAtoms, bsAllAtoms), this.ms.mc);
+if (!setStructure) return this.ms.calculateStructuresAllExcept (bsModelsExcluded, asDSSP, doReport, dsspIgnoreHydrogen, false, false, version);
+this.ms.recalculatePolymers (bsModelsExcluded);
+var ret = this.ms.calculateStructuresAllExcept (bsModelsExcluded, asDSSP, doReport, dsspIgnoreHydrogen, true, false, version);
+this.vwr.shm.resetBioshapes (bsAllAtoms);
+this.ms.setStructureIndexes ();
+return ret;
+}, "JU.BS,~B,~B,~B,~B,~N");
+Clazz_defineMethod (c$, "calculateStraightnessAll", 
+function () {
+this.getBioExt ().calculateStraightnessAll ();
+});
+Clazz_defineMethod (c$, "calculateStruts", 
+function (bs1, bs2) {
+return this.getBioExt ().calculateAllstruts (this.vwr, this.ms, bs1, bs2);
+}, "JU.BS,JU.BS");
+Clazz_defineMethod (c$, "getAllDefaultStructures", 
+function (bsAtoms, bsModified) {
+var bsModels = this.modelsOf (bsAtoms, bsModified);
+var ret =  new JU.SB ();
+for (var i = bsModels.nextSetBit (0); i >= 0; i = bsModels.nextSetBit (i + 1)) if (this.ms.am[i].isBioModel && (this.ms.am[i]).defaultStructure != null) ret.append ((this.ms.am[i]).defaultStructure);
+
+return ret.toString ();
+}, "JU.BS,JU.BS");
+Clazz_defineMethod (c$, "getAllHeteroList", 
 function (modelIndex) {
 var htFull =  new java.util.Hashtable ();
 var ok = false;
@@ -3833,114 +3227,11 @@ htFull.put (key, entry.getValue ());
 }
 return (ok ? htFull : null);
 }, "~N");
-Clazz_overrideMethod (c$, "setAllProteinType", 
-function (bs, type) {
-var monomerIndexCurrent = -1;
-var iLast = -1;
-var bsModels = this.ms.getModelBS (bs, false);
-this.setAllDefaultStructure (bsModels);
-var at = this.ms.at;
-var am = this.ms.am;
-for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
-if (at[i].group.isAdded (i)) continue;
-monomerIndexCurrent = at[i].group.setProteinStructureType (type, iLast == i - 1 ? monomerIndexCurrent : -1);
-var modelIndex = at[i].mi;
-this.ms.proteinStructureTainted = am[modelIndex].structureTainted = true;
-iLast = i = at[i].group.lastAtomIndex;
-}
-var lastStrucNo =  Clazz_newIntArray (this.ms.mc, 0);
-for (var i = 0; i < this.ms.ac; i++) {
-var modelIndex = at[i].mi;
-if (!bsModels.get (modelIndex)) {
-i = am[modelIndex].firstAtomIndex + am[modelIndex].act - 1;
-continue;
-}var g = at[i].group;
-if (!g.isAdded (i)) {
-iLast = g.getStrucNo ();
-if (iLast < 1000 && iLast > lastStrucNo[modelIndex]) lastStrucNo[modelIndex] = iLast;
-i = g.lastAtomIndex;
-}}
-for (var i = 0; i < this.ms.ac; i++) {
-var modelIndex = at[i].mi;
-if (!bsModels.get (modelIndex)) {
-i = am[modelIndex].firstAtomIndex + am[modelIndex].act - 1;
-continue;
-}var g = at[i].group;
-if (!g.isAdded (i)) {
-i = g.lastAtomIndex;
-if (g.getStrucNo () > 1000) g.setStrucNo (++lastStrucNo[modelIndex]);
-}}
-}, "JU.BS,J.c.STR");
-Clazz_defineMethod (c$, "modelsOf", 
- function (bsAtoms, bsAtomsRet) {
-var bsModels = JU.BS.newN (this.ms.mc);
-var isAll = (bsAtoms == null);
-var i0 = (isAll ? this.ms.ac - 1 : bsAtoms.nextSetBit (0));
-for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsAtoms.nextSetBit (i + 1))) {
-var modelIndex = this.ms.am[this.ms.at[i].mi].trajectoryBaseIndex;
-if (this.ms.isJmolDataFrameForModel (modelIndex)) continue;
-bsModels.set (modelIndex);
-bsAtomsRet.set (i);
-}
-return bsModels;
-}, "JU.BS,JU.BS");
-Clazz_overrideMethod (c$, "getAllDefaultStructures", 
-function (bsAtoms, bsModified) {
-var bsModels = this.modelsOf (bsAtoms, bsModified);
-var ret =  new JU.SB ();
-for (var i = bsModels.nextSetBit (0); i >= 0; i = bsModels.nextSetBit (i + 1)) if (this.ms.am[i].isBioModel && (this.ms.am[i]).defaultStructure != null) ret.append ((this.ms.am[i]).defaultStructure);
-
-return ret.toString ();
-}, "JU.BS,JU.BS");
-Clazz_overrideMethod (c$, "calculateAllStuctures", 
-function (bsAtoms, asDSSP, doReport, dsspIgnoreHydrogen, setStructure) {
-var bsAllAtoms =  new JU.BS ();
-var bsModelsExcluded = JU.BSUtil.copyInvert (this.modelsOf (bsAtoms, bsAllAtoms), this.ms.mc);
-if (!setStructure) return this.ms.calculateStructuresAllExcept (bsModelsExcluded, asDSSP, doReport, dsspIgnoreHydrogen, false, false);
-this.ms.recalculatePolymers (bsModelsExcluded);
-var ret = this.ms.calculateStructuresAllExcept (bsModelsExcluded, asDSSP, doReport, dsspIgnoreHydrogen, true, false);
-this.vwr.shm.resetBioshapes (bsAllAtoms);
-this.ms.setStructureIndexes ();
-return ret;
-}, "JU.BS,~B,~B,~B,~B");
-Clazz_overrideMethod (c$, "calculateAllStructuresExcept", 
-function (alreadyDefined, asDSSP, doReport, dsspIgnoreHydrogen, setStructure, includeAlpha) {
-var ret = "";
-var bsModels = JU.BSUtil.copyInvert (alreadyDefined, this.ms.mc);
-if (setStructure) this.setAllDefaultStructure (bsModels);
-for (var i = bsModels.nextSetBit (0); i >= 0; i = bsModels.nextSetBit (i + 1)) if (this.ms.am[i].isBioModel) ret += (this.ms.am[i]).calculateStructures (asDSSP, doReport, dsspIgnoreHydrogen, setStructure, includeAlpha);
-
-if (setStructure) this.ms.setStructureIndexes ();
-return ret;
-}, "JU.BS,~B,~B,~B,~B,~B");
-Clazz_defineMethod (c$, "setAllDefaultStructure", 
-function (bsModels) {
-for (var i = bsModels.nextSetBit (0); i >= 0; i = bsModels.nextSetBit (i + 1)) if (this.ms.am[i].isBioModel) {
-var m = this.ms.am[i];
-if (m.defaultStructure == null) m.defaultStructure = this.getFullProteinStructureState (m.bsAtoms, 1073742158);
-}
-}, "JU.BS");
-Clazz_overrideMethod (c$, "setAllStructureList", 
-function (structureList) {
-for (var iModel = this.ms.mc; --iModel >= 0; ) if (this.ms.am[iModel].isBioModel) {
-var m = this.ms.am[iModel];
-m.bioPolymers = JU.AU.arrayCopyObject (m.bioPolymers, m.bioPolymerCount);
-for (var i = m.bioPolymerCount; --i >= 0; ) {
-var bp = m.bioPolymers[i];
-if (Clazz_instanceOf (bp, JM.AminoPolymer)) (bp).setStructureList (structureList);
-}
-}
-}, "java.util.Map");
-Clazz_overrideMethod (c$, "setAllConformation", 
-function (bsAtoms) {
-var bsModels = this.ms.getModelBS (bsAtoms, false);
-for (var i = bsModels.nextSetBit (0); i >= 0; i = bsModels.nextSetBit (i + 1)) if (this.ms.am[i].isBioModel) {
-var m = this.ms.am[i];
-if (m.altLocCount > 0) for (var j = m.bioPolymerCount; --j >= 0; ) m.bioPolymers[j].setConformation (bsAtoms);
-
-}
-}, "JU.BS");
-Clazz_overrideMethod (c$, "getAllPolymerPointsAndVectors", 
+Clazz_defineMethod (c$, "getAllPolymerInfo", 
+function (bs, info) {
+this.getBioExt ().getAllPolymerInfo (bs, info);
+}, "JU.BS,java.util.Map");
+Clazz_defineMethod (c$, "getAllPolymerPointsAndVectors", 
 function (bs, vList, isTraceAlpha, sheetSmoothing) {
 for (var i = 0; i < this.ms.mc; ++i) if (this.ms.am[i].isBioModel) {
 var m = this.ms.am[i];
@@ -3949,16 +3240,133 @@ for (var ip = 0; ip < m.bioPolymerCount; ip++) last = m.bioPolymers[ip].getPolym
 
 }
 }, "JU.BS,JU.Lst,~B,~N");
-Clazz_overrideMethod (c$, "calcSelectedMonomersCount", 
-function () {
-var bsSelected = this.vwr.bsA ();
-for (var i = this.ms.mc; --i >= 0; ) if (this.ms.am[i].isBioModel) {
-var m = this.ms.am[i];
-for (var j = m.bioPolymerCount; --j >= 0; ) m.bioPolymers[j].calcSelectedMonomersCount (bsSelected);
+Clazz_defineMethod (c$, "getAllSequenceBits", 
+function (specInfo, bsAtoms, bsResult) {
+if (specInfo.length > 0) {
+if (bsAtoms == null) bsAtoms = this.vwr.getAllAtoms ();
+if (specInfo.indexOf ('|') < specInfo.lastIndexOf ('|')) return this.getAllUnitIds (specInfo, bsAtoms, bsResult);
+var am = this.ms.am;
+for (var i = this.ms.mc; --i >= 0; ) if (am[i].isBioModel) {
+var m = am[i];
+var lenInfo = specInfo.length;
+for (var ip = 0; ip < m.bioPolymerCount; ip++) {
+var sequence = m.bioPolymers[ip].getSequence ();
+var j = -1;
+while ((j = sequence.indexOf (specInfo, ++j)) >= 0) m.bioPolymers[ip].getPolymerSequenceAtoms (j, lenInfo, bsAtoms, bsResult);
 
 }
-});
-Clazz_overrideMethod (c$, "getBioPolymerCountInModel", 
+}
+}return bsResult;
+}, "~S,JU.BS,JU.BS");
+Clazz_defineMethod (c$, "getAtomBitsBS", 
+function (tokType, bsInfo, bs) {
+var at = this.ms.at;
+var ac = this.ms.ac;
+var i = 0;
+var g;
+switch (tokType) {
+case 136314895:
+case 2097184:
+var type = (tokType == 136314895 ? J.c.STR.HELIX : J.c.STR.SHEET);
+for (i = ac; --i >= 0; ) {
+if (at[i] == null) continue;
+if ((g = at[i].group).isWithinStructure (type)) g.setAtomBits (bs);
+i = g.firstAtomIndex;
+}
+break;
+case 2097188:
+for (i = ac; --i >= 0; ) {
+if (at[i] == null) continue;
+if ((g = at[i].group).isCarbohydrate ()) g.setAtomBits (bs);
+i = g.firstAtomIndex;
+}
+break;
+case 2097156:
+for (i = ac; --i >= 0; ) {
+if (at[i] == null) continue;
+if ((g = at[i].group).isDna ()) g.setAtomBits (bs);
+i = g.firstAtomIndex;
+}
+break;
+case 2097166:
+for (i = ac; --i >= 0; ) {
+if (at[i] == null) continue;
+if ((g = at[i].group).isNucleic ()) g.setAtomBits (bs);
+i = g.firstAtomIndex;
+}
+break;
+case 2097168:
+for (i = ac; --i >= 0; ) {
+if (at[i] == null) continue;
+if ((g = at[i].group).isProtein ()) g.setAtomBits (bs);
+i = g.firstAtomIndex;
+}
+break;
+case 2097170:
+for (i = ac; --i >= 0; ) {
+if (at[i] == null) continue;
+if ((g = at[i].group).isPurine ()) g.setAtomBits (bs);
+i = g.firstAtomIndex;
+}
+break;
+case 2097172:
+for (i = ac; --i >= 0; ) {
+if (at[i] == null) continue;
+if ((g = at[i].group).isPyrimidine ()) g.setAtomBits (bs);
+i = g.firstAtomIndex;
+}
+break;
+case 2097174:
+for (i = ac; --i >= 0; ) {
+if (at[i] == null) continue;
+if ((g = at[i].group).isRna ()) g.setAtomBits (bs);
+i = g.firstAtomIndex;
+}
+break;
+}
+if (i < 0) return bs;
+var i0 = bsInfo.nextSetBit (0);
+if (i0 < 0) return bs;
+i = 0;
+switch (tokType) {
+case 1094713362:
+for (i = i0; i >= 0; i = bsInfo.nextSetBit (i + 1)) {
+var iPolymer = at[i].group.getBioPolymerIndexInModel ();
+if (iPolymer >= 0) (at[i].group).bioPolymer.setAtomBitsAndClear (bs, bsInfo);
+}
+break;
+case 1639976963:
+for (i = i0; i >= 0; i = bsInfo.nextSetBit (i + 1)) {
+var structure = at[i].group.getStructure ();
+if (structure != null) structure.setAtomBitsAndClear (bs, bsInfo);
+}
+break;
+}
+if (i == 0) JU.Logger.error ("MISSING getAtomBits entry for " + JS.T.nameOf (tokType));
+return bs;
+}, "~N,JU.BS,JU.BS");
+Clazz_defineMethod (c$, "getAtomBitsStr", 
+function (tokType, specInfo, bs) {
+switch (tokType) {
+default:
+return  new JU.BS ();
+case 1073741925:
+return this.getAnnotationBits ("domains", 1073741925, specInfo);
+case 1073742189:
+return this.getAnnotationBits ("validation", 1073742189, specInfo);
+case 1073742128:
+return this.getAnnotationBits ("rna3d", 1073742128, specInfo);
+case 1073741863:
+var s = specInfo;
+bs =  new JU.BS ();
+return (s.length % 2 != 0 ? bs : this.ms.getAtomBitsMDa (1086324742, this.getAllBasePairBits (s), bs));
+case 1111490587:
+return this.getAnnotationBits ("dssr", 1111490587, specInfo);
+case 1086324744:
+return this.getAllSequenceBits (specInfo, null, bs);
+}
+}, "~N,~S,JU.BS");
+Clazz_defineMethod (c$, "getBioPolymerCountInModel", 
 function (modelIndex) {
 if (modelIndex < 0) {
 var polymerCount = 0;
@@ -3967,71 +3375,19 @@ for (var i = this.ms.mc; --i >= 0; ) if (!this.ms.isTrajectorySubFrame (i) && th
 return polymerCount;
 }return (this.ms.isTrajectorySubFrame (modelIndex) || !this.ms.am[modelIndex].isBioModel ? 0 : (this.ms.am[modelIndex]).getBioPolymerCount ());
 }, "~N");
-Clazz_overrideMethod (c$, "calculateAllPolymers", 
-function (groups, groupCount, baseGroupIndex, modelsExcluded) {
-var checkConnections = !this.vwr.getBoolean (603979894);
-if (groupCount < 0) groupCount = groups.length;
-if (modelsExcluded != null) for (var j = 0; j < groupCount; ++j) {
-var group = groups[j];
-if (Clazz_instanceOf (group, JM.Monomer)) {
-if ((group).bioPolymer != null && (!modelsExcluded.get (group.chain.model.modelIndex))) (group).setBioPolymer (null, -1);
-}}
-for (var i = 0, mc = this.ms.mc; i < mc; i++) if ((modelsExcluded == null || !modelsExcluded.get (i)) && this.ms.am[i].isBioModel) {
-for (var pt = 0, j = baseGroupIndex; j < groupCount; ++j, pt++) {
-var g = groups[j];
-var model = g.getModel ();
-if (!model.isBioModel || !(Clazz_instanceOf (g, JM.Monomer))) continue;
-var doCheck = checkConnections && !this.ms.isJmolDataFrameForModel (this.ms.at[g.firstAtomIndex].mi);
-var bp = ((g).bioPolymer == null ? JM.Resolver.allocateBioPolymer (groups, j, doCheck, pt) : null);
-if (bp == null || bp.monomerCount == 0) continue;
-var n = (model).addBioPolymer (bp);
-j += n - 1;
-pt += n - 1;
-}
-}
-}, "~A,~N,~N,JU.BS");
-Clazz_overrideMethod (c$, "recalculateAllPolymers", 
-function (bsModelsExcluded, groups) {
-for (var i = 0; i < this.ms.mc; i++) if (this.ms.am[i].isBioModel && !bsModelsExcluded.get (i)) (this.ms.am[i]).clearBioPolymers ();
-
-this.calculateAllPolymers (groups, -1, 0, bsModelsExcluded);
-}, "JU.BS,~A");
-Clazz_overrideMethod (c$, "getGroupsWithinAll", 
-function (nResidues, bs) {
-var bsResult =  new JU.BS ();
-var bsCheck = this.ms.getIterativeModels (false);
-for (var iModel = this.ms.mc; --iModel >= 0; ) if (bsCheck.get (iModel) && this.ms.am[iModel].isBioModel) {
-var m = this.ms.am[iModel];
-for (var i = m.bioPolymerCount; --i >= 0; ) m.bioPolymers[i].getRangeGroups (nResidues, bs, bsResult);
-
-}
-return bsResult;
-}, "~N,JU.BS");
-Clazz_overrideMethod (c$, "calculateStruts", 
-function (bs1, bs2) {
-return this.getBioExt ().calculateAllstruts (this.vwr, this.ms, bs1, bs2);
-}, "JU.BS,JU.BS");
-Clazz_overrideMethod (c$, "recalculatePoints", 
-function (modelIndex) {
-if (modelIndex < 0) {
-for (var i = this.ms.mc; --i >= 0; ) if (!this.ms.isTrajectorySubFrame (i) && this.ms.am[i].isBioModel) (this.ms.am[i]).recalculateLeadMidpointsAndWingVectors ();
-
-return;
-}if (!this.ms.isTrajectorySubFrame (modelIndex) && this.ms.am[modelIndex].isBioModel) (this.ms.am[modelIndex]).recalculateLeadMidpointsAndWingVectors ();
-}, "~N");
-Clazz_overrideMethod (c$, "getFullProteinStructureState", 
+Clazz_defineMethod (c$, "getFullProteinStructureState", 
 function (bsAtoms, mode) {
 var taintedOnly = (mode == 1073742327);
 if (taintedOnly && !this.ms.proteinStructureTainted) return "";
 var scriptMode = (mode == 1073742158 || mode == 1073742327);
 var atoms = this.ms.at;
-var at0 = (bsAtoms == null ? 0 : bsAtoms.nextSetBit (0));
+var at0 = (bsAtoms == null ? this.vwr.getAllAtoms () : bsAtoms).nextSetBit (0);
 if (at0 < 0) return "";
 if (bsAtoms != null && mode == 4138) {
 bsAtoms = JU.BSUtil.copy (bsAtoms);
-for (var i = this.ms.ac; --i >= 0; ) if (Float.isNaN (atoms[i].group.getGroupParameter (1111490569)) || Float.isNaN (atoms[i].group.getGroupParameter (1111490570))) bsAtoms.clear (i);
+for (var i = this.ms.ac; --i >= 0; ) if (atoms[i] == null || Float.isNaN (atoms[i].group.getGroupParameter (1111490569)) || Float.isNaN (atoms[i].group.getGroupParameter (1111490570))) bsAtoms.clear (i);
 
-}var at1 = (bsAtoms == null ? this.ms.ac : bsAtoms.length ()) - 1;
+}var at1 = (bsAtoms == null ? this.vwr.getAllAtoms () : bsAtoms).length () - 1;
 var im0 = atoms[at0].mi;
 var im1 = atoms[at1].mi;
 var lstStr =  new JU.Lst ();
@@ -4051,7 +3407,7 @@ cmd.append ("  structure none ").append (JU.Escape.eBS (this.ms.getModelAtomBitS
 }var ps;
 for (var i = i0; i >= 0; i = bsA.nextSetBit (i + 1)) {
 var a = atoms[i];
-if (!(Clazz_instanceOf (a.group, JM.AlphaMonomer)) || (ps = (a.group).proteinStructure) == null || map.containsKey (ps)) continue;
+if (a == null || !(Clazz_instanceOf (a.group, JM.AlphaMonomer)) || (ps = (a.group).proteinStructure) == null || map.containsKey (ps)) continue;
 lstStr.addLast (ps);
 map.put (ps, Boolean.TRUE);
 }
@@ -4061,105 +3417,147 @@ this.getStructureLines (bsAtoms, cmd, lstStr, J.c.STR.SHEET, scriptMode, mode);
 this.getStructureLines (bsAtoms, cmd, lstStr, J.c.STR.TURN, scriptMode, mode);
 return cmd.toString ();
 }, "JU.BS,~N");
-Clazz_defineMethod (c$, "getStructureLines", 
- function (bsAtoms, cmd, lstStr, type, scriptMode, mode) {
-var showMode = (mode == 134222350);
-var nHelix = 0;
-var nSheet = 0;
-var nTurn = 0;
-var sid = null;
-var bs =  new JU.BS ();
-var n = 0;
-for (var i = 0, ns = lstStr.size (); i < ns; i++) {
-var ps = lstStr.get (i);
-if (ps.type !== type) continue;
-var m1 = ps.findMonomer (bsAtoms, true);
-var m2 = ps.findMonomer (bsAtoms, false);
-if (m1 == null || m2 == null) continue;
-var iModel = ps.apolymer.model.modelIndex;
-var comment = (scriptMode ? "    \t# model=" + this.ms.getModelNumberDotted (iModel) : null);
-var res1 = m1.getResno ();
-var res2 = m2.getResno ();
-var subtype = ps.subtype;
-switch (type) {
-case J.c.STR.HELIX:
-case J.c.STR.TURN:
-case J.c.STR.SHEET:
-n++;
-if (scriptMode) {
-bs.clearAll ();
-ps.setAtomBits (bs);
-var stype = subtype.getBioStructureTypeName (false);
-cmd.append ("  structure ").append (stype).append (" ").append (JU.Escape.eBS (bs)).append (comment).append (" & (" + res1 + " - " + res2 + ")").append (";\n");
-} else {
-var str;
-var nx;
-switch (type) {
-case J.c.STR.HELIX:
-nx = ++nHelix;
-sid = JU.PT.formatStringI ("%3N %3N", "N", nx);
-str = "HELIX  %ID %3GROUPA %1CA %4RESA  %3GROUPB %1CB %4RESB";
-var stype = null;
-switch (subtype) {
-case J.c.STR.HELIX:
-case J.c.STR.HELIXALPHA:
-stype = "  1";
-break;
-case J.c.STR.HELIX310:
-stype = "  5";
-break;
-case J.c.STR.HELIXPI:
-stype = "  3";
-break;
-}
-if (stype != null) str += stype;
-break;
-case J.c.STR.SHEET:
-nx = ++nSheet;
-sid = JU.PT.formatStringI ("%3N %3A 0", "N", nx);
-sid = JU.PT.formatStringS (sid, "A", "S" + nx);
-str = "SHEET  %ID %3GROUPA %1CA%4RESA  %3GROUPB %1CB%4RESB";
-break;
-case J.c.STR.TURN:
-default:
-nx = ++nTurn;
-sid = JU.PT.formatStringI ("%3N %3N", "N", nx);
-str = "TURN   %ID %3GROUPA %1CA%4RESA  %3GROUPB %1CB%4RESB";
-break;
-}
-str = JU.PT.formatStringS (str, "ID", sid);
-str = JU.PT.formatStringS (str, "GROUPA", m1.getGroup3 ());
-str = JU.PT.formatStringS (str, "CA", m1.getLeadAtom ().getChainIDStr ());
-str = JU.PT.formatStringI (str, "RESA", res1);
-str = JU.PT.formatStringS (str, "GROUPB", m2.getGroup3 ());
-str = JU.PT.formatStringS (str, "CB", m2.getLeadAtom ().getChainIDStr ());
-str = JU.PT.formatStringI (str, "RESB", res2);
-cmd.append (str);
-if (showMode) cmd.append (" strucno= ").appendI (ps.strucNo);
-cmd.append ("\n");
-}}
-}
-if (n > 0) cmd.append ("\n");
-return n;
-}, "JU.BS,JU.SB,JU.Lst,J.c.STR,~B,~N");
-Clazz_overrideMethod (c$, "getAllSequenceBits", 
-function (specInfo, bsAtoms, bsResult) {
-if (specInfo.length > 0) {
-if (bsAtoms == null) bsAtoms = this.vwr.getAllAtoms ();
-if (specInfo.indexOf ('|') < specInfo.lastIndexOf ('|')) return this.getAllUnitIds (specInfo, bsAtoms, bsResult);
-var am = this.ms.am;
-for (var i = this.ms.mc; --i >= 0; ) if (am[i].isBioModel) {
-var m = am[i];
-var lenInfo = specInfo.length;
-for (var ip = 0; ip < m.bioPolymerCount; ip++) {
-var sequence = m.bioPolymers[ip].getSequence ();
-var j = -1;
-while ((j = sequence.indexOf (specInfo, ++j)) >= 0) m.bioPolymers[ip].getPolymerSequenceAtoms (j, lenInfo, bsAtoms, bsResult);
+Clazz_defineMethod (c$, "getGroupsWithinAll", 
+function (nResidues, bs) {
+var bsResult =  new JU.BS ();
+var bsCheck = this.ms.getIterativeModels (false);
+for (var iModel = this.ms.mc; --iModel >= 0; ) if (bsCheck.get (iModel) && this.ms.am[iModel].isBioModel) {
+var m = this.ms.am[iModel];
+for (var i = m.bioPolymerCount; --i >= 0; ) m.bioPolymers[i].getRangeGroups (nResidues, bs, bsResult);
 
 }
+return bsResult;
+}, "~N,JU.BS");
+Clazz_defineMethod (c$, "getIdentifierOrNull", 
+function (identifier) {
+var len = identifier.length;
+var pt = 0;
+while (pt < len && JU.PT.isLetter (identifier.charAt (pt))) ++pt;
+
+var bs = this.ms.getSpecNameOrNull (identifier.substring (0, pt), false);
+if (pt == len) return bs;
+if (bs == null) bs =  new JU.BS ();
+var pt0 = pt;
+while (pt < len && JU.PT.isDigit (identifier.charAt (pt))) ++pt;
+
+var seqNumber = 0;
+try {
+seqNumber = Integer.parseInt (identifier.substring (pt0, pt));
+} catch (nfe) {
+if (Clazz_exceptionOf (nfe, NumberFormatException)) {
+return null;
+} else {
+throw nfe;
 }
-}return bsResult;
-}, "~S,JU.BS,JU.BS");
+}
+var insertionCode = ' ';
+if (pt < len && identifier.charAt (pt) == '^') if (++pt < len) insertionCode = identifier.charAt (pt);
+var seqcode = JM.Group.getSeqcodeFor (seqNumber, insertionCode);
+var bsInsert = this.ms.getSeqcodeBits (seqcode, false);
+if (bsInsert == null) {
+if (insertionCode != ' ') bsInsert = this.ms.getSeqcodeBits (Character.toUpperCase (identifier.charAt (pt)).charCodeAt (0), false);
+if (bsInsert == null) return null;
+pt++;
+}bs.and (bsInsert);
+if (pt >= len) return bs;
+if (pt != len - 1) return null;
+bs.and (this.ms.getChainBits (identifier.charCodeAt (pt)));
+return bs;
+}, "~S");
+Clazz_defineMethod (c$, "mutate", 
+function (bs, group, sequence, alphaType, phipsi) {
+return this.getBioExt ().mutate (this.vwr, bs, group, sequence, alphaType, phipsi);
+}, "JU.BS,~S,~A,~S,~A");
+Clazz_defineMethod (c$, "recalculateAllPolymers", 
+function (bsModelsExcluded, groups) {
+for (var i = 0; i < this.ms.mc; i++) if (this.ms.am[i].isBioModel && !bsModelsExcluded.get (i)) (this.ms.am[i]).clearBioPolymers ();
+
+this.calculateAllPolymers (groups, -1, 0, bsModelsExcluded);
+}, "JU.BS,~A");
+Clazz_defineMethod (c$, "recalculatePoints", 
+function (modelIndex) {
+if (modelIndex < 0) {
+for (var i = this.ms.mc; --i >= 0; ) if (!this.ms.isTrajectorySubFrame (i) && this.ms.am[i].isBioModel) (this.ms.am[i]).recalculateLeadMidpointsAndWingVectors ();
+
+return;
+}if (!this.ms.isTrajectorySubFrame (modelIndex) && this.ms.am[modelIndex].isBioModel) (this.ms.am[modelIndex]).recalculateLeadMidpointsAndWingVectors ();
+}, "~N");
+Clazz_defineMethod (c$, "setAllConformation", 
+function (bsAtoms) {
+var bsModels = this.ms.getModelBS (bsAtoms, false);
+for (var i = bsModels.nextSetBit (0); i >= 0; i = bsModels.nextSetBit (i + 1)) if (this.ms.am[i].isBioModel) {
+var m = this.ms.am[i];
+if (m.altLocCount > 0) for (var j = m.bioPolymerCount; --j >= 0; ) m.bioPolymers[j].setConformation (bsAtoms);
+
+}
+}, "JU.BS");
+Clazz_defineMethod (c$, "setAllProteinType", 
+function (bs, type) {
+var monomerIndexCurrent = -1;
+var bsModels = this.ms.getModelBS (bs, false);
+this.setAllDefaultStructure (bsModels);
+var groups = this.ms.getGroups ();
+var lastStrucNo = 0;
+var lastResNo = -2147483648;
+var lastPolymer = null;
+var lastModel = null;
+var isNone = (type === J.c.STR.NONE);
+for (var i = 0; i < groups.length; i++) {
+var g = groups[i];
+if (g.getBioPolymerLength () == 0 || !bs.get (g.firstAtomIndex)) continue;
+var m = g.getModel ();
+if (!isNone) {
+if (m !== lastModel) {
+lastModel = m;
+lastStrucNo = 0;
+lastPolymer = null;
+}if (lastPolymer !== (g).bioPolymer) {
+lastResNo = -2147483648;
+lastPolymer = (g).bioPolymer;
+}var resno = g.getResno ();
+if (resno != lastResNo + 1) {
+monomerIndexCurrent = -1;
+}lastResNo = resno;
+}monomerIndexCurrent = g.setProteinStructureType (type, monomerIndexCurrent);
+if (g.getStrucNo () > 1000) g.setStrucNo (++lastStrucNo);
+this.ms.proteinStructureTainted = m.structureTainted = true;
+}
+}, "JU.BS,J.c.STR");
+Clazz_defineMethod (c$, "setAllStructureList", 
+function (structureList) {
+for (var iModel = this.ms.mc; --iModel >= 0; ) if (this.ms.am[iModel].isBioModel) {
+var m = this.ms.am[iModel];
+m.bioPolymers = JU.AU.arrayCopyObject (m.bioPolymers, m.bioPolymerCount);
+for (var i = m.bioPolymerCount; --i >= 0; ) {
+var bp = m.bioPolymers[i];
+if (Clazz_instanceOf (bp, JM.AminoPolymer)) (bp).setStructureList (structureList);
+}
+}
+}, "java.util.Map");
+Clazz_defineMethod (c$, "getAllBasePairBits", 
+ function (specInfo) {
+var bsA = null;
+var bsB = null;
+var vHBonds =  new JU.Lst ();
+if (specInfo.length == 0) {
+bsA = bsB = this.vwr.getAllAtoms ();
+this.calcAllRasmolHydrogenBonds (bsA, bsB, vHBonds, true, 1, false, null, 0);
+} else {
+for (var i = 0; i < specInfo.length; ) {
+bsA = this.ms.getSequenceBits (specInfo.substring (i, ++i), null,  new JU.BS ());
+if (bsA.nextSetBit (0) < 0) continue;
+bsB = this.ms.getSequenceBits (specInfo.substring (i, ++i), null,  new JU.BS ());
+if (bsB.nextSetBit (0) < 0) continue;
+this.calcAllRasmolHydrogenBonds (bsA, bsB, vHBonds, true, 1, false, null, 0);
+}
+}var bsAtoms =  new JU.BS ();
+for (var i = vHBonds.size (); --i >= 0; ) {
+var b = vHBonds.get (i);
+bsAtoms.set (b.atom1.i);
+bsAtoms.set (b.atom2.i);
+}
+return bsAtoms;
+}, "~S");
 Clazz_defineMethod (c$, "getAllUnitIds", 
  function (specInfo, bsSelected, bsResult) {
 var maps = this.unitIdSets;
@@ -4243,54 +3641,297 @@ map.put (key, bs = this.ms.getAtomBitsMDa (tok, o, (bs == null ?  new JU.BS () :
 }bsTemp.and (bs);
 return (bsTemp.nextSetBit (0) >= 0);
 }, "~N,~S,JU.BS,java.util.Map");
-Clazz_defineMethod (c$, "getAllBasePairBits", 
- function (specInfo) {
-var bsA = null;
-var bsB = null;
-var vHBonds =  new JU.Lst ();
-if (specInfo.length == 0) {
-bsA = bsB = this.vwr.getAllAtoms ();
-this.calcAllRasmolHydrogenBonds (bsA, bsB, vHBonds, true, 1, false, null);
+Clazz_defineMethod (c$, "getAnnotationBits", 
+ function (name, tok, specInfo) {
+var bs =  new JU.BS ();
+var pa = this.vwr.getAnnotationParser (name.equals ("dssr"));
+var ann;
+for (var i = this.ms.mc; --i >= 0; ) if ((ann = this.ms.getInfo (i, name)) != null) bs.or (pa.getAtomBits (this.vwr, specInfo, (this.ms.am[i]).getCachedAnnotationMap (name + " V ", ann), this.ms.am[i].dssrCache, tok, i, this.ms.am[i].bsAtoms));
+
+return bs;
+}, "~S,~N,~S");
+Clazz_defineMethod (c$, "getStructureLines", 
+ function (bsAtoms, cmd, lstStr, type, scriptMode, mode) {
+var showMode = (mode == 134222350);
+var nHelix = 0;
+var nSheet = 0;
+var nTurn = 0;
+var sid = null;
+var bs =  new JU.BS ();
+var n = 0;
+for (var i = 0, ns = lstStr.size (); i < ns; i++) {
+var ps = lstStr.get (i);
+if (ps.type !== type) continue;
+var m1 = ps.findMonomer (bsAtoms, true);
+var m2 = ps.findMonomer (bsAtoms, false);
+if (m1 == null || m2 == null) continue;
+var iModel = ps.apolymer.model.modelIndex;
+var comment = (scriptMode ? "    \t# model=" + this.ms.getModelNumberDotted (iModel) : null);
+var res1 = m1.getResno ();
+var res2 = m2.getResno ();
+var subtype = ps.subtype;
+switch (type) {
+case J.c.STR.HELIX:
+case J.c.STR.TURN:
+case J.c.STR.SHEET:
+n++;
+if (scriptMode) {
+bs.clearAll ();
+ps.setAtomBits (bs);
+var stype = subtype.getBioStructureTypeName (false);
+cmd.append ("  structure ").append (stype).append (" ").append (JU.Escape.eBS (bs)).append (comment).append (" & (" + res1 + " - " + res2 + ")").append (";\n");
 } else {
-for (var i = 0; i < specInfo.length; ) {
-bsA = this.ms.getSequenceBits (specInfo.substring (i, ++i), null,  new JU.BS ());
-if (bsA.nextSetBit (0) < 0) continue;
-bsB = this.ms.getSequenceBits (specInfo.substring (i, ++i), null,  new JU.BS ());
-if (bsB.nextSetBit (0) < 0) continue;
-this.calcAllRasmolHydrogenBonds (bsA, bsB, vHBonds, true, 1, false, null);
+var str;
+var nx;
+switch (type) {
+case J.c.STR.HELIX:
+nx = ++nHelix;
+sid = JU.PT.formatStringI ("%3N %3N", "N", nx);
+str = "HELIX  %ID %3GROUPA %1CA %4RESA  %3GROUPB %1CB %4RESB";
+var stype = null;
+switch (subtype) {
+case J.c.STR.HELIX:
+case J.c.STR.HELIXALPHA:
+stype = "  1";
+break;
+case J.c.STR.HELIX310:
+stype = "  5";
+break;
+case J.c.STR.HELIXPI:
+stype = "  3";
+break;
 }
-}var bsAtoms =  new JU.BS ();
-for (var i = vHBonds.size (); --i >= 0; ) {
-var b = vHBonds.get (i);
-bsAtoms.set (b.atom1.i);
-bsAtoms.set (b.atom2.i);
+if (stype != null) str += stype;
+break;
+case J.c.STR.SHEET:
+nx = ++nSheet;
+sid = JU.PT.formatStringI ("%3N %3A 0", "N", nx);
+sid = JU.PT.formatStringS (sid, "A", "S" + nx);
+str = "SHEET  %ID %3GROUPA %1CA%4RESA  %3GROUPB %1CB%4RESB";
+break;
+case J.c.STR.TURN:
+default:
+nx = ++nTurn;
+sid = JU.PT.formatStringI ("%3N %3N", "N", nx);
+str = "TURN   %ID %3GROUPA %1CA%4RESA  %3GROUPB %1CB%4RESB";
+break;
 }
-return bsAtoms;
-}, "~S");
-Clazz_overrideMethod (c$, "calcAllRasmolHydrogenBonds", 
-function (bsA, bsB, vHBonds, nucleicOnly, nMax, dsspIgnoreHydrogens, bsHBonds) {
-var am = this.ms.am;
-if (vHBonds == null) {
-var bsAtoms = bsA;
-if (bsB != null && !bsA.equals (bsB)) (bsAtoms = JU.BSUtil.copy (bsA)).or (bsB);
-var bsDelete =  new JU.BS ();
-var bsOK =  new JU.BS ();
-var models = this.ms.am;
-var bonds = this.ms.bo;
-for (var i = this.ms.bondCount; --i >= 0; ) {
-var bond = bonds[i];
-if ((bond.order & 28672) == 0) continue;
-if (bsAtoms.get (bond.atom1.i)) bsDelete.set (i);
- else bsOK.set (models[bond.atom1.mi].trajectoryBaseIndex);
+str = JU.PT.formatStringS (str, "ID", sid);
+str = JU.PT.formatStringS (str, "GROUPA", m1.getGroup3 ());
+str = JU.PT.formatStringS (str, "CA", m1.getLeadAtom ().getChainIDStr ());
+str = JU.PT.formatStringI (str, "RESA", res1);
+str = JU.PT.formatStringS (str, "GROUPB", m2.getGroup3 ());
+str = JU.PT.formatStringS (str, "CB", m2.getLeadAtom ().getChainIDStr ());
+str = JU.PT.formatStringI (str, "RESB", res2);
+cmd.append (str);
+if (showMode) cmd.append (" strucno= ").appendI (ps.strucNo);
+cmd.append ("\n");
+}}
 }
-for (var i = this.ms.mc; --i >= 0; ) if (models[i].isBioModel) (models[i]).hasRasmolHBonds = bsOK.get (i);
+if (n > 0) cmd.append ("\n");
+return n;
+}, "JU.BS,JU.SB,JU.Lst,J.c.STR,~B,~N");
+Clazz_defineMethod (c$, "modelsOf", 
+ function (bsAtoms, bsAtomsRet) {
+var bsModels = JU.BS.newN (this.ms.mc);
+var isAll = (bsAtoms == null);
+var i0 = (isAll ? this.ms.ac - 1 : bsAtoms.nextSetBit (0));
+for (var i = i0; i >= 0; i = (isAll ? i - 1 : bsAtoms.nextSetBit (i + 1))) {
+if (this.ms.at[i] == null) continue;
+var modelIndex = this.ms.am[this.ms.at[i].mi].trajectoryBaseIndex;
+if (this.ms.isJmolDataFrameForModel (modelIndex)) continue;
+bsModels.set (modelIndex);
+bsAtomsRet.set (i);
+}
+return bsModels;
+}, "JU.BS,JU.BS");
+Clazz_defineMethod (c$, "setAllDefaultStructure", 
+ function (bsModels) {
+for (var i = bsModels.nextSetBit (0); i >= 0; i = bsModels.nextSetBit (i + 1)) if (this.ms.am[i].isBioModel) {
+var m = this.ms.am[i];
+if (m.defaultStructure == null) m.defaultStructure = this.getFullProteinStructureState (m.bsAtoms, 1073742158);
+}
+}, "JU.BS");
+Clazz_defineMethod (c$, "getAminoAcidValenceAndCharge", 
+function (s, atomName, aaRet) {
+return this.getBioExt ().getAminoAcidValenceAndCharge (s, atomName, aaRet);
+}, "~S,~S,~A");
+Clazz_defineStatics (c$,
+"DEFAULT_DSSP_VERSION", 2);
+});
+Clazz_declarePackage ("JM");
+Clazz_load (["JM.Model"], "JM.BioModel", ["java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "$.SB", "J.api.Interface", "JM.AlphaPolymer", "$.AminoPolymer", "JS.SV", "JU.Escape"], function () {
+c$ = Clazz_decorateAsClass (function () {
+this.vwr = null;
+this.bioPolymerCount = 0;
+this.bioPolymers = null;
+this.isMutated = false;
+this.defaultStructure = null;
+Clazz_instantialize (this, arguments);
+}, JM, "BioModel", JM.Model);
+Clazz_makeConstructor (c$, 
+function (modelSet, modelIndex, trajectoryBaseIndex, jmolData, properties, auxiliaryInfo) {
+Clazz_superConstructor (this, JM.BioModel, []);
+this.vwr = modelSet.vwr;
+this.set (modelSet, modelIndex, trajectoryBaseIndex, jmolData, properties, auxiliaryInfo);
+this.isBioModel = true;
+this.vwr.getJBR ().getBioModelSet (modelSet);
+this.clearBioPolymers ();
+modelSet.am[modelIndex] = this;
+this.pdbID = auxiliaryInfo.get ("name");
+}, "JM.ModelSet,~N,~N,~S,java.util.Properties,java.util.Map");
+Clazz_defineMethod (c$, "addBioPolymer", 
+function (polymer) {
+if (this.bioPolymers.length == 0) this.clearBioPolymers ();
+if (this.bioPolymerCount == this.bioPolymers.length) this.bioPolymers = JU.AU.doubleLength (this.bioPolymers);
+polymer.bioPolymerIndexInModel = this.bioPolymerCount;
+this.bioPolymers[this.bioPolymerCount++] = polymer;
+return polymer.monomerCount;
+}, "JM.BioPolymer");
+Clazz_defineMethod (c$, "addSecondaryStructure", 
+function (type, structureID, serialID, strandCount, startChainID, startSeqcode, endChainID, endSeqcode, istart, iend, bsAssigned) {
+for (var i = this.bioPolymerCount; --i >= 0; ) if (Clazz_instanceOf (this.bioPolymers[i], JM.AlphaPolymer)) (this.bioPolymers[i]).addStructure (type, structureID, serialID, strandCount, startChainID, startSeqcode, endChainID, endSeqcode, istart, iend, bsAssigned);
 
-if (bsDelete.nextSetBit (0) >= 0) this.ms.deleteBonds (bsDelete, false);
-}for (var i = this.ms.mc; --i >= 0; ) if (am[i].isBioModel && !this.ms.isTrajectorySubFrame (i)) (am[i]).getRasmolHydrogenBonds (bsA, bsB, vHBonds, nucleicOnly, nMax, dsspIgnoreHydrogens, bsHBonds);
+}, "J.c.STR,~S,~N,~N,~N,~N,~N,~N,~N,~N,JU.BS");
+Clazz_defineMethod (c$, "addStructureByBS", 
+function (count, dsspType, type, bs) {
+for (var i = this.bioPolymerCount; --i >= 0; ) {
+var b = this.bioPolymers[i];
+if (Clazz_instanceOf (b, JM.AlphaPolymer)) count = (this.bioPolymers[i]).setStructureBS (++count, dsspType, type, bs, true);
+}
+}, "~N,~N,J.c.STR,JU.BS");
+Clazz_defineMethod (c$, "calculateDssx", 
+ function (vHBonds, doReport, dsspIgnoreHydrogen, setStructure, version) {
+var haveProt = false;
+var haveNucl = false;
+for (var i = 0; i < this.bioPolymerCount && !(haveProt && haveNucl); i++) {
+if (this.bioPolymers[i].isNucleic ()) haveNucl = true;
+ else if (Clazz_instanceOf (this.bioPolymers[i], JM.AminoPolymer)) haveProt = true;
+}
+var s = "";
+if (haveProt) s += (J.api.Interface.getOption ("dssx.DSSP", this.vwr, "ms")).calculateDssp (this.bioPolymers, this.bioPolymerCount, vHBonds, doReport, dsspIgnoreHydrogen, setStructure, version);
+if (haveNucl && this.auxiliaryInfo.containsKey ("dssr") && vHBonds != null) s += this.vwr.getAnnotationParser (true).getHBonds (this.ms, this.modelIndex, vHBonds, doReport);
+return s;
+}, "JU.Lst,~B,~B,~B,~N");
+Clazz_defineMethod (c$, "calculateStructures", 
+function (asDSSP, doReport, dsspIgnoreHydrogen, setStructure, includeAlpha, version) {
+if (this.bioPolymerCount == 0 || !setStructure && !asDSSP) return "";
+this.ms.proteinStructureTainted = this.structureTainted = true;
+if (setStructure) for (var i = this.bioPolymerCount; --i >= 0; ) if (!asDSSP || this.bioPolymers[i].monomers[0].getNitrogenAtom () != null) this.bioPolymers[i].clearStructures ();
 
-}, "JU.BS,JU.BS,JU.Lst,~B,~N,~B,JU.BS");
+if (!asDSSP || includeAlpha) for (var i = this.bioPolymerCount; --i >= 0; ) if (Clazz_instanceOf (this.bioPolymers[i], JM.AlphaPolymer)) (this.bioPolymers[i]).calculateStructures (includeAlpha);
+
+return (asDSSP ? this.calculateDssx (null, doReport, dsspIgnoreHydrogen, setStructure, version) : "");
+}, "~B,~B,~B,~B,~B,~N");
+Clazz_defineMethod (c$, "clearBioPolymers", 
+function () {
+this.bioPolymers =  new Array (8);
+this.bioPolymerCount = 0;
+});
+Clazz_overrideMethod (c$, "fixIndices", 
+function (modelIndex, nAtomsDeleted, bsDeleted) {
+this.fixIndicesM (modelIndex, nAtomsDeleted, bsDeleted);
+this.recalculateLeadMidpointsAndWingVectors ();
+}, "~N,~N,JU.BS");
+Clazz_overrideMethod (c$, "freeze", 
+function () {
+this.freezeM ();
+this.bioPolymers = JU.AU.arrayCopyObject (this.bioPolymers, this.bioPolymerCount);
+return true;
+});
+Clazz_defineMethod (c$, "getBioBranches", 
+function (biobranches) {
+var bsBranch;
+for (var j = 0; j < this.bioPolymerCount; j++) {
+bsBranch =  new JU.BS ();
+this.bioPolymers[j].getRange (bsBranch, this.isMutated);
+var iAtom = bsBranch.nextSetBit (0);
+if (iAtom >= 0) {
+if (biobranches == null) biobranches =  new JU.Lst ();
+biobranches.addLast (bsBranch);
+}}
+return biobranches;
+}, "JU.Lst");
+Clazz_defineMethod (c$, "getBioPolymerCount", 
+function () {
+return this.bioPolymerCount;
+});
+Clazz_defineMethod (c$, "getCachedAnnotationMap", 
+function (key, ann) {
+var cache = (this.dssrCache == null && ann != null ? this.dssrCache =  new java.util.Hashtable () : this.dssrCache);
+if (cache == null) return null;
+var annotv = cache.get (key);
+if (annotv == null && ann != null) {
+annotv = (Clazz_instanceOf (ann, JS.SV) || Clazz_instanceOf (ann, java.util.Hashtable) ? ann : this.vwr.parseJSONMap (ann));
+cache.put (key, annotv);
+}return (Clazz_instanceOf (annotv, JS.SV) || Clazz_instanceOf (annotv, java.util.Hashtable) ? annotv : null);
+}, "~S,~O");
+Clazz_defineMethod (c$, "getConformation", 
+function (conformationIndex0, doSet, bsAtoms, bsRet) {
+if (conformationIndex0 >= 0) {
+var nAltLocs = this.altLocCount;
+if (nAltLocs > 0) {
+var atoms = this.ms.at;
+var g = null;
+var ch = '\u0000';
+var conformationIndex = conformationIndex0;
+var bsFound =  new JU.BS ();
+for (var i = bsAtoms.nextSetBit (0); i >= 0; i = bsAtoms.nextSetBit (i + 1)) {
+var atom = atoms[i];
+var altloc = atom.altloc;
+if (altloc == '\0') continue;
+if (atom.group !== g) {
+g = atom.group;
+ch = '\0';
+conformationIndex = conformationIndex0;
+bsFound.clearAll ();
+}if (conformationIndex >= 0 && altloc != ch && !bsFound.get (altloc.charCodeAt (0))) {
+ch = altloc;
+conformationIndex--;
+bsFound.set (altloc.charCodeAt (0));
+}if (conformationIndex >= 0 || altloc != ch) bsAtoms.clear (i);
+}
+}}if (bsAtoms.nextSetBit (0) >= 0) {
+bsRet.or (bsAtoms);
+if (doSet) for (var j = this.bioPolymerCount; --j >= 0; ) this.bioPolymers[j].setConformation (bsAtoms);
+
+}return true;
+}, "~N,~B,JU.BS,JU.BS");
+Clazz_defineMethod (c$, "getDefaultLargePDBRendering", 
+function (sb, maxAtoms) {
+var bs =  new JU.BS ();
+if (this.getBondCount () == 0) bs = this.bsAtoms;
+if (bs !== this.bsAtoms) for (var i = 0; i < this.bioPolymerCount; i++) this.bioPolymers[i].getRange (bs, this.isMutated);
+
+if (bs.nextSetBit (0) < 0) return;
+var bs2 =  new JU.BS ();
+if (bs === this.bsAtoms) {
+bs2 = bs;
+} else {
+for (var i = 0; i < this.bioPolymerCount; i++) if (this.bioPolymers[i].getType () == 0) this.bioPolymers[i].getRange (bs2, this.isMutated);
+
+}if (bs2.nextSetBit (0) >= 0) sb.append ("select ").append (JU.Escape.eBS (bs2)).append (";backbone only;");
+if (this.act <= maxAtoms) return;
+sb.append ("select ").append (JU.Escape.eBS (bs)).append (" & connected; wireframe only;");
+if (bs !== this.bsAtoms) {
+bs2.clearAll ();
+bs2.or (this.bsAtoms);
+bs2.andNot (bs);
+if (bs2.nextSetBit (0) >= 0) sb.append ("select " + JU.Escape.eBS (bs2) + " & !connected;stars 0.5;spacefill off;");
+}}, "JU.SB,~N");
+Clazz_defineMethod (c$, "getFullPDBHeader", 
+function () {
+if (this.modelIndex < 0) return "";
+var info = this.auxiliaryInfo.get ("fileHeader");
+if (info != null) return info;
+return this.ms.bioModelset.getBioExt ().getFullPDBHeader (this.auxiliaryInfo);
+});
+Clazz_defineMethod (c$, "getPdbData", 
+function (type, ctype, isDraw, bsSelected, out, tokens, pdbCONECT, bsWritten) {
+this.ms.bioModelset.getBioExt ().getPdbDataM (this, this.vwr, type, ctype, isDraw, bsSelected, out, tokens, pdbCONECT, bsWritten);
+}, "~S,~S,~B,JU.BS,JU.OC,~A,JU.SB,JU.BS");
 Clazz_defineMethod (c$, "getRasmolHydrogenBonds", 
- function (bsA, bsB, vHBonds, nucleicOnly, nMax, dsspIgnoreHydrogens, bsHBonds) {
+function (bsA, bsB, vHBonds, nucleicOnly, nMax, dsspIgnoreHydrogens, bsHBonds, version) {
 var doAdd = (vHBonds == null);
 if (doAdd) vHBonds =  new JU.Lst ();
 if (nMax < 0) nMax = 2147483647;
@@ -4298,7 +3939,7 @@ var asDSSX = (bsB == null);
 var bp;
 var bp1;
 if (asDSSX && this.bioPolymerCount > 0) {
-this.calculateDssx (vHBonds, false, dsspIgnoreHydrogens, false);
+this.calculateDssx (vHBonds, false, dsspIgnoreHydrogens, false, version);
 } else {
 for (var i = this.bioPolymerCount; --i >= 0; ) {
 bp = this.bioPolymers[i];
@@ -4331,365 +3972,7 @@ if (atom1.isBonded (atom2)) continue;
 var index = this.ms.addHBond (atom1, atom2, bond.order, bond.getEnergy ());
 if (bsHBonds != null) bsHBonds.set (index);
 }
-}, "JU.BS,JU.BS,JU.Lst,~B,~N,~B,JU.BS");
-Clazz_overrideMethod (c$, "calculateStraightnessAll", 
-function () {
-this.getBioExt ().calculateStraightnessAll (this.vwr, this.ms);
-});
-Clazz_overrideMethod (c$, "mutate", 
-function (bs, group, sequence) {
-return this.getBioExt ().mutate (this.vwr, bs, group, sequence);
-}, "JU.BS,~S,~A");
-Clazz_makeConstructor (c$, 
-function (modelSet, modelIndex, trajectoryBaseIndex, jmolData, properties, auxiliaryInfo) {
-Clazz_superConstructor (this, JM.BioModel, []);
-this.vwr = modelSet.vwr;
-this.set (modelSet, modelIndex, trajectoryBaseIndex, jmolData, properties, auxiliaryInfo);
-this.isBioModel = true;
-modelSet.bioModelset = this;
-this.clearBioPolymers ();
-modelSet.am[modelIndex] = this;
-this.pdbID = auxiliaryInfo.get ("name");
-}, "JM.ModelSet,~N,~N,~S,java.util.Properties,java.util.Map");
-Clazz_defineMethod (c$, "clearBioPolymers", 
- function () {
-this.bioPolymers =  new Array (8);
-this.bioPolymerCount = 0;
-});
-Clazz_overrideMethod (c$, "getBioPolymerCount", 
-function () {
-return this.bioPolymerCount;
-});
-Clazz_overrideMethod (c$, "fixIndices", 
-function (modelIndex, nAtomsDeleted, bsDeleted) {
-this.fixIndicesM (modelIndex, nAtomsDeleted, bsDeleted);
-this.recalculateLeadMidpointsAndWingVectors ();
-this.unitIdSets = null;
-}, "~N,~N,JU.BS");
-Clazz_defineMethod (c$, "recalculateLeadMidpointsAndWingVectors", 
- function () {
-for (var ip = 0; ip < this.bioPolymerCount; ip++) this.bioPolymers[ip].recalculateLeadMidpointsAndWingVectors ();
-
-});
-Clazz_overrideMethod (c$, "freeze", 
-function () {
-this.freezeM ();
-this.bioPolymers = JU.AU.arrayCopyObject (this.bioPolymers, this.bioPolymerCount);
-return true;
-});
-Clazz_defineMethod (c$, "addStructureByBS", 
-function (count, dsspType, type, bs) {
-for (var i = this.bioPolymerCount; --i >= 0; ) {
-var b = this.bioPolymers[i];
-if (Clazz_instanceOf (b, JM.AlphaPolymer)) count = (this.bioPolymers[i]).setStructureBS (++count, dsspType, type, bs, true);
-}
-}, "~N,~N,J.c.STR,JU.BS");
-Clazz_defineMethod (c$, "addSecondaryStructure", 
-function (type, structureID, serialID, strandCount, startChainID, startSeqcode, endChainID, endSeqcode, istart, iend, bsAssigned) {
-for (var i = this.bioPolymerCount; --i >= 0; ) if (Clazz_instanceOf (this.bioPolymers[i], JM.AlphaPolymer)) (this.bioPolymers[i]).addStructure (type, structureID, serialID, strandCount, startChainID, startSeqcode, endChainID, endSeqcode, istart, iend, bsAssigned);
-
-}, "J.c.STR,~S,~N,~N,~N,~N,~N,~N,~N,~N,JU.BS");
-Clazz_defineMethod (c$, "calculateStructures", 
- function (asDSSP, doReport, dsspIgnoreHydrogen, setStructure, includeAlpha) {
-if (this.bioPolymerCount == 0 || !setStructure && !asDSSP) return "";
-this.ms.proteinStructureTainted = this.structureTainted = true;
-if (setStructure) for (var i = this.bioPolymerCount; --i >= 0; ) if (!asDSSP || this.bioPolymers[i].monomers[0].getNitrogenAtom () != null) this.bioPolymers[i].clearStructures ();
-
-if (!asDSSP || includeAlpha) for (var i = this.bioPolymerCount; --i >= 0; ) if (Clazz_instanceOf (this.bioPolymers[i], JM.AlphaPolymer)) (this.bioPolymers[i]).calculateStructures (includeAlpha);
-
-return (asDSSP ? this.calculateDssx (null, doReport, dsspIgnoreHydrogen, setStructure) : "");
-}, "~B,~B,~B,~B,~B");
-Clazz_defineMethod (c$, "calculateDssx", 
- function (vHBonds, doReport, dsspIgnoreHydrogen, setStructure) {
-var haveProt = false;
-var haveNucl = false;
-for (var i = 0; i < this.bioPolymerCount && !(haveProt && haveNucl); i++) {
-if (this.bioPolymers[i].isNucleic ()) haveNucl = true;
- else if (Clazz_instanceOf (this.bioPolymers[i], JM.AminoPolymer)) haveProt = true;
-}
-var s = "";
-if (haveProt) s += (J.api.Interface.getOption ("dssx.DSSP", this.vwr, "ms")).calculateDssp (this.bioPolymers, this.bioPolymerCount, vHBonds, doReport, dsspIgnoreHydrogen, setStructure);
-if (haveNucl && this.auxiliaryInfo.containsKey ("dssr") && vHBonds != null) s += this.vwr.getAnnotationParser (true).getHBonds (this.ms, this.modelIndex, vHBonds, doReport);
-return s;
-}, "JU.Lst,~B,~B,~B");
-Clazz_defineMethod (c$, "getConformation", 
-function (conformationIndex0, doSet, bsAtoms, bsRet) {
-if (conformationIndex0 >= 0) {
-var nAltLocs = this.altLocCount;
-if (nAltLocs > 0) {
-var atoms = this.ms.at;
-var g = null;
-var ch = '\u0000';
-var conformationIndex = conformationIndex0;
-var bsFound =  new JU.BS ();
-for (var i = bsAtoms.nextSetBit (0); i >= 0; i = bsAtoms.nextSetBit (i + 1)) {
-var atom = atoms[i];
-var altloc = atom.altloc;
-if (altloc == '\0') continue;
-if (atom.group !== g) {
-g = atom.group;
-ch = '\0';
-conformationIndex = conformationIndex0;
-bsFound.clearAll ();
-}if (conformationIndex >= 0 && altloc != ch && !bsFound.get (altloc.charCodeAt (0))) {
-ch = altloc;
-conformationIndex--;
-bsFound.set (altloc.charCodeAt (0));
-}if (conformationIndex >= 0 || altloc != ch) bsAtoms.clear (i);
-}
-}}if (bsAtoms.nextSetBit (0) >= 0) {
-bsRet.or (bsAtoms);
-if (doSet) for (var j = this.bioPolymerCount; --j >= 0; ) this.bioPolymers[j].setConformation (bsAtoms);
-
-}return true;
-}, "~N,~B,JU.BS,JU.BS");
-Clazz_defineMethod (c$, "addBioPolymer", 
- function (polymer) {
-if (this.bioPolymers.length == 0) this.clearBioPolymers ();
-if (this.bioPolymerCount == this.bioPolymers.length) this.bioPolymers = JU.AU.doubleLength (this.bioPolymers);
-polymer.bioPolymerIndexInModel = this.bioPolymerCount;
-this.bioPolymers[this.bioPolymerCount++] = polymer;
-return polymer.monomerCount;
-}, "JM.BioPolymer");
-Clazz_overrideMethod (c$, "getBioBranches", 
-function (biobranches) {
-var bsBranch;
-for (var j = 0; j < this.bioPolymerCount; j++) {
-bsBranch =  new JU.BS ();
-this.bioPolymers[j].getRange (bsBranch, this.isMutated);
-var iAtom = bsBranch.nextSetBit (0);
-if (iAtom >= 0) {
-if (biobranches == null) biobranches =  new JU.Lst ();
-biobranches.addLast (bsBranch);
-}}
-return biobranches;
-}, "JU.Lst");
-Clazz_overrideMethod (c$, "getAllPolymerInfo", 
-function (bs, info) {
-this.getBioExt ().getAllPolymerInfo (this.ms, bs, info);
-}, "JU.BS,java.util.Map");
-Clazz_defineMethod (c$, "getBioExt", 
- function () {
-return (this.bx == null ? (this.bx = (J.api.Interface.getInterface ("JM.BioExt", this.vwr, "script"))) : this.bx);
-});
-Clazz_overrideMethod (c$, "getFullPDBHeader", 
-function () {
-if (this.modelIndex < 0) return "";
-var info = this.auxiliaryInfo.get ("fileHeader");
-if (info != null) return info;
-info = this.vwr.getCurrentFileAsString ("biomodel");
-var ichMin = info.length;
-for (var i = JM.BioModel.pdbRecords.length; --i >= 0; ) {
-var ichFound;
-var strRecord = JM.BioModel.pdbRecords[i];
-switch (ichFound = (info.startsWith (strRecord) ? 0 : info.indexOf ("\n" + strRecord))) {
-case -1:
-continue;
-case 0:
-this.auxiliaryInfo.put ("fileHeader", "");
-return "";
-default:
-if (ichFound < ichMin) ichMin = ++ichFound;
-}
-}
-info = info.substring (0, ichMin);
-this.auxiliaryInfo.put ("fileHeader", info);
-return info;
-});
-Clazz_overrideMethod (c$, "getPdbData", 
-function (type, ctype, isDraw, bsSelected, out, tokens, pdbCONECT, bsWritten) {
-this.getBioExt ().getPdbDataM (this, this.vwr, type, ctype, isDraw, bsSelected, out, tokens, pdbCONECT, bsWritten);
-}, "~S,~S,~B,JU.BS,JU.OC,~A,JU.SB,JU.BS");
-Clazz_overrideMethod (c$, "resetRasmolBonds", 
-function (bs) {
-var bsDelete =  new JU.BS ();
-this.hasRasmolHBonds = false;
-var am = this.ms.am;
-var bo = this.ms.bo;
-for (var i = this.ms.bondCount; --i >= 0; ) {
-var bond = bo[i];
-if ((bond.order & 28672) != 0 && am[bond.atom1.mi].trajectoryBaseIndex == this.modelIndex) bsDelete.set (i);
-}
-if (bsDelete.nextSetBit (0) >= 0) this.ms.deleteBonds (bsDelete, false);
-this.getRasmolHydrogenBonds (bs, bs, null, false, 2147483647, false, null);
-}, "JU.BS");
-Clazz_overrideMethod (c$, "getDefaultLargePDBRendering", 
-function (sb, maxAtoms) {
-var bs =  new JU.BS ();
-if (this.getBondCount () == 0) bs = this.bsAtoms;
-if (bs !== this.bsAtoms) for (var i = 0; i < this.bioPolymerCount; i++) this.bioPolymers[i].getRange (bs, this.isMutated);
-
-if (bs.nextSetBit (0) < 0) return;
-var bs2 =  new JU.BS ();
-if (bs === this.bsAtoms) {
-bs2 = bs;
-} else {
-for (var i = 0; i < this.bioPolymerCount; i++) if (this.bioPolymers[i].getType () == 0) this.bioPolymers[i].getRange (bs2, this.isMutated);
-
-}if (bs2.nextSetBit (0) >= 0) sb.append ("select ").append (JU.Escape.eBS (bs2)).append (";backbone only;");
-if (this.act <= maxAtoms) return;
-sb.append ("select ").append (JU.Escape.eBS (bs)).append (" & connected; wireframe only;");
-if (bs !== this.bsAtoms) {
-bs2.clearAll ();
-bs2.or (this.bsAtoms);
-bs2.andNot (bs);
-if (bs2.nextSetBit (0) >= 0) sb.append ("select " + JU.Escape.eBS (bs2) + " & !connected;stars 0.5;spacefill off;");
-}}, "JU.SB,~N");
-Clazz_overrideMethod (c$, "getAtomBitsStr", 
-function (tokType, specInfo, bs) {
-switch (tokType) {
-default:
-return  new JU.BS ();
-case 1073741925:
-return this.getAnnotationBits ("domains", 1073741925, specInfo);
-case 1073742189:
-return this.getAnnotationBits ("validation", 1073742189, specInfo);
-case 1073742128:
-return this.getAnnotationBits ("rna3d", 1073742128, specInfo);
-case 1073741864:
-var s = specInfo;
-bs =  new JU.BS ();
-return (s.length % 2 != 0 ? bs : this.ms.getAtomBitsMDa (1086324742, this.getAllBasePairBits (s), bs));
-case 1073741916:
-return this.getAnnotationBits ("dssr", 1073741916, specInfo);
-case 1086324744:
-return this.getAllSequenceBits (specInfo, null, bs);
-}
-}, "~N,~S,JU.BS");
-Clazz_overrideMethod (c$, "getAtomBitsBS", 
-function (tokType, bsInfo, bs) {
-var at = this.ms.at;
-var ac = this.ms.ac;
-var i = 0;
-var g;
-switch (tokType) {
-case 136314895:
-case 2097184:
-var type = (tokType == 136314895 ? J.c.STR.HELIX : J.c.STR.SHEET);
-for (i = ac; --i >= 0; ) {
-if ((g = at[i].group).isWithinStructure (type)) g.setAtomBits (bs);
-i = g.firstAtomIndex;
-}
-break;
-case 2097188:
-for (i = ac; --i >= 0; ) {
-if ((g = at[i].group).isCarbohydrate ()) g.setAtomBits (bs);
-i = g.firstAtomIndex;
-}
-break;
-case 2097156:
-for (i = ac; --i >= 0; ) {
-if ((g = at[i].group).isDna ()) g.setAtomBits (bs);
-i = g.firstAtomIndex;
-}
-break;
-case 2097166:
-for (i = ac; --i >= 0; ) {
-if ((g = at[i].group).isNucleic ()) g.setAtomBits (bs);
-i = g.firstAtomIndex;
-}
-break;
-case 2097168:
-for (i = ac; --i >= 0; ) {
-if ((g = at[i].group).isProtein ()) g.setAtomBits (bs);
-i = g.firstAtomIndex;
-}
-break;
-case 2097170:
-for (i = ac; --i >= 0; ) {
-if ((g = at[i].group).isPurine ()) g.setAtomBits (bs);
-i = g.firstAtomIndex;
-}
-break;
-case 2097172:
-for (i = ac; --i >= 0; ) {
-if ((g = at[i].group).isPyrimidine ()) g.setAtomBits (bs);
-i = g.firstAtomIndex;
-}
-break;
-case 2097174:
-for (i = ac; --i >= 0; ) {
-if ((g = at[i].group).isRna ()) g.setAtomBits (bs);
-i = g.firstAtomIndex;
-}
-break;
-}
-if (i < 0) return bs;
-var i0 = bsInfo.nextSetBit (0);
-if (i0 < 0) return bs;
-i = 0;
-switch (tokType) {
-case 1094713362:
-for (i = i0; i >= 0; i = bsInfo.nextSetBit (i + 1)) {
-var iPolymer = at[i].group.getBioPolymerIndexInModel ();
-if (iPolymer >= 0) (at[i].group).bioPolymer.setAtomBitsAndClear (bs, bsInfo);
-}
-break;
-case 1639976963:
-for (i = i0; i >= 0; i = bsInfo.nextSetBit (i + 1)) {
-var structure = at[i].group.getStructure ();
-if (structure != null) structure.setAtomBitsAndClear (bs, bsInfo);
-}
-break;
-}
-if (i == 0) JU.Logger.error ("MISSING getAtomBits entry for " + JS.T.nameOf (tokType));
-return bs;
-}, "~N,JU.BS,JU.BS");
-Clazz_defineMethod (c$, "getAnnotationBits", 
- function (name, tok, specInfo) {
-var bs =  new JU.BS ();
-var pa = this.vwr.getAnnotationParser (name.equals ("dssr"));
-var ann;
-for (var i = this.ms.mc; --i >= 0; ) if ((ann = this.ms.getInfo (i, name)) != null) bs.or (pa.getAtomBits (this.vwr, specInfo, (this.ms.am[i]).getCachedAnnotationMap (name + " V ", ann), this.ms.am[i].dssrCache, tok, i, this.ms.am[i].bsAtoms));
-
-return bs;
-}, "~S,~N,~S");
-Clazz_defineMethod (c$, "getCachedAnnotationMap", 
-function (key, ann) {
-var cache = (this.dssrCache == null && ann != null ? this.dssrCache =  new java.util.Hashtable () : this.dssrCache);
-if (cache == null) return null;
-var annotv = cache.get (key);
-if (annotv == null && ann != null) {
-annotv = (Clazz_instanceOf (ann, JS.SV) || Clazz_instanceOf (ann, java.util.Hashtable) ? ann : this.vwr.parseJSON (ann));
-cache.put (key, annotv);
-}return (Clazz_instanceOf (annotv, JS.SV) || Clazz_instanceOf (annotv, java.util.Hashtable) ? annotv : null);
-}, "~S,~O");
-Clazz_overrideMethod (c$, "getIdentifierOrNull", 
-function (identifier) {
-var len = identifier.length;
-var pt = 0;
-while (pt < len && JU.PT.isLetter (identifier.charAt (pt))) ++pt;
-
-var bs = this.ms.getSpecNameOrNull (identifier.substring (0, pt), false);
-if (pt == len) return bs;
-if (bs == null) bs =  new JU.BS ();
-var pt0 = pt;
-while (pt < len && JU.PT.isDigit (identifier.charAt (pt))) ++pt;
-
-var seqNumber = 0;
-try {
-seqNumber = Integer.parseInt (identifier.substring (pt0, pt));
-} catch (nfe) {
-if (Clazz_exceptionOf (nfe, NumberFormatException)) {
-return null;
-} else {
-throw nfe;
-}
-}
-var insertionCode = ' ';
-if (pt < len && identifier.charAt (pt) == '^') if (++pt < len) insertionCode = identifier.charAt (pt);
-var seqcode = JM.Group.getSeqcodeFor (seqNumber, insertionCode);
-var bsInsert = this.ms.getSeqcodeBits (seqcode, false);
-if (bsInsert == null) {
-if (insertionCode != ' ') bsInsert = this.ms.getSeqcodeBits (Character.toUpperCase (identifier.charAt (pt)).charCodeAt (0), false);
-if (bsInsert == null) return null;
-pt++;
-}bs.and (bsInsert);
-if (pt >= len) return bs;
-if (pt != len - 1) return null;
-bs.and (this.ms.getChainBits (identifier.charCodeAt (pt)));
-return bs;
-}, "~S");
+}, "JU.BS,JU.BS,JU.Lst,~B,~N,~B,JU.BS,~N");
 Clazz_defineMethod (c$, "getUnitID", 
 function (atom, flags) {
 var sb =  new JU.SB ();
@@ -4710,9 +3993,733 @@ sb.append ("||");
 if (noTrim) sb.append ("|");
 return sb.toString ();
 }, "JM.Atom,~N");
-Clazz_defineStatics (c$,
-"pdbRecords",  Clazz_newArray (-1, ["ATOM  ", "MODEL ", "HETATM"]));
+Clazz_defineMethod (c$, "recalculateLeadMidpointsAndWingVectors", 
+function () {
+for (var ip = 0; ip < this.bioPolymerCount; ip++) this.bioPolymers[ip].recalculateLeadMidpointsAndWingVectors ();
+
 });
+Clazz_defineMethod (c$, "resetRasmolBonds", 
+function (bs, dsspVersion) {
+var bsDelete =  new JU.BS ();
+this.hasRasmolHBonds = false;
+var am = this.ms.am;
+var bo = this.ms.bo;
+for (var i = this.ms.bondCount; --i >= 0; ) {
+var bond = bo[i];
+if ((bond.order & 28672) != 0 && am[bond.atom1.mi].trajectoryBaseIndex == this.modelIndex) bsDelete.set (i);
+}
+if (bsDelete.nextSetBit (0) >= 0) this.ms.deleteBonds (bsDelete, false);
+this.getRasmolHydrogenBonds (bs, bs, null, false, 2147483647, false, null, dsspVersion);
+}, "JU.BS,~N");
+Clazz_defineMethod (c$, "getAtomicDSSRData", 
+function (dssrData, dataType) {
+if (this.auxiliaryInfo.containsKey ("dssr")) this.vwr.getAnnotationParser (true).getAtomicDSSRData (this.ms, this.modelIndex, dssrData, dataType);
+}, "~A,~S");
+});
+Clazz_declarePackage ("JM");
+Clazz_load (["java.util.Hashtable", "J.c.STR"], "JM.BioResolver", ["java.lang.Boolean", "$.Byte", "$.NullPointerException", "$.Short", "java.util.Arrays", "JU.AU", "$.BS", "$.Measure", "$.P3", "$.P4", "$.PT", "$.SB", "$.V3", "JM.Group", "JM.AlphaMonomer", "$.AlphaPolymer", "$.AminoMonomer", "$.AminoPolymer", "$.BioModel", "$.BioModelSet", "$.CarbohydrateMonomer", "$.CarbohydratePolymer", "$.Monomer", "$.NucleicMonomer", "$.NucleicPolymer", "$.PhosphorusMonomer", "$.PhosphorusPolymer", "JU.BSUtil", "$.Logger", "JV.JC"], function () {
+c$ = Clazz_decorateAsClass (function () {
+this.vwr = null;
+this.vAB = null;
+this.vNorm = null;
+this.plane = null;
+this.ml = null;
+this.ms = null;
+this.bsAddedMask = null;
+this.lastSetH = -2147483648;
+this.maxSerial = 0;
+this.haveHsAlready = false;
+this.bsAddedHydrogens = null;
+this.bsAtomsForHs = null;
+this.htBondMap = null;
+this.htGroupBonds = null;
+this.hNames = null;
+this.baseBondIndex = 0;
+this.hasCONECT = false;
+this.bsAssigned = null;
+Clazz_instantialize (this, arguments);
+}, JM, "BioResolver", null, java.util.Comparator);
+Clazz_makeConstructor (c$, 
+function () {
+});
+Clazz_defineMethod (c$, "setLoader", 
+function (modelLoader) {
+this.ml = modelLoader;
+this.bsAddedMask = null;
+this.lastSetH = -2147483648;
+this.maxSerial = 0;
+this.haveHsAlready = false;
+if (modelLoader == null) {
+this.ms = null;
+this.bsAddedHydrogens = this.bsAtomsForHs = this.bsAssigned = null;
+this.htBondMap = null;
+this.htGroupBonds = null;
+this.hNames = null;
+} else {
+JM.Group.specialAtomNames = JM.BioResolver.specialAtomNames;
+this.ms = modelLoader.ms;
+this.vwr = modelLoader.ms.vwr;
+modelLoader.specialAtomIndexes =  Clazz_newIntArray (JM.BioResolver.ATOMID_MAX, 0);
+this.hasCONECT = (this.ms.getInfoM (JV.JC.getBoolName (3)) === Boolean.TRUE);
+}return this;
+}, "JM.ModelLoader");
+Clazz_defineMethod (c$, "setViewer", 
+function (vwr) {
+this.vwr = vwr;
+if (JM.Group.standardGroupList == null) {
+var s =  new JU.SB ();
+for (var i = 1; i < 42; i++) s.append (",[").append (JM.BioResolver.predefinedGroup3Names[i]).append ("]");
+
+s.append (",[AHR],[ALL],[AMU],[ARA],[ARB],[BDF],[BDR],[BGC],[BMA],[FCA],[FCB],[FRU],[FUC],[FUL],[GAL],[GLA],[GLC],[GXL],[GUP],[LXC],[MAN],[RAM],[RIB],[RIP],[XYP],[XYS],[CBI],[CT3],[CTR],[CTT],[LAT],[MAB],[MAL],[MLR],[MTT],[SUC],[TRE],[GCU],[MTL],[NAG],[NDG],[RHA],[SOR],[SOL],[SOE],[XYL],[A2G],[LBT],[NGA],[SIA],[SLB],[AFL],[AGC],[GLB],[NAN],[RAA]");
+JM.BioResolver.group3Count = Clazz_doubleToInt (s.length () / 6);
+JM.Group.standardGroupList = s.toString ();
+for (var i = 0, n = JM.BioResolver.predefinedGroup3Names.length; i < n; ++i) JM.BioResolver.addGroup3Name (JM.BioResolver.predefinedGroup3Names[i].trim ());
+
+}return this;
+}, "JV.Viewer");
+Clazz_defineMethod (c$, "getBioModel", 
+function (modelIndex, trajectoryBaseIndex, jmolData, modelProperties, modelAuxiliaryInfo) {
+return  new JM.BioModel (this.ms, modelIndex, trajectoryBaseIndex, jmolData, modelProperties, modelAuxiliaryInfo);
+}, "~N,~N,~S,java.util.Properties,java.util.Map");
+Clazz_defineMethod (c$, "distinguishAndPropagateGroup", 
+function (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, specialAtomIndexes, atoms) {
+var mask = 0;
+for (var i = JM.BioResolver.ATOMID_MAX; --i >= 0; ) specialAtomIndexes[i] = -2147483648;
+
+for (var i = lastAtomIndex; i >= firstAtomIndex; --i) {
+var specialAtomID = atoms[i].atomID;
+if (specialAtomID <= 0) continue;
+if (specialAtomID < 14) {
+mask |= (1 << specialAtomID);
+}specialAtomIndexes[specialAtomID] = i;
+}
+var m = null;
+if ((mask & 14) == 14) m = JM.AminoMonomer.validateAndAllocate (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, specialAtomIndexes, atoms);
+ else if (mask == 4) m = JM.AlphaMonomer.validateAndAllocateA (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, specialAtomIndexes);
+ else if (((mask & 8128) == 8128)) m = JM.NucleicMonomer.validateAndAllocate (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, specialAtomIndexes);
+ else if (mask == 8192) m = JM.PhosphorusMonomer.validateAndAllocateP (chain, group3, seqcode, firstAtomIndex, lastAtomIndex, specialAtomIndexes);
+ else if (JM.BioResolver.checkCarbohydrate (group3)) m = JM.CarbohydrateMonomer.validateAndAllocate (chain, group3, seqcode, firstAtomIndex, lastAtomIndex);
+return (m != null && m.leadAtomIndex >= 0 ? m : null);
+}, "JM.Chain,~S,~N,~N,~N,~A,~A");
+Clazz_defineMethod (c$, "setHaveHsAlready", 
+function (b) {
+this.haveHsAlready = b;
+}, "~B");
+Clazz_defineMethod (c$, "initializeHydrogenAddition", 
+function () {
+this.baseBondIndex = this.ms.bondCount;
+this.bsAddedHydrogens =  new JU.BS ();
+this.bsAtomsForHs =  new JU.BS ();
+this.htBondMap =  new java.util.Hashtable ();
+this.htGroupBonds =  new java.util.Hashtable ();
+this.hNames =  new Array (3);
+this.vAB =  new JU.V3 ();
+this.vNorm =  new JU.V3 ();
+this.plane =  new JU.P4 ();
+});
+Clazz_defineMethod (c$, "addImplicitHydrogenAtoms", 
+function (adapter, iGroup, nH) {
+var group3 = this.ml.getGroup3 (iGroup);
+var nH1;
+if (this.haveHsAlready && this.hasCONECT || group3 == null || (nH1 = JM.BioResolver.getStandardPdbHydrogenCount (group3)) == 0) return;
+nH = (nH1 < 0 ? -1 : nH1 + nH);
+var model = null;
+var iFirst = this.ml.getFirstAtomIndex (iGroup);
+var ac = this.ms.ac;
+if (nH < 0) {
+if (ac - iFirst == 1) return;
+model = this.vwr.getLigandModel (group3, "ligand_", "_data", null);
+if (model == null) return;
+nH = adapter.getHydrogenAtomCount (model);
+if (nH < 1) return;
+}this.getBondInfo (adapter, group3, model);
+this.ms.am[this.ms.at[iFirst].mi].isPdbWithMultipleBonds = true;
+if (this.haveHsAlready) return;
+this.bsAtomsForHs.setBits (iFirst, ac);
+this.bsAddedHydrogens.setBits (ac, ac + nH);
+var isHetero = this.ms.at[iFirst].isHetero ();
+var xyz = JU.P3.new3 (NaN, NaN, NaN);
+var a = this.ms.at[iFirst];
+for (var i = 0; i < nH; i++) this.ms.addAtom (a.mi, a.group, 1, "H", null, 0, a.getSeqID (), 0, xyz, NaN, null, 0, 0, 1, 0, null, isHetero, 0, null, NaN).$delete (null);
+
+}, "J.api.JmolAdapter,~N,~N");
+Clazz_defineMethod (c$, "getBondInfo", 
+ function (adapter, group3, model) {
+if (this.htGroupBonds.get (group3) != null) return;
+var bondInfo = (model == null ? this.getPdbBondInfo (group3, this.vwr.getBoolean (603979873)) : this.getLigandBondInfo (adapter, model, group3));
+if (bondInfo == null) return;
+this.htGroupBonds.put (group3, Boolean.TRUE);
+for (var i = 0; i < bondInfo.length; i++) {
+if (bondInfo[i] == null) continue;
+if (bondInfo[i][1].charAt (0) == 'H') this.htBondMap.put (group3 + "." + bondInfo[i][0], bondInfo[i][1]);
+ else this.htBondMap.put (group3 + ":" + bondInfo[i][0] + ":" + bondInfo[i][1], bondInfo[i][2]);
+}
+}, "J.api.JmolAdapter,~S,~O");
+Clazz_defineMethod (c$, "getLigandBondInfo", 
+ function (adapter, model, group3) {
+var dataIn = adapter.getBondList (model);
+var htAtoms =  new java.util.Hashtable ();
+var iterAtom = adapter.getAtomIterator (model);
+while (iterAtom.hasNext ()) htAtoms.put (iterAtom.getAtomName (), iterAtom.getXYZ ());
+
+var bondInfo =  new Array (dataIn.length * 2);
+var n = 0;
+for (var i = 0; i < dataIn.length; i++) {
+var b = dataIn[i];
+if (b[0].charAt (0) != 'H') bondInfo[n++] =  Clazz_newArray (-1, [b[0], b[1], b[2], b[1].startsWith ("H") ? "0" : "1"]);
+if (b[1].charAt (0) != 'H') bondInfo[n++] =  Clazz_newArray (-1, [b[1], b[0], b[2], b[0].startsWith ("H") ? "0" : "1"]);
+}
+java.util.Arrays.sort (bondInfo, this);
+var t;
+for (var i = 0; i < n; ) {
+t = bondInfo[i];
+var a1 = t[0];
+var nH = 0;
+var nC = 0;
+for (; i < n && (t = bondInfo[i])[0].equals (a1); i++) {
+if (t[3].equals ("0")) {
+nH++;
+continue;
+}if (t[3].equals ("1")) nC++;
+}
+var pt = i - nH - nC;
+if (nH == 1) continue;
+switch (nC) {
+case 1:
+var sep = (nH == 2 ? '@' : '|');
+for (var j = 1; j < nH; j++) {
+bondInfo[pt][1] += sep + bondInfo[pt + j][1];
+bondInfo[pt + j] = null;
+}
+continue;
+case 2:
+if (nH != 2) continue;
+var name = bondInfo[pt][0];
+var name1 = bondInfo[pt + nH][1];
+var name2 = bondInfo[pt + nH + 1][1];
+var factor = name1.compareTo (name2);
+JU.Measure.getPlaneThroughPoints (htAtoms.get (name1), htAtoms.get (name), htAtoms.get (name2), this.vNorm, this.vAB, this.plane);
+var d = JU.Measure.distanceToPlane (this.plane, htAtoms.get (bondInfo[pt][1])) * factor;
+bondInfo[pt][1] = (d > 0 ? bondInfo[pt][1] + "@" + bondInfo[pt + 1][1] : bondInfo[pt + 1][1] + "@" + bondInfo[pt][1]);
+bondInfo[pt + 1] = null;
+}
+}
+for (var i = 0; i < n; i++) {
+if ((t = bondInfo[i]) != null && t[1].charAt (0) != 'H' && t[0].compareTo (t[1]) > 0) {
+bondInfo[i] = null;
+continue;
+}if (t != null) JU.Logger.info (" ligand " + group3 + ": " + bondInfo[i][0] + " - " + bondInfo[i][1] + " order " + bondInfo[i][2]);
+}
+return bondInfo;
+}, "J.api.JmolAdapter,~O,~S");
+Clazz_overrideMethod (c$, "compare", 
+function (a, b) {
+return (b == null ? (a == null ? 0 : -1) : a == null ? 1 : a[0].compareTo (b[0]) < 0 ? -1 : a[0].compareTo (b[0]) > 0 ? 1 : a[3].compareTo (b[3]) < 0 ? -1 : a[3].compareTo (b[3]) > 0 ? 1 : a[1].compareTo (b[1]) < 0 ? -1 : a[1].compareTo (b[1]) > 0 ? 1 : 0);
+}, "~A,~A");
+Clazz_defineMethod (c$, "finalizeHydrogens", 
+function () {
+this.vwr.getLigandModel (null, null, null, null);
+this.finalizePdbMultipleBonds ();
+this.addHydrogens ();
+});
+Clazz_defineMethod (c$, "addHydrogens", 
+ function () {
+if (this.bsAddedHydrogens.nextSetBit (0) < 0) return;
+this.bsAddedMask = JU.BSUtil.copy (this.bsAddedHydrogens);
+this.finalizePdbCharges ();
+var nTotal =  Clazz_newIntArray (1, 0);
+var pts = this.ms.calculateHydrogens (this.bsAtomsForHs, nTotal, null, 256);
+var groupLast = null;
+var ipt = 0;
+var atom;
+for (var i = 0; i < pts.length; i++) {
+if (pts[i] == null || (atom = this.ms.at[i]) == null) continue;
+var g = atom.group;
+if (g !== groupLast) {
+groupLast = g;
+ipt = g.lastAtomIndex;
+while (this.bsAddedHydrogens.get (ipt)) ipt--;
+
+}var gName = atom.getGroup3 (false);
+var aName = atom.getAtomName ();
+var hName = this.htBondMap.get (gName + "." + aName);
+if (hName == null) continue;
+var isChiral = hName.contains ("@");
+var isMethyl = (hName.endsWith ("?") || hName.indexOf ("|") >= 0);
+var n = pts[i].length;
+if (n == 3 && !isMethyl && hName.equals ("H@H2")) {
+hName = "H|H2|H3";
+isMethyl = true;
+isChiral = false;
+}if (isChiral && n == 3 || isMethyl != (n == 3)) {
+JU.Logger.info ("Error adding H atoms to " + gName + g.getResno () + ": " + pts[i].length + " atoms should not be added to " + aName);
+continue;
+}var pt = hName.indexOf ("@");
+switch (pts[i].length) {
+case 1:
+if (pt > 0) hName = hName.substring (0, pt);
+this.setHydrogen (i, ++ipt, hName, pts[i][0]);
+break;
+case 2:
+var hName1;
+var hName2;
+var d = -1;
+var bonds = atom.bonds;
+if (bonds != null) switch (bonds.length) {
+case 2:
+var atom1 = bonds[0].getOtherAtom (atom);
+var atom2 = bonds[1].getOtherAtom (atom);
+var factor = atom1.getAtomName ().compareTo (atom2.getAtomName ());
+d = JU.Measure.distanceToPlane (JU.Measure.getPlaneThroughPoints (atom1, atom, atom2, this.vNorm, this.vAB, this.plane), pts[i][0]) * factor;
+break;
+}
+if (pt < 0) {
+JU.Logger.info ("Error adding H atoms to " + gName + g.getResno () + ": expected to only need 1 H but needed 2");
+hName1 = hName2 = "H";
+} else if (d < 0) {
+hName2 = hName.substring (0, pt);
+hName1 = hName.substring (pt + 1);
+} else {
+hName1 = hName.substring (0, pt);
+hName2 = hName.substring (pt + 1);
+}this.setHydrogen (i, ++ipt, hName1, pts[i][0]);
+this.setHydrogen (i, ++ipt, hName2, pts[i][1]);
+break;
+case 3:
+var pt1 = hName.indexOf ('|');
+if (pt1 >= 0) {
+var pt2 = hName.lastIndexOf ('|');
+this.hNames[0] = hName.substring (0, pt1);
+this.hNames[1] = hName.substring (pt1 + 1, pt2);
+this.hNames[2] = hName.substring (pt2 + 1);
+} else {
+this.hNames[0] = hName.$replace ('?', '1');
+this.hNames[1] = hName.$replace ('?', '2');
+this.hNames[2] = hName.$replace ('?', '3');
+}this.setHydrogen (i, ++ipt, this.hNames[0], pts[i][0]);
+this.setHydrogen (i, ++ipt, this.hNames[1], pts[i][2]);
+this.setHydrogen (i, ++ipt, this.hNames[2], pts[i][1]);
+break;
+}
+}
+this.deleteUnneededAtoms ();
+this.ms.fixFormalCharges (JU.BSUtil.newBitSet2 (this.ml.baseAtomIndex, this.ml.ms.ac));
+});
+Clazz_defineMethod (c$, "deleteUnneededAtoms", 
+ function () {
+var bsBondsDeleted =  new JU.BS ();
+for (var i = this.bsAtomsForHs.nextSetBit (0); i >= 0; i = this.bsAtomsForHs.nextSetBit (i + 1)) {
+var atom = this.ms.at[i];
+if (!atom.isHetero () || atom.getElementNumber () != 8 || atom.getFormalCharge () != 0 || atom.getCovalentBondCount () != 2) continue;
+var bonds = atom.bonds;
+var atom1 = bonds[0].getOtherAtom (atom);
+var atomH = bonds[1].getOtherAtom (atom);
+if (atom1.getElementNumber () == 1) {
+var a = atom1;
+atom1 = atomH;
+atomH = a;
+}if (atomH.getElementNumber () != 1) continue;
+var bonds1 = atom1.bonds;
+for (var j = 0; j < bonds1.length; j++) {
+if (bonds1[j].order == 2) {
+var atomO = bonds1[j].getOtherAtom (atom1);
+if (atomO.getElementNumber () == 8) {
+this.bsAddedHydrogens.set (atomH.i);
+atomH.$delete (bsBondsDeleted);
+break;
+}}}
+}
+this.ms.deleteBonds (bsBondsDeleted, true);
+this.deleteAtoms (this.bsAddedHydrogens);
+});
+Clazz_defineMethod (c$, "deleteAtoms", 
+ function (bsDeletedAtoms) {
+var mapOldToNew =  Clazz_newIntArray (this.ms.ac, 0);
+var mapNewToOld =  Clazz_newIntArray (this.ms.ac - bsDeletedAtoms.cardinality (), 0);
+var n = this.ml.baseAtomIndex;
+var models = this.ms.am;
+var atoms = this.ms.at;
+for (var i = this.ml.baseAtomIndex; i < this.ms.ac; i++) {
+var a = atoms[i];
+if (a == null) continue;
+models[a.mi].bsAtoms.clear (i);
+models[a.mi].bsAtomsDeleted.clear (i);
+if (bsDeletedAtoms.get (i)) {
+mapOldToNew[i] = n - 1;
+models[atoms[i].mi].act--;
+} else {
+mapNewToOld[n] = i;
+mapOldToNew[i] = n++;
+}}
+this.ms.msInfo.put ("bsDeletedAtoms", bsDeletedAtoms);
+for (var i = this.ml.baseGroupIndex; i < this.ml.groups.length; i++) {
+var g = this.ml.groups[i];
+if (g.firstAtomIndex >= this.ml.baseAtomIndex) {
+g.firstAtomIndex = mapOldToNew[g.firstAtomIndex];
+g.lastAtomIndex = mapOldToNew[g.lastAtomIndex];
+if (g.leadAtomIndex >= 0) g.leadAtomIndex = mapOldToNew[g.leadAtomIndex];
+}}
+this.ms.adjustAtomArrays (mapNewToOld, this.ml.baseAtomIndex, n);
+this.ms.calcBoundBoxDimensions (null, 1);
+this.ms.resetMolecules ();
+this.ms.validateBspf (false);
+this.bsAddedMask = JU.BSUtil.deleteBits (this.bsAddedMask, bsDeletedAtoms);
+for (var i = this.ml.baseModelIndex; i < this.ms.mc; i++) {
+this.fixAnnotations (i, "domains", 1073741925);
+this.fixAnnotations (i, "validation", 1073742189);
+}
+}, "JU.BS");
+Clazz_defineMethod (c$, "fixAnnotations", 
+ function (i, name, type) {
+var o = this.ml.ms.getInfo (i, name);
+if (o != null) {
+var dbObj = (this.ms.am[i]).getCachedAnnotationMap (name, o);
+if (dbObj != null) this.vwr.getAnnotationParser (false).fixAtoms (i, dbObj, this.bsAddedMask, type, 20);
+}}, "~N,~S,~N");
+Clazz_defineMethod (c$, "finalizePdbCharges", 
+ function () {
+var atoms = this.ms.at;
+for (var i = this.bsAtomsForHs.nextSetBit (0); i >= 0; i = this.bsAtomsForHs.nextSetBit (i + 1)) {
+var a = atoms[i];
+if (a.group.getNitrogenAtom () === a && a.getCovalentBondCount () == 1) a.setFormalCharge (1);
+if ((i = this.bsAtomsForHs.nextClearBit (i + 1)) < 0) break;
+}
+});
+Clazz_defineMethod (c$, "finalizePdbMultipleBonds", 
+ function () {
+var htKeysUsed =  new java.util.Hashtable ();
+var bondCount = this.ms.bondCount;
+var bonds = this.ms.bo;
+for (var i = this.baseBondIndex; i < bondCount; i++) {
+var a1 = bonds[i].atom1;
+var a2 = bonds[i].atom2;
+var g = a1.group;
+if (g !== a2.group) continue;
+var key =  new JU.SB ().append (g.getGroup3 ());
+key.append (":");
+var n1 = a1.getAtomName ();
+var n2 = a2.getAtomName ();
+if (n1.compareTo (n2) > 0) key.append (n2).append (":").append (n1);
+ else key.append (n1).append (":").append (n2);
+var skey = key.toString ();
+var type = this.htBondMap.get (skey);
+if (type == null) continue;
+htKeysUsed.put (skey, Boolean.TRUE);
+bonds[i].setOrder (JU.PT.parseInt (type));
+}
+for (var key, $key = this.htBondMap.keySet ().iterator (); $key.hasNext () && ((key = $key.next ()) || true);) {
+if (htKeysUsed.get (key) != null) continue;
+if (key.indexOf (":") < 0) {
+htKeysUsed.put (key, Boolean.TRUE);
+continue;
+}var value = this.htBondMap.get (key);
+JU.Logger.info ("bond " + key + " was not used; order=" + value);
+if (this.htBondMap.get (key).equals ("1")) {
+htKeysUsed.put (key, Boolean.TRUE);
+continue;
+}}
+var htKeysBad =  new java.util.Hashtable ();
+for (var key, $key = this.htBondMap.keySet ().iterator (); $key.hasNext () && ((key = $key.next ()) || true);) {
+if (htKeysUsed.get (key) != null) continue;
+htKeysBad.put (key.substring (0, key.lastIndexOf (":")), this.htBondMap.get (key));
+}
+if (htKeysBad.isEmpty ()) return;
+for (var i = 0; i < bondCount; i++) {
+var a1 = bonds[i].atom1;
+var a2 = bonds[i].atom2;
+if (a1.group === a2.group) continue;
+var value;
+if ((value = htKeysBad.get (a1.getGroup3 (false) + ":" + a1.getAtomName ())) == null && ((value = htKeysBad.get (a2.getGroup3 (false) + ":" + a2.getAtomName ())) == null)) continue;
+bonds[i].setOrder (JU.PT.parseInt (value));
+JU.Logger.info ("assigning order " + bonds[i].order + " to bond " + bonds[i]);
+}
+});
+Clazz_defineMethod (c$, "setHydrogen", 
+ function (iTo, iAtom, name, pt) {
+if (!this.bsAddedHydrogens.get (iAtom)) return;
+var atoms = this.ms.at;
+if (this.lastSetH == -2147483648 || atoms[iAtom].mi != atoms[this.lastSetH].mi) this.maxSerial = (this.ms.getInfo (atoms[this.lastSetH = iAtom].mi, "PDB_CONECT_firstAtom_count_max"))[2];
+this.bsAddedHydrogens.clear (iAtom);
+this.ms.setAtomName (iAtom, name, false);
+atoms[iAtom].setT (pt);
+this.ms.setAtomNumber (iAtom, ++this.maxSerial, false);
+atoms[iAtom].atomSymmetry = atoms[iTo].atomSymmetry;
+this.ml.undeleteAtom (iAtom);
+this.ms.bondAtoms (atoms[iTo], atoms[iAtom], 1, this.ms.getDefaultMadFromOrder (1), null, 0, true, false);
+}, "~N,~N,~S,JU.P3");
+Clazz_defineMethod (c$, "fixPropertyValue", 
+function (bsAtoms, data, toHydrogens) {
+var atoms = this.ms.at;
+var fData = data;
+var newData =  Clazz_newFloatArray (bsAtoms.cardinality (), 0);
+var lastData = 0;
+for (var pt = 0, iAtom = 0, i = bsAtoms.nextSetBit (0); i >= 0; i = bsAtoms.nextSetBit (i + 1), iAtom++) {
+if (atoms[i].getElementNumber () == 1) {
+if (!toHydrogens) continue;
+} else {
+lastData = fData[pt++];
+}newData[iAtom] = lastData;
+}
+return newData;
+}, "JU.BS,~O,~B");
+c$.allocateBioPolymer = Clazz_defineMethod (c$, "allocateBioPolymer", 
+function (groups, firstGroupIndex, checkConnections, pt0) {
+var previous = null;
+var count = 0;
+for (var i = firstGroupIndex; i < groups.length; ++i) {
+var group = groups[i];
+var current;
+if (!(Clazz_instanceOf (group, JM.Monomer)) || (current = group).bioPolymer != null || previous != null && previous.getClass () !== current.getClass () || checkConnections && !current.isConnectedAfter (previous)) break;
+previous = current;
+count++;
+}
+if (count < 2) return null;
+var monomers =  new Array (count);
+for (var j = 0; j < count; ++j) monomers[j] = groups[firstGroupIndex + j];
+
+if (Clazz_instanceOf (previous, JM.AminoMonomer)) return  new JM.AminoPolymer (monomers, pt0);
+if (Clazz_instanceOf (previous, JM.AlphaMonomer)) return  new JM.AlphaPolymer (monomers, pt0);
+if (Clazz_instanceOf (previous, JM.NucleicMonomer)) return  new JM.NucleicPolymer (monomers);
+if (Clazz_instanceOf (previous, JM.PhosphorusMonomer)) return  new JM.PhosphorusPolymer (monomers);
+if (Clazz_instanceOf (previous, JM.CarbohydrateMonomer)) return  new JM.CarbohydratePolymer (monomers);
+JU.Logger.error ("Polymer.allocatePolymer() ... no matching polymer for monomor " + previous);
+throw  new NullPointerException ();
+}, "~A,~N,~B,~N");
+Clazz_defineMethod (c$, "iterateOverAllNewStructures", 
+function (adapter, atomSetCollection) {
+var iterStructure = adapter.getStructureIterator (atomSetCollection);
+if (iterStructure == null) return;
+var bs = iterStructure.getStructuredModels ();
+if (bs != null) for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) this.ml.structuresDefinedInFile.set (this.ml.baseModelIndex + i);
+
+while (iterStructure.hasNext ()) if (iterStructure.getStructureType () !== J.c.STR.TURN) this.setStructure (iterStructure);
+
+iterStructure = adapter.getStructureIterator (atomSetCollection);
+while (iterStructure.hasNext ()) if (iterStructure.getStructureType () === J.c.STR.TURN) this.setStructure (iterStructure);
+
+}, "J.api.JmolAdapter,~O");
+Clazz_defineMethod (c$, "setStructure", 
+ function (iterStructure) {
+var t = iterStructure.getSubstructureType ();
+var id = iterStructure.getStructureID ();
+var serID = iterStructure.getSerialID ();
+var count = iterStructure.getStrandCount ();
+var atomRange = iterStructure.getAtomIndices ();
+var modelRange = iterStructure.getModelIndices ();
+var bsAll = iterStructure.getBSAll ();
+var m0;
+var m1;
+var models = this.ms.am;
+if (this.ml.isTrajectory) {
+m0 = m1 = modelRange[0];
+} else {
+m0 = modelRange[0] + this.ml.baseModelIndex;
+m1 = modelRange[1] + this.ml.baseModelIndex;
+}this.ml.structuresDefinedInFile.setBits (m0, m1 + 1);
+var bs;
+var m;
+if (bsAll != null) {
+for (var i = m0, t0; i <= m1; i++) if (Clazz_instanceOf ((m = models[i]), JM.BioModel)) for (var j = 0; j < 5; j++) if ((bs = bsAll[t0 = JM.BioResolver.mytypes[j]]) != null && !bs.isEmpty ()) (m).addStructureByBS (0, t0, JM.BioResolver.types[j], bs);
+
+
+return;
+}var startChainID = iterStructure.getStartChainID ();
+var startSequenceNumber = iterStructure.getStartSequenceNumber ();
+var startInsertionCode = iterStructure.getStartInsertionCode ();
+var endSequenceNumber = iterStructure.getEndSequenceNumber ();
+var endChainID = iterStructure.getEndChainID ();
+var endInsertionCode = iterStructure.getEndInsertionCode ();
+var type = (t === J.c.STR.NOT ? J.c.STR.NONE : t);
+var startSeqCode = JM.Group.getSeqcodeFor (startSequenceNumber, startInsertionCode);
+var endSeqCode = JM.Group.getSeqcodeFor (endSequenceNumber, endInsertionCode);
+if (this.bsAssigned == null) this.bsAssigned =  new JU.BS ();
+for (var i = m0, i0 = 0; i <= m1; i++) if (Clazz_instanceOf ((m = models[i]), JM.BioModel)) (m).addSecondaryStructure (type, id, serID, count, startChainID, startSeqCode, endChainID, endSeqCode, (i0 = m.firstAtomIndex) + atomRange[0], i0 + atomRange[1], this.bsAssigned);
+
+}, "J.api.JmolAdapterStructureIterator");
+Clazz_defineMethod (c$, "setGroupLists", 
+function (ipt) {
+this.ml.group3Lists[ipt + 1] = JM.Group.standardGroupList;
+this.ml.group3Counts[ipt + 1] =  Clazz_newIntArray (JM.BioResolver.group3Count + 10, 0);
+if (this.ml.group3Lists[0] == null) {
+this.ml.group3Lists[0] = JM.Group.standardGroupList;
+this.ml.group3Counts[0] =  Clazz_newIntArray (JM.BioResolver.group3Count + 10, 0);
+}}, "~N");
+Clazz_defineMethod (c$, "isKnownPDBGroup", 
+function (g3, max) {
+var pt = JM.BioResolver.knownGroupID (g3);
+return (pt > 0 ? pt < max : max == 2147483647 && JM.BioResolver.checkCarbohydrate (g3));
+}, "~S,~N");
+Clazz_defineMethod (c$, "lookupSpecialAtomID", 
+function (name) {
+if (JM.BioResolver.htSpecialAtoms == null) {
+JM.BioResolver.htSpecialAtoms =  new java.util.Hashtable ();
+for (var i = JM.BioResolver.specialAtomNames.length; --i >= 0; ) {
+var specialAtomName = JM.BioResolver.specialAtomNames[i];
+if (specialAtomName != null) JM.BioResolver.htSpecialAtoms.put (specialAtomName, Byte.$valueOf (i));
+}
+}var boxedAtomID = JM.BioResolver.htSpecialAtoms.get (name);
+return (boxedAtomID == null ? 0 : boxedAtomID.byteValue ());
+}, "~S");
+Clazz_defineMethod (c$, "getPdbBondInfo", 
+ function (group3, isLegacy) {
+if (JM.BioResolver.htPdbBondInfo == null) JM.BioResolver.htPdbBondInfo =  new java.util.Hashtable ();
+var info = JM.BioResolver.htPdbBondInfo.get (group3);
+if (info != null) return info;
+var pt = JM.BioResolver.knownGroupID (group3);
+if (pt < 0 || pt > JM.BioResolver.pdbBondInfo.length) return null;
+var s = JM.BioResolver.pdbBondInfo[pt];
+if (isLegacy && (pt = s.indexOf ("O3'")) >= 0) s = s.substring (0, pt);
+var temp = JU.PT.getTokens (s);
+info =  new Array (Clazz_doubleToInt (temp.length / 2));
+for (var i = 0, p = 0; i < info.length; i++) {
+var source = temp[p++];
+var target = temp[p++];
+if (target.length == 1) switch (target.charAt (0)) {
+case 'N':
+target = "H@H2";
+break;
+case 'B':
+target = "HB3@HB2";
+break;
+case 'D':
+target = "HD3@HD2";
+break;
+case 'G':
+target = "HG3@HG2";
+break;
+case '2':
+target = "H2'@H2''";
+break;
+case '5':
+target = "H5''@H5'";
+break;
+}
+if (target.charAt (0) != 'H' && source.compareTo (target) > 0) {
+s = target;
+target = source;
+source = s;
+}info[i] =  Clazz_newArray (-1, [source, target, (target.startsWith ("H") ? "1" : "2")]);
+}
+JM.BioResolver.htPdbBondInfo.put (group3, info);
+return info;
+}, "~S,~B");
+c$.knownGroupID = Clazz_defineMethod (c$, "knownGroupID", 
+function (group3) {
+if (group3 == null || group3.length == 0) return 0;
+var boxedGroupID = JM.BioResolver.htGroup.get (group3);
+return (boxedGroupID == null ? -1 : boxedGroupID.shortValue ());
+}, "~S");
+c$.checkCarbohydrate = Clazz_defineMethod (c$, "checkCarbohydrate", 
+ function (group3) {
+return (group3 != null && ",[AHR],[ALL],[AMU],[ARA],[ARB],[BDF],[BDR],[BGC],[BMA],[FCA],[FCB],[FRU],[FUC],[FUL],[GAL],[GLA],[GLC],[GXL],[GUP],[LXC],[MAN],[RAM],[RIB],[RIP],[XYP],[XYS],[CBI],[CT3],[CTR],[CTT],[LAT],[MAB],[MAL],[MLR],[MTT],[SUC],[TRE],[GCU],[MTL],[NAG],[NDG],[RHA],[SOR],[SOL],[SOE],[XYL],[A2G],[LBT],[NGA],[SIA],[SLB],[AFL],[AGC],[GLB],[NAN],[RAA]".indexOf ("[" + group3.toUpperCase () + "]") >= 0);
+}, "~S");
+Clazz_defineMethod (c$, "isHetero", 
+function (group3) {
+switch (group3.length) {
+case 1:
+group3 += "  ";
+break;
+case 2:
+group3 += " ";
+break;
+case 3:
+break;
+default:
+return true;
+}
+var pt = JM.Group.standardGroupList.indexOf (group3);
+return (pt < 0 || Clazz_doubleToInt (pt / 6) + 1 >= 42);
+}, "~S");
+Clazz_defineMethod (c$, "toStdAmino3", 
+function (g1) {
+if (g1.length == 0) return "";
+var s =  new JU.SB ();
+var pt = JM.BioResolver.knownGroupID ("==A");
+if (pt < 0) {
+for (var i = 1; i <= 20; i++) {
+pt = JM.BioResolver.knownGroupID (JM.BioResolver.predefinedGroup3Names[i]);
+JM.BioResolver.htGroup.put ("==" + JM.BioResolver.predefinedGroup1Names[i], Short.$valueOf (pt));
+}
+}for (var i = 0, n = g1.length; i < n; i++) {
+var ch = g1.charAt (i);
+pt = JM.BioResolver.knownGroupID ("==" + ch);
+if (pt < 0) pt = 23;
+s.append (" ").append (JM.BioResolver.predefinedGroup3Names[pt]);
+}
+return s.toString ().substring (1);
+}, "~S");
+Clazz_defineMethod (c$, "getGroupID", 
+function (g3) {
+return JM.BioResolver.getGroupIdFor (g3);
+}, "~S");
+c$.getGroupIdFor = Clazz_defineMethod (c$, "getGroupIdFor", 
+function (group3) {
+if (group3 != null) group3 = group3.trim ();
+var groupID = JM.BioResolver.knownGroupID (group3);
+return (groupID == -1 ? JM.BioResolver.addGroup3Name (group3) : groupID);
+}, "~S");
+c$.addGroup3Name = Clazz_defineMethod (c$, "addGroup3Name", 
+ function (group3) {
+if (JM.BioResolver.group3NameCount == JM.Group.group3Names.length) JM.Group.group3Names = JU.AU.doubleLengthS (JM.Group.group3Names);
+var groupID = JM.BioResolver.group3NameCount++;
+JM.Group.group3Names[groupID] = group3;
+JM.BioResolver.htGroup.put (group3, Short.$valueOf (groupID));
+return groupID;
+}, "~S");
+c$.getStandardPdbHydrogenCount = Clazz_defineMethod (c$, "getStandardPdbHydrogenCount", 
+ function (group3) {
+var pt = JM.BioResolver.knownGroupID (group3);
+return (pt < 0 || pt >= JM.BioResolver.pdbHydrogenCount.length ? -1 : JM.BioResolver.pdbHydrogenCount[pt]);
+}, "~S");
+c$.getSpecialAtomName = Clazz_defineMethod (c$, "getSpecialAtomName", 
+function (atomID) {
+return JM.BioResolver.specialAtomNames[atomID];
+}, "~N");
+Clazz_defineMethod (c$, "getArgbs", 
+function (tok) {
+switch (tok) {
+case 2097166:
+return JM.BioResolver.argbsNucleic;
+case 2097154:
+return JM.BioResolver.argbsAmino;
+case 1073742144:
+return JM.BioResolver.argbsShapely;
+case 1140850689:
+return JM.BioResolver.argbsChainAtom;
+case 1612709894:
+return JM.BioResolver.argbsChainHetero;
+}
+return null;
+}, "~N");
+Clazz_defineMethod (c$, "getBioModelSet", 
+function (modelSet) {
+if (modelSet.bioModelset == null) modelSet.bioModelset =  new JM.BioModelSet ().set (this.vwr, modelSet);
+return modelSet.bioModelset;
+}, "JM.ModelSet");
+c$.htGroup = c$.prototype.htGroup =  new java.util.Hashtable ();
+c$.types = c$.prototype.types =  Clazz_newArray (-1, [J.c.STR.HELIXPI, J.c.STR.HELIXALPHA, J.c.STR.SHEET, J.c.STR.HELIX310, J.c.STR.TURN]);
+Clazz_defineStatics (c$,
+"mytypes",  Clazz_newIntArray (-1, [0, 2, 3, 4, 6]),
+"htPdbBondInfo", null,
+"pdbBondInfo",  Clazz_newArray (-1, ["", "N N CA HA C O CB HB?", "N N CA HA C O CB B CG G CD D NE HE CZ NH1 NH1 HH11@HH12 NH2 HH22@HH21", "N N CA HA C O CB B CG OD1 ND2 HD21@HD22", "N N CA HA C O CB B CG OD1", "N N CA HA C O CB B SG HG", "N N CA HA C O CB B CG G CD OE1 NE2 HE22@HE21", "N N CA HA C O CB B CG G CD OE1", "N N CA HA2@HA3 C O", "N N CA HA C O CB B CG CD2 ND1 CE1 ND1 HD1 CD2 HD2 CE1 HE1 NE2 HE2", "N N CA HA C O CB HB CG1 HG13@HG12 CG2 HG2? CD1 HD1?", "N N CA HA C O CB B CG HG CD1 HD1? CD2 HD2?", "N N CA HA C O CB B CG G CD HD2@HD3 CE HE3@HE2 NZ HZ?", "N N CA HA C O CB B CG G CE HE?", "N N CA HA C O CB B CG CD1 CD1 HD1 CD2 CE2 CD2 HD2 CE1 CZ CE1 HE1 CE2 HE2 CZ HZ", "N H CA HA C O CB B CG G CD D", "N N CA HA C O CB B OG HG", "N N CA HA C O CB HB OG1 HG1 CG2 HG2?", "N N CA HA C O CB B CG CD1 CD1 HD1 CD2 CE2 NE1 HE1 CE3 CZ3 CE3 HE3 CZ2 CH2 CZ2 HZ2 CZ3 HZ3 CH2 HH2", "N N CA HA C O CB B CG CD1 CD1 HD1 CD2 CE2 CD2 HD2 CE1 CZ CE1 HE1 CE2 HE2 OH HH", "N N CA HA C O CB HB CG1 HG1? CG2 HG2?", "N N CA HA C O CB B", "N N CA HA C O CB B CG G", "", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C8 N7 C8 H8 C5 C4 C6 O6 N1 H1 C2 N3 N2 H22@H21 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C2 O2 N3 C4 N4 H41@H42 C5 C6 C5 H5 C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C8 N7 C8 H8 C5 C4 C6 N1 N6 H61@H62 C2 N3 C2 H2 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C2 O2 N3 H3 C4 O4 C5 C6 C7 H7? C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C2 O2 N3 H3 C4 O4 C5 C6 C5 H5 C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' H2' O2' HO2' C1' H1' C8 N7 C8 H8 C5 C4 C6 O6 N1 H1 C2 N3 C2 H2 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C8 N7 C8 H8 C5 C4 C6 O6 N1 H1 C2 N3 N2 H22@H21 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C2 O2 N3 C4 N4 H41@H42 C5 C6 C5 H5 C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C8 N7 C8 H8 C5 C4 C6 N1 N6 H61@H62 C2 N3 C2 H2 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C2 O2 N3 H3 C4 O4 C5 C6 C7 H7? C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C2 O2 N3 H3 C4 O4 C5 C6 C5 H5 C6 H6 O3' HO3' O5' HO5'", "P OP1 C5' 5 C4' H4' C3' H3' C2' 2 C1' H1' C8 N7 C8 H8 C5 C4 C6 O6 N1 H1 C2 N3 C2 H2 O3' HO3' O5' HO5'"]),
+"pdbHydrogenCount",  Clazz_newIntArray (-1, [0, 6, 16, 7, 6, 6, 9, 8, 4, 9, 12, 12, 14, 10, 10, 8, 6, 8, 11, 10, 10, 3, 5, 0, 13, 13, 13, -1, 12, 12, 13, 13, 13, 14, 12, 12]),
+"allCarbohydrates", ",[AHR],[ALL],[AMU],[ARA],[ARB],[BDF],[BDR],[BGC],[BMA],[FCA],[FCB],[FRU],[FUC],[FUL],[GAL],[GLA],[GLC],[GXL],[GUP],[LXC],[MAN],[RAM],[RIB],[RIP],[XYP],[XYS],[CBI],[CT3],[CTR],[CTT],[LAT],[MAB],[MAL],[MLR],[MTT],[SUC],[TRE],[GCU],[MTL],[NAG],[NDG],[RHA],[SOR],[SOL],[SOE],[XYL],[A2G],[LBT],[NGA],[SIA],[SLB],[AFL],[AGC],[GLB],[NAN],[RAA]",
+"group3Count", 0,
+"predefinedGroup1Names",  Clazz_newCharArray (-1, ['\0', 'A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y', 'V', 'A', 'G', '?', 'G', 'C', 'A', 'T', 'U', 'I', 'G', 'C', 'A', 'T', 'U', 'I', 'G', 'C', 'A', 'T', 'U', 'I']),
+"group3NameCount", 0,
+"predefinedGroup3Names",  Clazz_newArray (-1, ["   ", "ALA", "ARG", "ASN", "ASP", "CYS", "GLN", "GLU", "GLY", "HIS", "ILE", "LEU", "LYS", "MET", "PHE", "PRO", "SER", "THR", "TRP", "TYR", "VAL", "ASX", "GLX", "UNK", "G  ", "C  ", "A  ", "T  ", "U  ", "I  ", "DG ", "DC ", "DA ", "DT ", "DU ", "DI ", "+G ", "+C ", "+A ", "+T ", "+U ", "+I ", "HOH", "DOD", "WAT", "UREA", "PO4", "SO4", "UNL"]),
+"specialAtomNames",  Clazz_newArray (-1, [null, "N", "CA", "C", "O", "O1", "O5'", "C5'", "C4'", "C3'", "O3'", "C2'", "C1'", "P", "OD1", "OD2", "OE1", "OE2", "SG", null, null, null, null, null, null, null, null, null, null, null, null, null, "N1", "C2", "N3", "C4", "C5", "C6", "O2", "N7", "C8", "N9", "N4", "N2", "N6", "C5M", "O6", "O4", "S4", "C7", "H1", "H2", "H3", null, null, null, null, null, null, null, null, null, null, null, "OXT", "H", "1H", "2H", "3H", "HA", "1HA", "2HA", "H5T", "O5T", "O1P", "OP1", "O2P", "OP2", "O4'", "O2'", "1H5'", "2H5'", "H4'", "H3'", "1H2'", "2H2'", "2HO'", "H1'", "H3T", "HO3'", "HO5'", "HA2", "HA3", "HA2", "H5'", "H5''", "H2'", "H2''", "HO2'", "O3P", "OP3"]));
+c$.ATOMID_MAX = c$.prototype.ATOMID_MAX = JM.BioResolver.specialAtomNames.length;
+Clazz_defineStatics (c$,
+"htSpecialAtoms", null,
+"argbsAmino",  Clazz_newIntArray (-1, [0xFFBEA06E, 0xFFC8C8C8, 0xFF145AFF, 0xFF00DCDC, 0xFFE60A0A, 0xFFE6E600, 0xFF00DCDC, 0xFFE60A0A, 0xFFEBEBEB, 0xFF8282D2, 0xFF0F820F, 0xFF0F820F, 0xFF145AFF, 0xFFE6E600, 0xFF3232AA, 0xFFDC9682, 0xFFFA9600, 0xFFFA9600, 0xFFB45AB4, 0xFF3232AA, 0xFF0F820F, 0xFFFF69B4, 0xFFFF69B4, 0xFFBEA06E]),
+"argbsNucleic",  Clazz_newIntArray (-1, [0xFFBEA06E, 0xFFA0A0A0, 0xFF0F820F, 0xFFE6E600, 0xFFE60A0A, 0xFF145AFF, 0xFF00DCDC, 0xFF00DCDC, 0xFF0F820F, 0xFFE6E600, 0xFFE60A0A, 0xFF145AFF, 0xFF00DCDC, 0xFF00DCDC, 0xFF0F820F, 0xFFE6E600, 0xFFE60A0A, 0xFF145AFF, 0xFF00DCDC, 0xFF00DCDC]),
+"argbsChainAtom",  Clazz_newIntArray (-1, [0xFFffffff, 0xFFC0D0FF, 0xFFB0FFB0, 0xFFFFC0C8, 0xFFFFFF80, 0xFFFFC0FF, 0xFFB0F0F0, 0xFFFFD070, 0xFFF08080, 0xFFF5DEB3, 0xFF00BFFF, 0xFFCD5C5C, 0xFF66CDAA, 0xFF9ACD32, 0xFFEE82EE, 0xFF00CED1, 0xFF00FF7F, 0xFF3CB371, 0xFF00008B, 0xFFBDB76B, 0xFF006400, 0xFF800000, 0xFF808000, 0xFF800080, 0xFF008080, 0xFFB8860B, 0xFFB22222]),
+"argbsChainHetero",  Clazz_newIntArray (-1, [0xFFffffff, -7298865, -8335464, -3174224, -3158160, -3174193, -8339264, -3170208, -4173712, -3821949, -16734257, -4895668, -11094638, -7686870, -4296002, -16730463, -16724113, -13329567, -16777029, -5922981, -16739328, -5242880, -5197824, -5242704, -16731984, -1526253, -4050382]),
+"argbsShapely",  Clazz_newIntArray (-1, [0xFFFF00FF, 0xFF00007C, 0xFFFF7C70, 0xFF8CFF8C, 0xFFA00042, 0xFFFFFF70, 0xFFFF4C4C, 0xFF660000, 0xFFFFFFFF, 0xFF7070FF, 0xFF004C00, 0xFF455E45, 0xFF4747B8, 0xFF534C52, 0xFFB8A042, 0xFF525252, 0xFFFF7042, 0xFFB84C00, 0xFF4F4600, 0xFF8C704C, 0xFFFF8CFF, 0xFFFF00FF, 0xFFFF00FF, 0xFFFF00FF, 0xFFFF7070, 0xFFFF8C4B, 0xFFA0A0FF, 0xFFA0FFA0, 0xFFFF8080, 0xFF80FFFF, 0xFFFF7070, 0xFFFF8C4B, 0xFFA0A0FF, 0xFFA0FFA0, 0xFFFF8080, 0xFF80FFFF, 0xFFFF7070, 0xFFFF8C4B, 0xFFA0A0FF, 0xFFA0FFA0, 0xFFFF8080, 0xFF80FFFF]));
+{
+{
+}}});
 Clazz_declarePackage ("JM");
 Clazz_load (["JM.Monomer"], "JM.CarbohydrateMonomer", ["J.c.STR"], function () {
 c$ = Clazz_declareType (JM, "CarbohydrateMonomer", JM.Monomer);
@@ -4737,7 +4744,7 @@ if (possiblyPreviousMonomer == null) return true;
 for (var i = this.firstAtomIndex; i <= this.lastAtomIndex; i++) for (var j = possiblyPreviousMonomer.firstAtomIndex; j <= possiblyPreviousMonomer.lastAtomIndex; j++) {
 var a = this.chain.model.ms.at[i];
 var b = this.chain.model.ms.at[j];
-if (a.getElementNumber () + b.getElementNumber () == 14 && a.distanceSquared (b) < 3.24) return true;
+if (a != null && b != null && a.getElementNumber () + b.getElementNumber () == 14 && a.distanceSquared (b) < 3.24) return true;
 }
 
 return false;
@@ -4866,6 +4873,7 @@ Clazz_makeConstructor (c$,
 });
 c$.add = Clazz_defineMethod (c$, "add", 
 function (info, g1, g2) {
+if (g1 == null || g2 == null) return null;
 var bp =  new JM.BasePair ();
 bp.info = info;
 (bp.g1 = g1).addBasePair (bp);
@@ -4881,13 +4889,16 @@ function () {
 return this.info.toString ();
 });
 Clazz_declarePackage ("JM");
-Clazz_load (["JM.PhosphorusMonomer"], "JM.NucleicMonomer", ["java.lang.Character", "JU.Lst", "$.P3", "$.Quat", "$.V3", "J.c.STR", "JM.Group", "JM.NucleicPolymer"], function () {
+Clazz_load (["JM.PhosphorusMonomer"], "JM.NucleicMonomer", ["java.lang.Character", "JU.A4", "$.Lst", "$.M3", "$.P3", "$.Quat", "$.V3", "J.c.STR", "JM.Group", "JM.NucleicPolymer"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.$isPurine = false;
 this.$isPyrimidine = false;
 this.hasRnaO2Prime = false;
 this.baseCenter = null;
 this.bps = null;
+this.dssrBox = null;
+this.dssrBoxHeight = 0;
+this.dssrFrame = null;
 Clazz_instantialize (this, arguments);
 }, JM, "NucleicMonomer", JM.PhosphorusMonomer);
 Clazz_overrideConstructor (c$, 
@@ -4915,7 +4926,7 @@ this.$isPyrimidine = JM.Monomer.have (offsets, 8);
 this.$isPurine = JM.Monomer.have (offsets, 9) && JM.Monomer.have (offsets, 10) && JM.Monomer.have (offsets, 11);
 return this;
 }, "JM.Chain,~S,~N,~N,~N,~A");
-Clazz_defineMethod (c$, "isNucleicMonomer", 
+Clazz_overrideMethod (c$, "isNucleicMonomer", 
 function () {
 return true;
 });
@@ -4954,6 +4965,18 @@ return this.getAtomFromOffsetIndex (25);
 Clazz_defineMethod (c$, "getC2", 
 function () {
 return this.getAtomFromOffsetIndex (5);
+});
+Clazz_defineMethod (c$, "getC5", 
+function () {
+return this.getAtomFromOffsetIndex (3);
+});
+Clazz_defineMethod (c$, "getC6", 
+function () {
+return this.getAtomFromOffsetIndex (1);
+});
+Clazz_defineMethod (c$, "getC8", 
+function () {
+return this.getAtomFromOffsetIndex (10);
 });
 Clazz_defineMethod (c$, "getC4P", 
 function () {
@@ -5224,6 +5247,42 @@ var g3 = JM.Group.group3Names[this.groupID];
 var g1 = (JM.NucleicPolymer.htGroup1 == null ? null : JM.NucleicPolymer.htGroup1.get (g3));
 return (g1 == null ? Character.toLowerCase (g3.charAt (g3.length - 1)) : g1.charAt (0));
 });
+Clazz_defineMethod (c$, "getDSSRFrame", 
+function (vwr) {
+if (this.dssrFrame != null) return this.dssrFrame;
+if (this.dssrNT != null) return this.dssrFrame = vwr.getAnnotationParser (true).getDSSRFrame (this.dssrNT);
+var oxyz = this.dssrFrame =  new Array (4);
+for (var i = 4; --i >= 0; ) oxyz[i] =  new JU.P3 ();
+
+if (this.isPurine ()) {
+var v85 = JU.P3.newP (this.getC5 ());
+v85.sub (this.getC8 ());
+v85.normalize ();
+oxyz[2].setT (v85);
+oxyz[2].scale (-1);
+oxyz[0].scaleAdd2 (4.9, v85, this.getC8 ());
+var v89 = JU.P3.newP (this.getN0 ());
+v89.sub (this.getC8 ());
+oxyz[3].cross (v89, v85);
+oxyz[3].normalize ();
+} else {
+var v61 = JU.P3.newP (this.getN0 ());
+v61.sub (this.getC6 ());
+var v65 = JU.P3.newP (this.getC5 ());
+v65.sub (this.getC6 ());
+oxyz[3].cross (v61, v65);
+oxyz[3].normalize ();
+oxyz[2].setT (v61);
+oxyz[2].normalize ();
+var aa = JU.A4.new4 (oxyz[3].x, oxyz[3].y, oxyz[3].z, (1.1623892818282233));
+var m3 =  new JU.M3 ();
+m3.setAA (aa);
+m3.rotate (oxyz[2]);
+oxyz[0].scaleAdd2 (5.1, oxyz[2], this.getC6 ());
+oxyz[2].scale (-1);
+}oxyz[1].cross (oxyz[2], oxyz[3]);
+return this.dssrFrame;
+}, "JV.Viewer");
 Clazz_defineStatics (c$,
 "C6", 1,
 "O2Pr", 2,
@@ -5361,6 +5420,7 @@ Clazz_makeConstructor (c$,
 });
 c$.add = Clazz_defineMethod (c$, "add", 
 function (info, g1, g2) {
+if (g1 == null || g2 == null) return null;
 var bp =  new JM.BasePair ();
 bp.info = info;
 (bp.g1 = g1).addBasePair (bp);
@@ -5385,10 +5445,6 @@ this.set (monomers);
 this.hasStructure = true;
 }, "~A");
 });
-Clazz_declarePackage ("J.api");
-Clazz_declareInterface (J.api, "DSSPInterface");
-Clazz_declarePackage ("J.api");
-Clazz_declareInterface (J.api, "JmolBioMeshRenderer");
 Clazz_declarePackage ("J.dssx");
 Clazz_load (null, "J.dssx.Bridge", ["java.lang.Boolean", "JU.Escape"], function () {
 c$ = Clazz_decorateAsClass (function () {
@@ -5441,7 +5497,7 @@ return (this.isAntiparallel ? "a " : "p ") + this.a + " - " + this.b + "\t" + JU
 });
 });
 Clazz_declarePackage ("J.dssx");
-Clazz_load (["J.api.DSSPInterface"], "J.dssx.DSSP", ["java.lang.Boolean", "java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "$.PT", "$.SB", "J.c.STR", "J.dssx.Bridge", "J.i18n.GT", "JM.HBond", "JM.AminoPolymer", "JU.Escape", "$.Logger", "JV.Viewer"], function () {
+Clazz_load (null, "J.dssx.DSSP", ["java.lang.Boolean", "java.util.Hashtable", "JU.AU", "$.BS", "$.Lst", "$.PT", "$.SB", "J.c.STR", "J.dssx.Bridge", "J.i18n.GT", "JM.HBond", "JM.AminoPolymer", "JU.Escape", "$.Logger", "JV.Viewer"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.bioPolymers = null;
 this.vHBonds = null;
@@ -5456,23 +5512,25 @@ this.htBridges = null;
 this.htLadders = null;
 this.bridgesA = null;
 this.bridgesP = null;
+this.isDSSP2 = false;
 this.sheetOffsets = null;
 Clazz_instantialize (this, arguments);
-}, J.dssx, "DSSP", null, J.api.DSSPInterface);
+}, J.dssx, "DSSP");
 Clazz_prepareFields (c$, function () {
 this.sheetOffsets =  Clazz_newArray (-1, [ Clazz_newIntArray (-1, [0, -1, 1, 0, 1, 0, 0, -1]),  Clazz_newIntArray (-1, [0, 0, 0, 0, 1, -1, 1, -1])]);
 });
 Clazz_makeConstructor (c$, 
 function () {
 });
-Clazz_overrideMethod (c$, "calculateDssp", 
-function (objBioPolymers, bioPolymerCount, objVHBonds, doReport, dsspIgnoreHydrogens, setStructure) {
+Clazz_defineMethod (c$, "calculateDssp", 
+function (objBioPolymers, bioPolymerCount, objVHBonds, doReport, dsspIgnoreHydrogens, setStructure, version) {
 this.bioPolymers = objBioPolymers;
 this.bioPolymerCount = bioPolymerCount;
 this.vHBonds = objVHBonds;
 this.doReport = doReport;
 this.dsspIgnoreHydrogens = dsspIgnoreHydrogens;
 this.setStructure = setStructure;
+this.isDSSP2 = (version > 1);
 var bsAmino =  new JU.BS ();
 for (var i = 0; i < bioPolymerCount; i++) if (Clazz_instanceOf (this.bioPolymers[i], JM.AminoPolymer)) bsAmino.set (i);
 
@@ -5480,7 +5538,7 @@ if (bsAmino.isEmpty ()) return "";
 var m = this.bioPolymers[0].model;
 var sb =  new JU.SB ();
 sb.append ("Jmol ").append (JV.Viewer.getJmolVersion ()).append (" DSSP analysis for model ").append (m.ms.getModelNumberDotted (m.modelIndex)).append (" - ").append (m.ms.getModelTitle (m.modelIndex)).append ("\n");
-if (m.modelIndex == 0) sb.append ("\nW. Kabsch and C. Sander, Biopolymers, vol 22, 1983, pp 2577-2637\n").append ("\nWe thank Wolfgang Kabsch and Chris Sander for writing the DSSP software,\n").append ("and we thank the CMBI for maintaining it to the extent that it was easy to\n").append ("re-engineer for our purposes. At this point in time, we make no guarantee\n").append ("that this code gives precisely the same analysis as the code available via license\n").append ("from CMBI at http://swift.cmbi.ru.nl/gv/dssp\n");
+if (m.modelIndex == 0) sb.append ("\nW. Kabsch and C. Sander, Biopolymers, vol 22, 1983, pp 2577-2637\n\nWe thank Wolfgang Kabsch and Chris Sander for writing the DSSP software,\nand we thank the CMBI for maintaining it to the extent that it was easy to\nre-engineer in Java for our purposes. \n\nSecond generation DSSP 2.0 is ").append (this.isDSSP2 ? "" : "NOT ").append ("used in this analysis. See Int. J. Mol. Sci. 2014, 15, 7841-7864; doi:10.3390/ijms15057841.\n");
 if (setStructure && m.modelIndex == 0) sb.append ("\nAll bioshapes have been deleted and must be regenerated.\n");
 if (m.altLocCount > 0) sb.append ("\nNote: This model contains alternative locations. Use  'CONFIGURATION 1' to be consistent with CMBI DSSP.\n");
 this.labels =  Clazz_newCharArray (bioPolymerCount, '\0');
@@ -5490,8 +5548,8 @@ var haveWarned = false;
 for (var i = bsAmino.nextSetBit (0); i >= 0; i = bsAmino.nextSetBit (i + 1)) {
 var ap = this.bioPolymers[i];
 if (!haveWarned && (ap.monomers[0]).getExplicitNH () != null) {
-if (dsspIgnoreHydrogens) sb.append (J.i18n.GT.o (J.i18n.GT._ ("NOTE: Backbone amide hydrogen positions are present and will be ignored. Their positions will be approximated, as in standard DSSP analysis.\nUse {0} to not use this approximation.\n\n"), "SET dsspCalculateHydrogenAlways FALSE"));
- else sb.append (J.i18n.GT.o (J.i18n.GT._ ("NOTE: Backbone amide hydrogen positions are present and will be used. Results may differ significantly from standard DSSP analysis.\nUse {0} to ignore these hydrogen positions.\n\n"), "SET dsspCalculateHydrogenAlways TRUE"));
+if (dsspIgnoreHydrogens) sb.append (J.i18n.GT.o (J.i18n.GT.$ ("NOTE: Backbone amide hydrogen positions are present and will be ignored. Their positions will be approximated, as in standard DSSP analysis.\nUse {0} to not use this approximation.\n\n"), "SET dsspCalculateHydrogenAlways FALSE"));
+ else sb.append (J.i18n.GT.o (J.i18n.GT.$ ("NOTE: Backbone amide hydrogen positions are present and will be used. Results may differ significantly from standard DSSP analysis.\nUse {0} to ignore these hydrogen positions.\n\n"), "SET dsspCalculateHydrogenAlways TRUE"));
 haveWarned = true;
 }ap.recalculateLeadMidpointsAndWingVectors ();
 var n = ap.monomerCount;
@@ -5521,7 +5579,7 @@ sb.append (reports[i]).append (this.dumpTags (ap, "$.1: " + String.valueOf (this
 if (this.bsBad.nextSetBit (0) >= 0) sb.append ("\nNOTE: '!' indicates a residue that is missing a backbone carbonyl oxygen atom.\n");
 sb.append ("\n").append ("SUMMARY:" + sbSummary);
 }return sb.toString ();
-}, "~A,~N,~O,~B,~B,~B");
+}, "~A,~N,~O,~B,~B,~B,~N");
 Clazz_defineMethod (c$, "getDualHydrogenBondArray", 
  function () {
 var min = JU.AU.newInt4 (this.bioPolymerCount);
@@ -5727,17 +5785,25 @@ var ap = this.bioPolymers[iPolymer];
 if (JU.Logger.debugging) for (var j = 0; j < ap.monomerCount; j++) JU.Logger.debug (iPolymer + "." + ap.monomers[j].getResno () + "\t" + JU.Escape.e (min[j]));
 
 var bsTurn =  new JU.BS ();
-var line4 = this.findHelixes2 (2, iPolymer, 4, min, J.c.STR.HELIXALPHA, 10240, bsTurn, true);
-var line3 = this.findHelixes2 (4, iPolymer, 3, min, J.c.STR.HELIX310, 8192, bsTurn, false);
-var line5 = this.findHelixes2 (0, iPolymer, 5, min, J.c.STR.HELIXPI, 12288, bsTurn, false);
-if (this.setStructure) ap.setStructureBS (0, 6, J.c.STR.TURN, bsTurn, false);
+var line3;
+var line4;
+var line5;
+if (this.isDSSP2) {
+line5 = this.findHelixes2 (0, iPolymer, 5, min, J.c.STR.HELIXPI, 12288, bsTurn, true);
+line4 = this.findHelixes2 (2, iPolymer, 4, min, J.c.STR.HELIXALPHA, 10240, bsTurn, false);
+line3 = this.findHelixes2 (4, iPolymer, 3, min, J.c.STR.HELIX310, 8192, bsTurn, false);
+} else {
+line4 = this.findHelixes2 (2, iPolymer, 4, min, J.c.STR.HELIXALPHA, 10240, bsTurn, true);
+line3 = this.findHelixes2 (4, iPolymer, 3, min, J.c.STR.HELIX310, 8192, bsTurn, false);
+line5 = this.findHelixes2 (0, iPolymer, 5, min, J.c.STR.HELIXPI, 12288, bsTurn, false);
+}if (this.setStructure) ap.setStructureBS (0, 6, J.c.STR.TURN, bsTurn, false);
 if (this.doReport) {
 this.setTag (this.labels[iPolymer], bsTurn, 'T');
 return this.dumpTags (ap, "$.5: " + line5 + "\n" + "$.4: " + line4 + "\n" + "$.3: " + line3, this.bsBad, 1);
 }return "";
 }, "~N,~A");
 Clazz_defineMethod (c$, "findHelixes2", 
- function (dsspType, iPolymer, pitch, min, subtype, type, bsTurn, isFirst) {
+ function (mmtfType, iPolymer, pitch, min, subtype, type, bsTurn, isFirst) {
 var ap = this.bioPolymers[iPolymer];
 var bsStart =  new JU.BS ();
 var bsNNN =  new JU.BS ();
@@ -5784,7 +5850,7 @@ taglines = null;
 bsNNN.andNot (bsDone);
 bsTurn.or (bsNNN);
 bsTurn.andNot (bsHelix);
-if (this.setStructure) ap.setStructureBS (0, dsspType, subtype, bsHelix, false);
+if (this.setStructure) ap.setStructureBS (0, mmtfType, subtype, bsHelix, false);
 if (this.doReport) {
 this.setTag (this.labels[iPolymer], bsHelix, String.fromCharCode (68 + pitch));
 return String.valueOf (taglines) + warning;
@@ -6026,6 +6092,10 @@ if (this.colixesBack != null && this.colixesBack.length > i && this.colixesBack[
 JU.BSUtil.setMapBitSet (temp2, atomIndex1, atomIndex2, s);
 }
 }}, "~S,~B,java.util.Map,java.util.Map");
+Clazz_overrideMethod (c$, "getShapeState", 
+function () {
+return null;
+});
 Clazz_defineStatics (c$,
 "eightPiSquared100", 7895.6835208714865);
 });
@@ -6287,7 +6357,7 @@ var bioShape = this.bioShapes[iShape];
 var atomIndices = bioShape.bioPolymer.getLeadAtomIndices ();
 for (var i = bioShape.monomerCount; --i >= 0; ) {
 var atom = this.ms.at[atomIndices[i]];
-if (atom.nBackbonesDisplayed > 0 && !this.ms.isAtomHidden (i)) atom.setClickable (this.vf);
+if (atom.nBackbonesDisplayed > 0 && !this.ms.isAtomHidden (atom.i)) atom.setClickable (this.vf);
 }
 }
 });
@@ -6478,14 +6548,14 @@ Clazz_defineMethod (c$, "setGlobals",
  function () {
 this.invalidateMesh = false;
 this.needTranslucent = false;
-this.g3d.addRenderer (553648147);
+this.g3d.addRenderer (553648143);
 var TF = (!this.isExport && !this.vwr.checkMotionRendering (1112152066));
 if (TF != this.wireframeOnly) this.invalidateMesh = true;
 this.wireframeOnly = TF;
 TF = (this.isExport || !this.wireframeOnly && this.vwr.getBoolean (603979864));
 if (TF != this.isHighRes) this.invalidateMesh = true;
 this.isHighRes = TF;
-TF = !this.wireframeOnly && (this.vwr.getBoolean (603979817) || this.isExport);
+TF = !this.wireframeOnly && (this.vwr.getBoolean (603979816) || this.isExport);
 if (this.cartoonsFancy != TF) {
 this.invalidateMesh = true;
 this.cartoonsFancy = TF;
@@ -6500,10 +6570,11 @@ if (this.cartoonsFancy && val >= 16) val = 4;
 if (this.wireframeOnly || this.hermiteLevel == 0) val = 0;
 if (val != this.aspectRatio && val != 0 && val1 != 0) this.invalidateMesh = true;
 this.aspectRatio = val;
-if (this.aspectRatio > 0 && this.meshRenderer == null) {
+if (this.aspectRatio > 0) {
+if (this.meshRenderer == null) {
 this.meshRenderer = javajs.api.Interface.getInterface ("J.renderbio.BioMeshRenderer");
-this.meshRenderer.setup (this.g3d, this.vwr.ms, this.shape);
 this.meshRenderer.setViewerG3dShapeID (this.vwr, this.shape.shapeID);
+}this.meshRenderer.setup (this.g3d, this.ms, this.shape);
 }TF = this.vwr.getBoolean (603979966);
 if (TF != this.isTraceAlpha) this.invalidateMesh = true;
 this.isTraceAlpha = TF;
@@ -6542,7 +6613,7 @@ this.vwr.freeTempEnum (this.structureTypes);
 Clazz_defineMethod (c$, "initializePolymer", 
  function (bioShape) {
 var bsDeleted = this.vwr.slm.bsDeleted;
-if (this.vwr.ms.isJmolDataFrameForModel (bioShape.modelIndex)) {
+if (this.ms.isJmolDataFrameForModel (bioShape.modelIndex)) {
 this.controlPoints = bioShape.bioPolymer.getControlPoints (true, 0, false);
 } else {
 this.controlPoints = bioShape.bioPolymer.getControlPoints (this.isTraceAlpha, this.sheetSmoothing, this.invalidateSheets);
@@ -6561,7 +6632,7 @@ this.bsVisible.set (i);
 haveVisible = true;
 }
 if (!haveVisible) return false;
-this.ribbonBorder = this.vwr.getBoolean (603979899);
+this.ribbonBorder = this.vwr.getBoolean (603979901);
 this.isNucleic = Clazz_instanceOf (bioShape.bioPolymer, JM.NucleicPolymer);
 this.isPhosphorusOnly = !this.isNucleic && Clazz_instanceOf (bioShape.bioPolymer, JM.PhosphorusPolymer);
 this.isCarbohydrate = Clazz_instanceOf (bioShape.bioPolymer, JM.CarbohydratePolymer);
@@ -6653,9 +6724,9 @@ if (!thisTypeOnly || this.structureTypes[i] === this.structureTypes[this.iNext])
 }this.diameterBeg = Clazz_floatToInt (this.vwr.tm.scaleToScreen (Clazz_floatToInt (this.controlPointScreens[i].z), this.madBeg));
 this.diameterMid = Clazz_floatToInt (this.vwr.tm.scaleToScreen (this.monomers[i].getLeadAtom ().sZ, this.madMid));
 this.diameterEnd = Clazz_floatToInt (this.vwr.tm.scaleToScreen (Clazz_floatToInt (this.controlPointScreens[this.iNext].z), this.madEnd));
-var doCap0 = (i == this.iPrev || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iPrev]);
-var doCap1 = (this.iNext == this.iNext2 || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iNext]);
-return (this.meshRenderer != null && this.meshRenderer.check (doCap0, doCap1));
+var doCap0 = (i == this.iPrev || !this.bsVisible.get (this.iPrev) || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iPrev]);
+var doCap1 = (this.iNext == this.iNext2 || this.iNext2 == this.iNext3 || !this.bsVisible.get (this.iNext) || thisTypeOnly && this.structureTypes[i] !== this.structureTypes[this.iNext]);
+return (this.aspectRatio > 0 && this.meshRenderer != null && this.meshRenderer.check (doCap0, doCap1));
 }, "~N,~B");
 Clazz_defineMethod (c$, "renderHermiteCylinder", 
 function (screens, i) {
@@ -6715,6 +6786,22 @@ this.g3d.setC (this.colix);
 if (this.ribbonBorder && this.aspectRatio == 0) {
 this.g3d.fillCylinderBits (3, 3, this.screenArrowTop, this.screenArrowBot);
 }}, "~N");
+Clazz_defineMethod (c$, "drawSegmentAB", 
+function (atomA, atomB, colixA, colixB, max) {
+var xA = atomA.sX;
+var yA = atomA.sY;
+var zA = atomA.sZ;
+var xB = atomB.sX;
+var yB = atomB.sY;
+var zB = atomB.sZ;
+var mad = this.mad;
+if (max == 1000) mad = mad >> 1;
+if (mad < 0) {
+this.g3d.drawLine (colixA, colixB, xA, yA, zA, xB, yB, zB);
+} else {
+var width = Clazz_floatToInt (this.isExport ? mad : this.vwr.tm.scaleToScreen (Clazz_doubleToInt ((zA + zB) / 2), mad));
+this.g3d.fillCylinderXYZ (colixA, colixB, 3, width, xA, yA, zA, xB, yB, zB);
+}}, "JM.Atom,JM.Atom,~N,~N,~N");
 });
 Clazz_declarePackage ("J.renderbio");
 Clazz_load (["J.renderbio.BioShapeRenderer"], "J.renderbio.StrandsRenderer", ["J.shapebio.Strands"], function () {
@@ -6828,7 +6915,7 @@ this.isRockets = isRockets;
 if (this.wireframeOnly) {
 this.renderStrands ();
 } else if (this.wingVectors != null && !this.isCarbohydrate && !(isRockets && this.isNucleic)) {
-var val = !this.vwr.getBoolean (603979900);
+var val = !this.vwr.getBoolean (603979902);
 if (!this.isNucleic && this.renderArrowHeads != val) {
 bioShape.falsifyMesh ();
 this.renderArrowHeads = val;
@@ -6869,7 +6956,7 @@ this.calcScreenControlPoints ();
 });
 });
 Clazz_declarePackage ("J.renderbio");
-Clazz_load (["J.renderbio.RocketsRenderer"], "J.renderbio.CartoonRenderer", ["J.api.Interface", "J.c.STR", "JM.ProteinStructure"], function () {
+Clazz_load (["J.renderbio.RocketsRenderer"], "J.renderbio.CartoonRenderer", ["J.api.Interface", "J.c.STR"], function () {
 c$ = Clazz_decorateAsClass (function () {
 this.nucleicRenderer = null;
 Clazz_instantialize (this, arguments);
@@ -6882,7 +6969,7 @@ if (this.nucleicRenderer == null) this.nucleicRenderer = J.api.Interface.getInte
 this.calcScreenControlPoints ();
 this.nucleicRenderer.renderNucleic (this);
 return;
-}var val = this.vwr.getBoolean (603979820);
+}var val = this.vwr.getBoolean (603979819);
 if (this.helixRockets != val) {
 bioShape.falsifyMesh ();
 this.helixRockets = val;
@@ -6903,9 +6990,7 @@ var thisStructure;
 var needRockets = (this.helixRockets || !this.renderArrowHeads);
 var doRockets = false;
 for (var i = this.monomerCount; --i >= 0; ) {
-if (this.monomers[i].getStructure () != null && !(Clazz_instanceOf (this.monomers[i].getStructure (), JM.ProteinStructure))) {
-System.out.println ("BUG HERE IN CARTOONRENDERER");
-}thisStructure = this.monomers[i].getStructure ();
+thisStructure = this.monomers[i].getStructure ();
 if (thisStructure !== previousStructure) {
 lastWasSheet = false;
 }previousStructure = thisStructure;
@@ -6936,8 +7021,7 @@ Clazz_instantialize (this, arguments);
 Clazz_overrideMethod (c$, "renderBioShape", 
 function (bioShape) {
 var checkPass2 = (!this.isExport && !this.vwr.gdata.isPass2);
-var showSteps = this.vwr.getBoolean (603979811) && bioShape.bioPolymer.isNucleic ();
-this.isDataFrame = this.vwr.ms.isJmolDataFrameForModel (bioShape.modelIndex);
+this.isDataFrame = this.ms.isJmolDataFrameForModel (bioShape.modelIndex);
 var n = this.monomerCount;
 var atoms = this.ms.at;
 for (var i = this.bsVisible.nextSetBit (0); i >= 0; i = this.bsVisible.nextSetBit (i + 1)) {
@@ -6945,37 +7029,14 @@ var atomA = atoms[this.leadAtomIndices[i]];
 var cA = this.colixes[i];
 this.mad = this.mads[i];
 var i1 = (i + 1) % n;
-this.drawSegment (atomA, atoms[this.leadAtomIndices[i1]], cA, this.colixes[i1], 100, checkPass2);
-if (showSteps) {
-var g = this.monomers[i];
-var bps = g.getBasePairs ();
-if (bps != null) {
-for (var j = bps.size (); --j >= 0; ) {
-var iAtom = bps.get (j).getPartnerAtom (g);
-if (iAtom > i) this.drawSegment (atomA, atoms[iAtom], cA, cA, 1000, checkPass2);
-}
-}}}
+var atomB = atoms[this.leadAtomIndices[i1]];
+var cB = this.colixes[i1];
+if (atomA.nBackbonesDisplayed > 0 && atomB.nBackbonesDisplayed > 0 && !this.ms.isAtomHidden (atomB.i) && (this.isDataFrame || atomA.distanceSquared (atomB) < 100)) {
+cA = JU.C.getColixInherited (cA, atomA.colixAtom);
+cB = JU.C.getColixInherited (cB, atomB.colixAtom);
+if (!checkPass2 || this.setBioColix (cA) || this.setBioColix (cB)) this.drawSegmentAB (atomA, atomB, cA, cB, 100);
+}}
 }, "J.shapebio.BioShape");
-Clazz_defineMethod (c$, "drawSegment", 
- function (atomA, atomB, colixA, colixB, max, checkPass2) {
-if (atomA.nBackbonesDisplayed == 0 || atomB.nBackbonesDisplayed == 0 || this.ms.isAtomHidden (atomB.i) || !this.isDataFrame && atomA.distanceSquared (atomB) > max) return;
-colixA = JU.C.getColixInherited (colixA, atomA.colixAtom);
-colixB = JU.C.getColixInherited (colixB, atomB.colixAtom);
-if (checkPass2 && !this.setBioColix (colixA) && !this.setBioColix (colixB)) return;
-var xA = atomA.sX;
-var yA = atomA.sY;
-var zA = atomA.sZ;
-var xB = atomB.sX;
-var yB = atomB.sY;
-var zB = atomB.sZ;
-var mad = this.mad;
-if (max == 1000) mad = mad >> 1;
-if (mad < 0) {
-this.g3d.drawLine (colixA, colixB, xA, yA, zA, xB, yB, zB);
-} else {
-var width = Clazz_floatToInt (this.isExport ? mad : this.vwr.tm.scaleToScreen (Clazz_doubleToInt ((zA + zB) / 2), mad));
-this.g3d.fillCylinderXYZ (colixA, colixB, 3, width, xA, yA, zA, xB, yB, zB);
-}}, "JM.Atom,JM.Atom,~N,~N,~N,~B");
 });
 Clazz_declarePackage ("J.renderbio");
 Clazz_load (["J.renderbio.StrandsRenderer"], "J.renderbio.TraceRenderer", null, function () {
@@ -6993,6 +7054,7 @@ for (var i = this.bsVisible.nextSetBit (0); i >= 0; i = this.bsVisible.nextSetBi
 });
 });
 })(Clazz
+,Clazz.getClassName
 ,Clazz.newLongArray
 ,Clazz.doubleToByte
 ,Clazz.doubleToInt

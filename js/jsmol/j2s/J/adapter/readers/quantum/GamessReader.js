@@ -1,19 +1,48 @@
 Clazz.declarePackage ("J.adapter.readers.quantum");
-Clazz.load (["J.adapter.readers.quantum.MOReader"], "J.adapter.readers.quantum.GamessReader", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "J.adapter.readers.quantum.BasisFunctionReader", "JU.Logger"], function () {
+Clazz.load (["J.adapter.readers.quantum.MopacSlaterReader"], "J.adapter.readers.quantum.GamessReader", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.Lst", "$.PT", "J.adapter.readers.quantum.BasisFunctionReader", "JU.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.atomNames = null;
 this.calcOptions = null;
 this.isTypeSet = false;
 Clazz.instantialize (this, arguments);
-}, J.adapter.readers.quantum, "GamessReader", J.adapter.readers.quantum.MOReader);
+}, J.adapter.readers.quantum, "GamessReader", J.adapter.readers.quantum.MopacSlaterReader);
+Clazz.defineMethod (c$, "initializeReader", 
+function () {
+this.allowMopacDCoef = false;
+Clazz.superCall (this, J.adapter.readers.quantum.GamessReader, "initializeReader", []);
+});
+Clazz.defineMethod (c$, "setAtom", 
+function (atom, atomicNumber, name, id) {
+atom.elementNumber = atomicNumber;
+atom.atomName = name;
+this.atomNames.addLast (id == null ? name : id);
+}, "J.adapter.smarter.Atom,~N,~S,~S");
 Clazz.defineMethod (c$, "readEnergy", 
 function () {
-var tokens = JU.PT.getTokens (this.line.substring (this.line.indexOf ("ENERGY")));
-if (tokens.length < 3) return;
-var strEnergy = tokens[2];
+var searchTerm = "ENERGY";
+var energyToken = 2;
+var energyType = "ENERGY";
+if (this.line.indexOf ("E(MP2)") > 0) {
+searchTerm = "E(MP2)=";
+energyType = "MP2";
+energyToken = 1;
+} else if (this.line.indexOf ("E(CCSD)") > 0) {
+searchTerm = "E(CCSD)";
+energyType = "CCSD";
+energyToken = 2;
+} else if (this.line.indexOf ("E(   CCSD(T))") > 0) {
+searchTerm = "E(   CCSD(T))";
+energyType = "CCSD(T)";
+energyToken = 3;
+}var tokens = JU.PT.getTokens (this.line.substring (this.line.indexOf (searchTerm)));
+if (tokens.length < energyToken + 1) return;
+var strEnergy = tokens[energyToken];
 var e = this.parseFloatStr (strEnergy);
-if (!Float.isNaN (e)) this.asc.setAtomSetEnergy (strEnergy, e);
-});
+if (!Float.isNaN (e)) {
+this.asc.setAtomSetEnergy (strEnergy, e);
+this.asc.setCurrentModelInfo ("EnergyType", energyType);
+if (!energyType.equals ("ENERGY")) this.appendLoadNote ("GamessReader Energy type " + energyType);
+}});
 Clazz.defineMethod (c$, "readGaussianBasis", 
 function (initiator, terminator) {
 var gdata =  new JU.Lst ();
@@ -80,7 +109,7 @@ JU.Logger.error ("slater for atom " + i + " atomType " + atomType + " was not fo
 return;
 }for (var j = 0; j < slaters.size (); j++) {
 slater = slaters.get (j);
-this.shells.addLast ( Clazz.newIntArray (-1, [i, slater[0], slater[1], slater[2]]));
+this.shells.addLast ( Clazz.newIntArray (-1, [i + 1, slater[0], slater[1] + 1, slater[2]]));
 }
 }
 }if (this.debugging) {
@@ -122,12 +151,12 @@ this.asc.cloneLastAtomSet ();
 } else {
 haveFreq = true;
 iAtom0 -= ac;
-}this.asc.setAtomSetFrequency (null, null, "" + frequencies[i], null);
+}this.asc.setAtomSetFrequency (this.vibrationNumber, null, null, "" + frequencies[i], null);
 if (red_masses != null) this.asc.setAtomSetModelProperty ("ReducedMass", red_masses[red_masses.length - frequencyCount + i] + " AMU");
 if (intensities != null) this.asc.setAtomSetModelProperty ("IRIntensity", intensities[intensities.length - frequencyCount + i] + " D^2/AMU-Angstrom^2");
 }
 this.discardLinesUntilBlank ();
-this.fillFrequencyData (iAtom0, ac, ac, ignore, false, 20, 12, null, 0);
+this.fillFrequencyData (iAtom0, ac, ac, ignore, false, 20, 12, null, 0, null);
 this.readLines (13);
 }
 });
@@ -154,6 +183,11 @@ var SCFtype = this.calcOptions.get ("contrl_options_SCFTYP");
 var Runtype = this.calcOptions.get ("contrl_options_RUNTYP");
 var igauss = this.calcOptions.get ("basis_options_IGAUSS");
 var gbasis = this.calcOptions.get ("basis_options_GBASIS");
+if (gbasis != null && "AM1  MNDO PM3  PM6  PM7  RM1".indexOf (gbasis) >= 0) {
+this.mopacBasis = J.adapter.readers.quantum.MopacSlaterReader.getMopacAtomZetaSPD (gbasis);
+this.getSlaters ();
+this.calculationType = gbasis;
+} else {
 var DFunc = !"0".equals (this.calcOptions.get ("basis_options_NDFUNC"));
 var PFunc = !"0".equals (this.calcOptions.get ("basis_options_NPFUNC"));
 var FFunc = !"0".equals (this.calcOptions.get ("basis_options_NFFUNC"));
@@ -218,7 +252,7 @@ this.calculationType += "MP" + perturb;
 }if (SCFtype != null) {
 if (this.calculationType.length > 0) this.calculationType += " ";
 this.calculationType += SCFtype + " " + Runtype;
-}}});
+}}}});
 Clazz.defineMethod (c$, "readControlInfo", 
 function () {
 this.readCalculationInfo ("contrl_options_");

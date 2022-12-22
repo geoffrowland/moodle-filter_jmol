@@ -56,6 +56,7 @@ Clazz.defineMethod (c$, "readMolecularOrbitals",
  function () {
 this.htFuncMap =  new java.util.Hashtable ();
 this.readLines (3);
+this.getSlaters ();
 while (this.line != null && this.line.indexOf (":") != 0) {
 this.discardLinesUntilContains ("sym: ");
 var symmetry = this.line.substring (4, 10).trim ();
@@ -78,7 +79,7 @@ ptSlater[pt++] = this.htFuncMap.get (key).intValue ();
 var n = this.slaters.size ();
 ptSlater[pt++] = n;
 this.htFuncMap.put (key, Integer.$valueOf (n));
-this.addSlater (this.createSlaterData (iAtom, atoms[iAtom].elementSymbol, code), n);
+this.addSlater (this.createSlaterData (iAtom + 1, atoms[iAtom].elementSymbol, code), n);
 }}
 this.discardLinesUntilContains (":-");
 this.rd ();
@@ -113,7 +114,7 @@ var occupancy = this.parseFloatRange (this.line, 31, 45) + this.parseFloatRange 
 this.orbitals.get (i).put ("occupancy", Float.$valueOf (occupancy));
 }
 this.sortOrbitals ();
-this.setSlaters (true, true);
+this.setSlaters (true);
 this.setMOs ("eV");
 });
 Clazz.defineMethod (c$, "createSlaterData", 

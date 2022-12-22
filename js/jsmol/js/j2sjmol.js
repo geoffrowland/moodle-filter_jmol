@@ -43,6 +43,10 @@
  // NOTES by Bob Hanson: 
   // J2S class changes:
 
+ // BH 4/19/22 adds TypeError.prototype.printStackTrace and ReferenceError.prototype.printStackTrace
+ // BH 10/16/2017 6:30:14 AM fix for prepareCallback reducing arguments length to -1
+ // BH 7/7/2017 7:10:39 AM fixes Clazz.clone for arrays
+ // BH 1/14/2017 6:23:54 AM adds URL switch  j2sDebugCore
  // BH 1/8/2016 6:21:38 PM adjustments to prevent multiple load of corejmol.js 
  // BH 12/30/2015 9:13:40 PM Clazz.floatToInt should return 0 for NaN
  // BH 12/23/2015 9:23:06 AM allowing browser to display stack for TypeError in exceptionOf
@@ -174,6 +178,8 @@ LoadClazz = function() {
 // it is used as a local variable in class definitions to point to the 
 // current method. See Clazz.p0p and Clazz.pu$h
 
+TypeError.prototype.printStackTrace = ReferenceError.prototype.printStackTrace = function() { console.log(this) }
+
 c$ = null;
 
 if (!window["j2s.clazzloaded"])
@@ -295,7 +301,8 @@ var addProto = function(proto, name, func) {
 
 	Clazz.clone = function(me) {
 		// BH allows @j2sNative access without super constructor
-		var o = new me.constructor();
+    // BH 7/7/2017 7:20:47 AM array clone must preserve length for java.util.Hashtable.clone()
+		var o = (me instanceof Array ? new Array(me.length) : new me.constructor());
 		for (var i in me) {
 			o[i] = me[i];
       }
@@ -898,11 +905,12 @@ Clazz.getStackTrace = function(n) {
   // updateNode and updateParents cause infinite loop here
 	var s = "\n";
 	var c = arguments.callee;
-  var showParams = (n < 0);
+  var showParams = (n < 0)
   if (showParams)
     n = -n;
-	for (var i = 0; i < n; i++) {
-		if (!(c = c.caller))
+ try {
+  for (var i = 0; i < n; i++) {
+    if (!(c = c.caller))
       break;
     var sig = (c.toString ? c.toString().substring(0, c.toString().indexOf("{")) : "<native method>");
 		s += i + " " + (c.exName ? (c.claxxOwner ? c.claxxOwner.__CLASS_NAME__ + "."  : "") + c.exName  + sig.replace(/function /,""): sig) + "\n";
@@ -919,7 +927,8 @@ Clazz.getStackTrace = function(n) {
         s += " args[" + j + "]=" + sa.replace(/\s+/g," ") + "\n";
       }
     }
-	}
+  }
+ }catch(e){}
 	return s;
 }
 
@@ -2144,7 +2153,8 @@ Clazz.prepareCallback = function (innerObj, args) {
 	// note that args is an instance of arguments -- NOT an array; does not have the .shift() method!
 	for (var i = 0; i < args.length - 1; i++)
 		args[i] = args[i + 1];
-	args.length--;
+  if (args.length > 0)
+  	args.length--;
 };
 
 /**
@@ -2910,6 +2920,7 @@ System.out.print = function () {};
 System.out.printf = function () {};
 System.out.println = function () {};
 System.out.write = function () {};
+System.out.flush = function() {};
 
 System.err = new Clazz._O ();
 System.err.__CLASS_NAME__ = "java.io.PrintStream";
@@ -2917,6 +2928,7 @@ System.err.print = function () {};
 System.err.printf = function () {};
 System.err.println = function () {};
 System.err.write = function () {};
+System.err.flush = function() {};
 
 Clazz.popup = Clazz.assert = Clazz.log = Clazz.error = window.alert;
 
@@ -3782,6 +3794,8 @@ _Loader.jarClasspath = function (jar, clazzes) {
 	if (!(clazzes instanceof Array))
 		clazzes = [clazzes];
 	unwrapArray(clazzes);
+  if (Jmol._debugCore)
+    jar = jar.replace(/\.z\./, ".")
 	for (var i = clazzes.length; --i >= 0;)
 		classpathMap["#" + clazzes[i]] = jar;
 	classpathMap["$" + jar] = clazzes;

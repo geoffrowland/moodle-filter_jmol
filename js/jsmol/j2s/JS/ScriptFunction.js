@@ -15,6 +15,7 @@ this.aatoken = null;
 this.lineIndices = null;
 this.lineNumbers = null;
 this.script = null;
+this.isPrivate = false;
 Clazz.instantialize (this, arguments);
 }, JS, "ScriptFunction", null, J.api.JmolScriptFunction);
 Clazz.prepareFields (c$, function () {
@@ -90,7 +91,7 @@ var tokenCommand = aatoken[i][0];
 if (JS.T.tokAttr (tokenCommand.tok, 102400)) tokenCommand.intValue -= (tokenCommand.intValue < 0 ? -cmdpt0 : cmdpt0);
 }}
 for (var i = pt; --i >= cmdpt0; ) {
-lltoken.remove (i);
+lltoken.removeItemAt (i);
 lineIndices[i][0] = lineIndices[i][1] = 0;
 }
 }, "JS.ScriptFunction,~S,~N,~N,~A,~A,JU.Lst");

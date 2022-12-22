@@ -10,6 +10,7 @@ Clazz.instantialize (this, arguments);
 }, JM, "Bond", JU.Edge);
 Clazz.makeConstructor (c$, 
 function (atom1, atom2, order, mad, colix) {
+Clazz.superConstructor (this, JM.Bond, []);
 this.atom1 = atom1;
 this.atom2 = atom2;
 this.colix = colix;
@@ -40,12 +41,8 @@ return (this.order & 1023) != 0;
 });
 Clazz.overrideMethod (c$, "isHydrogen", 
 function () {
-return JM.Bond.isOrderH (this.order);
+return JU.Edge.isOrderH (this.order);
 });
-c$.isOrderH = Clazz.defineMethod (c$, "isOrderH", 
-function (order) {
-return (order & 30720) != 0;
-}, "~N");
 Clazz.defineMethod (c$, "isStereo", 
 function () {
 return (this.order & 1024) != 0;
@@ -57,10 +54,6 @@ return (this.order & 224) != 0;
 Clazz.defineMethod (c$, "isAromatic", 
 function () {
 return (this.order & 512) != 0;
-});
-Clazz.defineMethod (c$, "isPymolStyle", 
-function () {
-return (this.order & 98304) == 98304;
 });
 Clazz.defineMethod (c$, "getEnergy", 
 function () {
@@ -104,15 +97,43 @@ return (this.atom1 === thisAtom ? this.atom2 : this.atom2 === thisAtom ? this.at
 }, "JM.Atom");
 Clazz.defineMethod (c$, "is", 
 function (bondType) {
-return (this.order & -131073) == bondType;
+return (this.order & 131071) == bondType;
 }, "~N");
-Clazz.overrideMethod (c$, "getOtherAtomNode", 
+Clazz.overrideMethod (c$, "getOtherNode", 
 function (thisAtom) {
-return (this.atom1 === thisAtom ? this.atom2 : this.atom2 === thisAtom ? this.atom1 : null);
-}, "JU.Node");
+return (this.atom1 === thisAtom ? this.atom2 : this.atom2 === thisAtom || thisAtom == null ? this.atom1 : null);
+}, "JU.SimpleNode");
+Clazz.defineMethod (c$, "setAtropisomerOptions", 
+function () {
+var i1;
+var i2 = 2147483647;
+var bonds = this.atom1.bonds;
+for (i1 = 0; i1 < bonds.length; i1++) {
+var a = bonds[i1].getOtherAtom (this.atom1);
+if (a !== this.atom2) break;
+}
+if (i1 < bonds.length) {
+bonds = this.atom2.bonds;
+for (i2 = 0; i2 < bonds.length; i2++) {
+var a = bonds[i2].getOtherAtom (this.atom2);
+if (a !== this.atom1) break;
+}
+}this.order = (i1 > 2 || i2 >= bonds.length || i2 > 2 ? 1 : JU.Edge.getAtropismOrder (i1 + 1, i2 + 1));
+});
+Clazz.overrideMethod (c$, "getCIPChirality", 
+function (doCalculate) {
+return "";
+}, "~B");
+Clazz.overrideMethod (c$, "setCIPChirality", 
+function (c) {
+}, "~N");
 Clazz.overrideMethod (c$, "toString", 
 function () {
 return this.atom1 + " - " + this.atom2;
 });
+Clazz.overrideMethod (c$, "getAtom", 
+function (i) {
+return (i == 1 ? this.atom2 : this.atom1);
+}, "~N");
 c$.myVisibilityFlag = c$.prototype.myVisibilityFlag = JV.JC.getShapeVisibilityFlag (1);
 });

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shape");
-Clazz.load (["J.shape.Shape"], "J.shape.Frank", ["J.i18n.GT"], function () {
+Clazz.load (["J.shape.Shape"], "J.shape.Frank", ["J.i18n.GT", "JV.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.frankString = "Jmol";
 this.currentMetricsFont3d = null;
@@ -39,15 +39,12 @@ return (width > 0 && height > 0 && x > width - this.frankWidth - 4 && y > height
 Clazz.overrideMethod (c$, "checkObjectHovered", 
 function (x, y, bsVisible) {
 if (!this.vwr.getShowFrank () || !this.wasClicked (x, y) || !this.vwr.menuEnabled ()) return false;
-if (this.vwr.gdata.antialiasEnabled && !this.vwr.isSingleThreaded) {
-x <<= 1;
-y <<= 1;
-}this.vwr.hoverOnPt (x, y, J.i18n.GT._ ("Click for menu..."), null, null);
+this.vwr.hoverOnPt (x, y, J.i18n.GT.$ ("Click for menu..."), null, null);
 return true;
 }, "~N,~N,JU.BS");
 Clazz.defineMethod (c$, "calcMetrics", 
 function () {
-if (this.vwr.isJS) this.frankString = "JSmol";
+if (JV.Viewer.isJS) this.frankString = "JSmol";
  else if (this.vwr.isSignedApplet) this.frankString = "Jmol_S";
 if (this.font3d === this.currentMetricsFont3d) return;
 this.currentMetricsFont3d = this.font3d;
@@ -64,7 +61,7 @@ this.calcMetrics ();
 }}, "~N");
 Clazz.overrideMethod (c$, "getShapeState", 
 function () {
-return this.vwr.getFontState (this.myType, this.baseFont3d);
+return null;
 });
 Clazz.defineStatics (c$,
 "defaultFontName", "SansSerif",

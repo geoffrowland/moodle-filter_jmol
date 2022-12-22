@@ -18,7 +18,6 @@ this.isPhaseColored = false;
 this.isColorExplicit = false;
 this.scriptAppendix = "";
 this.sg = null;
-this.jvxlData = null;
 this.withinDistance2 = 0;
 this.isWithinNot = false;
 this.withinPoints = null;
@@ -29,6 +28,8 @@ this.iHaveModelIndex = false;
 this.nLCAO = 0;
 this.lcaoDir = null;
 this.associateNormals = false;
+this.oldFileName = null;
+this.newFileName = null;
 this.ptXY = null;
 this.keyXy = null;
 Clazz.instantialize (this, arguments);
@@ -72,7 +73,7 @@ if ("cache" === propertyName) {
 if (this.currentMesh == null) return;
 var id = this.currentMesh.thisID;
 var imodel = this.currentMesh.modelIndex;
-this.vwr.cachePut ("cache://isosurface_" + id, this.getPropI ("jvxlDataXml", -1));
+this.vwr.cachePut ("cache://isosurface_" + id, (this.getPropI ("jvxlDataXml", -1)).getBytes ());
 this.deleteMeshI (this.currentMesh.index);
 this.setPropI ("init", null, null);
 this.setPropI ("thisID", id, null);
@@ -182,12 +183,15 @@ this.sg.params.modelIndex = Math.abs (this.modelIndex);
 var info = value;
 if (!this.explicitID) {
 this.setPropertySuper ("thisID", null, null);
-}if (!this.sg.setProp ("lcaoCartoonCenter", info[2], null)) this.drawLcaoCartoon (info[0], info[1], info[3], ("lonePair" === propertyName ? 2 : "radical" === propertyName ? 1 : 0));
+}if (!this.sg.setProp ("lcaoCartoonCenter", info[2], null)) this.drawLcaoCartoon (info[0], info[1], info[3], ("lonePair" === propertyName ? 2 : "radical" === propertyName ? 1 : 0), this.thisMesh == null ? false : this.thisMesh.reverseColor);
 return;
 }if ("select" === propertyName) {
 if (this.iHaveBitSets) return;
 }if ("ignore" === propertyName) {
 if (this.iHaveBitSets) return;
+}if ("reversecolor" === propertyName) {
+if (this.thisMesh != null) this.thisMesh.reverseColor = (value === Boolean.TRUE);
+return;
 }if ("meshcolor" === propertyName) {
 var rgb = (value).intValue ();
 this.meshColix = JU.C.getColix (rgb);
@@ -215,7 +219,7 @@ this.displayWithinDistance2 = (o[0]).floatValue ();
 this.isDisplayWithinNot = (this.displayWithinDistance2 < 0);
 this.displayWithinDistance2 *= this.displayWithinDistance2;
 this.displayWithinPoints = o[3];
-if (this.displayWithinPoints.size () == 0) this.displayWithinPoints = this.vwr.ms.getAtomPointVector (o[2]);
+if (this.displayWithinPoints.size () == 0) this.displayWithinPoints = this.ms.getAtomPointVector (o[2]);
 return;
 }if ("finalize" === propertyName) {
 if (this.thisMesh != null) {
@@ -229,12 +233,9 @@ return;
 }if ("connections" === propertyName) {
 if (this.currentMesh != null) {
 this.connections = value;
-if (this.connections[0] >= 0 && this.connections[0] < this.vwr.ms.ac) this.currentMesh.connectedAtoms = this.connections;
+if (this.connections[0] >= 0 && this.connections[0] < this.ms.ac) this.currentMesh.connectedAtoms = this.connections;
  else this.connections = this.currentMesh.connectedAtoms = null;
 }return;
-}if ("cutoffRange" === propertyName) {
-this.cutoffRange = value;
-return;
 }if ("fixLattice" === propertyName) {
 if (this.thisMesh != null) this.thisMesh.fixLattice ();
 return;
@@ -264,6 +265,11 @@ return;
 if (this.sg != null) this.sg.params.isMapped = true;
 this.setProperty ("squareData", Boolean.FALSE, null);
 if (this.thisMesh == null || this.thisMesh.vc == 0) return;
+}if ("probes" === propertyName) {
+if (this.sg != null) {
+this.sg.params.probes = value;
+this.sg.params.probeValues =  Clazz.newFloatArray (this.sg.params.probes.length, 0);
+}return;
 }if ("deleteVdw" === propertyName) {
 for (var i = this.meshCount; --i >= 0; ) if (this.isomeshes[i].bsVdw != null && (bs == null || bs.intersects (this.isomeshes[i].bsVdw))) this.deleteMeshI (i);
 
@@ -271,18 +277,16 @@ this.currentMesh = this.thisMesh = null;
 return;
 }if ("mapColor" === propertyName || "readFile" === propertyName) {
 if (value == null) {
-value = this.vwr.fm.getBufferedReaderOrErrorMessageFromName (this.sg.params.fileName, null, true, true);
-if (Clazz.instanceOf (value, String)) {
-JU.Logger.error ("Isosurface: could not open file " + this.sg.params.fileName + " -- " + value);
-return;
-}if (!(Clazz.instanceOf (value, java.io.BufferedReader))) try {
-value = JU.Rdr.getBufferedReader (value, "ISO-8859-1");
-} catch (e) {
-if (Clazz.exceptionOf (e, java.io.IOException)) {
+if (this.sg.params.filesData == null) {
+value = this.getFileReader (this.sg.params.fileName);
 } else {
-throw e;
-}
-}
+value = this.sg.params.filesData;
+var a = this.sg.params.filesData[0];
+var b =  new Array (a.length);
+for (var i = b.length; --i >= 0 && value != null; ) if ((b[i] = this.getFileReader (a[i])) == null) value = null;
+
+if (value != null) this.sg.params.filesData[0] = b;
+}if (value == null) return;
 }} else if ("atomIndex" === propertyName) {
 this.atomIndex = (value).intValue ();
 if (this.thisMesh != null) this.thisMesh.atomIndex = this.atomIndex;
@@ -303,7 +307,17 @@ if (this.sg.params.state == 2) this.setScriptInfo (null);
 this.newSg ();
 } else if ("getSurfaceSets" === propertyName) {
 if (this.thisMesh != null) {
-this.thisMesh.jvxlData.thisSet = (value).intValue ();
+var bsSets;
+if (Clazz.instanceOf (value, JU.BS)) {
+bsSets = (value);
+if (bsSets.cardinality () == 0) bsSets = null;
+} else {
+bsSets =  new JU.BS ();
+var a = value;
+for (var i = a.length; --i >= 0; ) {
+if (a[i] > 0) bsSets.set (a[i] - 1);
+}
+}this.thisMesh.jvxlData.thisSet = bsSets;
 this.thisMesh.calculatedVolume = null;
 this.thisMesh.calculatedArea = null;
 }} else if ("localName" === propertyName) {
@@ -344,9 +358,11 @@ this.withinDistance2 = (o[0]).floatValue ();
 this.isWithinNot = (this.withinDistance2 < 0);
 this.withinDistance2 *= this.withinDistance2;
 this.withinPoints = o[3];
-if (this.withinPoints.size () == 0) this.withinPoints = this.vwr.ms.getAtomPointVector (o[2]);
+if (this.withinPoints.size () == 0) this.withinPoints = this.ms.getAtomPointVector (o[2]);
 } else if (("nci" === propertyName || "orbital" === propertyName) && this.sg != null) {
-this.sg.params.testFlags = (this.vwr.getTestFlag (2) ? 2 : 0);
+this.sg.params.testFlags = (this.vwr.getBoolean (603979962) ? 2 : 0);
+} else if ("cutoffRange" === propertyName) {
+this.cutoffRange = value;
 }if (this.sg != null && this.sg.setProp (propertyName, value, bs)) {
 if (this.sg.isValid) {
 if ("molecularOrbital" === propertyName) {
@@ -394,6 +410,22 @@ if (m.atomIndex >= firstAtomDeleted) m.atomIndex -= nAtomsDeleted;
 return;
 }this.setPropertySuper (propertyName, value, bs);
 }, "~S,~O,JU.BS");
+Clazz.defineMethod (c$, "getFileReader", 
+ function (fileName) {
+var value = this.vwr.fm.getBufferedReaderOrErrorMessageFromName (fileName, null, true, true);
+if (Clazz.instanceOf (value, String)) {
+JU.Logger.error ("Isosurface: could not open file " + fileName + " -- " + value);
+return null;
+}if (!(Clazz.instanceOf (value, java.io.BufferedReader))) try {
+value = JU.Rdr.getBufferedReader (value, "ISO-8859-1");
+} catch (e) {
+if (Clazz.exceptionOf (e, java.io.IOException)) {
+} else {
+throw e;
+}
+}
+return value;
+}, "~S");
 Clazz.defineMethod (c$, "setIsoMeshColor", 
  function (m, color) {
 m.jvxlData.baseColor = color;
@@ -426,7 +458,7 @@ var vertexColixes = this.thisMesh.vcs;
 var colix = (this.thisMesh.isColorSolid ? this.thisMesh.colix : 0);
 this.setProperty ("init", null, null);
 this.setProperty ("map", Boolean.FALSE, null);
-this.setProperty ("property",  Clazz.newFloatArray (this.vwr.ms.ac, 0), null);
+this.setProperty ("property",  Clazz.newFloatArray (this.ms.ac, 0), null);
 if (colix != 0) {
 this.thisMesh.colorCommand = "color isosurface " + JU.C.getHexCode (colix);
 this.setProperty ("color", Integer.$valueOf (JU.C.getArgb (colix)), null);
@@ -456,6 +488,7 @@ if (this.sg != null) this.sg.setJvxlData (this.jvxlData);
 }, "~S,~O,JU.BS");
 Clazz.overrideMethod (c$, "getPropertyData", 
 function (property, data) {
+var m;
 if (property === "keys") {
 var keys = (Clazz.instanceOf (data[1], JU.Lst) ? data[1] :  new JU.Lst ());
 data[1] = keys;
@@ -463,17 +496,17 @@ keys.addLast ("info");
 keys.addLast ("data");
 keys.addLast ("atoms");
 }if (property === "colorEncoder") {
-var mesh = this.getMesh (data[0]);
-return (mesh != null && (data[1] = mesh.colorEncoder) != null);
+m = this.getMesh (data[0]);
+return (m != null && (data[1] = m.colorEncoder) != null);
 }if (property === "intersectPlane") {
-var mesh = this.getMesh (data[0]);
-if (mesh == null || data.length < 4) return false;
-data[3] = Integer.$valueOf (mesh.modelIndex);
-mesh.getMeshSlicer ().getIntersection (0, data[1], null, data[2], null, null, null, false, false, 134217750, false);
+m = this.getMesh (data[0]);
+if (m == null || data.length < 4) return false;
+data[3] = Integer.$valueOf (m.modelIndex);
+m.getMeshSlicer ().getIntersection (0, data[1], null, data[2], null, null, null, false, false, 134217750, false);
 return true;
 }if (property === "getBoundingBox") {
 var id = data[0];
-var m = this.getMesh (id);
+m = this.getMesh (id);
 if (m == null || m.vs == null) return false;
 data[2] = m.jvxlData.boundingBox;
 if (m.mat4 != null) {
@@ -487,13 +520,13 @@ d[1].add (v);
 data[2] = d;
 }return true;
 }if (property === "unitCell") {
-var m = this.getMesh (data[0]);
+m = this.getMesh (data[0]);
 return (m != null && (data[1] = m.getUnitCell ()) != null);
 }if (property === "getCenter") {
 var index = (data[1]).intValue ();
 if (index == -2147483648) {
 var id = data[0];
-var m = this.getMesh (id);
+m = this.getMesh (id);
 if (m == null || m.vs == null) return false;
 var p = JU.P3.newP (m.jvxlData.boundingBox[0]);
 p.add (m.jvxlData.boundingBox[1]);
@@ -512,54 +545,70 @@ return this.getPropI (property, index);
 }, "~S,~N");
 Clazz.defineMethod (c$, "getPropI", 
 function (property, index) {
-var thisMesh = this.thisMesh;
-if (index >= 0 && (index >= this.meshCount || (thisMesh = this.isomeshes[index]) == null)) return null;
+var m = this.thisMesh;
+if (index >= 0 && (index >= this.meshCount || (m = this.isomeshes[index]) == null)) return null;
 var ret = this.getPropMC (property, index);
 if (ret != null) return ret;
 if (property === "message") {
 var s = "";
-if (this.shapeID == 24) s += " with cutoff=" + this.jvxlData.cutoff;
+if (!this.jvxlData.isValid) return "invalid! (no atoms selected?)";
+if (!Float.isNaN (this.jvxlData.integration)) s += "integration " + this.jvxlData.integration;
+if (this.shapeID == 24 || this.shapeID == 27 || this.shapeID == 28) {
+if (this.jvxlData.cutoffRange == null) s += " with cutoff=" + this.jvxlData.cutoff;
+ else s += " with cutoffRange=" + JU.Escape.eAF (this.jvxlData.cutoffRange);
+}if (this.shapeID == 27 || this.shapeID == 28) return s;
 if (this.jvxlData.dataMin != 3.4028235E38) s += " min=" + this.jvxlData.dataMin + " max=" + this.jvxlData.dataMax;
 s += "; " + JV.JC.shapeClassBases[this.shapeID].toLowerCase () + " count: " + this.getPropMC ("count", index);
 return s + this.getPropI ("dataRangeStr", index) + this.jvxlData.msg;
-}if (property === "dataRange") return this.getDataRange (thisMesh);
+}if (property === "dataRange") return this.getDataRange (m);
 if (property === "dataRangeStr") {
-var dataRange = this.getDataRange (thisMesh);
+var dataRange = this.getDataRange (m);
 return (dataRange != null && dataRange[0] != 3.4028235E38 && dataRange[0] != dataRange[1] ? "\nisosurface full data range " + dataRange[0] + " to " + dataRange[1] + " with color scheme spanning " + dataRange[2] + " to " + dataRange[3] : "");
 }if (property === "moNumber") return Integer.$valueOf (this.moNumber);
 if (property === "moLinearCombination") return this.moLinearCombination;
-if (property === "nSets") return Integer.$valueOf (thisMesh == null ? 0 : thisMesh.nSets);
-if (property === "area") return (thisMesh == null ? Float.$valueOf (NaN) : this.calculateVolumeOrArea (thisMesh, true));
-if (property === "volume") return (thisMesh == null ? Float.$valueOf (NaN) : this.calculateVolumeOrArea (thisMesh, false));
-if (thisMesh == null) return null;
-if (property === "cutoff") return Float.$valueOf (this.jvxlData.cutoff);
+if (property === "nSets") {
+var n = (m == null ? -2147483648 : m.nSets);
+if (n == 0) {
+this.calculateVolumeOrArea (m, true);
+n = m.nSets;
+}return Integer.$valueOf (n == -2147483648 ? 0 : Math.abs (m.nSets));
+}if (property === "area") return (m == null ? Float.$valueOf (NaN) : this.calculateVolumeOrArea (m, true));
+if (property === "volume") return (m == null ? Float.$valueOf (NaN) : this.calculateVolumeOrArea (m, false));
+if (m == null) return null;
+if (property === "output") {
+return (m.jvxlData.sbOut == null && m.jvxlData.jvxlFileTitle == null ? null : m.jvxlData.jvxlFileTitle + "\n" + (m.jvxlData.sbOut == null ? "" : m.jvxlData.sbOut.toString ()));
+}if (property === "cutoff") return Float.$valueOf (this.jvxlData.cutoff);
+if (property === "cutoffRange") return this.jvxlData.cutoffRange;
 if (property === "minMaxInfo") return  Clazz.newFloatArray (-1, [this.jvxlData.dataMin, this.jvxlData.dataMax]);
 if (property === "plane") return this.jvxlData.jvxlPlane;
-if (property === "contours") return thisMesh.getContours ();
+if (property === "contours") return m.getContours ();
+if (property === "pmesh" || property === "pmeshbin") return m.getPmeshData (property === "pmeshbin");
 if (property === "jvxlDataXml" || property === "jvxlMeshXml") {
 var meshData = null;
 this.jvxlData.slabInfo = null;
-if (property === "jvxlMeshXml" || this.jvxlData.vertexDataOnly || thisMesh.bsSlabDisplay != null && thisMesh.bsSlabGhost == null) {
+if (property === "jvxlMeshXml" || this.jvxlData.vertexDataOnly || m.bsSlabDisplay != null && m.bsSlabGhost == null) {
 meshData =  new J.jvxl.data.MeshData ();
-this.fillMeshData (meshData, 1, thisMesh);
+this.fillMeshData (meshData, 1, m);
 meshData.polygonColorData = J.shapesurface.Isosurface.getPolygonColorData (meshData.pc, meshData.pcs, (meshData.colorsExplicit ? meshData.pis : null), meshData.bsSlabDisplay);
-} else if (thisMesh.bsSlabGhost != null) {
-this.jvxlData.slabInfo = thisMesh.slabOptions.toString ();
+} else if (m.bsSlabGhost != null) {
+this.jvxlData.slabInfo = m.slabOptions.toString ();
 }var sb =  new JU.SB ();
-this.getMeshCommand (sb, thisMesh.index);
-thisMesh.setJvxlColorMap (true);
-return J.jvxl.data.JvxlCoder.jvxlGetFileVwr (this.vwr, this.jvxlData, meshData, this.title, "", true, 1, sb.toString (), null);
+this.getMeshCommand (sb, m.index);
+m.setJvxlColorMap (true);
+return J.jvxl.data.JvxlCoder.jvxlGetFile (this.jvxlData, meshData, this.title, "", true, 1, sb.toString (), null);
 }if (property === "jvxlFileInfo") {
-thisMesh.setJvxlColorMap (false);
 return J.jvxl.data.JvxlCoder.jvxlGetInfo (this.jvxlData);
 }if (property === "command") {
 var sb =  new JU.SB ();
-var list = this.getMeshList ((index < 0 ? this.previousMeshID : thisMesh.thisID), false);
-for (var i = list.size (); --i >= 0; ) this.getMeshCommand (sb, i);
+var list = this.getMeshList ((index < 0 ? this.previousMeshID : m.thisID), false);
+for (var i = list.size (); --i >= 0; ) this.getMeshCommand (sb, list.get (i).index);
 
 return sb.toString ();
 }if (property === "atoms") {
-return thisMesh.surfaceAtoms;
+return m.surfaceAtoms;
+}if (property === "colorEncoder") return m.colorEncoder;
+if (property === "values" || property === "value") {
+return m.probeValues;
 }return null;
 }, "~S,~N");
 Clazz.defineMethod (c$, "getDataRange", 
@@ -624,10 +673,11 @@ Clazz.defineMethod (c$, "getMeshCommand",
 var imesh = this.meshes[i];
 if (imesh == null || imesh.scriptCommand == null) return;
 var cmd = imesh.scriptCommand;
-var modelCount = this.vwr.ms.mc;
+var modelCount = this.ms.mc;
 if (modelCount > 1) J.shape.Shape.appendCmd (sb, "frame " + this.vwr.getModelNumberDotted (imesh.modelIndex));
 cmd = JU.PT.rep (cmd, ";; isosurface map", " map");
 cmd = JU.PT.rep (cmd, "; isosurface map", " map");
+if (cmd.endsWith (" map")) cmd = cmd.substring (0, cmd.length - 4);
 cmd = cmd.$replace ('\t', ' ');
 cmd = JU.PT.rep (cmd, ";#", "; #");
 var pt = cmd.indexOf ("; #");
@@ -638,8 +688,9 @@ if (imesh.linkedMesh != null) cmd += " LINK";
 if (this.myType === "lcaoCartoon" && imesh.atomIndex >= 0) cmd += " ATOMINDEX " + imesh.atomIndex;
 J.shape.Shape.appendCmd (sb, cmd);
 var id = this.myType + " ID " + JU.PT.esc (imesh.thisID);
-if (imesh.jvxlData.thisSet >= 0) J.shape.Shape.appendCmd (sb, id + " set " + (imesh.jvxlData.thisSet + 1));
-if (imesh.mat4 != null && !imesh.isModelConnected) J.shape.Shape.appendCmd (sb, id + " move " + JU.Escape.matrixToScript (imesh.mat4));
+if (imesh.jvxlData.thisSet != null && imesh.jvxlData.thisSet.cardinality () > 0) {
+J.shape.Shape.appendCmd (sb, id + (imesh.jvxlData.thisSet.cardinality () == 1 ? " set " + (imesh.jvxlData.thisSet.nextSetBit (0) + 1) : " subset " + imesh.jvxlData.thisSet));
+}if (imesh.mat4 != null && !imesh.isModelConnected) J.shape.Shape.appendCmd (sb, id + " move " + JU.Escape.matrixToScript (imesh.mat4));
 if (imesh.scale3d != 0) J.shape.Shape.appendCmd (sb, id + " scale3d " + imesh.scale3d);
 if (imesh.jvxlData.slabValue != -2147483648) J.shape.Shape.appendCmd (sb, id + " slab " + imesh.jvxlData.slabValue);
 if (imesh.slabOptions != null) J.shape.Shape.appendCmd (sb, imesh.slabOptions.toString ());
@@ -688,7 +739,7 @@ if (bsCmd == null) this.sg.setProp ("ignore", bs, null);
 if ((i = script.indexOf ("/({", j)) == j + 2) {
 if ((j = script.indexOf ("})", i)) < 0) return false;
 bs = JU.BS.unescape (script.substring (i + 3, j + 1));
-if (bsCmd == null) this.vwr.ms.setTrajectoryBs (bs);
+if (bsCmd == null) this.ms.setTrajectoryBs (bs);
  else bsCmd[2] = bs;
 }return true;
 }, "~S,~A");
@@ -745,7 +796,7 @@ this.sg.initState ();
 Clazz.defineMethod (c$, "setMeshI", 
  function () {
 this.thisMesh.visible = true;
-if ((this.thisMesh.atomIndex = this.atomIndex) >= 0) this.thisMesh.modelIndex = this.vwr.ms.at[this.atomIndex].mi;
+if ((this.thisMesh.atomIndex = this.atomIndex) >= 0) this.thisMesh.modelIndex = this.ms.at[this.atomIndex].mi;
  else if (this.isFixed) this.thisMesh.modelIndex = -1;
  else if (this.modelIndex >= 0) this.thisMesh.modelIndex = this.modelIndex;
  else this.thisMesh.modelIndex = this.vwr.am.cmi;
@@ -768,12 +819,19 @@ var argb = (this.sg.params.cutoff >= 0 ? -11525984 : -6283184);
 return JU.C.getColix (argb);
 });
 Clazz.defineMethod (c$, "drawLcaoCartoon", 
- function (z, x, rotAxis, nElectrons) {
+ function (z, x, rotAxis, nElectrons, reverseColor) {
 var lcaoCartoon = this.sg.setLcao ();
-var rotRadians = rotAxis.x + rotAxis.y + rotAxis.z;
+var addAnti = (lcaoCartoon.indexOf ("anti-sp") >= 0);
+if (addAnti) {
+lcaoCartoon = lcaoCartoon.substring (5);
+}var rotRadians = rotAxis.x + rotAxis.y + rotAxis.z;
 this.defaultColix = JU.C.getColix (this.sg.params.colorPos);
 var colixNeg = JU.C.getColix (this.sg.params.colorNeg);
-var y =  new JU.V3 ();
+if (reverseColor) {
+var c = colixNeg;
+colixNeg = this.defaultColix;
+this.defaultColix = c;
+}var y =  new JU.V3 ();
 var isReverse = (lcaoCartoon.length > 0 && lcaoCartoon.charAt (0) == '-');
 if (isReverse) lcaoCartoon = lcaoCartoon.substring (1);
 var sense = (isReverse ? -1 : 1);
@@ -796,7 +854,7 @@ var meshA = this.thisMesh;
 this.createLcaoLobe (x, sense, nElectrons);
 if (nElectrons > 0) return;
 this.setProperty ("thisID", id + "b", null);
-this.createLcaoLobe (x, -sense, nElectrons);
+this.createLcaoLobe (x, -sense, 0);
 this.thisMesh.colix = colixNeg;
 this.linkedMesh = this.thisMesh.linkedMesh = meshA;
 return;
@@ -806,23 +864,29 @@ var meshA = this.thisMesh;
 this.createLcaoLobe (y, sense, nElectrons);
 if (nElectrons > 0) return;
 this.setProperty ("thisID", id + "b", null);
-this.createLcaoLobe (y, -sense, nElectrons);
+this.createLcaoLobe (y, -sense, 0);
 this.thisMesh.colix = colixNeg;
 this.linkedMesh = this.thisMesh.linkedMesh = meshA;
 return;
-}if (lcaoCartoon.equals ("pz")) {
-this.thisMesh.thisID += "a";
-var meshA = this.thisMesh;
+}var meshA = this.thisMesh;
+if (lcaoCartoon.equals ("pz")) {
+meshA.thisID += "a";
 this.createLcaoLobe (z, sense, nElectrons);
 if (nElectrons > 0) return;
 this.setProperty ("thisID", id + "b", null);
-this.createLcaoLobe (z, -sense, nElectrons);
+this.createLcaoLobe (z, -sense, 0);
 this.thisMesh.colix = colixNeg;
 this.linkedMesh = this.thisMesh.linkedMesh = meshA;
 return;
 }if (lcaoCartoon.equals ("pza") || lcaoCartoon.indexOf ("sp") == 0 || lcaoCartoon.indexOf ("d") == 0 || lcaoCartoon.indexOf ("lp") == 0) {
 this.createLcaoLobe (z, sense, nElectrons);
-return;
+if (addAnti && nElectrons == 0) {
+meshA.thisID += "a";
+this.setProperty ("thisID", id + "b", null);
+this.createLcaoLobe (z, -sense / 2, 0);
+this.thisMesh.colix = colixNeg;
+this.linkedMesh = this.thisMesh.linkedMesh = meshA;
+}return;
 }if (lcaoCartoon.equals ("pzb")) {
 this.createLcaoLobe (z, -sense, nElectrons);
 return;
@@ -839,11 +903,11 @@ return;
 this.createLcaoLobe (y, -sense, nElectrons);
 return;
 }if (lcaoCartoon.equals ("spacefill") || lcaoCartoon.equals ("cpk")) {
-this.createLcaoLobe (null, 2 * this.vwr.ms.at[this.atomIndex].getRadius (), nElectrons);
+this.createLcaoLobe (null, 2 * this.ms.at[this.atomIndex].getRadius (), nElectrons);
 return;
 }this.createLcaoLobe (null, 1, nElectrons);
 return;
-}, "JU.V3,JU.V3,JU.V3,~N");
+}, "JU.V3,JU.V3,JU.V3,~N,~B");
 Clazz.defineMethod (c$, "createLcaoLobe", 
  function (lobeAxis, factor, nElectrons) {
 this.initState ();
@@ -939,9 +1003,10 @@ this.thisMesh.surfaceAtoms = this.sg.params.bsSelected;
 this.thisMesh.insideOut = this.sg.params.isInsideOut ();
 this.thisMesh.isModelConnected = this.sg.params.isModelConnected;
 this.thisMesh.vertexSource = this.sg.params.vertexSource;
-this.thisMesh.spanningVectors = this.sg.getSpanningVectors ();
+this.thisMesh.oabc = this.sg.getOriginVaVbVc ();
 this.thisMesh.calculatedArea = null;
 this.thisMesh.calculatedVolume = null;
+this.thisMesh.probeValues = this.sg.params.probeValues;
 if (!this.thisMesh.isMerged) {
 this.thisMesh.initialize (this.sg.params.isFullyLit () ? 1073741964 : 1073741958, null, this.sg.params.thePlane);
 if (this.jvxlData.fixedLattice != null) {
@@ -950,7 +1015,7 @@ this.thisMesh.fixLattice ();
 }return this.thisMesh.setColorsFromJvxlData (this.sg.params.colorRgb);
 }if (!this.sg.params.allowVolumeRender) this.thisMesh.jvxlData.allowVolumeRender = false;
 this.thisMesh.setColorsFromJvxlData (this.sg.params.colorRgb);
-if (this.thisMesh.jvxlData.slabInfo != null) this.vwr.runScript ("isosurface " + this.thisMesh.jvxlData.slabInfo);
+if (this.thisMesh.jvxlData.slabInfo != null) this.vwr.runScriptCautiously ("isosurface " + this.thisMesh.jvxlData.slabInfo);
 if (this.sg.params.psi_monteCarloCount > 0) this.thisMesh.diameter = -1;
 return false;
 });
@@ -1010,7 +1075,9 @@ return;
 this.thisMesh.dataType = this.sg.params.dataType;
 this.thisMesh.scale3d = this.sg.params.scale3d;
 if (script != null) {
-if (script.charAt (0) == ' ') {
+if (this.oldFileName != null) {
+script = script.$replace (this.oldFileName, this.newFileName);
+}if (script.charAt (0) == ' ') {
 script = this.myType + " ID " + JU.PT.esc (this.thisMesh.thisID) + script;
 pt = script.indexOf ("; isosurface map");
 }}if (pt > 0 && this.scriptAppendix.length > 0) this.thisMesh.scriptCommand = script.substring (0, pt) + this.scriptAppendix + script.substring (pt);
@@ -1022,6 +1089,11 @@ function (fileName) {
 fileName = " # /*file*/\"" + fileName + "\"";
 if (this.scriptAppendix.indexOf (fileName) < 0) this.scriptAppendix += fileName;
 }, "~S");
+Clazz.overrideMethod (c$, "setRequiredFile", 
+function (oldName, fileName) {
+this.oldFileName = oldName;
+this.newFileName = fileName;
+}, "~S,~S");
 Clazz.defineMethod (c$, "setJvxlInfo", 
  function () {
 if (this.sg.jvxlData !== this.jvxlData || this.sg.jvxlData !== this.thisMesh.jvxlData) this.jvxlData = this.thisMesh.jvxlData = this.sg.jvxlData;
@@ -1074,10 +1146,7 @@ return true;
 }if (!this.vwr.getDrawHover ()) return false;
 var s = this.findValue (x, y, false, bsVisible);
 if (s == null) return false;
-if (this.vwr.gdata.antialiasEnabled) {
-x <<= 1;
-y <<= 1;
-}this.vwr.hoverOnPt (x, y, s, this.pickedMesh.thisID, this.pickedPt);
+this.vwr.hoverOnPt (x, y, s, this.pickedMesh.thisID, this.pickedPt);
 return true;
 }, "~N,~N,JU.BS");
 Clazz.defineMethod (c$, "hoverKey", 
@@ -1100,9 +1169,6 @@ s = "" + (vContours[i].get (2)).floatValue ();
 var g = this.thisMesh.colorEncoder.quantize (f, true);
 f = this.thisMesh.colorEncoder.quantize (f, false);
 s = "" + g + " - " + f;
-}if (this.vwr.gdata.isAntialiased ()) {
-x <<= 1;
-y <<= 1;
 }this.vwr.hoverOnPt (x, y, s, null, null);
 } catch (e) {
 if (Clazz.exceptionOf (e, Exception)) {
@@ -1239,6 +1305,14 @@ var sb =  new JU.SB ().append ("\n");
 this.getMeshCommand (sb, index);
 return (sb.toString ());
 }, "~N");
+Clazz.overrideMethod (c$, "getValues", 
+function (mesh) {
+return (mesh == null ? null : (mesh).getValidValues (null));
+}, "J.shape.Mesh");
+Clazz.overrideMethod (c$, "getVertices", 
+function (mesh) {
+return (mesh == null ? null : (mesh).getValidVertices (null));
+}, "J.shape.Mesh");
 Clazz.defineStatics (c$,
 "MAX_OBJECT_CLICK_DISTANCE_SQUARED", 100);
 });

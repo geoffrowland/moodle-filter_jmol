@@ -6,35 +6,43 @@
 <script type="text/javascript" src="../js/Jmol2.js"></script>
 <script type="text/javascript">
 
+// 2022.09.13 add CBSE curriculum nacl,graphite,diamond,quartz,bcc,fcc,hcp stack
+// 10/19/2016 5:19:50 PM
+// 10/21/2016 5:19:04 AM
+
 		Jmol.Info.jarPath = "../java"
 		Jmol.Info.j2sPath = "../j2s"
+		Jmol.Info.serverURL = "https://chemapps.stolaf.edu/jmol/jsmol/php/jsmol.php"
 
 datadir = "../data"
-//jmolInitialize("../java/","JmolAppletSigned0.jar")
 
 jmolSetMenuCssClass('" style="font-style:italic"')
 
 var Models = "=1blu {1 1 1}|P31 2 1,\
 nepheline.cif packed|P 61,\
 troilite.cif packed|P -6 2 c,\
-quartz.cif packed|P 32 2 1,\
 -00=---------------------------,\
 -99=---------------------------,\
--01=04369a.cif {1 1 1}|P n m a,\
--02=AgFUPMOS.cif packed|P 21/n,\
-diamond.cif packed|F d -3 m:2,\
+-01=NaCl nacl.cif packed|F m -3 m,\
+-02=graphite.cif packed|P 63 m c,\
+-03=diamond.cif packed|F d -3 m:2,\
+-04=quartz.cif packed|P 32 2 1,\
+-05=bcc chromium.cif 3 packed|I m 3 m,\
+-06=fcc(ccp) chromium.cif 1 packed|F m 3 m,\
+-07=hcp chromium.cif 2 packed|P 63/m m c,\
 dickite.cif packed|C 1 c 1,\
 gold.cif packed|F m -3 m,\
--03=kuds0105a.ccdc.cif {1 1 1}|P 21 21 21,\
 calcite.cif 1 packed|R -3 c:h,\
 Ti2O3.cif packed|R -3 c:h,\
 icsd_200866.cif 1 packed|P 63/m m c,\
 icsd_250072.cif packed|P -6,\
 icsd_26520.cif packed|P 63 m c,\
 maleic.cif 5 {1 1 1}|P 21/c,\
-nacl.cif packed|F m -3 m,\
--04=nank0104a.ccdc.cif {1 1 1}|F d d 2,\
--05=sebi0105c.ccdc.cif {1 1 1}|P 21 21 21\
+04369a.cif {1 1 1}|P n m a,\
+AgFUPMOS.cif packed|P 21/n,\
+kuds0105a.ccdc.cif {1 1 1}|P 21 21 21,\
+nank0104a.ccdc.cif {1 1 1}|F d d 2,\
+sebi0105c.ccdc.cif {1 1 1}|P 21 21 21\
 ".split(",")
 
 var modelSelectHtml
@@ -64,12 +72,15 @@ function getModelSelectHtml() {
 	if (xxxx.indexOf("?load") == 0) {
 		defaultScript = unescape(xxxx.substring(1))
 		isDefault = false
+  } else if (xxxx.indexOf("?cod=") == 0) {
+		defaultScript = "load =cod/"+xxxx.substring(5).split(".")[0]
+		isDefault = false
 	} else if (xxxx.length > 1) {
 		selectedModel = xxxx
 		isDefault = false
 		defaultScript = 'set echo top left;echo loading ' + selectedModel + '...;refresh;load ' + xxxx + ';echo "";'
 	} else {
-		selectedModel = "quartz.cif packed"
+		selectedModel = datadir + "/quartz.cif packed"
 		isDefault = false
   }
 	var s = "<select id='modelselect' onchange=getModel() onkeypress=\"setTimeout('getModel()',50)\"><option value=''>select a model</option>"
@@ -88,7 +99,11 @@ function getModelSelectHtml() {
 		var isSelected = (m.indexOf("*")>=0 && isDefault)
 		m = m.replace(/\*/,"")
 		if (isSelected)selectedModel = m
-		var n = m.split(".")[0].split(" ")[0]
+		var fname = m.split(".")[0].split(" ")
+		var n = fname[0]
+		if (fname[1]) {
+			m = m.substring(n.length + 1);
+		}
 		var f = (n.indexOf("=") == 0 ? "\"" + m.replace(/ /,'" '): datadir + "/" + m)
 		if (m.indexOf("----") >= 0)
      f = "zap";
@@ -176,7 +191,8 @@ function errorCallback(a, b, msg) {
 function loadstructCallback() {
 	document.getElementById("note").style.display = "block"
 	document.getElementById("loading").style.display = "block"
-	setTimeout('getSymInfo()',100) // need the timeout to get another thread or this will lock 
+  Jmol.script(jmolApplet0,"set echo bottom left;echo @_modelName") 
+	setTimeout('getSymInfo()',100) // need the timeout to get another thread or this will lock
 }
 
 function pickCallback(a,b,i) {
@@ -237,7 +253,7 @@ function getSymInfo() {
 			}
 		s += "</select>"
 
-		s += "</br><input type=text id=txtop width=30 value='1-x,1-y,1-z' /><a href=javascript:getTxtOp()>show</a>"
+		s += "</br><input type=text id=txtop width=30 value='1-x,1-y,1-z' />&nbsp;&nbsp;<a href=javascript:getTxtOp()>show</a>"
 
 		var info = jmolEvaluate('{*}.label("#%i %a {%[fxyz]/1}")').split("\n")
 		var nPoints = info.length
@@ -270,13 +286,11 @@ function getSymInfo() {
 <td align=center valign=top style="width:170px">
 <h3>Jmol Crystal Symmetry Explorer</h3>
 
-
 <div id=loading style="display:none">
 
 <script type="text/javascript">
-jmolBr()
+jmolHtml("<h3>load options</h3>")
 jmolSetButtonCssClass('" style="width:160px')
-jmolBr()
 jmolButton("load \"\" 1 FILTER 'MOLECULAR'","molecular units")
 jmolBr()
 jmolButton("load \"\" {1 1 1}", "unpacked cell")
@@ -297,23 +311,23 @@ jmolButton("load \"\" 1 {544 566 1}","1x3x3 plane")
 jmolBr()
 jmolButton("load \"\" 1 {444 666 1}","3x3x3 cube")
 jmolBr()
+jmolButton("load \"\" 1 fill 20","20-Angstrom cube")
+jmolHtml("<h3>display options</h3>")
 jmolButton("backgroundcolor = (backgroundcolor = '[x000000]' ? 'white' : 'black')","switch background")
-jmolBr()
+jmolButton("if (show('state/axes').find('axes on')){axes off;unitcell off}else{axes on;axes unitcell;unitcell on}","toggle unitcell")
+jmolButton("var n = 0+prompt('Select a molecule from 1 to ' + {*}.molecule.all.max, 1);display molecule=n","molecule by number")
+jmolButton("info=getProperty('moleculeInfo');nmax=getProperty(info,'nAtoms').max;m=getProperty(info,'[select (number) where nAtoms = nmax]')[1];display molecule=m","largest molecule")
+jmolButton("display *","all molecules")
+jmolButton("center visible;zoom 0","center displayed")
+
+
 </script>
 </div>
-<br>
-Produced especially for the 238th ACS Meeting in Washington, D.C., <a href=http://oasys2.confex.com/acs/238nm/techprogram/P1283308.HTM  target=_blank>Teaching Molecular Structure Using Jmol</a>
-presented by <a target=_blank href=http://stolaf.edu/people/hansonr>Bob Hanson</a>, Aug. 19, 2009.
-<br>
-<br>
-<a href=http://xrayweb.chem.ou.edu/notes/symmetry.html target=_blank>Symmetry in Crystallography</a>
-
-
 </td>
 <td align=center  valign=top>
 
 <script type="text/javascript">
-jmolApplet(["600","600"],';background white;set errorCallback "errorCallback";set loadstructcallback "loadstructCallback";set pickCallback "pickCallback";set zoomlarge false;' + defaultScript)
+jmolApplet(["600","600"],';background white;set errorCallback "errorCallback";set loadstructcallback "loadstructCallback";set pickCallback "pickCallback";set zoomlarge false;set antialiasdisplay;' + defaultScript)
 jmolSetButtonCssClass('" style="width:100px')
 jmolBr()
 jmolButton("console")
@@ -322,35 +336,47 @@ jmolCommandInput()
 </script>
 </td><td  valign=top>
 <script type="text/javascript">
+jmolHtml("<h3>model options</h3>")
 document.write(modelSelectHtml)
 </script>
 <div id='syminfo'></div>
 
-<br>
-<br>
 <div id=note style="display:none;width:250px">
+<!-- 
+<br>
+<br>
+
 Note that all symmetry operations relating to this model are also accessible from the <a href=sympop.png target=_blank>pop-up menu</a> (click on the "JSmol" logo).
+<br>
 </div>
+ -->
 <br>
-<br>
-<script type="text/javascript">
+ <script type="text/javascript">
 jmolSetButtonCssClass('" style="width:160px')
-jmolButton("if (!url) { url = ''};var x = prompt('Enter a URL for a structure file',url);if (x=='null') { quit }; url = x; load @url 1 packed","Load URL")
+jmolButton("if (!cod) { cod = ''};var x = prompt('Enter a Crystallographic Open Database id',cod);if (x=='null') { quit }; cod = x; load @{'=cod/'+cod} 1","Load COD")
 jmolBr()
-jmolButton("load file \"?\" 1 packed","Load FILE")
+jmolButton("if (!url) { url = ''};var x = prompt('Enter a URL for a structure file',url);if (x=='null') { quit }; url = x; load @url 1","Load URL")
+jmolBr()
+jmolButton("load file \"?\" 1","Load FILE")
 jmolBr()
 jmolButton("script ?.spt","Load SCRIPT")
 jmolBr()
-jmolButton("write FILE ?","Save FILE")
 jmolBr()
-jmolButton("write STATE ?.spt","Save STATE")
+jmolButton("var f = '?' + _modelName + '.cif';write FILE @f","Save FILE")
 jmolBr()
-jmolButton("write IMAGE ?.jpg","Save JPG")
+jmolButton("var f = '?' + _modelName + '.spt';write STATE @f","Save STATE")
 jmolBr()
-jmolButton("write IMAGE ?.png","Save PNG")
+jmolButton("var f = '?' + _modelName + '.png';write IMAGE @f","Save PNG")
 jmolBr()
-jmolButton("write ?.jmol","Save JMOL")
+jmolButton("var f = '?' + _modelName + '.png';write @f as PNGJ","Save PNG+Jmol")
+jmolHtml("<h3>3D printing options</h3>")
+jmolButton("var scale = 0+prompt('What scale would  you like?',(exportScale == 0 ? '10.0' : exportScale));if (scale)set exportScale @scale;","Set Scale")
 jmolBr()
+jmolButton("save state o; set echo off;axes labels '' '' '';refresh;var f = '?' + _modelName + '.wrl';write @f;restore state o","Save VRML")
+jmolBr()
+jmolButton("save state o; set echo off;axes labels '' '' '';refresh;var f = '?' + _modelName + '.x3d';write @f;restore state o","Save X3D")
+jmolBr()
+jmolButton("var f = '?' + _modelName + '.stl';write @f","Save STL")
 </script>
 
 </td></tr>

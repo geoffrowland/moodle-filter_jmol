@@ -28,6 +28,7 @@ this.mapRtoA = null;
 this.deleteAtoms = null;
 this.moleculeID = null;
 this.htModelAtomMap = null;
+this.optimize2d = false;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.xml, "XmlCmlReader", J.adapter.readers.xml.XmlReader);
 Clazz.prepareFields (c$, function () {
@@ -39,6 +40,12 @@ Clazz.makeConstructor (c$,
 function () {
 Clazz.superConstructor (this, J.adapter.readers.xml.XmlCmlReader, []);
 });
+Clazz.overrideMethod (c$, "processXml", 
+function (parent, saxReader) {
+this.optimize2d = parent.checkFilterKey ("2D");
+this.processXml2 (parent, saxReader);
+if (this.optimize2d) this.set2D ();
+}, "J.adapter.readers.xml.XmlReader,~O");
 Clazz.overrideMethod (c$, "processStartElement", 
 function (name, nodeName) {
 if (!this.processing) return;
@@ -142,12 +149,14 @@ if ((val = this.atts.get ("atomid")) != null) {
 this.breakOutAtomTokens (val);
 for (var i = this.tokenCount; --i >= 0; ) this.atomArray[i].atomName = this.tokens[i];
 
-}if ((val = this.atts.get ("x3")) != null) {
+}var is3d = (!this.optimize2d && (val = this.atts.get ("x3")) != null);
+if (is3d) {
+is3d = true;
 coords3D = true;
 this.breakOutAtomTokens (val);
 for (var i = this.tokenCount; --i >= 0; ) this.atomArray[i].x = this.parseFloatStr (this.tokens[i]);
 
-}if ((val = this.atts.get ("y3")) != null) {
+if ((val = this.atts.get ("y3")) != null) {
 this.breakOutAtomTokens (val);
 for (var i = this.tokenCount; --i >= 0; ) this.atomArray[i].y = this.parseFloatStr (this.tokens[i]);
 
@@ -155,7 +164,8 @@ for (var i = this.tokenCount; --i >= 0; ) this.atomArray[i].y = this.parseFloatS
 this.breakOutAtomTokens (val);
 for (var i = this.tokenCount; --i >= 0; ) this.atomArray[i].z = this.parseFloatStr (this.tokens[i]);
 
-}if ((val = this.atts.get ("x2")) != null) {
+}} else {
+if ((val = this.atts.get ("x2")) != null) {
 this.breakOutAtomTokens (val);
 for (var i = this.tokenCount; --i >= 0; ) this.atomArray[i].x = this.parseFloatStr (this.tokens[i]);
 
@@ -163,7 +173,7 @@ for (var i = this.tokenCount; --i >= 0; ) this.atomArray[i].x = this.parseFloatS
 this.breakOutAtomTokens (val);
 for (var i = this.tokenCount; --i >= 0; ) this.atomArray[i].y = this.parseFloatStr (this.tokens[i]);
 
-}if ((val = this.atts.get ("elementtype")) != null) {
+}}if ((val = this.atts.get ("elementtype")) != null) {
 this.breakOutAtomTokens (val);
 for (var i = this.tokenCount; --i >= 0; ) this.atomArray[i].elementSymbol = this.tokens[i];
 
@@ -173,7 +183,7 @@ if (!coords3D) atom.z = 0;
 this.addAtom (atom);
 }
 } else if (name.equals ("formula")) {
-this.state = 12;
+this.state = 13;
 } else if (name.equals ("association")) {
 this.state = 19;
 }break;
@@ -217,9 +227,15 @@ this.atom.elementSymbol = sym;
 case 11:
 if ((val = this.atts.get ("builtin")) != null) {
 this.setKeepChars (true);
-this.state = 14;
+this.state = 15;
 this.scalarDictValue = val;
+} else if (name.equals ("bondstereo")) {
+this.state = 12;
 }break;
+case 12:
+this.setKeepChars (true);
+this.state = 12;
+break;
 case 8:
 if (name.equals ("scalar")) {
 this.state = 9;
@@ -228,16 +244,16 @@ this.scalarTitle = this.atts.get ("title");
 this.getDictRefValue ();
 } else if ((val = this.atts.get ("builtin")) != null) {
 this.setKeepChars (true);
-this.state = 13;
+this.state = 14;
 this.scalarDictValue = val;
 }break;
 case 9:
 break;
-case 12:
-break;
 case 13:
 break;
 case 14:
+break;
+case 15:
 break;
 }
 }, "~S");
@@ -301,7 +317,7 @@ this.state = 4;
 }break;
 case 18:
 var values = J.adapter.smarter.AtomSetCollectionReader.getTokensFloat (this.chars.toString (), null, 3);
-this.parent.addPrimitiveLatticeVector (this.latticeVectorPtr, values, 0);
+this.parent.addExplicitLatticeVector (this.latticeVectorPtr, values, 0);
 this.latticeVectorPtr = (this.latticeVectorPtr + 1) % 3;
 this.setKeepChars (false);
 this.state = 0;
@@ -342,8 +358,6 @@ this.parent.applySymmetryToBonds = true;
 case 7:
 if (name.equals ("atomarray")) {
 this.state = 6;
-for (var i = 0; i < this.aaLen; ++i) this.addAtom (this.atomArray[i]);
-
 }break;
 case 11:
 if (name.equals ("bond")) {
@@ -367,7 +381,7 @@ this.atomIdNames.put (this.atom.atomName, this.chars.toString ());
 this.scalarTitle = null;
 this.scalarDictRef = null;
 break;
-case 13:
+case 14:
 this.state = 8;
 if (this.scalarDictValue.equals ("x3")) this.atom.x = this.parseFloatStr (this.chars.toString ());
  else if (this.scalarDictValue.equals ("y3")) this.atom.y = this.parseFloatStr (this.chars.toString ());
@@ -375,7 +389,13 @@ if (this.scalarDictValue.equals ("x3")) this.atom.x = this.parseFloatStr (this.c
  else if (this.scalarDictValue.equals ("elementType")) this.atom.elementSymbol = this.chars.toString ();
 this.setKeepChars (false);
 break;
-case 14:
+case 12:
+var stereo = this.chars.toString ();
+if (this.bond.order == 1) this.bond.order = (stereo.equals ("H") ? 1041 : 1025);
+this.setKeepChars (false);
+this.state = 11;
+break;
+case 15:
 this.state = 11;
 if (this.scalarDictValue.equals ("atomRef")) {
 if (this.tokenCount == 0) this.tokens =  new Array (2);
@@ -385,7 +405,7 @@ var order = this.parseBondToken (this.chars.toString ());
 if (order > 0 && this.tokenCount == 2) this.addNewBond (this.tokens[0], this.tokens[1], order);
 }this.setKeepChars (false);
 break;
-case 12:
+case 13:
 this.state = 6;
 break;
 }
@@ -425,8 +445,10 @@ if (a1 == null || a2 == null) return;
 this.parent.applySymmetryToBonds = true;
 a1 = this.fixSerialName (a1);
 a2 = this.fixSerialName (a2);
-if (this.joinList == null || !this.checkBondToR (a1, a2)) this.asc.addNewBondFromNames (a1, a2, order);
-}, "~S,~S,~N");
+if (this.joinList == null || !this.checkBondToR (a1, a2)) {
+this.asc.addNewBondFromNames (a1, a2, order);
+this.bond = this.asc.bonds[this.asc.bondCount - 1];
+}}, "~S,~S,~N");
 Clazz.defineMethod (c$, "fixSerialName", 
  function (a) {
 return (this.isSerial ? a.substring (1) : a);
@@ -527,7 +549,7 @@ Clazz.defineMethod (c$, "createNewAtomSet",
  function () {
 this.asc.newAtomSet ();
 var val;
-if (this.htModelAtomMap != null) this.htModelAtomMap.put ("" + this.asc.iSet, this.moleculeID);
+if (this.htModelAtomMap != null) this.htModelAtomMap.put ("" + this.asc.iSet, "" + this.moleculeID);
 var collectionName = ((val = this.atts.get ("title")) != null || (val = this.atts.get ("id")) != null ? val : null);
 if (collectionName != null) {
 this.asc.setAtomSetName (collectionName);
@@ -558,10 +580,11 @@ Clazz.defineStatics (c$,
 "MOLECULE_ATOM_SCALAR", 9,
 "MOLECULE_BOND_ARRAY", 10,
 "MOLECULE_BOND", 11,
-"MOLECULE_FORMULA", 12,
-"MOLECULE_ATOM_BUILTIN", 13,
-"MOLECULE_BOND_BUILTIN", 14,
-"MODULE", 15,
+"MOLECULE_BOND_STEREO", 12,
+"MOLECULE_FORMULA", 13,
+"MOLECULE_ATOM_BUILTIN", 14,
+"MOLECULE_BOND_BUILTIN", 15,
+"MODULE", 16,
 "SYMMETRY", 17,
 "LATTICE_VECTOR", 18,
 "ASSOCIATION", 19,

@@ -1,27 +1,32 @@
 Clazz.declarePackage ("JS");
-Clazz.load (["JU.P3", "JU.BNode"], "JS.SmilesAtom", ["JU.AU", "JU.Elements", "$.Logger"], function () {
+Clazz.load (["JU.P3", "JU.Node"], "JS.SmilesAtom", ["java.lang.Float", "JU.AU", "JU.Elements", "$.Logger", "JV.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
-this.atomsOr = null;
-this.nAtomsOr = 0;
-this.primitives = null;
-this.nPrimitives = 0;
+this.patternIndex = -1;
+this.pattern = null;
+this.primitiveType = 0;
+this.isAND = false;
+this.subAtoms = null;
+this.nSubAtoms = 0;
 this.index = 0;
-this.atomName = null;
 this.referance = null;
 this.residueName = null;
 this.residueChar = null;
+this.insCode = '\0';
 this.isBioAtom = false;
 this.isBioResidue = false;
+this.isBioAtomWild = false;
 this.bioType = '\0';
 this.$isLeadAtom = false;
 this.notBondedIndex = -1;
 this.notCrossLinked = false;
 this.aromaticAmbiguous = true;
-this.atomType = null;
 this.covalentHydrogenCount = -1;
 this.not = false;
 this.selected = false;
 this.hasSymbol = false;
+this.elementDefined = false;
+this.atomType = null;
+this.bioAtomName = null;
 this.isFirst = true;
 this.jmolIndex = -1;
 this.elementNumber = -2;
@@ -33,12 +38,13 @@ this.parent = null;
 this.bonds = null;
 this.bondCount = 0;
 this.iNested = 0;
+this.isAromatic = false;
 this.atomicMass = -2147483648;
 this.charge = -2147483648;
 this.matchingIndex = -1;
 this.stereo = null;
-this.$isAromatic = false;
-this.component = 0;
+this.component = -2147483648;
+this.matchingComponent = 0;
 this.atomSite = 0;
 this.degree = -1;
 this.nonhydrogenDegree = -1;
@@ -52,9 +58,11 @@ this.hasSubpattern = false;
 this.mapIndex = -1;
 this.atomClass = NaN;
 this.symbol = null;
-this.implicitHCount = 0;
+this.isTopoAtom = false;
+this.missingHydrogenCount = 0;
+this.cipChirality = 0;
 Clazz.instantialize (this, arguments);
-}, JS, "SmilesAtom", JU.P3, JU.BNode);
+}, JS, "SmilesAtom", JU.P3, JU.Node);
 Clazz.prepareFields (c$, function () {
 this.bonds =  new Array (4);
 });
@@ -66,13 +74,17 @@ Clazz.makeConstructor (c$,
 function () {
 Clazz.superConstructor (this, JS.SmilesAtom, []);
 });
+Clazz.overrideMethod (c$, "getAtomType", 
+function () {
+return (this.atomType == null ? this.bioAtomName : this.atomType);
+});
 Clazz.defineMethod (c$, "getChiralClass", 
 function () {
-return (this.stereo == null ? 0 : this.stereo.chiralClass);
+return (this.stereo == null ? -2147483648 : this.stereo.getChiralClass (this));
 });
 Clazz.defineMethod (c$, "isDefined", 
 function () {
-return (this.hasSubpattern || this.iNested != 0 || this.isBioAtom || this.elementNumber != -2 || this.nAtomsOr > 0 || this.nPrimitives > 0);
+return (this.hasSubpattern || this.iNested != 0 || this.isBioAtom || this.component != -2147483648 || this.elementNumber != -2 || this.nSubAtoms > 0);
 });
 Clazz.defineMethod (c$, "setBioAtom", 
 function (bioType) {
@@ -81,81 +93,82 @@ this.bioType = bioType;
 if (this.parent != null) {
 this.parent.bioType = bioType;
 this.parent.isBioAtom = this.isBioAtom;
+this.parent.isBioAtomWild = this.isBioAtomWild;
 }}, "~S");
 Clazz.defineMethod (c$, "setAtomName", 
 function (name) {
 if (name == null) return;
-if (name.length > 0) this.atomName = name;
+if (name.length > 0) this.bioAtomName = name;
 if (name.equals ("\0")) this.$isLeadAtom = true;
 if (this.parent != null) {
-this.parent.atomName = name;
+this.parent.bioAtomName = name;
 }}, "~S");
 Clazz.defineMethod (c$, "setBonds", 
 function (bonds) {
 this.bonds = bonds;
 }, "~A");
-Clazz.defineMethod (c$, "appendAtomOr", 
-function (sAtom) {
-if (this.atomsOr == null) this.atomsOr =  new Array (2);
-if (this.nAtomsOr >= this.atomsOr.length) this.atomsOr = JU.AU.doubleLength (this.atomsOr);
+Clazz.defineMethod (c$, "addSubAtom", 
+function (sAtom, isAND) {
+this.isAND = isAND;
+if (this.subAtoms == null) this.subAtoms =  new Array (2);
+if (this.nSubAtoms >= this.subAtoms.length) this.subAtoms = JU.AU.doubleLength (this.subAtoms);
 sAtom.setIndex (this.index);
 sAtom.parent = this;
-this.atomsOr[this.nAtomsOr++] = sAtom;
-return sAtom;
-}, "JS.SmilesAtom");
-Clazz.defineMethod (c$, "appendPrimitive", 
-function (sAtom) {
-if (this.primitives == null) this.primitives =  new Array (2);
-if (this.nPrimitives >= this.primitives.length) this.primitives = JU.AU.doubleLength (this.primitives);
-sAtom.setIndex (this.index);
-sAtom.parent = this;
-this.primitives[this.nPrimitives++] = sAtom;
+this.subAtoms[this.nSubAtoms++] = sAtom;
 this.setSymbol ("*");
 this.hasSymbol = false;
 return sAtom;
-}, "JS.SmilesAtom");
+}, "JS.SmilesAtom,~B");
 Clazz.defineMethod (c$, "setIndex", 
 function (index) {
 this.index = index;
 return this;
 }, "~N");
-Clazz.defineMethod (c$, "setAll", 
-function (iComponent, ptAtom, symbol, charge) {
+Clazz.defineMethod (c$, "setTopoAtom", 
+function (iComponent, ptAtom, symbol, charge, patternIndex) {
 this.component = iComponent;
 this.index = ptAtom;
+this.patternIndex = patternIndex;
 this.setSymbol (symbol);
 this.charge = charge;
+this.isTopoAtom = true;
 return this;
-}, "~N,~N,~S,~N");
+}, "~N,~N,~S,~N,~N");
 Clazz.defineMethod (c$, "setHydrogenCount", 
 function () {
+this.missingHydrogenCount = this.explicitHydrogenCount;
 if (this.explicitHydrogenCount != -2147483648) return true;
-var count = JS.SmilesAtom.getDefaultCount (this.elementNumber, this.$isAromatic);
-if (count < 0) return (count == -1);
-if (this.elementNumber == 7 && this.$isAromatic && this.bondCount == 2) {
-if (this.bonds[0].order == 1 && this.bonds[1].order == 1) count++;
+var count = JS.SmilesAtom.getDefaultCount (this.elementNumber, this.isAromatic);
+if (count < 0) {
+this.missingHydrogenCount = 0;
+return (count == -1);
+}if (this.elementNumber == 7 && this.isAromatic && this.bondCount == 2) {
+if (this.bonds[0].getBondType () == 1 && this.bonds[1].getBondType () == 1) count++;
 }for (var i = 0; i < this.bondCount; i++) {
 var bond = this.bonds[i];
-switch (bond.order) {
+switch (bond.getBondType ()) {
 case 81:
 if (this.elementNumber == 7) {
 JU.Logger.info ("Ambiguous bonding to aromatic N found -- MF may be in error");
 }count -= 1;
 break;
-case 1:
-case 257:
-case 513:
+case 1025:
+case 1041:
+case 65537:
+case 65538:
 count -= 1;
 break;
 case 2:
-count -= (this.$isAromatic && this.elementNumber == 6 ? 1 : 2);
+count -= (this.isAromatic && this.elementNumber == 6 ? 1 : 2);
 break;
+case 1:
 case 3:
-count -= 3;
+case 4:
+count -= bond.getBondType ();
 break;
 }
 }
-if (count >= 0) this.explicitHydrogenCount = count;
+if (count >= 0) this.missingHydrogenCount = this.explicitHydrogenCount = count;
 return true;
 });
 c$.getDefaultCount = Clazz.defineMethod (c$, "getDefaultCount", 
@@ -165,6 +178,8 @@ case 0:
 case -1:
 case -2:
 return -1;
+case 1:
+return 1;
 case 6:
 return (isAromatic ? 3 : 4);
 case 8:
@@ -180,24 +195,22 @@ case 17:
 case 35:
 case 53:
 return 1;
+default:
+return 0;
 }
-return -2;
 }, "~N,~B");
 Clazz.overrideMethod (c$, "getIndex", 
 function () {
 return this.index;
 });
-Clazz.defineMethod (c$, "isAromatic", 
-function () {
-return this.$isAromatic;
-});
 Clazz.defineMethod (c$, "setSymbol", 
 function (symbol) {
 this.symbol = symbol;
-this.$isAromatic = symbol.equals (symbol.toLowerCase ());
+this.isAromatic = symbol.equals (symbol.toLowerCase ());
 this.hasSymbol = true;
+this.elementDefined = true;
 if (symbol.equals ("*")) {
-this.$isAromatic = false;
+this.isAromatic = false;
 this.elementNumber = -2;
 return true;
 }if (symbol.equals ("Xx")) {
@@ -207,7 +220,7 @@ return true;
 if (symbol.equals ("a") || symbol.equals ("A")) {
 if (this.elementNumber < 0) this.elementNumber = -1;
 return true;
-}if (this.$isAromatic) symbol = symbol.substring (0, 1).toUpperCase () + (symbol.length == 1 ? "" : symbol.substring (1));
+}if (this.isAromatic) symbol = symbol.substring (0, 1).toUpperCase () + (symbol.length == 1 ? "" : symbol.substring (1));
 this.elementNumber = JU.Elements.elementNumberFromSymbol (symbol, true);
 return (this.elementNumber != 0);
 }, "~S");
@@ -241,7 +254,7 @@ return this.matchingIndex;
 });
 Clazz.defineMethod (c$, "getMatchingAtom", 
 function () {
-return this.matchingNode;
+return this.matchingNode == null ? this : this.matchingNode;
 });
 Clazz.defineMethod (c$, "setMatchingAtom", 
 function (jmolAtom, index) {
@@ -279,6 +292,7 @@ this.ringMembership = rm;
 Clazz.defineMethod (c$, "setRingSize", 
 function (rs) {
 this.ringSize = rs;
+if (this.ringSize == 500 || this.ringSize == 600) this.isAromatic = true;
 }, "~N");
 Clazz.defineMethod (c$, "setRingConnectivity", 
 function (rc) {
@@ -288,17 +302,13 @@ Clazz.overrideMethod (c$, "getModelIndex",
 function () {
 return this.component;
 });
+Clazz.overrideMethod (c$, "getMoleculeNumber", 
+function (inModel) {
+return this.component;
+}, "~B");
 Clazz.overrideMethod (c$, "getAtomSite", 
 function () {
 return this.atomSite;
-});
-Clazz.overrideMethod (c$, "getImplicitHydrogenCount", 
-function () {
-return 0;
-});
-Clazz.defineMethod (c$, "getExplicitHydrogenCount", 
-function () {
-return this.explicitHydrogenCount;
 });
 Clazz.overrideMethod (c$, "getFormalCharge", 
 function () {
@@ -314,7 +324,7 @@ return JU.Elements.getAtomicAndIsotopeNumber (this.elementNumber, this.atomicMas
 });
 Clazz.overrideMethod (c$, "getAtomName", 
 function () {
-return this.atomName == null ? "" : this.atomName;
+return this.bioAtomName == null ? "" : this.bioAtomName;
 });
 Clazz.overrideMethod (c$, "getGroup3", 
 function (allowNull) {
@@ -333,12 +343,12 @@ this.bondCount++;
 Clazz.defineMethod (c$, "setBondArray", 
 function () {
 if (this.bonds.length > this.bondCount) this.bonds = JU.AU.arrayCopyObject (this.bonds, this.bondCount);
-if (this.atomsOr != null && this.atomsOr.length > this.nAtomsOr) this.atomsOr = JU.AU.arrayCopyObject (this.atomsOr, this.atomsOr.length);
-if (this.primitives != null && this.primitives.length > this.nPrimitives) this.primitives = JU.AU.arrayCopyObject (this.primitives, this.primitives.length);
+if (this.subAtoms != null && this.subAtoms.length > this.nSubAtoms) this.subAtoms = JU.AU.arrayCopyObject (this.subAtoms, this.subAtoms.length);
 for (var i = 0; i < this.bonds.length; i++) {
-if (this.isBioAtom && this.bonds[i].order == 17) this.bonds[i].order = 112;
-if (this.bonds[i].atom1.index > this.bonds[i].atom2.index) {
-this.bonds[i].switchAtoms ();
+var b = this.bonds[i];
+if (this.isBioAtom && b.getBondType () == 17) b.order = 112;
+if (b.atom1.index > b.atom2.index) {
+b.switchAtoms ();
 }}
 });
 Clazz.overrideMethod (c$, "getEdges", 
@@ -355,7 +365,23 @@ return this.getBondCount ();
 });
 Clazz.overrideMethod (c$, "getBondCount", 
 function () {
-return (this.parent != null ? this.parent.getCovalentBondCount () : this.bondCount + this.implicitHCount);
+return (this.parent != null ? this.parent.getBondCount () : this.bondCount);
+});
+Clazz.overrideMethod (c$, "getCovalentBondCountPlusMissingH", 
+function () {
+return this.getBondCount () + (this.isTopoAtom ? 0 : this.missingHydrogenCount);
+});
+Clazz.overrideMethod (c$, "getTotalHydrogenCount", 
+function () {
+return this.getCovalentHydrogenCount () + (this.isTopoAtom ? 0 : this.missingHydrogenCount);
+});
+Clazz.overrideMethod (c$, "getImplicitHydrogenCount", 
+function () {
+return this.implicitHydrogenCount;
+});
+Clazz.overrideMethod (c$, "getExplicitHydrogenCount", 
+function () {
+return this.explicitHydrogenCount;
 });
 Clazz.defineMethod (c$, "getMatchingBondedAtom", 
 function (i) {
@@ -371,7 +397,7 @@ return (this.parent != null ? this.parent.getBondedAtomIndex (j) : this.bonds[j]
 Clazz.overrideMethod (c$, "getCovalentHydrogenCount", 
 function () {
 if (this.covalentHydrogenCount >= 0) return this.covalentHydrogenCount;
-if (this.parent != null) return this.parent.getCovalentHydrogenCount ();
+if (this.parent != null) return (this.covalentHydrogenCount = this.parent.getCovalentHydrogenCount ());
 this.covalentHydrogenCount = 0;
 for (var k = 0; k < this.bonds.length; k++) if (this.bonds[k].getOtherAtom (this).elementNumber == 1) this.covalentHydrogenCount++;
 
@@ -381,10 +407,14 @@ Clazz.overrideMethod (c$, "getValence",
 function () {
 if (this.parent != null) return this.parent.getValence ();
 var n = this.valence;
-if (n <= 0 && this.bonds != null) for (var i = this.bonds.length; --i >= 0; ) n += this.bonds[i].getValence ();
+if (n <= 0 && this.bonds != null) for (var i = this.bondCount; --i >= 0; ) n += this.bonds[i].getValence ();
 
 this.valence = n;
 return n;
+});
+Clazz.overrideMethod (c$, "getTotalValence", 
+function () {
+return this.getValence () + (this.isTopoAtom ? 0 : this.missingHydrogenCount);
 });
 Clazz.defineMethod (c$, "getBondTo", 
 function (atom) {
@@ -414,7 +444,7 @@ Clazz.overrideMethod (c$, "getOffsetResidueAtom",
 function (name, offset) {
 if (this.isBioAtom) {
 if (offset == 0) return this.index;
-for (var k = 0; k < this.bonds.length; k++) if (this.bonds[k].getAtomIndex1 () == this.index && this.bonds[k].order == 96) return this.bonds[k].getOtherAtom (this).index;
+for (var k = 0; k < this.bonds.length; k++) if (this.bonds[k].getAtomIndex1 () == this.index && this.bonds[k].getBondType () == 96) return this.bonds[k].getOtherAtom (this).index;
 
 }return -1;
 }, "~S,~N");
@@ -427,7 +457,7 @@ Clazz.overrideMethod (c$, "isCrossLinked",
 function (node) {
 var bond = this.getBondTo (node);
 return bond.isHydrogen ();
-}, "JU.BNode");
+}, "JU.Node");
 Clazz.overrideMethod (c$, "getCrossLinkVector", 
 function (vLinks, crosslinkCovalent, crosslinkHBond) {
 var haveCrossLinks = false;
@@ -444,6 +474,10 @@ Clazz.overrideMethod (c$, "getBioStructureTypeName",
 function () {
 return null;
 });
+Clazz.overrideMethod (c$, "getInsertionCode", 
+function () {
+return this.insCode;
+});
 Clazz.overrideMethod (c$, "getResno", 
 function () {
 return this.residueNumber;
@@ -457,14 +491,17 @@ function () {
 return "";
 });
 c$.getAtomLabel = Clazz.defineMethod (c$, "getAtomLabel", 
-function (atomicNumber, isotopeNumber, valence, charge, osclass, nH, isAromatic, stereo) {
+function (atomicNumber, isotopeNumber, valence, charge, osclass, nH, isAromatic, stereo, is2D) {
 var sym = JU.Elements.elementSymbolFromNumber (atomicNumber);
-if (isAromatic) {
-sym = sym.toLowerCase ();
-if (atomicNumber != 6) valence = 2147483647;
-}var count = (valence == 2147483647 || isotopeNumber != 0 || charge != 0 || osclass != 0 || stereo != null && stereo.length > 0 ? -1 : JS.SmilesAtom.getDefaultCount (atomicNumber, false));
-return (count == valence ? sym : "[" + (isotopeNumber <= 0 ? "" : "" + isotopeNumber) + sym + (stereo == null ? "" : stereo) + (nH > 1 ? "H" + nH : nH == 1 ? "H" : "") + (charge < 0 && charge != -2147483648 ? "" + charge : charge > 0 ? "+" + charge : "") + (osclass == 0 ? "" : ":" + Clazz.floatToInt (osclass)) + "]");
-}, "~N,~N,~N,~N,~N,~N,~B,~S");
+if (atomicNumber == 1 || isAromatic && !(sym = sym.toLowerCase ()).equals ("c")) {
+valence = 2147483647;
+}var simple = (valence != 2147483647 && isotopeNumber <= 0 && charge == 0 && Float.isNaN (osclass) && (stereo == null || stereo.length == 0));
+var norm = JS.SmilesAtom.getDefaultCount (atomicNumber, false);
+if (is2D && nH == 0) {
+if (simple && atomicNumber == 6) return sym;
+nH = norm - valence;
+}return (simple && norm == valence ? sym : "[" + (isotopeNumber <= 0 ? "" : "" + isotopeNumber) + sym + (stereo == null ? "" : stereo) + (nH > 1 ? "H" + nH : nH == 1 ? "H" : "") + (charge < 0 && charge != -2147483648 ? "" + charge : charge > 0 ? "+" + charge : "") + (Float.isNaN (osclass) ? "" : ":" + Clazz.floatToInt (osclass)) + "]");
+}, "~N,~N,~N,~N,~N,~N,~B,~S,~B");
 Clazz.overrideMethod (c$, "getBioSmilesType", 
 function () {
 return this.bioType;
@@ -485,34 +522,69 @@ Clazz.overrideMethod (c$, "isDeleted",
 function () {
 return false;
 });
-Clazz.defineMethod (c$, "setAtomType", 
-function (type) {
-this.atomType = type;
-}, "~S");
-Clazz.overrideMethod (c$, "getAtomType", 
-function () {
-return (this.atomType == null ? this.atomName : this.atomType);
-});
 Clazz.overrideMethod (c$, "findAtomsLike", 
 function (substring) {
 return null;
 }, "~S");
 Clazz.overrideMethod (c$, "toString", 
 function () {
-var s = (this.residueChar != null || this.residueName != null ? (this.residueChar == null ? this.residueName : this.residueChar) + "." + this.atomName : (this.atomName != null && this.atomNumber != -2147483648 ? null : this.elementNumber == -1 ? "A" : this.elementNumber == -2 ? "*" : JU.Elements.elementSymbolFromNumber (this.elementNumber)));
-if (s == null) return this.atomName + " #" + this.atomNumber;
-if (this.$isAromatic) s = s.toLowerCase ();
-return "[" + s + '.' + this.index + (this.matchingIndex >= 0 ? "(" + this.matchingNode + ")" : "") + "]";
+var s = (this.residueChar != null || this.residueName != null ? (this.residueChar == null ? this.residueName : this.residueChar) + "." + this.bioAtomName : (this.bioAtomName != null && this.atomNumber != -2147483648 ? null : this.elementNumber == -1 ? "A" : this.elementNumber == -2 ? "*" : JU.Elements.elementSymbolFromNumber (this.elementNumber)));
+if (s == null) return this.bioAtomName + " #" + this.atomNumber;
+if (this.isAromatic) s = s.toLowerCase ();
+var s2 = "";
+for (var i = 0; i < this.bondCount; i++) s2 += this.bonds[i].getOtherAtom (this).index + ", ";
+
+return "[" + s + '.' + this.index + (this.matchingIndex >= 0 ? "(" + this.matchingNode + ")" : "") + "]->" + s2 + "(" + this.x + "," + this.y + "," + this.z + ")";
 });
 Clazz.overrideMethod (c$, "getFloatProperty", 
 function (property) {
 if (property === "property_atomclass") return this.atomClass;
 return NaN;
 }, "~S");
-Clazz.overrideMethod (c$, "getMissingHydrogenCount", 
+Clazz.overrideMethod (c$, "getMass", 
 function () {
-return this.explicitHydrogenCount;
+return this.atomicMass;
 });
+Clazz.overrideMethod (c$, "getCIPChirality", 
+function (doCalculate) {
+return JV.JC.getCIPChiralityName (this.cipChirality & -225);
+}, "~B");
+Clazz.overrideMethod (c$, "setCIPChirality", 
+function (c) {
+this.cipChirality = c;
+}, "~N");
+Clazz.overrideMethod (c$, "getCIPChiralityCode", 
+function () {
+return this.cipChirality;
+});
+Clazz.overrideMethod (c$, "getXYZ", 
+function () {
+return this;
+});
+Clazz.defineMethod (c$, "getStereo", 
+function () {
+return this.stereo;
+});
+Clazz.defineMethod (c$, "getPatternIndex", 
+function () {
+return this.patternIndex;
+});
+Clazz.overrideMethod (c$, "modelIsRawPDB", 
+function () {
+return false;
+});
+Clazz.defineMethod (c$, "definesStereo", 
+function () {
+return false;
+});
+Clazz.defineMethod (c$, "getStereoAtAt", 
+function (nodes) {
+return null;
+}, "~A");
+Clazz.defineMethod (c$, "isStereoOpposite", 
+function (i2, iA, iB) {
+return null;
+}, "~N,~N,~N");
 Clazz.defineStatics (c$,
 "UNBRACKETED_SET", "B, C, N, O, P, S, F, Cl, Br, I, *,");
 });

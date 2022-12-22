@@ -18,15 +18,17 @@ var needTranslucent = false;
 this.g3d.addRenderer (1073741880);
 for (var i = this.ms.ac; --i >= 0; ) {
 var atom = atoms[i];
-if ((atom.shapeVisibilityFlags & 1) == 0) continue;
+if (atom == null || (atom.shapeVisibilityFlags & 1) == 0) continue;
 var isHidden = this.ms.isAtomHidden (i);
 this.mad = (halos.mads == null ? 0 : halos.mads[i]);
 this.colix = (halos.colixes == null || i >= halos.colixes.length ? 0 : halos.colixes[i]);
 if (selectDisplayTrue && bsSelected.get (i)) {
 if (isHidden && !showHiddenSelections) continue;
 if (this.mad == 0) this.mad = -1;
-if (this.colix == 0) this.colix = halos.colixSelection;
-if (this.colix == 2) this.colix = 23;
+if (this.colix == 0) {
+if (this.exportType == 1 && !this.g3d.isWebGL ()) continue;
+this.colix = halos.colixSelection;
+}if (this.colix == 2) this.colix = 23;
  else if (this.colix == 0) this.colix = JU.C.getColixInherited (this.colix, atom.colixAtom);
 } else if (isHidden) {
 continue;

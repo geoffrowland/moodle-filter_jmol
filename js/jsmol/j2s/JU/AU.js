@@ -274,6 +274,10 @@ function (n) {
 {
 return Clazz.newArray(n, null);
 }}, "~N");
+c$.newDouble3n = Clazz.defineMethod (c$, "newDouble3n", 
+function (n) {
+return  Clazz.newDoubleArray (n, 0);
+}, "~N");
 c$.removeMapKeys = Clazz.defineMethod (c$, "removeMapKeys", 
 function (map, root) {
 var list =  new JU.Lst ();
@@ -317,6 +321,11 @@ c$.isADD = Clazz.defineMethod (c$, "isADD",
 function (x) {
 {
 return Clazz.isAFF(x);
+}}, "~O");
+c$.isADDD = Clazz.defineMethod (c$, "isADDD", 
+function (x) {
+{
+return Clazz.isAFFF(x);
 }}, "~O");
 c$.isAB = Clazz.defineMethod (c$, "isAB", 
 function (x) {

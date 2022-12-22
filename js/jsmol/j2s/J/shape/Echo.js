@@ -1,13 +1,87 @@
 Clazz.declarePackage ("J.shape");
 Clazz.load (["J.shape.TextShape"], "J.shape.Echo", ["java.util.Hashtable", "JU.Lst", "$.PT", "JM.Text", "JU.C"], function () {
-c$ = Clazz.declareType (J.shape, "Echo", J.shape.TextShape);
+c$ = Clazz.decorateAsClass (function () {
+this.scaleObject = null;
+Clazz.instantialize (this, arguments);
+}, J.shape, "Echo", J.shape.TextShape);
 Clazz.overrideMethod (c$, "initShape", 
 function () {
 this.setProperty ("target", "top", null);
 });
 Clazz.overrideMethod (c$, "setProperty", 
 function (propertyName, value, bs) {
-if ("scalereference" === propertyName) {
+if ("thisID" === propertyName) {
+if (value == null) {
+this.currentObject = null;
+this.thisID = null;
+return;
+}var target = value;
+if (target === "%SCALE") {
+this.currentObject = this.scaleObject;
+this.thisID = target;
+} else {
+this.currentObject = this.objects.get (target);
+if (this.currentObject == null && JU.PT.isWild (target)) this.thisID = target.toUpperCase ();
+}return;
+}if ("%SCALE" === propertyName) {
+this.currentObject = this.scaleObject = value;
+this.thisID = "%SCALE";
+return;
+}if ("color" === propertyName || "font" === propertyName) {
+if (this.scaleObject != null && this.currentObject === this.scaleObject) {
+var f = this.currentFont;
+var c = this.currentColor;
+this.setPropTS (propertyName, value, bs);
+this.currentFont = f;
+this.currentColor = c;
+return;
+}}if ("off" === propertyName) {
+if (this.currentObject === this.scaleObject) {
+this.currentObject = this.scaleObject = null;
+return;
+}}if ("text" === propertyName) {
+if ((value).startsWith ("%SCALE")) {
+this.thisID = "%SCALE";
+this.setPropTS ("text", value, null);
+this.scaleObject = this.currentObject;
+if (this.scaleObject != null && this.objects.get (this.scaleObject.target) === this.scaleObject) this.setPropTS ("delete", this.scaleObject, null);
+this.currentObject = this.scaleObject;
+return;
+}}if ("target" === propertyName) {
+if ("%SCALE".equals (value)) {
+this.currentObject = this.scaleObject;
+this.thisID = "%SCALE";
+if (this.currentObject != null) return;
+}var target = (value).intern ().toLowerCase ();
+if (target !== "none" && target !== "all") {
+this.isAll = false;
+var text = (this.thisID === "%SCALE" ? this.scaleObject : this.objects.get (target));
+if (text == null) {
+var valign = 3;
+var halign = 4;
+if ("top" === target) {
+valign = 0;
+halign = 8;
+} else if ("middle" === target) {
+valign = 2;
+halign = 8;
+} else if ("bottom" === target) {
+valign = 1;
+} else if ("error" === target) {
+valign = 0;
+}text = JM.Text.newEcho (this.vwr, this.vwr.gdata.getFont3DFS ("Serif", 20), target, 10, valign, halign, 0);
+text.adjustForWindow = true;
+if (this.thisID === "%SCALE") this.scaleObject = text;
+ else this.objects.put (target, text);
+if (this.currentFont != null) text.setFont (this.currentFont, true);
+if (this.currentColor != null) text.colix = JU.C.getColixO (this.currentColor);
+if (this.currentBgColor != null) text.bgcolix = JU.C.getColixO (this.currentBgColor);
+if (this.currentTranslucentLevel != 0) text.setTranslucent (this.currentTranslucentLevel, false);
+if (this.currentBgTranslucentLevel != 0) text.setTranslucent (this.currentBgTranslucentLevel, true);
+}this.currentObject = text;
+if (this.thisID !== "%SCALE") this.thisID = null;
+return;
+}}if ("scalereference" === propertyName) {
 if (this.currentObject != null) {
 var val = (value).floatValue ();
 this.currentObject.setScalePixelsPerMicron (val == 0 ? 0 : 10000 / val);
@@ -34,11 +108,6 @@ if (this.currentObject != null) {
 for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.next ()) || true);) t.setImage (value);
 
 }return;
-}if ("thisID" === propertyName) {
-var target = value;
-this.currentObject = this.objects.get (target);
-if (this.currentObject == null && JU.PT.isWild (target)) this.thisID = target.toUpperCase ();
-return;
 }if ("hidden" === propertyName) {
 var isHidden = (value).booleanValue ();
 if (this.currentObject != null) {
@@ -51,20 +120,30 @@ for (var t, $t = this.objects.values ().iterator (); $t.hasNext () && ((t = $t.n
 if (this.currentObject != null) this.currentObject.setScript (value);
 return;
 }if ("xpos" === propertyName) {
-if (this.currentObject != null) this.currentObject.setMovableX ((value).intValue ());
-return;
+if (this.currentObject != null) {
+this.currentObject.setXYZ (null, true);
+this.currentObject.setMovableX ((value).intValue ());
+}return;
 }if ("ypos" === propertyName) {
-if (this.currentObject != null) this.currentObject.setMovableY ((value).intValue ());
-return;
+if (this.currentObject != null) {
+this.currentObject.setXYZ (null, true);
+this.currentObject.setMovableY ((value).intValue ());
+}return;
 }if ("%xpos" === propertyName) {
-if (this.currentObject != null) this.currentObject.setMovableXPercent ((value).intValue ());
-return;
+if (this.currentObject != null) {
+this.currentObject.setXYZ (null, true);
+this.currentObject.setMovableXPercent ((value).intValue ());
+}return;
 }if ("%ypos" === propertyName) {
-if (this.currentObject != null) this.currentObject.setMovableYPercent ((value).intValue ());
-return;
+if (this.currentObject != null) {
+this.currentObject.setXYZ (null, true);
+this.currentObject.setMovableYPercent ((value).intValue ());
+}return;
 }if ("%zpos" === propertyName) {
-if (this.currentObject != null) this.currentObject.setMovableZPercent ((value).intValue ());
-return;
+if (this.currentObject != null) {
+this.currentObject.setXYZ (null, true);
+this.currentObject.setMovableZPercent ((value).intValue ());
+}return;
 }if ("xypos" === propertyName) {
 if (this.currentObject != null) {
 var pt = value;
@@ -79,42 +158,21 @@ this.currentObject.setMovableYPercent (Clazz.floatToInt (pt.y));
 }if ("xyz" === propertyName) {
 if (this.currentObject != null) {
 this.currentObject.setXYZ (value, true);
+if (this.currentObject.pymolOffset == null) this.currentObject.pymolOffset =  Clazz.newFloatArray (-1, [-1, 2, 0, 0, 0, 0, 0]);
 }return;
-}if ("target" === propertyName) {
-this.thisID = null;
-var target = (value).intern ().toLowerCase ();
-if (target !== "none" && target !== "all") {
-this.isAll = false;
-var text = this.objects.get (target);
-if (text == null) {
-var valign = 3;
-var halign = 4;
-if ("top" === target) {
-valign = 0;
-halign = 8;
-} else if ("middle" === target) {
-valign = 2;
-halign = 8;
-} else if ("bottom" === target) {
-valign = 1;
-} else if ("error" === target) {
-valign = 0;
-}text = JM.Text.newEcho (this.vwr, this.vwr.gdata.getFont3DFS ("Serif", 20), target, 10, valign, halign, 0);
-text.adjustForWindow = true;
-this.objects.put (target, text);
-if (this.currentFont != null) text.setFont (this.currentFont, true);
-if (this.currentColor != null) text.colix = JU.C.getColixO (this.currentColor);
-if (this.currentBgColor != null) text.bgcolix = JU.C.getColixO (this.currentBgColor);
-if (this.currentTranslucentLevel != 0) text.setTranslucent (this.currentTranslucentLevel, false);
-if (this.currentBgTranslucentLevel != 0) text.setTranslucent (this.currentBgTranslucentLevel, true);
-}this.currentObject = text;
-return;
-}}this.setPropTS (propertyName, value, null);
+}if ("offset" === propertyName) {
+if (this.currentObject != null) {
+this.currentObject.pymolOffset = value;
+}return;
+}this.setPropTS (propertyName, value, null);
 }, "~S,~O,JU.BS");
 Clazz.overrideMethod (c$, "getPropertyData", 
 function (property, data) {
 if ("currentTarget" === property) {
 return (this.currentObject != null && (data[0] = this.currentObject.target) != null);
+}if (property === "%SCALE") {
+data[0] = this.scaleObject;
+return (data[0] != null);
 }if (property === "checkID") {
 var key = (data[0]).toUpperCase ();
 var isWild = JU.PT.isWild (key);
@@ -127,28 +185,27 @@ return true;
 return false;
 }return this.getPropShape (property, data);
 }, "~S,~A");
-Clazz.overrideMethod (c$, "getShapeState", 
-function () {
-return this.vwr.getShapeState (this);
-});
 Clazz.overrideMethod (c$, "getShapeDetail", 
 function () {
-var lst =  new JU.Lst ();
-var key =  new java.util.Hashtable ();
+var lst =  new java.util.Hashtable ();
 for (var e, $e = this.objects.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) {
 var info =  new java.util.Hashtable ();
 var t = e.getValue ();
 var name = e.getKey ();
-info.put ("name", name);
+info.put ("boxXY", t.boxXY);
+if (t.xyz != null) info.put ("xyz", t.xyz);
 var o = t.image;
-if (o != null) {
+if (o == null) {
+info.put ("text", t.text == null ? "" : t.text);
+} else {
 info.put ("imageFile", t.text);
 info.put ("imageWidth", Integer.$valueOf (this.vwr.apiPlatform.getImageWidth (o)));
 info.put ("imageHeight", Integer.$valueOf (this.vwr.apiPlatform.getImageHeight (o)));
-key.put (name, info);
-}}
-lst.addLast (key);
-return lst;
+}lst.put (name, info);
+}
+var lst2 =  new JU.Lst ();
+lst2.addLast (lst);
+return lst2;
 });
 Clazz.defineStatics (c$,
 "FONTFACE", "Serif",

@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.renderbio");
-Clazz.load (["J.renderbio.RocketsRenderer"], "J.renderbio.CartoonRenderer", ["J.api.Interface", "J.c.STR", "JM.ProteinStructure"], function () {
+Clazz.load (["J.renderbio.RocketsRenderer"], "J.renderbio.CartoonRenderer", ["J.api.Interface", "J.c.STR"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.nucleicRenderer = null;
 Clazz.instantialize (this, arguments);
@@ -12,7 +12,7 @@ if (this.nucleicRenderer == null) this.nucleicRenderer = J.api.Interface.getInte
 this.calcScreenControlPoints ();
 this.nucleicRenderer.renderNucleic (this);
 return;
-}var val = this.vwr.getBoolean (603979820);
+}var val = this.vwr.getBoolean (603979819);
 if (this.helixRockets != val) {
 bioShape.falsifyMesh ();
 this.helixRockets = val;
@@ -33,9 +33,7 @@ var thisStructure;
 var needRockets = (this.helixRockets || !this.renderArrowHeads);
 var doRockets = false;
 for (var i = this.monomerCount; --i >= 0; ) {
-if (this.monomers[i].getStructure () != null && !(Clazz.instanceOf (this.monomers[i].getStructure (), JM.ProteinStructure))) {
-System.out.println ("BUG HERE IN CARTOONRENDERER");
-}thisStructure = this.monomers[i].getStructure ();
+thisStructure = this.monomers[i].getStructure ();
 if (thisStructure !== previousStructure) {
 lastWasSheet = false;
 }previousStructure = thisStructure;

@@ -11,13 +11,17 @@ this.asc.newAtomSet ();
 var s = "";
 while (this.rd () != null) s += this.line;
 
-s = JU.PT.replaceAllCharacters (s, "\" ", "").$replace (',', ':');
+s = JU.PT.replaceAllCharacters (s, "\" \t", "").$replace (',', ':');
 if (s.contains ("_is2D:true")) this.set2D ();
 if (s.contains ("_scale:")) this.getScaling (this.getSection (s, "_scale", false));
 s = JU.PT.replaceAllCharacters (s, "}", "").$replace (',', ':');
+if (s.indexOf ("atomArray:[") >= 0) {
+this.readAtomArray (this.getSection (s, "atomArray", true));
+this.readBondArray (this.getSection (s, "bondArray", true));
+} else {
 this.readAtoms (this.getSection (s, "a", true));
 this.readBonds (this.getSection (s, "b", true));
-this.continuing = false;
+}this.continuing = false;
 });
 Clazz.defineMethod (c$, "getScaling", 
  function (s) {
@@ -119,6 +123,78 @@ break;
 }
 
 this.asc.addBond ( new J.adapter.smarter.Bond (b, e, order));
+}
+}, "~A");
+Clazz.defineMethod (c$, "readAtomArray", 
+ function (atoms) {
+for (var i = 0; i < atoms.length; ++i) {
+var lxyz = JU.PT.split (atoms[i], ":");
+var atom = this.asc.addNewAtom ();
+var x = 0;
+var y = 0;
+var z = 0;
+var l = "C";
+for (var j = 0; j < lxyz.length; j += 2) {
+switch (lxyz[j].charAt (0)) {
+case 'x':
+x = this.parseFloatStr (lxyz[j + 1]);
+break;
+case 'y':
+y = this.parseFloatStr (lxyz[j + 1]);
+break;
+case 'z':
+z = this.parseFloatStr (lxyz[j + 1]);
+break;
+case 'e':
+l = lxyz[j + 1];
+break;
+}
+}
+if (this.scale != null) {
+x /= this.scale.x;
+y /= this.scale.y;
+z /= this.scale.z;
+}this.setAtomCoordXYZ (atom, x, y, z);
+atom.elementSymbol = l;
+}
+}, "~A");
+Clazz.defineMethod (c$, "readBondArray", 
+ function (bonds) {
+for (var i = 0; i < bonds.length; ++i) {
+var beo = JU.PT.split (bonds[i], ":");
+var b = 0;
+var e = 0;
+var order = 1;
+for (var j = 0; j < beo.length; j += 2) {
+if (beo[j].length > 1) {
+switch (beo[j].charAt (1)) {
+case '1':
+b = this.parseIntStr (beo[j + 1]) - 1;
+break;
+case '2':
+e = this.parseIntStr (beo[j + 1]) - 1;
+break;
+case 'y':
+var type = beo[j + 1];
+switch (type.charAt (0)) {
+case 'D':
+order = 2;
+break;
+case 'A':
+order = 1;
+break;
+case 'S':
+default:
+order = 1;
+break;
+}
+break;
+}
+} else {
+System.err.println ("JSONReader error bond tag " + beo[j]);
+}}
+if (b >= this.asc.ac || e >= this.asc.ac) System.err.println ("JSONReader error bond referencing atoms " + b + " " + e + " atomCount=" + this.asc.ac + " for " + this.fileName);
+ else this.asc.addBond ( new J.adapter.smarter.Bond (b, e, order));
 }
 }, "~A");
 });
