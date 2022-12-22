@@ -54,8 +54,8 @@ if (strpos($browser, 'firefox')) {
 $wwwroot = $CFG->wwwroot;
 $url = required_param('u', PARAM_URL);
 $pathname = $url;
-$filestem = $_GET['n'];
-$filetype = $_GET['f'];
+$filestem = required_param('n', PARAM_TEXT);
+$filetype = required_param('f', PARAM_TEXT);
 $filetypeargs = explode('.', $filetype);
 $filetypeend = array_pop($filetypeargs);
 if (!$filetypeargs) {
@@ -68,12 +68,12 @@ if ($filetypeend == 'png' || $filetypeend == 'gz' || $filetypeend == 'pse') {
     $binary = true;
 }
 $filename = $filestem.'.'.$filetype;
-$lang = $_GET['l'];
-$initscript = $_GET['i'];
-$controls = $_GET['c'];
-$id = $_GET['id'];
-$technol = $_GET['_USE'];
-$defer = $_GET['DEFER'];
+$lang = required_param('l', PARAM_ALPHAEXT);
+$initscript = optional_param('i', '', PARAM_RAW);
+$controls = optional_param('c', '', PARAM_ALPHANUM);
+$id = required_param('id', PARAM_INT);
+$technol = optional_param('_USE', 'HTML5', PARAM_ALPHANUM);
+$defer = optional_param('DEFER', '', PARAM_RAW);
 $coverpath = $wwwroot.'/filter/jmol/pix/Jmol_icon_256_colour.png';
 if ($filetypeend == 'png') {
     $coverpath = $pathname;
