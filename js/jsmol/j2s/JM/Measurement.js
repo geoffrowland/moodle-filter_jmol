@@ -18,7 +18,9 @@ this.count = 0;
 this.countPlusIndices = null;
 this.pts = null;
 this.value = 0;
+this.property = null;
 this.strFormat = null;
+this.units = null;
 this.text = null;
 this.vwr = null;
 this.strMeasurement = null;
@@ -26,6 +28,11 @@ this.type = null;
 this.tainted = false;
 this.renderAxis = null;
 this.renderArc = null;
+this.newUnits = null;
+this.fixedValue = NaN;
+this.isPending = false;
+this.inFront = false;
+this.useDefaultLabel = false;
 Clazz.instantialize (this, arguments);
 }, JM, "Measurement");
 Clazz.prepareFields (c$, function () {
@@ -48,14 +55,19 @@ this.pts = m.pts;
 this.mad = m.mad;
 this.thisID = m.thisID;
 this.text = m.text;
-if (this.thisID != null && this.text != null) this.labelColix = this.text.colix;
+this.property = m.property;
+this.units = m.units;
+if (this.property == null && "+hz".equals (this.units)) {
+this.property = "property_J";
+}if (this.thisID != null && this.text != null) this.labelColix = this.text.colix;
 }if (this.pts == null) this.pts =  new Array (4);
 var indices = (m == null ? null : m.countPlusIndices);
 this.count = (indices == null ? 0 : indices[0]);
 if (this.count > 0) {
 System.arraycopy (indices, 0, this.countPlusIndices, 0, this.count + 1);
 this.isTrajectory = modelSet.isTrajectoryMeasurement (this.countPlusIndices);
-}this.value = (Float.isNaN (value) || this.isTrajectory ? this.getMeasurement (null) : value);
+}this.isPending = Float.isNaN (value);
+this.value = (this.isPending || this.isTrajectory ? this.getMeasurement (null) : value);
 this.formatMeasurement (null);
 return this;
 }, "JM.ModelSet,JM.Measurement,~N,~N,~S,~N");
@@ -93,6 +105,10 @@ return (this.count > 0 ? this.countPlusIndices[this.count] : -1);
 Clazz.defineMethod (c$, "getString", 
 function () {
 return this.strMeasurement;
+});
+Clazz.overrideMethod (c$, "toString", 
+function () {
+return this.getString ();
 });
 Clazz.defineMethod (c$, "getStringUsing", 
 function (vwr, strFormat, units) {
@@ -145,61 +161,82 @@ return;
 }, "~S");
 Clazz.defineMethod (c$, "reformatDistanceIfSelected", 
 function () {
-if (this.count != 2) return;
-if (this.vwr.slm.isSelected (this.countPlusIndices[1]) && this.vwr.slm.isSelected (this.countPlusIndices[2])) this.formatMeasurement (null);
-});
+if (this.count == 2 && this.vwr.slm.isSelected (this.countPlusIndices[1]) && this.vwr.slm.isSelected (this.countPlusIndices[2])) {
+var pt;
+if (this.useDefaultLabel && this.strFormat != null && (pt = this.strFormat.indexOf ("//")) >= 0) this.strFormat = this.strFormat.substring (0, pt);
+this.formatMeasurement (null);
+}});
 Clazz.defineMethod (c$, "formatDistance", 
  function (units) {
 var label = this.getLabelString ();
 if (label == null) return "";
-if (units == null) {
 var pt = this.strFormat.indexOf ("//");
-units = (pt >= 0 ? this.strFormat.substring (pt + 2) : null);
 if (units == null) {
-units = this.vwr.g.measureDistanceUnits;
-this.strFormat += "//" + units;
-}}units = JM.Measurement.fixUnits (units);
-var pt = label.indexOf ("//");
+units = this.units;
+if (units == null) {
+if (pt >= 0) {
+units = this.strFormat.substring (pt + 2);
+this.strFormat = this.strFormat.substring (0, pt);
+} else {
+units = (this.property == null ? this.vwr.g.measureDistanceUnits : "");
+}}} else if (pt >= 0) {
+this.strFormat = this.strFormat.substring (0, pt);
+}this.strFormat += "//" + units;
+units = JM.Measurement.fixUnits (units);
+pt = label.indexOf ("//");
 if (pt >= 0) {
 label = label.substring (0, pt);
 if (label.length == 0) label = "%VALUE";
 }var f = this.fixValue (units, (label.indexOf ("%V") >= 0));
-return this.formatString (f, units, label);
-}, "~S");
-c$.fixUnits = Clazz.defineMethod (c$, "fixUnits", 
- function (units) {
-if (units.equals ("nanometers")) return "nm";
- else if (units.equals ("picometers")) return "pm";
- else if (units.equals ("angstroms")) return "\u00C5";
- else if (units.equals ("vanderwaals") || units.equals ("vdw")) return "%";
-return units;
+return this.formatString (f, this.newUnits, label);
 }, "~S");
 Clazz.defineMethod (c$, "fixValue", 
 function (units, andRound) {
+this.checkJ (units);
+if (units != null && units.startsWith ("+")) {
+if (!this.isPending) this.value = Math.abs (this.value);
+units = units.substring (1);
+}this.newUnits = units;
 if (this.count != 2) return this.value;
 var dist = this.value;
+if (units == null && this.property != null) units = "";
 if (units != null) {
 var isPercent = units.equals ("%");
-if (isPercent || units.endsWith ("hz")) {
+if (this.property == null && (isPercent || units.endsWith ("hz"))) {
 var i1 = this.getAtomIndex (1);
 var i2 = this.getAtomIndex (2);
 if (i1 >= 0 && i2 >= 0) {
 var a1 = this.getAtom (1);
 var a2 = this.getAtom (2);
-var isDC = (!isPercent && JM.Measurement.nmrType (units) == 1);
-this.type = (isPercent ? "percent" : isDC ? "dipoleCouplingConstant" : "J-CouplingConstant");
+var itype = JM.Measurement.nmrType (units);
+var isDC = (!isPercent && itype == 1);
+this.type = (isPercent ? "percent" : isDC ? "dipoleCouplingConstant" : itype == 3 ? "NOE or 3JHH" : "J-CouplingConstant");
+if (itype == 3) {
+var result = this.vwr.getNMRCalculation ().getNOEorJHH ( Clazz.newArray (-1, [a1, null, null, a2]), 11);
+if (result == null) {
+dist = NaN;
+this.newUnits = units = "";
+} else {
+dist = result[1];
+units = this.newUnits = (result.length == 2 ? "noe" : "hz");
+}} else {
 dist = (isPercent ? dist / (a1.getVanderwaalsRadiusFloat (this.vwr, J.c.VDW.AUTO) + a2.getVanderwaalsRadiusFloat (this.vwr, J.c.VDW.AUTO)) : isDC ? this.vwr.getNMRCalculation ().getDipolarConstantHz (a1, a2) : this.vwr.getNMRCalculation ().getIsoOrAnisoHz (true, a1, a2, units, null));
-this.$isValid = !Float.isNaN (dist);
+}this.$isValid = !Float.isNaN (dist);
 if (isPercent) units = "pm";
-}}if (units.equals ("nm")) return (andRound ? Math.round (dist * 100) / 1000 : dist / 10);
-if (units.equals ("pm")) return (andRound ? Math.round (dist * 1000) / 10 : dist * 100);
-if (units.equals ("au")) return (andRound ? Math.round (dist / 0.5291772 * 1000) / 1000 : dist / 0.5291772);
-if (units.endsWith ("khz")) return (andRound ? Math.round (dist / 10) / 100 : dist / 1000);
+}}return JM.Measurement.toUnits (dist, units, andRound);
 }return (andRound ? Math.round (dist * 100) / 100 : dist);
 }, "~S,~B");
+Clazz.defineMethod (c$, "checkJ", 
+ function (units) {
+if (this.property != null || units != null || this.units != null) return;
+units = this.vwr.g.measureDistanceUnits;
+if ("+hz".equals (units)) {
+this.property = "property_J";
+this.units = units;
+}}, "~S");
 c$.nmrType = Clazz.defineMethod (c$, "nmrType", 
 function (units) {
-return (units.indexOf ("hz") < 0 ? 0 : units.startsWith ("dc_") || units.equals ("khz") ? 1 : 2);
+return (units.indexOf ("hz") < 0 ? 0 : units.equals ("noe_hz") ? 3 : units.startsWith ("dc_") || units.equals ("khz") ? 1 : 2);
 }, "~S");
 Clazz.defineMethod (c$, "formatAngle", 
  function (angle) {
@@ -209,7 +246,8 @@ return this.formatString (angle, "\u00B0", label);
 }, "~N");
 Clazz.defineMethod (c$, "getLabelString", 
  function () {
-var s = this.countPlusIndices[0] + ":";
+var atomCount = this.countPlusIndices[0];
+var s = atomCount + ":";
 var label = null;
 if (this.strFormat != null) {
 if (this.strFormat.length == 0) return null;
@@ -217,6 +255,7 @@ label = (this.strFormat.length > 2 && this.strFormat.indexOf (s) == 0 ? this.str
 }if (label == null) {
 this.strFormat = null;
 label = this.vwr.getDefaultMeasurementLabel (this.countPlusIndices[0]);
+this.useDefaultLabel = true;
 }if (label.indexOf (s) == 0) label = label.substring (2);
 if (this.strFormat == null) this.strFormat = s + label;
 return label;
@@ -256,8 +295,28 @@ Clazz.defineMethod (c$, "sameAs",
 function (i, j) {
 return this.sameAsIJ (this.countPlusIndices, this.pts, i, j);
 }, "~N,~N");
+Clazz.defineMethod (c$, "getPropMeasurement", 
+function (pts) {
+if (this.countPlusIndices == null || this.count != 2) return NaN;
+for (var i = this.count; --i >= 0; ) if (this.countPlusIndices[i + 1] < 0) {
+return NaN;
+}
+try {
+var ptA = (pts == null ? this.getAtom (1) : pts[0]);
+var ptB = (pts == null ? this.getAtom (2) : pts[1]);
+var props = this.vwr.getDataObj (this.property, null, 2);
+var ia = ptA.i;
+var ib = ptB.i;
+return (props == null || ib >= props.length || ia >= props.length ? NaN : props[ia][ib]);
+} catch (t) {
+return NaN;
+}
+}, "~A");
 Clazz.defineMethod (c$, "getMeasurement", 
 function (pts) {
+this.checkJ (null);
+if (!Float.isNaN (this.fixedValue)) return this.fixedValue;
+if (this.property != null) return this.getPropMeasurement (pts);
 if (this.countPlusIndices == null) return NaN;
 if (this.count < 2) return NaN;
 for (var i = this.count; --i >= 0; ) if (this.countPlusIndices[i + 1] == -1) {
@@ -319,7 +378,7 @@ Clazz.defineMethod (c$, "getInfoAsString",
 function (units) {
 var f = this.fixValue (units, true);
 var sb =  new JU.SB ();
-sb.append (this.count == 2 ? (this.type == null ? "distance" : this.type) : this.count == 3 ? "angle" : "dihedral");
+sb.append (this.count == 2 ? (this.property != null ? this.property : this.type == null ? "distance" : this.type) : this.count == 3 ? "angle" : "dihedral");
 sb.append (" \t").appendF (f);
 sb.append (" \t").append (JU.PT.esc (this.strMeasurement));
 for (var i = 1; i <= this.count; i++) sb.append (" \t").append (this.getLabel (i, false, false));
@@ -359,8 +418,71 @@ var key = (n1.compareTo (n2) < 0 ? n1 + n2 : n2 + n1);
 var min = htMin.get (key);
 return (min != null && d == min.intValue ());
 }, "java.util.Map");
+c$.isUnits = Clazz.defineMethod (c$, "isUnits", 
+function (s) {
+return (JU.PT.isOneOf ((s.startsWith ("+") ? s.substring (1) : s).toLowerCase (), ";nm;nanometers;pm;picometers;angstroms;angstroms;ang;\u00C5;au;vanderwaals;vdw;%;noe;") || s.indexOf (" ") < 0 && s.endsWith ("hz"));
+}, "~S");
+c$.toUnits = Clazz.defineMethod (c$, "toUnits", 
+function (dist, units, andRound) {
+if (Float.isNaN (dist)) return NaN;
+if (units.equals ("hz")) return (andRound ? Math.round (dist * 10) / 10 : dist);
+if (units.equals ("nm")) return (andRound ? Math.round (dist * 100) / 1000 : dist / 10);
+if (units.equals ("pm")) return (andRound ? Math.round (dist * 1000) / 10 : dist * 100);
+if (units.equals ("au")) return (andRound ? Math.round (dist / 0.5291772 * 1000) / 1000 : dist / 0.5291772);
+if (units.endsWith ("khz")) return (andRound ? Math.round (dist / 10) / 100 : dist / 1000);
+return (andRound ? Math.round (dist * 100) / 100 : dist);
+}, "~N,~S,~B");
+c$.fromUnits = Clazz.defineMethod (c$, "fromUnits", 
+function (dist, units) {
+if (units.equals ("nm")) return dist * 10;
+if (units.equals ("pm")) return dist / 100;
+if (units.equals ("au")) return dist * 0.5291772;
+if (units.equals ("\u00C5")) return dist;
+return 0;
+}, "~N,~S");
+c$.fixUnits = Clazz.defineMethod (c$, "fixUnits", 
+function (u) {
+var units = (u.endsWith ("s") ? u.substring (0, u.length - 1) : u);
+if (units.equals ("nanometer")) return "nm";
+ else if (units.equals ("bohr") || units.equals ("atomicunits") || units.equals ("atomic")) return "au";
+ else if (units.equals ("picometer")) return "pm";
+ else if (units.equals ("\u00E5") || units.equals ("angstrom") || units.equals ("a") || units.equals ("ang")) return "\u00C5";
+ else if (units.equals ("vanderwaal") || units.equals ("vdw")) return "%";
+return u;
+}, "~S");
+Clazz.defineMethod (c$, "getStrFormatForState", 
+function () {
+return (this.useDefaultLabel ? null : this.strFormat);
+});
+Clazz.defineMethod (c$, "setFromMD", 
+function (md, andText) {
+if (md.thisID != null) {
+this.thisID = md.thisID;
+this.mad = md.mad;
+if (md.colix != 0) this.colix = md.colix;
+this.strFormat = md.strFormat;
+this.text = md.text;
+}this.units = md.units;
+this.property = md.property;
+this.fixedValue = md.fixedValue;
+if (!andText) return;
+if (md.colix != 0) this.colix = md.colix;
+if (md.mad != 0) this.mad = md.mad;
+if (md.strFormat != null) {
+this.strFormat = this.strFormat.substring (0, 2) + md.strFormat.substring (2);
+}if (md.text != null) {
+if (this.text == null) {
+this.text = md.text;
+} else {
+if (md.text.font != null) this.text.font = md.text.font;
+this.text.text = null;
+if (md.text.align != 0) this.text.align = md.text.align;
+if (md.colix != 0) this.labelColix = this.text.colix = md.text.colix;
+}}this.formatMeasurement (null);
+}, "JM.MeasurementData,~B");
 Clazz.defineStatics (c$,
 "NMR_NOT", 0,
 "NMR_DC", 1,
-"NMR_JC", 2);
+"NMR_JC", 2,
+"NMR_NOE_OR_J", 3);
 });

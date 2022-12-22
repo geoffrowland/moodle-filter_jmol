@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.shape");
-Clazz.load (["J.shape.FontLineShape", "JU.P3", "$.V3"], "J.shape.Axes", ["java.lang.Boolean", "JU.PT", "$.SB", "JU.Escape", "JV.JC"], function () {
+Clazz.load (["J.shape.FontLineShape", "JU.P3", "$.V3"], "J.shape.Axes", ["java.lang.Boolean", "JU.PT", "JU.Escape", "JV.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.axisXY = null;
 this.scale = 0;
@@ -8,9 +8,9 @@ this.originPoint = null;
 this.axisPoints = null;
 this.labels = null;
 this.axisType = null;
+this.axes2 = null;
 this.pt0 = null;
 this.fixedOriginUC = null;
-this.ptTemp = null;
 this.corner = null;
 Clazz.instantialize (this, arguments);
 }, J.shape, "Axes", J.shape.FontLineShape);
@@ -23,7 +23,6 @@ for (var i = 6; --i >= 0; ) this.axisPoints[i] =  new JU.P3 ();
 
 }this.pt0 =  new JU.P3 ();
 this.fixedOriginUC =  new JU.P3 ();
-this.ptTemp =  new JU.P3 ();
 this.corner =  new JU.V3 ();
 });
 Clazz.overrideMethod (c$, "setProperty", 
@@ -52,18 +51,28 @@ this.labels =  Clazz.newArray (-1, ["", "", ""]);
 return;
 }if ("type" === propertyName) {
 this.axisType = value;
-if (this.axisType.equals ("abc")) this.axisType = null;
+if ("abc".equals (this.axisType)) this.axisType = null;
+}if ("axes2" === propertyName) {
+this.axes2 = (value == null || value.equals ("") ? null : value);
+return;
 }this.setPropFLS (propertyName, value);
 }, "~S,~O,JU.BS");
 Clazz.overrideMethod (c$, "initShape", 
 function () {
 this.translucentAllowed = false;
 this.myType = "axes";
-this.font3d = this.vwr.gdata.getFont3D (14);
-var axesMode = this.vwr.g.axesMode;
-if (axesMode == 603979808 && this.ms.unitCells != null) {
-var unitcell = this.vwr.getCurrentUnitCell ();
-if (unitcell != null) {
+this.font3d = this.vwr.gdata.getFont3D (16);
+this.setPoints (this.vwr.g.axesMode);
+});
+Clazz.defineMethod (c$, "setPoints", 
+function (axesMode) {
+var unitcell;
+if (axesMode != 603979808 || this.ms.unitCells == null || (unitcell = this.vwr.getCurrentUnitCell ()) == null) {
+this.originPoint.setT (this.fixedOrigin != null ? this.fixedOrigin : axesMode == 603979809 ? this.vwr.getBoundBoxCenter () : this.pt0);
+this.setScale (this.vwr.getFloat (570425346) / 2);
+return;
+}var fset = unitcell.getUnitCellMultiplier ();
+unitcell = unitcell.getUnitCellMultiplied ();
 var voffset = this.vwr.getFloat (570425345);
 this.fixedOriginUC.set (voffset, voffset, voffset);
 var offset = unitcell.getCartesianOffset ();
@@ -73,14 +82,12 @@ if (voffset != 0) unitcell.toCartesian (this.fixedOriginUC, false);
  else if (this.fixedOrigin != null) this.originPoint.setT (this.fixedOrigin);
 if (voffset != 0) {
 this.originPoint.add (this.fixedOriginUC);
-}this.scale = this.vwr.getFloat (570425346) / 2;
-this.axisPoints[0].scaleAdd2 (this.scale, vertices[4], this.originPoint);
-this.axisPoints[1].scaleAdd2 (this.scale, vertices[2], this.originPoint);
-this.axisPoints[2].scaleAdd2 (this.scale, vertices[1], this.originPoint);
-return;
-}}this.originPoint.setT (this.fixedOrigin != null ? this.fixedOrigin : axesMode == 603979810 ? this.vwr.getBoundBoxCenter () : this.pt0);
-this.setScale (this.vwr.getFloat (570425346) / 2);
-});
+}var scale = this.scale = this.vwr.getFloat (570425346) / 2;
+if (fset != null && fset.z > 0) scale *= Math.abs (fset.z);
+this.axisPoints[0].scaleAdd2 (scale, vertices[4], this.originPoint);
+this.axisPoints[1].scaleAdd2 (scale, vertices[2], this.originPoint);
+this.axisPoints[2].scaleAdd2 (scale, vertices[1], this.originPoint);
+}, "~N");
 Clazz.defineMethod (c$, "reinitShape", 
 function () {
 var f = this.font3d;
@@ -88,12 +95,14 @@ this.initShape ();
 if (f != null) this.font3d = f;
 });
 Clazz.defineMethod (c$, "getAxisPoint", 
-function (i, isDataFrame) {
-if (!isDataFrame && this.axisXY.z == 0) return this.axisPoints[i];
-this.ptTemp.sub2 (this.axisPoints[i], this.originPoint);
-this.ptTemp.scale (0.5);
-return this.ptTemp;
-}, "~N,~B");
+function (i, unscaled, ptTemp) {
+if (unscaled) {
+ptTemp.setT (this.axisPoints[i]);
+} else {
+ptTemp.sub2 (this.axisPoints[i], this.originPoint);
+ptTemp.scale (0.5);
+}return ptTemp;
+}, "~N,~B,JU.P3");
 Clazz.overrideMethod (c$, "getProperty", 
 function (property, index) {
 if (property === "origin") return this.fixedOrigin;
@@ -117,12 +126,13 @@ axisPoint.z *= this.corner.z * scale;
 }axisPoint.add (this.originPoint);
 }
 }, "~N");
-Clazz.overrideMethod (c$, "getShapeState", 
-function () {
-var sb =  new JU.SB ();
+Clazz.defineMethod (c$, "getAxesState", 
+function (sb) {
 sb.append ("  axes scale ").appendF (this.vwr.getFloat (570425346)).append (";\n");
 if (this.fixedOrigin != null) sb.append ("  axes center ").append (JU.Escape.eP (this.fixedOrigin)).append (";\n");
-if (this.axisXY.z != 0) sb.append ("  axes position [").appendI (Clazz.floatToInt (this.axisXY.x)).append (" ").appendI (Clazz.floatToInt (this.axisXY.y)).append (" ").append (this.axisXY.z < 0 ? " %" : "").append ("];\n");
+if (this.axisXY.z != 0) sb.append ("  axes position [").appendI (Clazz.floatToInt (this.axisXY.x)).append (" ").appendI (Clazz.floatToInt (this.axisXY.y)).append (" ").append (this.axisXY.z < 0 ? " %" : "").append ("]");
+if (this.axes2 != null) sb.append (" ").append (JU.PT.esc (this.axes2));
+sb.append (";\n");
 if (this.labels != null) {
 sb.append ("  axes labels ");
 for (var i = 0; i < this.labels.length; i++) if (this.labels[i] != null) sb.append (JU.PT.esc (this.labels[i])).append (" ");
@@ -130,8 +140,8 @@ for (var i = 0; i < this.labels.length; i++) if (this.labels[i] != null) sb.appe
 sb.append (";\n");
 }if (this.axisType != null) {
 sb.append ("  axes type " + JU.PT.esc (this.axisType));
-}return this.getShapeStateFL () + sb;
-});
+}return sb.toString ();
+}, "JU.SB");
 Clazz.defineStatics (c$,
 "MIN_AXIS_LEN", 1.5);
 });

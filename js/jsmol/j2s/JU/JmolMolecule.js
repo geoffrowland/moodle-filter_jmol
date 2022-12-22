@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JU");
-Clazz.load (["JU.Elements"], "JU.JmolMolecule", ["java.lang.Character", "java.util.Hashtable", "JU.AU", "$.BS", "$.PT", "JU.BNode"], function () {
+Clazz.load (["JU.Elements"], "JU.JmolMolecule", ["java.lang.Character", "java.util.Hashtable", "JU.AU", "$.BS", "$.PT"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.nodes = null;
 this.moleculeIndex = 0;
@@ -14,6 +14,7 @@ this.elementNumberMax = 0;
 this.altElementMax = 0;
 this.mf = null;
 this.atomList = null;
+this.atNos = null;
 Clazz.instantialize (this, arguments);
 }, JU, "JmolMolecule");
 Clazz.prepareFields (c$, function () {
@@ -33,10 +34,11 @@ var moleculeCount = 0;
 var molecules =  new Array (4);
 if (bsExclude == null) bsExclude =  new JU.BS ();
 for (var i = 0; i < atoms.length; i++) if (!bsExclude.get (i) && !bsBranch.get (i)) {
-if (atoms[i].isDeleted ()) {
+var a = atoms[i];
+if (a == null || a.isDeleted ()) {
 bsExclude.set (i);
 continue;
-}var modelIndex = atoms[i].getModelIndex ();
+}var modelIndex = a.getModelIndex ();
 if (modelIndex != thisModelIndex) {
 thisModelIndex = modelIndex;
 indexInModel = 0;
@@ -52,7 +54,7 @@ function (atoms, atomIndex, bsToTest, biobranches, atomIndexNot, allowCyclic, al
 var bs = JU.BS.newN (atoms.length);
 if (atomIndex < 0) return bs;
 if (atomIndexNot >= 0) bsToTest.clear (atomIndexNot);
-return (JU.JmolMolecule.getCovalentlyConnectedBitSet (atoms, atoms[atomIndex], bsToTest, allowCyclic, allowBioResidue, biobranches, bs) ? bs :  new JU.BS ());
+return (JU.JmolMolecule.getCovalentlyConnectedBitSet (atoms, atoms[atomIndex], bsToTest, allowCyclic, allowBioResidue, biobranches, bs, null, null) ? bs :  new JU.BS ());
 }, "~A,~N,JU.BS,JU.Lst,~N,~B,~B");
 c$.addMolecule = Clazz.defineMethod (c$, "addMolecule", 
 function (molecules, iMolecule, atoms, iAtom, bsBranch, modelIndex, indexInModel, bsExclude) {
@@ -61,40 +63,53 @@ if (iMolecule == molecules.length) molecules = JU.JmolMolecule.allocateArray (mo
 molecules[iMolecule] = JU.JmolMolecule.initialize (atoms, iMolecule, iAtom, bsBranch, modelIndex, indexInModel);
 return molecules;
 }, "~A,~N,~A,~N,JU.BS,~N,~N,JU.BS");
-c$.getMolecularFormula = Clazz.defineMethod (c$, "getMolecularFormula", 
-function (atoms, bsSelected, includeMissingHydrogens, wts, isEmpirical) {
+c$.getMolecularFormulaAtoms = Clazz.defineMethod (c$, "getMolecularFormulaAtoms", 
+function (atoms, bsSelected, wts, isEmpirical) {
 var m =  new JU.JmolMolecule ();
 m.nodes = atoms;
 m.atomList = bsSelected;
-return m.getMolecularFormula (includeMissingHydrogens, wts, isEmpirical);
-}, "~A,JU.BS,~B,~A,~B");
+return m.getMolecularFormula (false, wts, isEmpirical);
+}, "~A,JU.BS,~A,~B");
 Clazz.defineMethod (c$, "getMolecularFormula", 
+function (includeMissingHydrogens, wts, isEmpirical) {
+return this.getMolecularFormulaImpl (includeMissingHydrogens, wts, isEmpirical);
+}, "~B,~A,~B");
+Clazz.defineMethod (c$, "getMolecularFormulaImpl", 
 function (includeMissingHydrogens, wts, isEmpirical) {
 if (this.mf != null) return this.mf;
 if (this.atomList == null) {
 this.atomList =  new JU.BS ();
-this.atomList.setBits (0, this.nodes.length);
+this.atomList.setBits (0, this.atNos == null ? this.nodes.length : this.atNos.length);
 }this.elementCounts =  Clazz.newIntArray (JU.Elements.elementNumberMax, 0);
 this.altElementCounts =  Clazz.newIntArray (JU.Elements.altElementMax, 0);
 this.ac = this.atomList.cardinality ();
+this.nElements = 0;
 for (var p = 0, i = this.atomList.nextSetBit (0); i >= 0; i = this.atomList.nextSetBit (i + 1), p++) {
-var n = this.nodes[i].getAtomicAndIsotopeNumber ();
-var f = (wts == null ? 1 : Clazz.floatToInt (8 * wts[p]));
+var n;
+var node = null;
+if (this.atNos == null) {
+node = this.nodes[i];
+if (node == null) continue;
+n = node.getAtomicAndIsotopeNumber ();
+} else {
+n = this.atNos[i];
+}var f = (wts == null ? 1 : Clazz.floatToInt (8 * wts[p]));
 if (n < JU.Elements.elementNumberMax) {
 if (this.elementCounts[n] == 0) this.nElements++;
 this.elementCounts[n] += f;
 this.elementNumberMax = Math.max (this.elementNumberMax, n);
-if (includeMissingHydrogens) {
-var nH = this.nodes[i].getImplicitHydrogenCount ();
-if (nH > 0) {
-if (this.elementCounts[1] == 0) this.nElements++;
-this.elementCounts[1] += nH * f;
-}}} else {
+} else {
 n = JU.Elements.altElementIndexFromNumber (n);
 if (this.altElementCounts[n] == 0) this.nElements++;
 this.altElementCounts[n] += f;
 this.altElementMax = Math.max (this.altElementMax, n);
-}}
+}if (includeMissingHydrogens) {
+var nH = Math.max (0, node.getImplicitHydrogenCount ()) + Math.max (node.getExplicitHydrogenCount (), 0);
+if (nH > 0) {
+if (this.elementCounts[1] == 0) this.nElements++;
+this.elementCounts[1] += nH * f;
+this.elementNumberMax = Math.max (this.elementNumberMax, 1);
+}}}
 if (wts != null) for (var i = 1; i <= this.elementNumberMax; i++) {
 var c = Clazz.doubleToInt (this.elementCounts[i] / 8);
 if (c * 8 != this.elementCounts[i]) return "?";
@@ -150,10 +165,10 @@ jm.indexInModel = indexInModel;
 return jm;
 }, "~A,~N,~N,JU.BS,~N,~N");
 c$.getCovalentlyConnectedBitSet = Clazz.defineMethod (c$, "getCovalentlyConnectedBitSet", 
- function (atoms, atom, bsToTest, allowCyclic, allowBioResidue, biobranches, bsResult) {
+ function (atoms, atom, bsToTest, allowCyclic, allowBioResidue, biobranches, bsResult, origAtom, prevAtom) {
 var atomIndex = atom.getIndex ();
 if (!bsToTest.get (atomIndex)) return allowCyclic;
-if (!allowBioResidue && Clazz.instanceOf (atom, JU.BNode) && (atom).getBioStructureTypeName ().length > 0) return allowCyclic;
+if (!allowBioResidue && atom.getBioStructureTypeName ().length > 0) return allowCyclic;
 bsToTest.clear (atomIndex);
 if (biobranches != null && !bsResult.get (atomIndex)) {
 for (var i = biobranches.size (); --i >= 0; ) {
@@ -163,8 +178,9 @@ bsResult.or (b);
 bsToTest.andNot (b);
 for (var j = b.nextSetBit (0); j >= 0; j = b.nextSetBit (j + 1)) {
 var atom1 = atoms[j];
+if (atom1 == null) continue;
 bsToTest.set (j);
-JU.JmolMolecule.getCovalentlyConnectedBitSet (atoms, atom1, bsToTest, allowCyclic, allowBioResidue, biobranches, bsResult);
+JU.JmolMolecule.getCovalentlyConnectedBitSet (atoms, atom1, bsToTest, allowCyclic, allowBioResidue, biobranches, bsResult, origAtom, atom);
 bsToTest.clear (j);
 }
 break;
@@ -174,10 +190,14 @@ var bonds = atom.getEdges ();
 if (bonds == null) return true;
 for (var i = bonds.length; --i >= 0; ) {
 var bond = bonds[i];
-if (bond != null && bond.isCovalent () && !JU.JmolMolecule.getCovalentlyConnectedBitSet (atoms, bond.getOtherAtomNode (atom), bsToTest, allowCyclic, allowBioResidue, biobranches, bsResult)) return false;
-}
+if (bond != null && bond.isCovalent ()) {
+var n = bond.getOtherNode (atom);
+if (n === prevAtom) continue;
+if (n === origAtom) return false;
+if (!JU.JmolMolecule.getCovalentlyConnectedBitSet (atoms, n, bsToTest, allowCyclic, allowBioResidue, biobranches, bsResult, origAtom, atom)) return false;
+}}
 return true;
-}, "~A,JU.Node,JU.BS,~B,~B,JU.Lst,JU.BS");
+}, "~A,JU.Node,JU.BS,~B,~B,JU.Lst,JU.BS,JU.Node,JU.Node");
 c$.allocateArray = Clazz.defineMethod (c$, "allocateArray", 
  function (molecules, len) {
 return (len == molecules.length ? molecules : JU.AU.arrayCopyObject (molecules, len));
@@ -208,4 +228,25 @@ for (var e, $e = map.values ().iterator (); $e.hasNext () && ((e = $e.next ()) |
 
 return bs;
 }, "~A,JU.BS,~S");
+c$.getBranchesForInversion = Clazz.defineMethod (c$, "getBranchesForInversion", 
+function (at, atomIndex, bsToTest) {
+var bs =  new JU.BS ();
+var a = at[atomIndex];
+var bonds = a.getEdges ();
+for (var i = a.getBondCount (); --i >= 0; ) {
+if (bonds[i].getBondType () == 1) bs.set (bonds[i].getOtherNode (a).getIndex ());
+}
+if (bs.cardinality () < 2) {
+bs.clearAll ();
+} else {
+for (var i = bs.nextSetBit (0); i >= 0; i = bs.nextSetBit (i + 1)) {
+if (at[i].getCovalentBondCount () == 1) continue;
+var bs0 = JU.BS.copy (bsToTest);
+bs0.clear (atomIndex);
+var bs1 = JU.BS.newN (at.length);
+if (!JU.JmolMolecule.getCovalentlyConnectedBitSet (at, at[i], bs0, true, true, null, bs1, at[atomIndex], at[atomIndex])) {
+bs.clear (i);
+}}
+}return bs;
+}, "~A,~N,JU.BS");
 });

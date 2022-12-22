@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.g3d");
-Clazz.load (["java.util.Hashtable"], "J.g3d.TextRenderer", ["JU.CU"], function () {
+Clazz.load (["java.util.Hashtable"], "J.g3d.TextRenderer", ["JU.CU", "J.g3d.Graphics3D"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.height = 0;
 this.ascent = 0;
@@ -24,9 +24,8 @@ var offset = font3d.getAscent ();
 y -= offset;
 var text3d = J.g3d.TextRenderer.getPlotText3D (x, y, g3d, text, font3d, antialias);
 if (text3d.isInvalid) return text3d.width;
-if (antialias && (argb & 0xC0C0C0) == 0) {
-argb = argb | 0x040404;
-}var textHeight = text3d.height;
+if (antialias) argb = J.g3d.Graphics3D.fixTextImageRGB (argb);
+var textHeight = text3d.height;
 var textWidth = text3d.width;
 var tmap = text3d.tmap;
 var g = g3d;
@@ -47,7 +46,7 @@ for (var i = 0, off = 0, pbufOffset = y * width + x; i < textHeight; i++, pbufOf
 
 
 }return text3d.width;
-}, "~N,~N,~N,~N,~N,~S,javajs.awt.Font,J.g3d.Graphics3D,J.api.JmolRendererInterface,~B");
+}, "~N,~N,~N,~N,~N,~S,JU.Font,J.g3d.Graphics3D,J.api.JmolRendererInterface,~B");
 c$.plotByCharacter = Clazz.defineMethod (c$, "plotByCharacter", 
  function (x, y, z, argb, bgargb, text, font3d, g3d, jmolRenderer, antialias) {
 var w = 0;
@@ -88,7 +87,7 @@ continue;
 w += width;
 }
 return w;
-}, "~N,~N,~N,~N,~N,~S,javajs.awt.Font,J.g3d.Graphics3D,J.api.JmolRendererInterface,~B");
+}, "~N,~N,~N,~N,~N,~S,JU.Font,J.g3d.Graphics3D,J.api.JmolRendererInterface,~B");
 Clazz.makeConstructor (c$, 
  function (text, font3d) {
 this.ascent = font3d.getAscent ();
@@ -97,7 +96,7 @@ this.width = font3d.stringWidth (text);
 if (this.width == 0) return;
 this.mapWidth = this.width;
 this.size = this.mapWidth * this.height;
-}, "~S,javajs.awt.Font");
+}, "~S,JU.Font");
 c$.getPlotText3D = Clazz.defineMethod (c$, "getPlotText3D", 
  function (x, y, g3d, text, font3d, antialias) {
 J.g3d.TextRenderer.working = true;
@@ -122,7 +121,7 @@ text3d.setTranslucency (text, font3d, g3d);
 htForThisFont.put (text, text3d);
 }J.g3d.TextRenderer.working = false;
 return text3d;
-}, "~N,~N,J.g3d.Graphics3D,~S,javajs.awt.Font,~B");
+}, "~N,~N,J.g3d.Graphics3D,~S,JU.Font,~B");
 Clazz.defineMethod (c$, "setTranslucency", 
  function (text, font3d, g3d) {
 var pixels = g3d.apiPlatform.getTextPixels (text, font3d, g3d.platform.getGraphicsForTextOrImage (this.mapWidth, this.height), g3d.platform.offscreenImage, this.mapWidth, this.height, this.ascent);
@@ -133,7 +132,7 @@ var p = pixels[i] & 0xFF;
 if (p != 0) {
 this.tmap[i] = J.g3d.TextRenderer.translucency[p >> 5];
 }}
-}, "~S,javajs.awt.Font,J.g3d.Graphics3D");
+}, "~S,JU.Font,J.g3d.Graphics3D");
 Clazz.defineStatics (c$,
 "translucency",  Clazz.newByteArray (-1, [7, 6, 5, 4, 3, 2, 1, 8]),
 "working", false);

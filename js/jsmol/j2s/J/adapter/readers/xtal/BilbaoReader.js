@@ -66,6 +66,7 @@ Clazz.defineMethod (c$, "readBilbaoFormat",
 this.setFractionalCoordinates (true);
 if (!this.doGetModel (++this.modelNumber, title)) return;
 this.asc.newAtomSet ();
+if (this.line.startsWith ("#")) this.rdLine ();
 if (this.line.startsWith ("Bilbao Crys:")) {
 title = this.line.substring (13).trim ();
 this.rdLine ();
@@ -80,7 +81,7 @@ while (intTableNo < 0 && this.rdLine () != null) intTableNo = this.parseIntStr (
 
 this.setSpaceGroupName ("bilbao:" + intTableNo);
 }var data =  Clazz.newFloatArray (6, 0);
-this.fillFloatArray (null, 0, data);
+this.fillFloatArray (this.rdLine (), 0, data);
 for (var i = 0; i < 6; i++) this.setUnitCellItem (i, data[i]);
 
 this.i0 = this.asc.ac;
@@ -125,7 +126,7 @@ this.appendLoadNote (title);
 }}, "~S");
 Clazz.defineMethod (c$, "rdLine", 
  function () {
-while (this.rd () != null && (this.line.length == 0 || this.checkComment ())) {
+while (this.rd () != null && (this.line.trim ().length == 0 || this.checkComment ())) {
 }
 return this.line;
 });

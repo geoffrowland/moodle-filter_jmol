@@ -38,7 +38,7 @@ calc = this.calculations[1] =  new JU.Lst ();
 var angleCalc =  new JM.FF.UFFAngleCalc ().set (this);
 for (var i = this.minAngles.length; --i >= 0; ) angleCalc.setData (calc, this.minAngles[i].data);
 
-calc = this.calculations[3] =  new JU.Lst ();
+calc = this.calculations[2] =  new JU.Lst ();
 var torsionCalc =  new JM.FF.UFFTorsionCalc ().set (this);
 for (var i = this.minTorsions.length; --i >= 0; ) torsionCalc.setData (calc, this.minTorsions[i].data);
 
@@ -47,7 +47,7 @@ var oopCalc =  new JM.FF.UFFOOPCalc ().set (this);
 var elemNo;
 for (var i = 0; i < this.ac; i++) {
 var a = this.minAtoms[i];
-if (a.nBonds == 3 && JM.FF.CalculationsUFF.isInvertible (elemNo = a.atom.getElementNumber ())) oopCalc.setData (calc, i, elemNo, 0);
+if (a.nBonds == 3 && a.sType !== "C_3" && JM.FF.CalculationsUFF.isInvertible (elemNo = a.atom.getElementNumber ())) oopCalc.setData (calc, i, elemNo, 0);
 }
 this.pairSearch (this.calculations[5] =  new JU.Lst (),  new JM.FF.UFFVDWCalc ().set (this), null, null);
 return true;
@@ -81,7 +81,7 @@ case 0:
 return this.bondCalc.compute (dataIn);
 case 1:
 return this.angleCalc.compute (dataIn);
-case 3:
+case 2:
 return this.torsionCalc.compute (dataIn);
 case 4:
 return this.oopCalc.compute (dataIn);

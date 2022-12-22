@@ -11,4 +11,5 @@ Clazz.defineStatics (c$,
 "DATA_VALUE", 1,
 "DATA_SELECTION", 2,
 "DATA_TYPE", 3,
-"DATA_SAVE_IN_STATE", 4);
+"DATA_SAVE_IN_STATE", 4,
+"DATA_ATOM_PROP_ENTRY", 5);

@@ -26,7 +26,7 @@ if (measures.ms !== this.ms) {
 System.out.println ("!measure wrong modelset!");
 measures.clear ();
 return false;
-}this.doJustify = this.vwr.getBoolean (603979871);
+}this.doJustify = this.vwr.getBoolean (603979870);
 this.modulating = this.ms.bsModulated != null;
 this.imageFontScaling = this.vwr.imageFontScaling;
 this.mad0 = measures.mad;
@@ -34,7 +34,7 @@ this.font3d = this.vwr.gdata.getFont3DScaled (measures.font3d, this.imageFontSca
 this.m = measures.mPending;
 if (!this.isExport && this.m != null && (this.count = this.m.count) != 0) this.renderPendingMeasurement ();
 if (!this.vwr.getBoolean (603979926)) return false;
-var showMeasurementLabels = this.vwr.getBoolean (603979879);
+var showMeasurementLabels = this.vwr.getBoolean (603979878);
 measures.setVisibilityInfo ();
 for (var i = measures.measurementCount; --i >= 0; ) {
 this.m = measures.measurements.get (i);
@@ -132,13 +132,13 @@ var zB = b.sZ - b.sD - 10;
 var radius = this.drawLine (a.sX, a.sY, zA, b.sX, b.sY, zB, this.mad);
 if (s == null) return;
 if (this.mad > 0) radius <<= 1;
-var z = Clazz.doubleToInt ((zA + zB) / 2);
-if (z < 1) z = 1;
+var zLabel = (this.m.inFront ? Math.min (zA, zB) - 10 : Clazz.doubleToInt ((zA + zB) / 2));
+if (zLabel < 1) zLabel = 1;
 var x = Clazz.doubleToInt ((a.sX + b.sX) / 2);
 var y = Clazz.doubleToInt ((a.sY + b.sY) / 2);
 if (this.m.text == null) {
 this.g3d.setC (this.labelColix);
-this.drawString (x, y, z, radius, this.doJustify && (x - a.sX) * (y - a.sY) > 0, false, false, (this.doJustify ? 0 : 2147483647), s);
+this.drawString (x, y, zLabel, radius, this.doJustify && (x - a.sX) * (y - a.sY) > 0, false, true, (this.doJustify ? 0 : 2147483647), s);
 } else {
 this.atomPt.ave (a, b);
 this.atomPt.sX = Clazz.doubleToInt ((a.sX + b.sX) / 2);
@@ -193,7 +193,8 @@ this.pointT.scale (1.1);
 this.matrixT.rotate (this.pointT);
 this.pointT.add (b);
 this.tm.transformPt (this.pointT);
-var zLabel = p3i.z - zOffset;
+var zLabel = (this.m.inFront ? Math.min (Math.min (zA, zB), zC) : p3i.z - zOffset);
+if (zLabel < 1) zLabel = 1;
 if (this.m.text == null) {
 this.g3d.setC (this.labelColix);
 this.drawString (p3i.x, p3i.y, zLabel, radius, p3i.x < b.sX, false, false, (this.doJustify ? b.sY : 2147483647), s);
@@ -212,7 +213,8 @@ var radius = this.drawLine (a.sX, a.sY, zA, b.sX, b.sY, zB, this.mad);
 radius += this.drawLine (b.sX, b.sY, zB, c.sX, c.sY, zC, this.mad);
 radius += this.drawLine (c.sX, c.sY, zC, d.sX, d.sY, zD, this.mad);
 if (s == null) return;
-var zLabel = Clazz.doubleToInt ((zA + zB + zC + zD) / 4);
+var zLabel = (this.m.inFront ? Math.min (Math.min (Math.min (zA, zB), zC), zD) : Clazz.doubleToInt ((zA + zB + zC + zD) / 4));
+if (zLabel < 1) zLabel = 1;
 radius /= 3;
 if (this.m.text == null) {
 this.g3d.setC (this.labelColix);
@@ -255,6 +257,6 @@ Clazz.overrideMethod (c$, "drawLine",
 function (x1, y1, z1, x2, y2, z2, mad) {
 var diameter = Clazz.floatToInt (mad >= 20 && this.exportType != 1 ? this.vwr.tm.scaleToScreen (Clazz.doubleToInt ((z1 + z2) / 2), mad) : mad);
 if (this.dotsOrDashes && (this.dashDots == null || this.dashDots === J.render.FontLineShapeRenderer.ndots)) this.width = diameter;
-return this.drawLine2 (x1, y1, z1, x2, y2, z2, diameter);
+return this.drawLine2 (this.g3d, x1, y1, z1, x2, y2, z2, diameter);
 }, "~N,~N,~N,~N,~N,~N,~N");
 });

@@ -13,6 +13,7 @@ this.haveNboOrbitals = false;
 this.orbitalsRead = false;
 this.lastMoData = null;
 this.allowNoOrbitals = false;
+this.forceMOPAC = false;
 this.HEADER_GAMESS_UK_MO = 3;
 this.HEADER_GAMESS_OCCUPANCIES = 2;
 this.HEADER_GAMESS_ORIGINAL = 1;
@@ -28,14 +29,8 @@ this.getNBOs = (this.filter != null && this.filterMO ());
 this.line = "\nNBOCHARGES";
 this.getNBOCharges = (this.filter != null && this.filterMO ());
 this.checkAndRemoveFilterKey ("NBOCHARGES");
+this.forceMOPAC = this.checkAndRemoveFilterKey ("MOPAC");
 });
-Clazz.defineMethod (c$, "checkAndRemoveFilterKey", 
-function (key) {
-if (!this.checkFilterKey (key)) return false;
-this.filter = JU.PT.rep (this.filter, key, "");
-if (this.filter.length < 3) this.filter = null;
-return true;
-}, "~S");
 Clazz.defineMethod (c$, "checkNboLine", 
 function () {
 if (this.getNBOs) {
@@ -96,7 +91,8 @@ function (headerType) {
 if (this.ignoreMOs) {
 this.rd ();
 return;
-}this.dfCoefMaps = null;
+}this.addSlaterBasis ();
+this.dfCoefMaps = null;
 if (this.haveNboOrbitals) {
 this.orbitals =  new JU.Lst ();
 this.alphaBeta = "";
@@ -132,15 +128,15 @@ if (str.length == 0 || str.indexOf ("--") >= 0 || str.indexOf (".....") >= 0 || 
 if (!this.haveCoeffMap) {
 this.haveCoeffMap = true;
 var isOK = true;
-if (pCoeffLabels.length > 0) isOK = this.getDFMap (pCoeffLabels, 1, "(PX)  (PY)  (PZ)", 4);
+if (pCoeffLabels.length > 0) isOK = this.getDFMap ("P", pCoeffLabels, 1, "(PX)  (PY)  (PZ)", 4);
 if (dCoeffLabels.length > 0) {
-if (dCoeffLabels.indexOf ("X") >= 0) isOK = this.getDFMap (dCoeffLabels, 4, "DXX   DYY   DZZ   DXY   DXZ   DYZ", 2);
- else if (dCoeffLabels.indexOf ("(D6)") >= 0) isOK = this.getDFMap (dCoeffLabels, 4, "(D1)  (D4)  (D6)  (D2)  (D3)  (D5)", 4);
- else isOK = this.getDFMap (dCoeffLabels, 3, "(D5)  (D2)  (D3)  (D4)  (D1)", 4);
+if (dCoeffLabels.indexOf ("X") >= 0) isOK = this.getDFMap ("DC", dCoeffLabels, 4, "DXX   DYY   DZZ   DXY   DXZ   DYZ", 2);
+ else if (dCoeffLabels.indexOf ("(D6)") >= 0) isOK = this.getDFMap ("DC", dCoeffLabels, 4, "(D1)  (D4)  (D6)  (D2)  (D3)  (D5)", 4);
+ else isOK = this.getDFMap ("DS", dCoeffLabels, 3, "(D5)  (D2)  (D3)  (D4)  (D1)", 4);
 }if (fCoeffLabels.length > 0) {
-if (fCoeffLabels.indexOf ("X") >= 0) isOK = this.getDFMap (fCoeffLabels, 6, "XXX   YYY   ZZZ   XYY   XXY   XXZ   XZZ   YZZ   YYZ   XYZ", 2);
- else if (fCoeffLabels.indexOf ("(F10)") >= 0) isOK = this.getDFMap (fCoeffLabels, 6, J.adapter.readers.quantum.MOReader.FC_LIST, 5);
- else isOK = this.getDFMap (fCoeffLabels, 5, "(F1)  (F2)  (F3)  (F4)  (F5)  (F6)  (F7)", 4);
+if (fCoeffLabels.indexOf ("X") >= 0) isOK = this.getDFMap ("FC", fCoeffLabels, 6, "XXX   YYY   ZZZ   XYY   XXY   XXZ   XZZ   YZZ   YYZ   XYZ", 2);
+ else if (fCoeffLabels.indexOf ("(F10)") >= 0) isOK = this.getDFMap ("FC", fCoeffLabels, 6, J.adapter.readers.quantum.MOReader.FC_LIST, 5);
+ else isOK = this.getDFMap ("FS", fCoeffLabels, 5, "(F1)  (F2)  (F3)  (F4)  (F5)  (F6)  (F7)", 4);
 }if (!isOK) {
 }}if (str.length == 0) nBlank++;
  else nBlank = 0;
@@ -213,6 +209,9 @@ this.setMOData (!this.alphaBeta.equals ("alpha"));
 this.haveCoeffMap = false;
 this.dfCoefMaps = null;
 }, "~N");
+Clazz.defineMethod (c$, "addSlaterBasis", 
+function () {
+});
 Clazz.defineMethod (c$, "addCoef", 
 function (mo, coefs, type, energy, occ, moCount) {
 mo.put ("coefficients", coefs);
@@ -234,7 +233,7 @@ default:
 case 0:
 return;
 case 3:
-for (var i = 0; i < nThisLine; i++) mos[i].put ("energy", Float.$valueOf (JU.PT.fVal (tokens[i])));
+for (var i = 0; i < nThisLine; i++) mos[i].put ("energy", Float.$valueOf (tokens[i]));
 
 this.readLines (5);
 return;
@@ -242,7 +241,7 @@ case 1:
 tokens = this.getTokens ();
 if (tokens.length == 0) tokens = JU.PT.getTokens (this.rd ());
 for (var i = 0; i < nThisLine; i++) {
-mos[i].put ("energy", Float.$valueOf (JU.PT.fVal (tokens[i])));
+mos[i].put ("energy", Float.$valueOf (tokens[i]));
 }
 this.rd ();
 break;
@@ -271,7 +270,8 @@ this.setMO (mos[i]);
 }, "~N,~A,~A");
 Clazz.defineMethod (c$, "setMOData", 
 function (clearOrbitals) {
-if (this.shells != null && this.gaussians != null && (this.allowNoOrbitals || this.orbitals.size () != 0)) {
+if (!this.allowNoOrbitals && this.orbitals.size () == 0) return;
+if (this.shells != null && this.gaussians != null) {
 this.moData.put ("calculationType", this.calculationType);
 this.moData.put ("energyUnits", this.energyUnits);
 this.moData.put ("shells", this.shells);
@@ -279,9 +279,7 @@ this.moData.put ("gaussians", this.gaussians);
 this.moData.put ("mos", this.orbitals);
 this.finalizeMOData (this.lastMoData = this.moData);
 }if (clearOrbitals) {
-this.orbitals =  new JU.Lst ();
-this.moData =  new java.util.Hashtable ();
-this.alphaBeta = "";
+this.clearOrbitals ();
 }}, "~B");
 Clazz.defineMethod (c$, "readSecondOrderData", 
  function () {

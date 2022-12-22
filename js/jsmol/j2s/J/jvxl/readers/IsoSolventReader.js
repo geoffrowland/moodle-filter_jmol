@@ -88,7 +88,9 @@ this.getAtoms (this.params.bsSelected, this.doAddHydrogens, true, false, false, 
 if (this.isCavity || this.isPocket) this.dots = this.meshDataServer.calculateGeodesicSurface (this.bsMySelected, this.envelopeRadius);
 this.setHeader ("solvent/molecular surface", this.params.calculationType);
 if (this.havePlane || !isMapData) {
-var minPtsPerAng = 0;
+var r = Math.max (this.params.solventExtendedAtomRadius, this.params.solventRadius);
+var minPtsPerAng = (r >= 1 ? 1.5 / r : 0);
+if (minPtsPerAng > 0) System.out.println ("IsoSolventReader.minPtsPerAng=" + minPtsPerAng);
 this.setRanges (this.params.solvent_ptsPerAngstrom, this.params.solvent_gridMax, minPtsPerAng);
 this.volumeData.getYzCount ();
 this.margin = this.volumeData.maxGrid * 2.0;
@@ -106,7 +108,7 @@ this.isProgressive = this.isXLowToHigh = true;
 Clazz.overrideMethod (c$, "generateCube", 
 function () {
 if (this.isCavity && this.params.theProperty != null) return;
-if (this.isCavity && this.dataType != 1205 && this.dataType != 1206) {
+if (this.isCavity && this.dataType != 1207 && this.dataType != 1208) {
 this.params.vertexSource = null;
 this.newVoxelDataCube ();
 this.resetVoxelData (3.4028235E38);
@@ -121,7 +123,7 @@ this.generateSolventCube ();
 var info = this.params.slabInfo;
 if (info != null) for (var i = 0; i < info.size (); i++) if ((info.get (i)[2]).booleanValue () && Clazz.instanceOf (info.get (i)[0], JU.P4)) {
 this.volumeData.capData (info.get (i)[0], this.params.cutoff);
-info.remove (i--);
+info.removeItemAt (i--);
 }
 });
 Clazz.overrideMethod (c$, "getSurfacePointAndFraction", 
@@ -184,7 +186,7 @@ if (this.doCalculateTroughs && this.bsSurfacePoints != null) {
 var bsAll =  new JU.BS ();
 var bsSurfaces = this.meshData.getSurfaceSet ();
 var bsSources = null;
-var volumes = (this.isPocket ? null : J.jvxl.data.MeshData.calculateVolumeOrArea (this.meshData, -2147483648, false, false));
+var volumes = (this.isPocket ? null : J.jvxl.data.MeshData.calculateVolumeOrArea (this.meshData, null, false, false));
 var minVolume = (this.isCavity ? (1.5 * 3.141592653589793 * Math.pow (this.sr, 3)) : 0);
 var maxVolume = 0;
 var maxIsNegative = false;
@@ -254,7 +256,7 @@ this.setRadii ();
 });
 Clazz.defineMethod (c$, "generateSolventCube", 
  function () {
-if (this.dataType == 1205) return;
+if (this.dataType == 1207) return;
 this.params.vertexSource =  Clazz.newIntArray (this.volumeData.nPoints, 0);
 this.bsSurfaceDone =  new JU.BS ();
 this.bsSurfaceVoxels =  new JU.BS ();

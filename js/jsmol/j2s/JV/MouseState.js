@@ -5,6 +5,7 @@ this.y = -1000;
 this.modifiers = 0;
 this.time = -1;
 this.name = null;
+this.keybuf = 0;
 Clazz.instantialize (this, arguments);
 }, JV, "MouseState");
 Clazz.makeConstructor (c$, 

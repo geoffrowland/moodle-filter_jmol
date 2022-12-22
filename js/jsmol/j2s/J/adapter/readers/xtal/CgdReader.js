@@ -13,7 +13,7 @@ function () {
 this.setFractionalCoordinates (true);
 this.asc.setNoAutoBond ();
 this.asc.vibScale = 1;
-this.forceSymmetry (!this.checkFilterKey ("NOPACK"));
+this.forceSymmetry (!this.noPack);
 this.noBondSym = this.checkFilterKey ("NOBONDSYM");
 });
 Clazz.overrideMethod (c$, "checkLine", 

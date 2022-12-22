@@ -61,18 +61,15 @@ if (ic != null) this.backgroundColor = ic.intValue ();
 } else {
 this.backgroundColor = ic.intValue ();
 this.isTransparent = true;
+}if (this.backgroundColor == 0xFF000000) {
+for (var i = this.pixels.length; --i >= 0; ) this.pixels[i] = this.pixels[i] & -263173;
+
 }this.interlaced = (Boolean.TRUE === params.get ("interlaced"));
 if (params.containsKey ("captureRootExt") || !params.containsKey ("captureMode")) return;
 this.interlaced = false;
 this.capturing = true;
-try {
-this.byteCount = (params.get ("captureByteCount")).intValue ();
-} catch (e) {
-if (Clazz.exceptionOf (e, Exception)) {
-} else {
-throw e;
-}
-}
+var c = params.get ("captureByteCount");
+if (c != null) this.byteCount = c.intValue ();
 switch ("maec".indexOf ((params.get ("captureMode")).substring (0, 1))) {
 case 0:
 params.put ("captureMode", "add");
@@ -82,9 +79,14 @@ break;
 case 1:
 this.addHeader = false;
 this.addTrailer = false;
+var msDelay = params.get ("captureDelayMS");
+if (msDelay == null) {
 var fps = Math.abs ((params.get ("captureFps")).intValue ());
 this.delayTime100ths = (fps == 0 ? 0 : Clazz.doubleToInt (100 / fps));
-this.looping = (Boolean.FALSE !== params.get ("captureLooping"));
+} else {
+this.delayTime100ths = Clazz.doubleToInt (msDelay.intValue () / 10);
+params.remove ("captureDelayMS");
+}this.looping = (Boolean.FALSE !== params.get ("captureLooping"));
 break;
 case 2:
 this.addHeader = false;
@@ -597,15 +599,15 @@ var i = e[0][h] + e[2][h] / 2;
 this.volume = 0;
 switch (h) {
 case 0:
-for (var j = b; --j >= 0; ) if (this.get (j).x >= i) d.addLast (this.remove (j));
+for (var j = b; --j >= 0; ) if (this.get (j).x >= i) d.addLast (this.removeItemAt (j));
 
 break;
 case 1:
-for (var k = b; --k >= 0; ) if (this.get (k).y >= i) d.addLast (this.remove (k));
+for (var k = b; --k >= 0; ) if (this.get (k).y >= i) d.addLast (this.removeItemAt (k));
 
 break;
 case 2:
-for (var l = this.size (); --l >= 0; ) if (this.get (l).z >= i) d.addLast (this.remove (l));
+for (var l = this.size (); --l >= 0; ) if (this.get (l).z >= i) d.addLast (this.removeItemAt (l));
 
 break;
 }

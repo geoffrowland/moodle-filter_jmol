@@ -276,7 +276,7 @@
 			this._script('molecule remove *; object remove *;molecule load "' + this._src + '"');
 		this._showInfo(true);
 		this._showInfo(false);
-		Jmol.Cache.setDragDrop(this);
+		Jmol.Cache.setDragDrop(this, "appletdiv");
 		this._readyFunction && this._readyFunction(this);
 		Jmol._setReady(this);
 		var app = this._2dapplet;
@@ -519,7 +519,7 @@
 		this._containerWidth = sz[0];
 		this._containerHeight = sz[1];
 		if (this._is2D)
-			Jmol._repaint(this, true);
+			Jmol.repaint(this, true);
 	}
 
 	proto._search = function(query, script){

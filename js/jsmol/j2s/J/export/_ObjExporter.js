@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.export");
-Clazz.load (["J.export.__CartesianExporter", "java.util.HashSet", "JU.P3"], "J.export._ObjExporter", ["java.lang.Short", "java.util.Hashtable", "JU.AU", "$.BS", "$.CU", "$.Lst", "$.M4", "$.PT", "$.Quat", "$.SB", "$.V3", "J.export.MeshData", "JM.Atom", "JU.Escape", "$.Logger", "$.MeshSurface", "JV.Viewer"], function () {
+Clazz.load (["J.export.__CartesianExporter", "java.util.HashSet", "JU.P3"], "J.export._ObjExporter", ["java.lang.NullPointerException", "$.Short", "java.util.Hashtable", "JU.AU", "$.BS", "$.CU", "$.Lst", "$.M4", "$.PT", "$.Quat", "$.SB", "$.V3", "J.export.MeshData", "JM.Atom", "JU.Escape", "$.Logger", "$.MeshSurface", "JV.Viewer"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.surfacesOnly = false;
 this.normalizeUV = true;
@@ -117,7 +117,7 @@ this.debugPrint ("  radius=" + radius);
 this.debugPrint ("  Not done owing to surfacesOnly");
 return;
 }this.outputEllipsoid1 (center, radius, radius, radius, null, colix);
-}, "JU.T3,~N,~N,~B");
+}, "JU.P3,~N,~N,~B");
 Clazz.overrideMethod (c$, "outputTextPixel", 
 function (pt, argb) {
 }, "JU.P3,~N");
@@ -130,7 +130,7 @@ return;
 Clazz.overrideMethod (c$, "outputHeader", 
 function () {
 this.debugPrint ("outputHeader");
-this.output ("# Created by Jmol " + JV.Viewer.getJmolVersion () + "\n");
+this.output ("#obj Created by Jmol " + JV.Viewer.getJmolVersion () + "\n");
 });
 Clazz.defineMethod (c$, "output", 
 function (pt) {
@@ -207,6 +207,8 @@ var retVal = this.initOutput (vwr, privateKey, gdata, params);
 if (!retVal) {
 this.debugPrint ("End initializeOutput (error in super):");
 return false;
+}if (this.fileName == null) {
+throw  new NullPointerException ("Cannot output two files (OBJ and MTL) to string");
 }var dot = this.fileName.lastIndexOf (".");
 if (dot < 0) {
 this.debugPrint ("End initializeOutput (Error creating .mtl file):");

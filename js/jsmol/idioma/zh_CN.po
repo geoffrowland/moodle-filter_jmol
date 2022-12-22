@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: jmol\n"
 "Report-Msgid-Bugs-To: jmol-developers@lists.sourceforge.net\n"
-"POT-Creation-Date: 2014-09-21 08:41+0200\n"
+"POT-Creation-Date: 2015-12-23 20:33+0100\n"
 "PO-Revision-Date: 2013-06-02 18:20+0000\n"
 "Last-Translator: Wang Dianjin <Unknown>\n"
 "Language-Team: Simplified Chinese <zh_CN@li.org>\n"
@@ -25,66 +25,84 @@ msgstr ""
 msgid "Element?"
 msgstr "元素？"
 
-#: org/jmol/console/GenericConsole.java:82
+#: org/jmol/console/GenericConsole.java:54
+msgid "Jmol Script Console"
+msgstr "Jmol 脚本控制台"
+
+#: org/jmol/console/GenericConsole.java:90
+msgid "&Save As..."
+msgstr ""
+
+#: org/jmol/console/GenericConsole.java:91
+#, fuzzy
+msgid "&File"
+msgstr "文件"
+
+#: org/jmol/console/GenericConsole.java:92
+#, fuzzy
+msgid "&Close"
+msgstr "关闭"
+
+#: org/jmol/console/GenericConsole.java:97
 msgid "&Help"
 msgstr "帮助(&H)"
 
-#: org/jmol/console/GenericConsole.java:83
+#: org/jmol/console/GenericConsole.java:98
 msgid "&Search..."
 msgstr "查找 (&S)"
 
-#: org/jmol/console/GenericConsole.java:84
+#: org/jmol/console/GenericConsole.java:99
 msgid "&Commands"
 msgstr "命令 (&C)"
 
-#: org/jmol/console/GenericConsole.java:85
+#: org/jmol/console/GenericConsole.java:100
 msgid "Math &Functions"
 msgstr "数学及函数"
 
-#: org/jmol/console/GenericConsole.java:86
+#: org/jmol/console/GenericConsole.java:101
 msgid "Set &Parameters"
 msgstr "设定参数 (&P)"
 
-#: org/jmol/console/GenericConsole.java:87
+#: org/jmol/console/GenericConsole.java:102
 msgid "&More"
 msgstr "更多(&M)"
 
-#: org/jmol/console/GenericConsole.java:88
+#: org/jmol/console/GenericConsole.java:103
 msgid "Editor"
 msgstr "编辑器"
 
-#: org/jmol/console/GenericConsole.java:89
+#: org/jmol/console/GenericConsole.java:104
 msgid "State"
 msgstr "状态"
 
-#: org/jmol/console/GenericConsole.java:90
-#: org/jmol/console/ScriptEditor.java:141
+#: org/jmol/console/GenericConsole.java:105
+#: org/jmol/console/ScriptEditor.java:148
 msgid "Run"
 msgstr "运行"
 
-#: org/jmol/console/GenericConsole.java:91
+#: org/jmol/console/GenericConsole.java:106
 msgid "Clear Output"
 msgstr "清空输出"
 
-#: org/jmol/console/GenericConsole.java:92
+#: org/jmol/console/GenericConsole.java:107
 msgid "Clear Input"
 msgstr "清空输入"
 
-#: org/jmol/console/GenericConsole.java:93
+#: org/jmol/console/GenericConsole.java:108
 #: org/jmol/popup/MainPopupResourceBundle.java:608
 msgid "History"
 msgstr "浏览历史"
 
-#: org/jmol/console/GenericConsole.java:94
+#: org/jmol/console/GenericConsole.java:109
 #: org/jmol/popup/MainPopupResourceBundle.java:619
 msgid "Load"
 msgstr "载入"
 
-#: org/jmol/console/GenericConsole.java:96
+#: org/jmol/console/GenericConsole.java:111
 msgid "press CTRL-ENTER for new line or paste model data and press Load"
 msgstr "按 CTRL-ENTER 新增一行，或粘贴分子模型数据并点击 载入。"
 
-#: org/jmol/console/GenericConsole.java:98
+#: org/jmol/console/GenericConsole.java:113
 msgid ""
 "Messages will appear here. Enter commands in the box below. Click the "
 "console Help menu item for on-line help, which will appear in a new browser "
@@ -93,59 +111,60 @@ msgstr ""
 "信息会显示于此。在下方窗口中键入命令。点击控制台的帮助(Help)菜单可得到在线帮"
 "助信息（新窗口中显示）。"
 
-#: org/jmol/console/GenericConsole.java:118
-msgid "Jmol Script Console"
-msgstr "Jmol 脚本控制台"
-
-#: org/jmol/console/ScriptEditor.java:102
+#: org/jmol/console/ScriptEditor.java:107
 msgid "Jmol Script Editor"
 msgstr "Jmol 脚本编辑器"
 
-#: org/jmol/console/ScriptEditor.java:134
+#: org/jmol/console/ScriptEditor.java:140
 #: org/jmol/popup/MainPopupResourceBundle.java:604
 msgid "Console"
 msgstr "控制台"
 
-#: org/jmol/console/ScriptEditor.java:136 org/jmol/dialog/Dialog.java:455
+#: org/jmol/console/ScriptEditor.java:142 org/jmol/dialog/Dialog.java:455
 #: org/jmol/dialog/Dialog.java:479 org/jmol/dialog/Dialog.java:482
 msgid "Open"
 msgstr "打开"
 
-#: org/jmol/console/ScriptEditor.java:137
+#: org/jmol/console/ScriptEditor.java:143
+#, fuzzy
+msgid "Font"
+msgstr "正视"
+
+#: org/jmol/console/ScriptEditor.java:144
 msgid "Script"
 msgstr "脚本"
 
-#: org/jmol/console/ScriptEditor.java:138
+#: org/jmol/console/ScriptEditor.java:145
 msgid "Check"
 msgstr "勾选"
 
-#: org/jmol/console/ScriptEditor.java:139
+#: org/jmol/console/ScriptEditor.java:146
 msgid "Top[as in \"go to the top\" - (translators: remove this bracketed part]"
 msgstr "回到顶端"
 
-#: org/jmol/console/ScriptEditor.java:140
+#: org/jmol/console/ScriptEditor.java:147
 msgid "Step"
 msgstr "步进"
 
-#: org/jmol/console/ScriptEditor.java:142
+#: org/jmol/console/ScriptEditor.java:149
 #: org/jmol/popup/MainPopupResourceBundle.java:559
 msgid "Pause"
 msgstr "暂停"
 
-#: org/jmol/console/ScriptEditor.java:144
+#: org/jmol/console/ScriptEditor.java:151
 #: org/jmol/popup/MainPopupResourceBundle.java:560
 msgid "Resume"
 msgstr "继续"
 
-#: org/jmol/console/ScriptEditor.java:146
+#: org/jmol/console/ScriptEditor.java:153
 msgid "Halt"
 msgstr "停止"
 
-#: org/jmol/console/ScriptEditor.java:148
+#: org/jmol/console/ScriptEditor.java:155
 msgid "Clear"
 msgstr "全部清除"
 
-#: org/jmol/console/ScriptEditor.java:149
+#: org/jmol/console/ScriptEditor.java:156
 msgid "Close"
 msgstr "关闭"
 
@@ -571,7 +590,7 @@ msgid "redo (CTRL-Y)"
 msgstr "重做(Ctrl-Y)"
 
 #: org/jmol/modelkit/ModelKitPopupResourceBundle.java:91
-#: org/jmol/viewer/ActionManager.java:232
+#: org/jmol/viewer/ActionManager.java:233
 msgid "center"
 msgstr "居中"
 
@@ -667,36 +686,41 @@ msgstr "旋转键(Shift-拖动)"
 msgid "exit modelkit mode"
 msgstr "退出建模工具(modelkit)模式"
 
-#: org/jmol/popup/JmolGenericPopup.java:732
+#: org/jmol/popup/JmolGenericPopup.java:754
 #: org/jmol/popup/MainPopupResourceBundle.java:287
 msgid "Space Group"
 msgstr "空间群"
 
-#: org/jmol/popup/JmolGenericPopup.java:803
-#: org/jmol/popup/JmolGenericPopup.java:854
-#: org/jmol/popup/MainPopupResourceBundle.java:308
-#: org/jmol/popup/MainPopupResourceBundle.java:331
-#: org/jmol/popup/MainPopupResourceBundle.java:340
+#: org/jmol/popup/JmolGenericPopup.java:770
+#, fuzzy
+msgid "none"
+msgstr "无"
+
+#: org/jmol/popup/JmolGenericPopup.java:829
+#: org/jmol/popup/JmolGenericPopup.java:880
+#: org/jmol/popup/MainPopupResourceBundle.java:307
+#: org/jmol/popup/MainPopupResourceBundle.java:330
+#: org/jmol/popup/MainPopupResourceBundle.java:339
 #: org/jmol/popup/MainPopupResourceBundle.java:357
 msgid "All"
 msgstr "全部"
 
-#: org/jmol/popup/JmolGenericPopup.java:965
+#: org/jmol/popup/JmolGenericPopup.java:991
 #, java-format
 msgid "{0} processors"
 msgstr "{0} 个处理器"
 
-#: org/jmol/popup/JmolGenericPopup.java:967
+#: org/jmol/popup/JmolGenericPopup.java:993
 #, java-format
 msgid "{0} MB total"
 msgstr "共 {0} MB"
 
-#: org/jmol/popup/JmolGenericPopup.java:970
+#: org/jmol/popup/JmolGenericPopup.java:996
 #, java-format
 msgid "{0} MB maximum"
 msgstr "最大 {0} MB"
 
-#: org/jmol/popup/JmolGenericPopup.java:1025
+#: org/jmol/popup/JmolGenericPopup.java:1050
 msgid "not capturing"
 msgstr ""
 
@@ -759,230 +783,231 @@ msgid "Symmetry"
 msgstr "对称性"
 
 #: org/jmol/popup/MainPopupResourceBundle.java:288
-msgid "Hide Symmetry"
-msgstr "隐藏对称性"
-
-#: org/jmol/popup/MainPopupResourceBundle.java:289
 msgid "Model information"
 msgstr "分子模型的信息"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:290
+#: org/jmol/popup/MainPopupResourceBundle.java:289
 #, java-format
 msgid "Select ({0})"
 msgstr "选择 ({0})"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:291
+#: org/jmol/popup/MainPopupResourceBundle.java:290
 #, java-format
 msgid "All {0} models"
 msgstr "所有{0}模型"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:292
+#: org/jmol/popup/MainPopupResourceBundle.java:291
 #, java-format
 msgid "Configurations ({0})"
 msgstr "设置 ({0})"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:293
+#: org/jmol/popup/MainPopupResourceBundle.java:292
 #, java-format
 msgid "Collection of {0} models"
 msgstr "{0} 模型的收集"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:294
+#: org/jmol/popup/MainPopupResourceBundle.java:293
 #, java-format
 msgid "atoms: {0}"
 msgstr "原子：{0}"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:295
+#: org/jmol/popup/MainPopupResourceBundle.java:294
 #, java-format
 msgid "bonds: {0}"
 msgstr "化学键：{0}"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:296
+#: org/jmol/popup/MainPopupResourceBundle.java:295
 #, java-format
 msgid "groups: {0}"
 msgstr "基团：{0}"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:297
+#: org/jmol/popup/MainPopupResourceBundle.java:296
 #, java-format
 msgid "chains: {0}"
 msgstr "链：{0}"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:298
+#: org/jmol/popup/MainPopupResourceBundle.java:297
 #, java-format
 msgid "polymers: {0}"
 msgstr "聚合物：{0}"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:299
+#: org/jmol/popup/MainPopupResourceBundle.java:298
 #, java-format
 msgid "model {0}"
 msgstr "模型{0}"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:300
+#: org/jmol/popup/MainPopupResourceBundle.java:299
 #, java-format
 msgid "View {0}"
 msgstr "查看 {0}"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:301
+#: org/jmol/popup/MainPopupResourceBundle.java:300
 msgid "Main Menu"
 msgstr "主选单"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:302
+#: org/jmol/popup/MainPopupResourceBundle.java:301
 msgid "Biomolecules"
 msgstr "生物分子"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:303
+#: org/jmol/popup/MainPopupResourceBundle.java:302
 #, java-format
 msgid "biomolecule {0} ({1} atoms)"
 msgstr "分子 {0} ({1} 个原子)"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:304
+#: org/jmol/popup/MainPopupResourceBundle.java:303
 #, java-format
 msgid "load biomolecule {0} ({1} atoms)"
 msgstr "载入分子 {0} ({1} 个原子)"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:309
+#: org/jmol/popup/MainPopupResourceBundle.java:308
 #: org/jmol/popup/MainPopupResourceBundle.java:442
 #: org/jmol/popup/MainPopupResourceBundle.java:451
 msgid "None"
 msgstr "无"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:310
+#: org/jmol/popup/MainPopupResourceBundle.java:309
 msgid "Display Selected Only"
 msgstr "只显示己选取的"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:311
+#: org/jmol/popup/MainPopupResourceBundle.java:310
 msgid "Invert Selection"
 msgstr "反向选取"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:313
+#: org/jmol/popup/MainPopupResourceBundle.java:312
 msgid "View"
 msgstr "视图"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:314
+#: org/jmol/popup/MainPopupResourceBundle.java:313
 msgid "Best"
 msgstr ""
 
-#: org/jmol/popup/MainPopupResourceBundle.java:315
+#: org/jmol/popup/MainPopupResourceBundle.java:314
 msgid "Front"
 msgstr "正视"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:316
+#: org/jmol/popup/MainPopupResourceBundle.java:315
 msgid "Left"
 msgstr "左视"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:317
+#: org/jmol/popup/MainPopupResourceBundle.java:316
 msgid "Right"
 msgstr "右视"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:318
+#: org/jmol/popup/MainPopupResourceBundle.java:317
 msgid ""
 "Top[as in \"view from the top, from above\" - (translators: remove this "
 "bracketed part]"
 msgstr ""
 
-#: org/jmol/popup/MainPopupResourceBundle.java:319
+#: org/jmol/popup/MainPopupResourceBundle.java:318
 msgid "Bottom"
 msgstr "底视"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:320
+#: org/jmol/popup/MainPopupResourceBundle.java:319
 msgid "Back"
 msgstr "返回"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:321
+#: org/jmol/popup/MainPopupResourceBundle.java:320
 #, fuzzy
 msgid "Axis x"
 msgstr "轴"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:322
+#: org/jmol/popup/MainPopupResourceBundle.java:321
 #, fuzzy
 msgid "Axis y"
 msgstr "轴"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:323
+#: org/jmol/popup/MainPopupResourceBundle.java:322
 #, fuzzy
 msgid "Axis z"
 msgstr "轴"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:324
+#: org/jmol/popup/MainPopupResourceBundle.java:323
 #, fuzzy
 msgid "Axis a"
 msgstr "轴"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:325
+#: org/jmol/popup/MainPopupResourceBundle.java:324
 #, fuzzy
 msgid "Axis b"
 msgstr "轴"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:326
+#: org/jmol/popup/MainPopupResourceBundle.java:325
 #, fuzzy
 msgid "Axis c"
 msgstr "轴"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:328
+#: org/jmol/popup/MainPopupResourceBundle.java:327
 msgid "Scenes"
 msgstr ""
 
-#: org/jmol/popup/MainPopupResourceBundle.java:330
+#: org/jmol/popup/MainPopupResourceBundle.java:329
 msgid "Protein"
 msgstr "蛋白质"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:332
-#: org/jmol/popup/MainPopupResourceBundle.java:343
+#: org/jmol/popup/MainPopupResourceBundle.java:331
+#: org/jmol/popup/MainPopupResourceBundle.java:342
 #: org/jmol/popup/MainPopupResourceBundle.java:413
 #: org/jmol/popup/MainPopupResourceBundle.java:511
 msgid "Backbone"
 msgstr "骨架"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:333
+#: org/jmol/popup/MainPopupResourceBundle.java:332
 msgid "Side Chains"
 msgstr "侧链"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:334
+#: org/jmol/popup/MainPopupResourceBundle.java:333
 msgid "Polar Residues"
 msgstr "极性残基"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:335
+#: org/jmol/popup/MainPopupResourceBundle.java:334
 msgid "Nonpolar Residues"
 msgstr "非极性残基"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:336
+#: org/jmol/popup/MainPopupResourceBundle.java:335
 msgid "Basic Residues (+)"
 msgstr "碱性残基 (+)"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:337
+#: org/jmol/popup/MainPopupResourceBundle.java:336
 msgid "Acidic Residues (-)"
 msgstr "酸性残基 (-)"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:338
+#: org/jmol/popup/MainPopupResourceBundle.java:337
 msgid "Uncharged Residues"
 msgstr "不带电荷的残基"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:339
+#: org/jmol/popup/MainPopupResourceBundle.java:338
 msgid "Nucleic"
 msgstr "核的"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:341
+#: org/jmol/popup/MainPopupResourceBundle.java:340
 msgid "DNA"
 msgstr "DNA"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:342
+#: org/jmol/popup/MainPopupResourceBundle.java:341
 msgid "RNA"
 msgstr "RNA"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:344
+#: org/jmol/popup/MainPopupResourceBundle.java:343
 msgid "Bases"
 msgstr "碱"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:345
+#: org/jmol/popup/MainPopupResourceBundle.java:344
 msgid "AT pairs"
 msgstr "AT 对"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:346
+#: org/jmol/popup/MainPopupResourceBundle.java:345
 msgid "GC pairs"
 msgstr "GC 对"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:347
+#: org/jmol/popup/MainPopupResourceBundle.java:346
 msgid "AU pairs"
 msgstr "AU 对"
+
+#: org/jmol/popup/MainPopupResourceBundle.java:347
+#: org/jmol/popup/MainPopupResourceBundle.java:477
+msgid "Secondary Structure"
+msgstr "二级结构"
 
 #: org/jmol/popup/MainPopupResourceBundle.java:348
 msgid "Hetero"
@@ -1319,10 +1344,6 @@ msgstr "温度(固定)"
 msgid "Amino Acid"
 msgstr "氨基酸"
 
-#: org/jmol/popup/MainPopupResourceBundle.java:477
-msgid "Secondary Structure"
-msgstr "二级结构"
-
 #: org/jmol/popup/MainPopupResourceBundle.java:478
 msgid "Chain"
 msgstr "链"
@@ -1629,6 +1650,11 @@ msgstr "显示对称性操作"
 msgid "Show"
 msgstr "显示"
 
+#: org/jmol/popup/MainPopupResourceBundle.java:605
+#, fuzzy
+msgid "JavaScript Console"
+msgstr "Jmol 脚本控制台"
+
 #: org/jmol/popup/MainPopupResourceBundle.java:606
 msgid "File Contents"
 msgstr "文件内容"
@@ -1696,7 +1722,7 @@ msgid "Open script"
 msgstr "打开脚本"
 
 #: org/jmol/popup/MainPopupResourceBundle.java:629
-#: org/jmol/viewer/OutputManager.java:729
+#: org/jmol/viewer/OutputManager.java:792
 msgid "Capture"
 msgstr ""
 
@@ -1881,388 +1907,388 @@ msgstr "RasMol 颜色"
 msgid "About..."
 msgstr "关于..."
 
-#: org/jmol/script/ScriptCompiler.java:2804
+#: org/jmol/script/ScriptCompiler.java:3051
 msgid "script compiler ERROR: "
 msgstr "脚本编译器错误： "
 
-#: org/jmol/script/ScriptError.java:190
+#: org/jmol/script/ScriptError.java:192
 msgid "x y z axis expected"
 msgstr "需要 x y z 轴"
 
-#: org/jmol/script/ScriptError.java:193
+#: org/jmol/script/ScriptError.java:195
 #, java-format
 msgid "{0} not allowed with background model displayed"
 msgstr "在显示背景模型时不允许 {0}"
 
-#: org/jmol/script/ScriptError.java:196
-#: org/jmol/script/ScriptTokenParser.java:1385
+#: org/jmol/script/ScriptError.java:198
+#: org/jmol/script/ScriptTokenParser.java:1487
 msgid "bad argument count"
 msgstr "参数数目错误"
 
-#: org/jmol/script/ScriptError.java:199
+#: org/jmol/script/ScriptError.java:201
 msgid "Miller indices cannot all be zero."
 msgstr "米勒指数(Miller Index)不可为 0"
 
-#: org/jmol/script/ScriptError.java:202
+#: org/jmol/script/ScriptError.java:204
 msgid "bad [R,G,B] color"
 msgstr "[R,G,B] 颜色值无效"
 
-#: org/jmol/script/ScriptError.java:205
+#: org/jmol/script/ScriptError.java:207
 msgid "boolean expected"
 msgstr "需要布尔真假值"
 
-#: org/jmol/script/ScriptError.java:208
+#: org/jmol/script/ScriptError.java:210
 msgid "boolean or number expected"
 msgstr "需要布尔真假值或数值"
 
-#: org/jmol/script/ScriptError.java:211
+#: org/jmol/script/ScriptError.java:213
 #, java-format
 msgid "boolean, number, or {0} expected"
 msgstr "需要布尔真假值、数值或{0}"
 
-#: org/jmol/script/ScriptError.java:214
+#: org/jmol/script/ScriptError.java:216
 msgid "cannot set value"
 msgstr "无法设置值"
 
-#: org/jmol/script/ScriptError.java:217
+#: org/jmol/script/ScriptError.java:219
 msgid "color expected"
 msgstr "需要颜色"
 
-#: org/jmol/script/ScriptError.java:220
+#: org/jmol/script/ScriptError.java:222
 msgid "a color or palette name (Jmol, Rasmol) is required"
 msgstr "必须有颜色或调色盘名称 (Jmol, Rasmol)"
 
-#: org/jmol/script/ScriptError.java:223
-#: org/jmol/script/ScriptTokenParser.java:1391
+#: org/jmol/script/ScriptError.java:225
+#: org/jmol/script/ScriptTokenParser.java:1493
 msgid "command expected"
 msgstr "需要指令"
 
-#: org/jmol/script/ScriptError.java:226
+#: org/jmol/script/ScriptError.java:228
 msgid "{x y z} or $name or (atom expression) required"
 msgstr "必须有{x y z} 或 $name 或 (原子表示式)"
 
-#: org/jmol/script/ScriptError.java:229
+#: org/jmol/script/ScriptError.java:231
 msgid "draw object not defined"
 msgstr "未定义绘图对象"
 
-#: org/jmol/script/ScriptError.java:232
-#: org/jmol/script/ScriptTokenParser.java:1397
+#: org/jmol/script/ScriptError.java:234
+#: org/jmol/script/ScriptTokenParser.java:1499
 msgid "unexpected end of script command"
 msgstr "非预期的脚本命令结尾"
 
-#: org/jmol/script/ScriptError.java:235
+#: org/jmol/script/ScriptError.java:237
 msgid "valid (atom expression) expected"
 msgstr "需要有效的原子表达式"
 
-#: org/jmol/script/ScriptError.java:238
+#: org/jmol/script/ScriptError.java:240
 msgid "(atom expression) or integer expected"
 msgstr "需要原子表达式或整数"
 
-#: org/jmol/script/ScriptError.java:241
+#: org/jmol/script/ScriptError.java:243
 msgid "filename expected"
 msgstr "需要文件名"
 
-#: org/jmol/script/ScriptError.java:244
+#: org/jmol/script/ScriptError.java:246
 msgid "file not found"
 msgstr "文件未找到"
 
-#: org/jmol/script/ScriptError.java:247
+#: org/jmol/script/ScriptError.java:249
 msgid "incompatible arguments"
 msgstr "参数不相容"
 
-#: org/jmol/script/ScriptError.java:250
+#: org/jmol/script/ScriptError.java:252
 msgid "insufficient arguments"
 msgstr "缺少参数"
 
-#: org/jmol/script/ScriptError.java:253
+#: org/jmol/script/ScriptError.java:255
 msgid "integer expected"
 msgstr "需要整数"
 
-#: org/jmol/script/ScriptError.java:256
+#: org/jmol/script/ScriptError.java:258
 #, java-format
 msgid "integer out of range ({0} - {1})"
 msgstr "整数超出({0} - {1})范围"
 
-#: org/jmol/script/ScriptError.java:259
+#: org/jmol/script/ScriptError.java:261
 msgid "invalid argument"
 msgstr "无效参数"
 
-#: org/jmol/script/ScriptError.java:262
+#: org/jmol/script/ScriptError.java:264
 msgid "invalid parameter order"
 msgstr "参数顺序无效"
 
-#: org/jmol/script/ScriptError.java:265
+#: org/jmol/script/ScriptError.java:267
 msgid "keyword expected"
 msgstr "需要关键词"
 
-#: org/jmol/script/ScriptError.java:268
+#: org/jmol/script/ScriptError.java:270
 msgid "no MO coefficient data available"
 msgstr "无分子轨域(MO)的系数数据可用"
 
-#: org/jmol/script/ScriptError.java:271
+#: org/jmol/script/ScriptError.java:273
 #, java-format
 msgid "An MO index from 1 to {0} is required"
 msgstr "分子轨域(MO)索引值必须介在1到{0}之间"
 
-#: org/jmol/script/ScriptError.java:274
+#: org/jmol/script/ScriptError.java:276
 msgid "no MO basis/coefficient data available for this frame"
 msgstr "这个结构没有分子轨域(MO)的基底(basis)或参数资料可用"
 
-#: org/jmol/script/ScriptError.java:277
+#: org/jmol/script/ScriptError.java:279
 msgid "no MO occupancy data available"
 msgstr "没有分子轨域(MO)的占据数据可用"
 
-#: org/jmol/script/ScriptError.java:280
+#: org/jmol/script/ScriptError.java:282
 msgid "Only one molecular orbital is available in this file"
 msgstr "在这个文件中只有一个分子轨域(MO)可用"
 
-#: org/jmol/script/ScriptError.java:283
+#: org/jmol/script/ScriptError.java:285
 #, java-format
 msgid "{0} require that only one model be displayed"
 msgstr "{0} 要求只显示一个模型"
 
-#: org/jmol/script/ScriptError.java:286
+#: org/jmol/script/ScriptError.java:288
 #, java-format
 msgid "{0} requires that only one model be loaded"
 msgstr "{0} 要求仅有一个模型被加载"
 
-#: org/jmol/script/ScriptError.java:289
+#: org/jmol/script/ScriptError.java:291
 msgid "No data available"
 msgstr "无可用数据"
 
-#: org/jmol/script/ScriptError.java:293
+#: org/jmol/script/ScriptError.java:295
 msgid ""
 "No partial charges were read from the file; Jmol needs these to render the "
 "MEP data."
 msgstr "未从文件中读取到局部电荷；Jmol需要它们来 MEP 数据。"
 
-#: org/jmol/script/ScriptError.java:296
+#: org/jmol/script/ScriptError.java:298
 msgid "No unit cell"
 msgstr "无单位晶格"
 
-#: org/jmol/script/ScriptError.java:299
-#: org/jmol/script/ScriptTokenParser.java:1421
+#: org/jmol/script/ScriptError.java:301
+#: org/jmol/script/ScriptTokenParser.java:1523
 msgid "number expected"
 msgstr "需要数值"
 
-#: org/jmol/script/ScriptError.java:302
+#: org/jmol/script/ScriptError.java:304
 #, java-format
 msgid "number must be ({0} or {1})"
 msgstr "数值必需是({0} 或 {1})"
 
-#: org/jmol/script/ScriptError.java:305
+#: org/jmol/script/ScriptError.java:307
 #, java-format
 msgid "decimal number out of range ({0} - {1})"
 msgstr "十进位数值超出({0} - {1})之间"
 
-#: org/jmol/script/ScriptError.java:308
+#: org/jmol/script/ScriptError.java:310
 msgid "object name expected after '$'"
 msgstr "'$'之后应该是对象名"
 
-#: org/jmol/script/ScriptError.java:312
+#: org/jmol/script/ScriptError.java:314
 #, java-format
 msgid ""
 "plane expected -- either three points or atom expressions or {0} or {1} or "
 "{2}"
 msgstr "需要有平面——3个点或原子表示式，或 {0} 或 {1} 或 {2}"
 
-#: org/jmol/script/ScriptError.java:315
+#: org/jmol/script/ScriptError.java:317
 msgid "property name expected"
 msgstr "需要属性名"
 
-#: org/jmol/script/ScriptError.java:318
+#: org/jmol/script/ScriptError.java:320
 #, java-format
 msgid "space group {0} was not found."
 msgstr "空间群{0} 未发现"
 
-#: org/jmol/script/ScriptError.java:321
+#: org/jmol/script/ScriptError.java:323
 msgid "quoted string expected"
 msgstr "需要有加引号的字符串"
 
-#: org/jmol/script/ScriptError.java:324
+#: org/jmol/script/ScriptError.java:326
 msgid "quoted string or identifier expected"
 msgstr "需要有加引号的字符或标识符"
 
-#: org/jmol/script/ScriptError.java:327
+#: org/jmol/script/ScriptError.java:329
 msgid "too many rotation points were specified"
 msgstr "指定了太多的旋转点"
 
-#: org/jmol/script/ScriptError.java:330
+#: org/jmol/script/ScriptError.java:332
 msgid "too many script levels"
 msgstr "脚本层次太多"
 
-#: org/jmol/script/ScriptError.java:333
+#: org/jmol/script/ScriptError.java:335
 msgid "unrecognized atom property"
 msgstr "无法辩识的原子属性"
 
-#: org/jmol/script/ScriptError.java:336
+#: org/jmol/script/ScriptError.java:338
 msgid "unrecognized bond property"
 msgstr "无法辩识的化学键属性"
 
-#: org/jmol/script/ScriptError.java:339
+#: org/jmol/script/ScriptError.java:341
 msgid "unrecognized command"
 msgstr "无法辨识的指令"
 
-#: org/jmol/script/ScriptError.java:342
+#: org/jmol/script/ScriptError.java:344
 msgid "runtime unrecognized expression"
 msgstr "执行时无法辨识的表示式"
 
-#: org/jmol/script/ScriptError.java:345
+#: org/jmol/script/ScriptError.java:347
 msgid "unrecognized object"
 msgstr "无法辨识的对象"
 
-#: org/jmol/script/ScriptError.java:348
-#: org/jmol/script/ScriptTokenParser.java:1439
+#: org/jmol/script/ScriptError.java:350
+#: org/jmol/script/ScriptTokenParser.java:1541
 #, java-format
 msgid "unrecognized {0} parameter"
 msgstr "无法识别参数：{0}"
 
-#: org/jmol/script/ScriptError.java:352
+#: org/jmol/script/ScriptError.java:354
 #, java-format
 msgid "unrecognized {0} parameter in Jmol state script (set anyway)"
 msgstr "Jmol 状态脚本中参数 {0} 无法辨识"
 
-#: org/jmol/script/ScriptError.java:355
+#: org/jmol/script/ScriptError.java:357
 #, java-format
 msgid "unrecognized SHOW parameter --  use {0}"
 msgstr "无法辨识 SHOW 的参数 -- 使用{0}"
 
-#: org/jmol/script/ScriptError.java:361
+#: org/jmol/script/ScriptError.java:363
 #, java-format
 msgid "write what? {0} or {1} \"filename\""
 msgstr "写什么呢？{0} 或 {1} \"文件名\""
 
-#: org/jmol/script/ScriptError.java:410 org/jmol/script/ScriptEval.java:6338
+#: org/jmol/script/ScriptError.java:412 org/jmol/script/ScriptEval.java:6447
 msgid "script ERROR: "
 msgstr "脚本错误： "
 
-#: org/jmol/script/ScriptEval.java:3255
+#: org/jmol/script/ScriptEval.java:3263
 #, java-format
 msgid "show saved: {0}"
 msgstr ""
 
-#: org/jmol/script/ScriptEval.java:3269 org/jmol/script/ScriptEval.java:7984
+#: org/jmol/script/ScriptEval.java:3277 org/jmol/script/ScriptEval.java:7960
 #, java-format
 msgid "{0} atoms deleted"
 msgstr "己删除 {0} 个原子"
 
-#: org/jmol/script/ScriptEval.java:3896 org/jmol/scriptext/CmdExt.java:362
+#: org/jmol/script/ScriptEval.java:3995 org/jmol/scriptext/CmdExt.java:643
 #, java-format
 msgid "{0} hydrogen bonds"
 msgstr "{0} 个氢键"
 
-#: org/jmol/script/ScriptEval.java:4495
+#: org/jmol/script/ScriptEval.java:4649
 #, java-format
 msgid "file {0} created"
 msgstr "已创建文件： {0}"
 
-#: org/jmol/script/ScriptEval.java:7557
+#: org/jmol/script/ScriptEval.java:7667
 #, java-format
 msgid "to resume, enter: &{0}"
 msgstr ""
 
-#: org/jmol/script/ScriptTokenParser.java:1388
+#: org/jmol/script/ScriptTokenParser.java:1490
 #, java-format
 msgid "invalid context for {0}"
 msgstr "上下文对 {0} 无效"
 
-#: org/jmol/script/ScriptTokenParser.java:1394
+#: org/jmol/script/ScriptTokenParser.java:1496
 msgid "{ number number number } expected"
 msgstr "需要 {数值 数值 数值}"
 
-#: org/jmol/script/ScriptTokenParser.java:1400
+#: org/jmol/script/ScriptTokenParser.java:1502
 msgid "end of expression expected"
 msgstr "需要表达式结尾"
 
-#: org/jmol/script/ScriptTokenParser.java:1403
+#: org/jmol/script/ScriptTokenParser.java:1505
 msgid "identifier or residue specification expected"
 msgstr "需要标识符或指定残基"
 
-#: org/jmol/script/ScriptTokenParser.java:1406
+#: org/jmol/script/ScriptTokenParser.java:1508
 msgid "invalid atom specification"
 msgstr "指定原子无效"
 
-#: org/jmol/script/ScriptTokenParser.java:1409
+#: org/jmol/script/ScriptTokenParser.java:1511
 msgid "invalid chain specification"
 msgstr "指定键无效"
 
-#: org/jmol/script/ScriptTokenParser.java:1412
+#: org/jmol/script/ScriptTokenParser.java:1514
 #, java-format
 msgid "invalid expression token: {0}"
 msgstr "表达式标记无效：{0}"
 
-#: org/jmol/script/ScriptTokenParser.java:1415
+#: org/jmol/script/ScriptTokenParser.java:1517
 msgid "invalid model specification"
 msgstr "指定模型无效"
 
-#: org/jmol/script/ScriptTokenParser.java:1418
+#: org/jmol/script/ScriptTokenParser.java:1520
 #, java-format
 msgid "missing END for {0}"
 msgstr "{0} 缺失 END 结束符"
 
-#: org/jmol/script/ScriptTokenParser.java:1424
+#: org/jmol/script/ScriptTokenParser.java:1526
 msgid "number or variable name expected"
 msgstr "需要数字或变量名"
 
-#: org/jmol/script/ScriptTokenParser.java:1427
+#: org/jmol/script/ScriptTokenParser.java:1529
 msgid "residue specification (ALA, AL?, A*) expected"
 msgstr "需要指定残基 (ALA, AL?, A*)"
 
-#: org/jmol/script/ScriptTokenParser.java:1430
+#: org/jmol/script/ScriptTokenParser.java:1532
 #, java-format
 msgid "{0} expected"
 msgstr "需要{0}"
 
-#: org/jmol/script/ScriptTokenParser.java:1433
+#: org/jmol/script/ScriptTokenParser.java:1535
 #, java-format
 msgid "{0} unexpected"
 msgstr "不需要 {0}"
 
-#: org/jmol/script/ScriptTokenParser.java:1436
+#: org/jmol/script/ScriptTokenParser.java:1538
 #, java-format
 msgid "unrecognized expression token: {0}"
 msgstr "无法识别的表达式标记：{0}"
 
-#: org/jmol/script/ScriptTokenParser.java:1442
+#: org/jmol/script/ScriptTokenParser.java:1544
 #, java-format
 msgid "unrecognized token: {0}"
 msgstr "无法识别标记：{0}"
 
-#: org/jmol/scriptext/CmdExt.java:340
+#: org/jmol/scriptext/CmdExt.java:621
 #, java-format
 msgid "{0} charges modified"
 msgstr ""
 
-#: org/jmol/scriptext/CmdExt.java:431
+#: org/jmol/scriptext/CmdExt.java:729
 #, java-format
 msgid "{0} struts added"
 msgstr "已增加 {0} struts"
 
-#: org/jmol/scriptext/CmdExt.java:545
+#: org/jmol/scriptext/CmdExt.java:865
 #, java-format
 msgid "Note: Enable looping using {0}"
 msgstr ""
 
-#: org/jmol/scriptext/CmdExt.java:547
+#: org/jmol/scriptext/CmdExt.java:867
 #, java-format
 msgid "Animation delay based on: {0}"
 msgstr ""
 
-#: org/jmol/scriptext/CmdExt.java:1609
+#: org/jmol/scriptext/CmdExt.java:1872
 #, java-format
 msgid "{0} connections deleted"
 msgstr "己删除 {0} 个连接"
 
-#: org/jmol/scriptext/CmdExt.java:1621
+#: org/jmol/scriptext/CmdExt.java:1884
 #, java-format
 msgid "{0} new bonds; {1} modified"
 msgstr "{0} 个新化学键; {1} 个己修改"
 
-#: org/jmol/scriptext/MathExt.java:2699
+#: org/jmol/scriptext/MathExt.java:3661
 msgid "Note: More than one model is involved in this contact!"
 msgstr ""
 
-#: org/jmol/shape/Frank.java:81
+#: org/jmol/shape/Frank.java:92
 msgid "Click for menu..."
 msgstr "点击出现菜单..."
 
@@ -2281,290 +2307,293 @@ msgstr ""
 "\n"
 "更多信息请参阅 http://www.jmol.org"
 
-#: org/jmol/util/GenericApplet.java:676
+#: org/jmol/util/GenericApplet.java:681
 msgid "File Error:"
 msgstr "文件错误："
 
-#: org/jmol/viewer/ActionManager.java:230
+#: org/jmol/viewer/ActionManager.java:231
 #, java-format
 msgid "assign/new atom or bond (requires {0})"
 msgstr "指定/新建原子或键 (需要 {0} )"
 
-#: org/jmol/viewer/ActionManager.java:234
+#: org/jmol/viewer/ActionManager.java:235
 msgid "pop up recent context menu (click on Jmol frank)"
 msgstr "单出最近的上下文菜单（直接点击Jmol）"
 
-#: org/jmol/viewer/ActionManager.java:236
+#: org/jmol/viewer/ActionManager.java:237
 #, java-format
 msgid "delete atom (requires {0})"
 msgstr "删除原子 (需要 {0} )"
 
-#: org/jmol/viewer/ActionManager.java:238
+#: org/jmol/viewer/ActionManager.java:239
 #, java-format
 msgid "delete bond (requires {0})"
 msgstr "删除键（需要 {0} ）"
 
-#: org/jmol/viewer/ActionManager.java:240
+#: org/jmol/viewer/ActionManager.java:241
 #, java-format
 msgid "adjust depth (back plane; requires {0})"
 msgstr "调整深度（后面板；需要 {0}）"
 
-#: org/jmol/viewer/ActionManager.java:241
+#: org/jmol/viewer/ActionManager.java:242
 #, java-format
 msgid "move atom (requires {0})"
 msgstr "移动原子 (需要 {0} )"
 
-#: org/jmol/viewer/ActionManager.java:244
+#: org/jmol/viewer/ActionManager.java:245
 #, java-format
 msgid "move whole DRAW object (requires {0})"
 msgstr "移动整个 DRAW 对象 (需要 {0})"
 
-#: org/jmol/viewer/ActionManager.java:246
+#: org/jmol/viewer/ActionManager.java:247
 #, java-format
 msgid "move specific DRAW point (requires {0})"
 msgstr "移动特定 DRAW 点 (需要 {0})"
 
-#: org/jmol/viewer/ActionManager.java:247
+#: org/jmol/viewer/ActionManager.java:248
 #, java-format
 msgid "move label (requires {0})"
 msgstr "移动标记 (需要 {0})"
 
-#: org/jmol/viewer/ActionManager.java:250
+#: org/jmol/viewer/ActionManager.java:251
 #, java-format
 msgid "move atom and minimize molecule (requires {0})"
 msgstr "移动原子并最小化分子 (需要 {0} )"
 
-#: org/jmol/viewer/ActionManager.java:253
+#: org/jmol/viewer/ActionManager.java:254
 #, java-format
 msgid "move and minimize molecule (requires {0})"
 msgstr "移动并最小化分子 (需要 {0} )"
 
-#: org/jmol/viewer/ActionManager.java:256
+#: org/jmol/viewer/ActionManager.java:257
 #, java-format
 msgid "move selected atoms (requires {0})"
 msgstr "移动所选原子 (需要 {0})"
 
-#: org/jmol/viewer/ActionManager.java:258
+#: org/jmol/viewer/ActionManager.java:259
 #, java-format
 msgid "drag atoms in Z direction (requires {0})"
 msgstr ""
 
-#: org/jmol/viewer/ActionManager.java:260
+#: org/jmol/viewer/ActionManager.java:261
 msgid "simulate multi-touch using the mouse)"
 msgstr "用鼠标模拟多点触控(multi-touch)"
 
-#: org/jmol/viewer/ActionManager.java:262
+#: org/jmol/viewer/ActionManager.java:263
 #, java-format
 msgid "translate navigation point (requires {0} and {1})"
 msgstr "翻译导航点（需要{0} 和{1}）"
 
-#: org/jmol/viewer/ActionManager.java:264
+#: org/jmol/viewer/ActionManager.java:265
 msgid "pick an atom"
 msgstr "请选取原子"
 
-#: org/jmol/viewer/ActionManager.java:266
+#: org/jmol/viewer/ActionManager.java:267
 #, java-format
 msgid "connect atoms (requires {0})"
 msgstr "连接原子（需要 {0} ）"
 
-#: org/jmol/viewer/ActionManager.java:268
+#: org/jmol/viewer/ActionManager.java:269
 #, java-format
 msgid "pick an ISOSURFACE point (requires {0}"
 msgstr "选取一个等平面(Isosurface)点 (需要{0})"
 
-#: org/jmol/viewer/ActionManager.java:270
+#: org/jmol/viewer/ActionManager.java:271
 #, java-format
 msgid "pick a label to toggle it hidden/displayed (requires {0})"
 msgstr "选取一个标签在切换其显示/隐藏(需要{0})"
 
-#: org/jmol/viewer/ActionManager.java:277
+#: org/jmol/viewer/ActionManager.java:278
 #, java-format
 msgid ""
 "pick an atom to include it in a measurement (after starting a measurement or "
 "after {0})"
 msgstr "选取一个原子以把它包括在测量中（在开始一次测量或 {0} 之后）"
 
-#: org/jmol/viewer/ActionManager.java:280
+#: org/jmol/viewer/ActionManager.java:281
 #, java-format
 msgid "pick a point or atom to navigate to (requires {0})"
 msgstr "拾取一点或一个原子以进行导航（需要 {0}）"
 
-#: org/jmol/viewer/ActionManager.java:283
+#: org/jmol/viewer/ActionManager.java:284
 #, java-format
 msgid "pick a DRAW point (for measurements) (requires {0}"
 msgstr "请选取 DRAW 点 (以用测量) (需要{0})"
 
-#: org/jmol/viewer/ActionManager.java:286
+#: org/jmol/viewer/ActionManager.java:287
 msgid "pop up the full context menu"
 msgstr "弹出完整的上下文菜单"
 
-#: org/jmol/viewer/ActionManager.java:288
+#: org/jmol/viewer/ActionManager.java:289
 msgid "reset (when clicked off the model)"
 msgstr "重设（单击关闭模型时）"
 
-#: org/jmol/viewer/ActionManager.java:289
+#: org/jmol/viewer/ActionManager.java:290
 msgid "rotate"
 msgstr "旋转"
 
-#: org/jmol/viewer/ActionManager.java:291
+#: org/jmol/viewer/ActionManager.java:292
 #, java-format
 msgid "rotate branch around bond (requires {0})"
 msgstr "绕键旋转侧枝 (需要 {0} )"
 
-#: org/jmol/viewer/ActionManager.java:293
+#: org/jmol/viewer/ActionManager.java:294
 #, java-format
 msgid "rotate selected atoms (requires {0})"
 msgstr "旋转所选原子 (需要 {0})"
 
-#: org/jmol/viewer/ActionManager.java:294
+#: org/jmol/viewer/ActionManager.java:295
 msgid "rotate Z"
 msgstr "绕 Z 轴旋转"
 
-#: org/jmol/viewer/ActionManager.java:299
+#: org/jmol/viewer/ActionManager.java:300
 msgid ""
 "rotate Z (horizontal motion of mouse) or zoom (vertical motion of mouse)"
 msgstr "旋转 Z （鼠标水平移动）或放大（鼠标垂直移动）"
 
-#: org/jmol/viewer/ActionManager.java:300
+#: org/jmol/viewer/ActionManager.java:301
 #, java-format
 msgid "select an atom (requires {0})"
 msgstr "选择一个原子（需要{0}）"
 
-#: org/jmol/viewer/ActionManager.java:303
+#: org/jmol/viewer/ActionManager.java:304
 #, java-format
 msgid "select and drag atoms (requires {0})"
 msgstr "选择并拖动原子（需要 {0} ）"
 
-#: org/jmol/viewer/ActionManager.java:305
+#: org/jmol/viewer/ActionManager.java:306
 #, java-format
 msgid "unselect this group of atoms (requires {0})"
 msgstr "取消选取这群原子（需要 {0} ）"
 
-#: org/jmol/viewer/ActionManager.java:308
+#: org/jmol/viewer/ActionManager.java:309
 #, java-format
 msgid "select NONE (requires {0})"
 msgstr "全都不选（需要{0})"
 
-#: org/jmol/viewer/ActionManager.java:310
+#: org/jmol/viewer/ActionManager.java:311
 #, java-format
 msgid "add this group of atoms to the set of selected atoms (requires {0})"
 msgstr "把这群原子增加到已选原子集中（需要 {0}）"
 
-#: org/jmol/viewer/ActionManager.java:313
+#: org/jmol/viewer/ActionManager.java:314
 #, java-format
 msgid "toggle selection (requires {0})"
 msgstr "切换选取模式 (需要 {0} )"
 
-#: org/jmol/viewer/ActionManager.java:320
+#: org/jmol/viewer/ActionManager.java:321
 #, java-format
 msgid ""
 "if all are selected, unselect all, otherwise add this group of atoms to the "
 "set of selected atoms (requires {0})"
 msgstr "如果已全选，则取消全选，否则把这群原子增加到已选取原子集中（需要 {0})"
 
-#: org/jmol/viewer/ActionManager.java:323
+#: org/jmol/viewer/ActionManager.java:324
 msgid "pick an atom to initiate or conclude a measurement"
 msgstr "选取一个初始原子或结束测量"
 
-#: org/jmol/viewer/ActionManager.java:325
+#: org/jmol/viewer/ActionManager.java:326
 #, java-format
 msgid "adjust slab (front plane; requires {0})"
 msgstr "调整平板（前面板；需要{0}）"
 
-#: org/jmol/viewer/ActionManager.java:327
+#: org/jmol/viewer/ActionManager.java:328
 #, java-format
 msgid "move slab/depth window (both planes; requires {0})"
 msgstr "移动平板/深度窗口（两个平面；需要{0}）"
 
-#: org/jmol/viewer/ActionManager.java:329
+#: org/jmol/viewer/ActionManager.java:330
 msgid "zoom (along right edge of window)"
 msgstr "缩放 (沿着窗口右侧)"
 
-#: org/jmol/viewer/ActionManager.java:335
+#: org/jmol/viewer/ActionManager.java:336
 #, java-format
 msgid "click on two points to spin around axis counterclockwise (requires {0})"
 msgstr "点击两点以绕轴逆时钟转动 (需要{0} )"
 
-#: org/jmol/viewer/ActionManager.java:338
+#: org/jmol/viewer/ActionManager.java:339
 #, java-format
 msgid "click on two points to spin around axis clockwise (requires {0})"
 msgstr "点击两点以绕轴顺时钟转动 (需要{0} )"
 
-#: org/jmol/viewer/ActionManager.java:341
+#: org/jmol/viewer/ActionManager.java:342
 #, java-format
 msgid "stop motion (requires {0})"
 msgstr "停止活动（需要 {0} ）"
 
-#: org/jmol/viewer/ActionManager.java:346
+#: org/jmol/viewer/ActionManager.java:347
 msgid "spin model (swipe and release button and stop motion simultaneously)"
 msgstr "自旋模型(挥动并松开鼠标键，同时停止运动)"
 
-#: org/jmol/viewer/ActionManager.java:347
+#: org/jmol/viewer/ActionManager.java:348
 msgid "translate"
 msgstr "翻译"
 
-#: org/jmol/viewer/ActionManager.java:348
+#: org/jmol/viewer/ActionManager.java:349
 msgid "zoom"
 msgstr "缩放"
 
-#: org/jmol/viewer/ActionManager.java:1968
+#: org/jmol/viewer/ActionManager.java:1991
 msgid "pick one more atom in order to spin the model around an axis"
 msgstr "请再多选一个原子来使分子可以一个轴旋转"
 
-#: org/jmol/viewer/ActionManager.java:1969
+#: org/jmol/viewer/ActionManager.java:1992
 msgid "pick two atoms in order to spin the model around an axis"
 msgstr "选取两个原子，使分子可以绕轴自旋"
 
-#: org/jmol/viewer/ActionManager.java:1973
+#: org/jmol/viewer/ActionManager.java:1996
 msgid "pick one more atom in order to display the symmetry relationship"
 msgstr "选择另一个原子以显示对称性关系"
 
-#: org/jmol/viewer/ActionManager.java:1975
+#: org/jmol/viewer/ActionManager.java:1998
 msgid ""
 "pick two atoms in order to display the symmetry relationship between them"
 msgstr "选择两个原子以显示它们之间的对称性关系"
 
-#: org/jmol/viewer/OutputManager.java:731
+#: org/jmol/viewer/OutputManager.java:794
 msgid "canceled"
 msgstr ""
 
-#: org/jmol/viewer/OutputManager.java:732
+#: org/jmol/viewer/OutputManager.java:795
 #, java-format
 msgid "{0} saved"
 msgstr ""
 
-#: org/jmol/viewer/OutputManager.java:787
+#: org/jmol/viewer/OutputManager.java:861
 #, java-format
 msgid "Setting log file to {0}"
 msgstr "设定日志文件为 {0}"
 
-#: org/jmol/viewer/OutputManager.java:789
+#: org/jmol/viewer/OutputManager.java:863
 msgid "Cannot set log file path."
 msgstr "无法设置日志文件路径"
 
-#: org/jmol/viewer/SelectionManager.java:109
-#: org/jmol/viewer/SelectionManager.java:117
+#: org/jmol/viewer/SelectionManager.java:114
+#: org/jmol/viewer/SelectionManager.java:125
 #, java-format
 msgid "{0} atoms hidden"
 msgstr "{0} 个原子己隐藏"
 
-#: org/jmol/viewer/SelectionManager.java:180
+#: org/jmol/viewer/SelectionManager.java:186
 #, java-format
 msgid "{0} atoms selected"
 msgstr "{0} 个原子己选定"
 
-#: org/jmol/viewer/Viewer.java:4389
+#: org/jmol/viewer/Viewer.java:4158
 msgid "Drag to move label"
 msgstr "拖拽移动标签"
 
-#: org/jmol/viewer/Viewer.java:8204
+#: org/jmol/viewer/Viewer.java:7868
 msgid "clipboard is not accessible -- use signed applet"
 msgstr "不能存取剪贴板——请用使用签署过的小程序 (applet)"
 
-#: org/jmol/viewer/Viewer.java:9425
+#: org/jmol/viewer/Viewer.java:9049
 #, java-format
 msgid "{0} hydrogens added"
 msgstr "{0} 个氢原子已增加"
+
+#~ msgid "Hide Symmetry"
+#~ msgstr "隐藏对称性"
 
 #~ msgid "Loading Jmol applet ..."
 #~ msgstr "载入 Jmol 小程序中 ..."

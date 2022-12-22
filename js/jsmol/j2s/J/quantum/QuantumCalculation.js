@@ -3,9 +3,9 @@ Clazz.load (null, "J.quantum.QuantumCalculation", ["JU.P3", "J.quantum.QMAtom", 
 c$ = Clazz.decorateAsClass (function () {
 this.doDebug = false;
 this.bsExcluded = null;
+this.integration = NaN;
 this.voxelData = null;
 this.voxelDataTemp = null;
-this.vd = null;
 this.countsXYZ = null;
 this.points = null;
 this.xMin = 0;
@@ -41,6 +41,10 @@ Clazz.prepareFields (c$, function () {
 this.originBohr =  Clazz.newFloatArray (3, 0);
 this.stepBohr =  Clazz.newFloatArray (3, 0);
 });
+Clazz.defineMethod (c$, "getIntegration", 
+function () {
+return this.integration;
+});
 Clazz.defineMethod (c$, "initialize", 
 function (nX, nY, nZ, points) {
 this.initialize0 (nX, nY, nZ, points);
@@ -75,7 +79,8 @@ this.stepBohr[i] = stepsXYZ[i] * this.unitFactor;
 this.volume *= this.stepBohr[i];
 }
 JU.Logger.info ("QuantumCalculation:\n origin = " + JU.Escape.eAF (originXYZ) + "\n steps = " + JU.Escape.eAF (stepsXYZ) + "\n origin(Bohr)= " + JU.Escape.eAF (this.originBohr) + "\n steps(Bohr)= " + JU.Escape.eAF (this.stepBohr) + "\n counts= " + this.nX + " " + this.nY + " " + this.nZ);
-}this.qmAtoms =  new Array (renumber ? bsSelected.cardinality () : xyz.length);
+}if (atoms == null) return;
+this.qmAtoms =  new Array (renumber ? bsSelected.cardinality () : xyz.length);
 var isAll = (bsSelected == null);
 var i0 = (isAll ? this.qmAtoms.length - 1 : bsSelected.nextSetBit (0));
 for (var i = i0, j = 0; i >= 0; i = (isAll ? i - 1 : bsSelected.nextSetBit (i + 1))) this.qmAtoms[renumber ? j++ : i] =  new J.quantum.QMAtom (i, xyz[i], atoms[i], this.X, this.Y, this.Z, this.X2, this.Y2, this.Z2, this.unitFactor);
@@ -86,7 +91,7 @@ function (pt) {
 this.doDebug = false;
 if (this.points == null || this.nX != 1) this.initializeOnePoint ();
 this.points[0].setT (pt);
-this.voxelDataTemp[0][0][0] = 0;
+this.voxelData[0][0][0] = this.voxelDataTemp[0][0][0] = 0;
 this.setXYZBohr (this.points);
 this.processPoints ();
 return this.voxelData[0][0][0];

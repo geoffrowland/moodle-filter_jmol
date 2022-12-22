@@ -148,7 +148,7 @@ this.qtOffset.setT (qtOffset);
 this.isQ = isQ;
 if (isQ) qtOffset = null;
 this.calculate (qtOffset, isQ);
-if (!Float.isNaN (this.vOcc)) this.occValue = this.getOccupancy ();
+if (!Float.isNaN (this.vOcc)) this.getOccupancy (true);
 }if (isOn) {
 this.addTo (a, 1);
 this.enabled = true;
@@ -162,19 +162,20 @@ this.ptTemp.scale (this.$scale * scale);
 if (a != null) {
 this.symmetry.toCartesian (this.ptTemp, true);
 a.add (this.ptTemp);
-}if (this.mxyz != null) this.setVib (isReset);
+}if (this.mxyz != null) this.setVib (isReset, scale);
 }, "JU.T3,~N");
 Clazz.defineMethod (c$, "setVib", 
- function (isReset) {
+ function (isReset, modulationScale) {
+if (isReset) {
 this.vib.setT (this.v0);
-if (isReset) return;
-this.ptTemp.setT (this.mxyz);
-this.ptTemp.scale (this.$scale * this.$scale);
+return;
+}this.ptTemp.setT (this.mxyz);
 this.symmetry.toCartesian (this.ptTemp, true);
 JU.PT.fixPtFloats (this.ptTemp, 10000.0);
-this.ptTemp.scale (this.vib.modScale);
-this.vib.add (this.ptTemp);
-}, "~B");
+this.ptTemp.add (this.v0);
+this.ptTemp.scale (this.vib.modScale * modulationScale * this.$scale);
+this.vib.setT (this.ptTemp);
+}, "~B,~N");
 Clazz.overrideMethod (c$, "getState", 
 function () {
 var s = "";
@@ -187,7 +188,7 @@ function (asEnabled) {
 return (asEnabled ? this : this.r0);
 }, "~B");
 Clazz.overrideMethod (c$, "getModulation", 
-function (type, tuv) {
+function (type, tuv, occ100) {
 this.getModCalc ();
 switch (type) {
 case 'D':
@@ -199,10 +200,15 @@ this.modCalc.calculate (tuv, false);
 var ta = this.modCalc.rI.getArray ();
 return JU.P3.new3 (ta[0][0], (this.modDim > 1 ? ta[1][0] : 0), (this.modDim > 2 ? ta[2][0] : 0));
 case 'O':
-return Float.$valueOf (Math.abs (tuv == null ? this.getOccupancy100 (false) : this.modCalc.calculate (tuv, false).getOccupancy100 (false)));
+if (tuv == null) {
+return Float.$valueOf (occ100 ? this.getOccupancy100 (false) : this.getOccupancy (false));
+}this.modCalc.calculate (tuv, false);
+var f = this.modCalc.getOccupancy (occ100);
+if (occ100) f = this.modCalc.getOccupancy100 (false);
+return Float.$valueOf (Math.abs (f));
 }
 return null;
-}, "~S,JU.T3");
+}, "~S,JU.T3,~B");
 Clazz.overrideMethod (c$, "setCalcPoint", 
 function (pt, t456, vibScale, scale) {
 if (this.enabled) {
@@ -247,7 +253,7 @@ modInfo.put ("rsvs", this.rsvs);
 modInfo.put ("sigma", this.sigma.getArray ());
 modInfo.put ("symop", Integer.$valueOf (this.iop + 1));
 modInfo.put ("strop", this.strop);
-modInfo.put ("unitcell", this.symmetry.getUnitCellInfo ());
+modInfo.put ("unitcell", this.symmetry.getUnitCellInfo (true));
 var mInfo =  new JU.Lst ();
 for (var i = 0; i < this.mods.size (); i++) mInfo.addLast (this.mods.get (i).getInfo ());
 
@@ -274,7 +280,10 @@ return (this.mxyz == null ? this : this.mxyz);
 });
 Clazz.overrideMethod (c$, "scaleVibration", 
 function (m) {
-if (this.vib != null) this.vib.scale (m);
+if (this.vib == null) return;
+if (m == 0) {
+m = 1 / this.vib.modScale;
+}this.vib.scale (m);
 this.vib.modScale *= m;
 }, "~N");
 Clazz.overrideMethod (c$, "setMoment", 
@@ -292,19 +301,21 @@ function (pt, foccupancy, siteMult) {
 this.occParams = pt;
 this.fileOcc = foccupancy;
 this.occSiteMultiplicity = siteMult;
-return this.getOccupancy ();
+return this.getOccupancy (true);
 }, "~A,~N,~N");
 Clazz.overrideMethod (c$, "getOccupancy100", 
-function (isTemp) {
+function (forVibVis) {
 if (this.isCommensurate || Float.isNaN (this.vOcc)) return -2147483648;
-if (!isTemp && !this.enabled) return Clazz.doubleToInt (-this.fileOcc * 100);
-if (isTemp && this.modCalc != null) {
-this.modCalc.getOccupancy ();
+if (forVibVis) {
+if (this.modCalc != null) {
+this.modCalc.getOccupancy (true);
 return this.modCalc.getOccupancy100 (false);
-}return Clazz.floatToInt (this.occValue * 100);
+}} else {
+if (!this.enabled) return Clazz.doubleToInt (-this.fileOcc * 100);
+}return Clazz.floatToInt (this.getOccupancy (forVibVis) * 100);
 }, "~B");
 Clazz.defineMethod (c$, "getOccupancy", 
- function () {
+ function (checkCutoff) {
 var occ;
 if (this.occAbsolute) {
 occ = this.vOcc;
@@ -315,7 +326,7 @@ var o_site = this.fileOcc * this.occSiteMultiplicity / this.nOps / this.occParam
 occ = o_site * (this.occParams[1] + this.vOcc);
 } else {
 occ = this.occParams[0] * (this.occParams[1] + this.vOcc);
-}occ = (occ > 0.49 && occ < 0.50 ? 0.489 : Math.min (1, Math.max (0, occ)));
-return this.occValue = occ;
-});
+}if (checkCutoff) {
+}return this.occValue = occ;
+}, "~B");
 });

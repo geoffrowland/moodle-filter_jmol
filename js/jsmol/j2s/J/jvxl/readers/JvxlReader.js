@@ -95,6 +95,7 @@ if (showMsg) JU.Logger.info ("reading jvxl data set: " + comment + this.line);
 this.haveContourData = (comment.indexOf ("+contourlines") >= 0);
 this.jvxlCutoff = this.parseFloatStr (this.line);
 JU.Logger.info ("JVXL read: cutoff " + this.jvxlCutoff);
+this.jvxlCutoffRange = this.parseFloatArray ( Clazz.newFloatArray (2, 0), "[", "]");
 var param1 = this.parseInt ();
 var param2 = this.parseInt ();
 var param3 = this.parseInt ();

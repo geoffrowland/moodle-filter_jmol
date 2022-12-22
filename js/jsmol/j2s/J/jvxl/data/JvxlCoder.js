@@ -1,12 +1,10 @@
 Clazz.declarePackage ("J.jvxl.data");
-Clazz.load (null, "J.jvxl.data.JvxlCoder", ["java.lang.Float", "JU.BS", "$.Lst", "$.P3", "$.PT", "$.SB", "J.api.Interface", "J.jvxl.data.VolumeData", "JU.BSUtil", "$.C", "$.Escape", "$.Logger"], function () {
+Clazz.load (null, "J.jvxl.data.JvxlCoder", ["java.lang.Float", "JU.BS", "$.Lst", "$.P3", "$.PT", "$.SB", "J.api.Interface", "J.jvxl.data.VolumeData", "JU.BSUtil", "$.C", "$.Escape", "$.Logger", "JV.Viewer"], function () {
 c$ = Clazz.declareType (J.jvxl.data, "JvxlCoder");
-c$.jvxlGetFileVwr = Clazz.defineMethod (c$, "jvxlGetFileVwr", 
-function (vwr, jvxlData, meshData, title, msg, includeHeader, nSurfaces, state, comment) {
-if (!J.jvxl.data.JvxlCoder.haveXMLUtil) {
-if (vwr.isJS) J.api.Interface.getInterface ("JU.XmlUtil", vwr, "show");
-J.jvxl.data.JvxlCoder.haveXMLUtil = true;
-}var data =  new JU.SB ();
+c$.jvxlGetFile = Clazz.defineMethod (c$, "jvxlGetFile", 
+function (jvxlData, meshData, title, msg, includeHeader, nSurfaces, state, comment) {
+J.jvxl.data.JvxlCoder.checkHaveXMLUtil ();
+var data =  new JU.SB ();
 if ("TRAILERONLY".equals (msg)) {
 JU.XmlUtil.closeTag (data, "jvxlSurfaceSet");
 JU.XmlUtil.closeTag (data, "jvxl");
@@ -15,8 +13,8 @@ return data.toString ();
 var isHeaderOnly = ("HEADERONLY".equals (msg));
 if (includeHeader) {
 JU.XmlUtil.openDocument (data);
-JU.XmlUtil.openTagAttr (data, "jvxl",  Clazz.newArray (-1, ["version", "2.3", "jmolVersion", jvxlData.version, "xmlns", "http://jmol.org/jvxl_schema", "xmlns:cml", "http://www.xml-cml.org/schema"]));
-if (jvxlData.jvxlFileTitle != null) JU.XmlUtil.appendCdata (data, "jvxlFileTitle", null, "\n" + jvxlData.jvxlFileTitle);
+JU.XmlUtil.openTagAttr (data, "jvxl",  Clazz.newArray (-1, ["version", "2.4", "jmolVersion", jvxlData.version, "xmlns", "http://jmol.org/jvxl_schema", "xmlns:cml", "http://www.xml-cml.org/schema"]));
+JU.XmlUtil.appendCdata (data, "jvxlFileTitle", null, jvxlData.jvxlFileTitle == null ? "\n" : "\n" + jvxlData.jvxlFileTitle);
 if (jvxlData.moleculeXml != null) data.append (jvxlData.moleculeXml);
 var volumeDataXml = (vertexDataOnly ? null : jvxlData.jvxlVolumeDataXml);
 if (volumeDataXml == null) volumeDataXml = ( new J.jvxl.data.VolumeData ()).setVolumetricXml ();
@@ -67,7 +65,13 @@ if (includeHeader) {
 JU.XmlUtil.closeTag (data, "jvxlSurfaceSet");
 JU.XmlUtil.closeTag (data, "jvxl");
 }return J.jvxl.data.JvxlCoder.jvxlSetCompressionRatio (data, jvxlData, len);
-}, "JV.Viewer,J.jvxl.data.JvxlData,J.jvxl.data.MeshData,~A,~S,~B,~N,~S,~S");
+}, "J.jvxl.data.JvxlData,J.jvxl.data.MeshData,~A,~S,~B,~N,~S,~S");
+c$.checkHaveXMLUtil = Clazz.defineMethod (c$, "checkHaveXMLUtil", 
+ function () {
+if (!J.jvxl.data.JvxlCoder.haveXMLUtil) {
+if (JV.Viewer.isJS) J.api.Interface.getInterface ("JU.XmlUtil", null, "show");
+J.jvxl.data.JvxlCoder.haveXMLUtil = true;
+}});
 c$.appendEncodedBitSetTag = Clazz.defineMethod (c$, "appendEncodedBitSetTag", 
  function (sb, name, bs, count, attribs) {
 if (count < 0) count = JU.BSUtil.cardinalityOf (bs);
@@ -111,13 +115,14 @@ return J.jvxl.data.JvxlCoder.jvxlGetInfoData (jvxlData, jvxlData.vertexDataOnly)
 c$.jvxlGetInfoData = Clazz.defineMethod (c$, "jvxlGetInfoData", 
 function (jvxlData, vertexDataOnly) {
 if (jvxlData.jvxlSurfaceData == null) return "";
+J.jvxl.data.JvxlCoder.checkHaveXMLUtil ();
 var attribs =  new JU.Lst ();
 var nSurfaceInts = jvxlData.nSurfaceInts;
 var bytesUncompressedEdgeData = (vertexDataOnly ? 0 : jvxlData.jvxlEdgeData.length - 1);
 var nColorData = (jvxlData.jvxlColorData == null ? -1 : (jvxlData.jvxlColorData.length - 1));
 J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  isModelConnected", "" + jvxlData.isModelConnected);
 if (!vertexDataOnly) {
-J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  cutoff", "" + jvxlData.cutoff);
+J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  cutoff", (jvxlData.cutoffRange == null ? "" + jvxlData.cutoff : jvxlData.cutoffRange[0] + " " + jvxlData.cutoffRange[1]));
 J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  isCutoffAbsolute", "" + jvxlData.isCutoffAbsolute);
 J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  pointsPerAngstrom", "" + jvxlData.pointsPerAngstrom);
 var n = jvxlData.jvxlSurfaceData.length + bytesUncompressedEdgeData + nColorData + 1;
@@ -161,8 +166,11 @@ J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  translucency", "" + jvxlData.tran
 if (jvxlData.meshColor != null) J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  meshColor", jvxlData.meshColor);
 if (jvxlData.colorScheme != null) J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  colorScheme", jvxlData.colorScheme);
 if (jvxlData.rendering != null) J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  rendering", jvxlData.rendering);
-if (jvxlData.thisSet >= 0) J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  set", "" + (jvxlData.thisSet + 1));
-if (jvxlData.slabValue != -2147483648) J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  slabValue", "" + jvxlData.slabValue);
+if (jvxlData.thisSet != null) {
+var s = J.jvxl.data.JvxlCoder.subsetString (jvxlData.thisSet);
+if (s.startsWith ("[")) J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  subset", s);
+ else J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  set", s);
+}if (jvxlData.slabValue != -2147483648) J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  slabValue", "" + jvxlData.slabValue);
 if (jvxlData.isSlabbable) J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  slabbable", "true");
 if (jvxlData.nVertexColors > 0) J.jvxl.data.JvxlCoder.addAttrib (attribs, "\n  nVertexColors", "" + jvxlData.nVertexColors);
 var min = (jvxlData.mappedDataMin == 3.4028235E38 ? 0 : jvxlData.mappedDataMin);
@@ -194,6 +202,16 @@ JU.XmlUtil.openTagAttr (info, "jvxlSurfaceInfo", attribs.toArray ( new Array (at
 JU.XmlUtil.closeTag (info, "jvxlSurfaceInfo");
 return info.toString ();
 }, "J.jvxl.data.JvxlData,~B");
+c$.subsetString = Clazz.defineMethod (c$, "subsetString", 
+ function (bs) {
+var n = bs.cardinality ();
+if (n > 1) {
+var a = "[ ";
+for (var ia = bs.nextSetBit (0); ia >= 0; ia = bs.nextSetBit (ia)) a += (++ia) + " ";
+
+return a + "]";
+}return "" + (bs.nextSetBit (0) + 1);
+}, "JU.BS");
 c$.addAttrib = Clazz.defineMethod (c$, "addAttrib", 
  function (attribs, name, value) {
 attribs.addLast ( Clazz.newArray (-1, [name, value]));
@@ -672,7 +690,7 @@ if (sb.length () == 0) sb.append ("Line 1\nLine 2\n");
 }, "J.jvxl.data.VolumeData,JU.SB");
 Clazz.defineStatics (c$,
 "JVXL_VERSION1", "2.0",
-"JVXL_VERSION_XML", "2.3",
+"JVXL_VERSION_XML", "2.4",
 "haveXMLUtil", false,
 "CONTOUR_NPOLYGONS", 0,
 "CONTOUR_BITSET", 1,

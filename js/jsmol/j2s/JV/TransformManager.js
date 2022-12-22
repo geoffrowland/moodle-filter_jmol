@@ -321,7 +321,7 @@ this.applyRotation (this.matrixTemp3.setAA (axisAngle), false, bsAtoms, null, fa
 Clazz.defineMethod (c$, "rotateAxisAngleAtCenter", 
 function (eval, rotCenter, rotAxis, degreesPerSecond, endDegrees, isSpin, bsAtoms) {
 if (rotCenter != null) this.moveRotationCenter (rotCenter, true);
-this.setSpinOff ();
+if (isSpin) this.setSpinOff ();
 this.setNavOn (false);
 if (this.vwr.headless) {
 if (isSpin && endDegrees == 3.4028235E38) return false;
@@ -352,7 +352,7 @@ this.rotateAxisAngle2 (this.axisangleT, bsAtoms);
 }, "~N,JU.BS");
 Clazz.defineMethod (c$, "rotateAboutPointsInternal", 
 function (eval, point1, point2, degreesPerSecond, endDegrees, isClockwise, isSpin, bsAtoms, isGesture, translation, finalPoints, dihedralList, m4) {
-this.setSpinOff ();
+if (isSpin) this.setSpinOff ();
 this.setNavOn (false);
 if (dihedralList == null && (translation == null || translation.length () < 0.001) && (isSpin ? Float.isNaN (degreesPerSecond) || degreesPerSecond == 0 : endDegrees == 0)) return false;
 var axis = null;
@@ -434,7 +434,7 @@ return 0;
 }, "~S,~N");
 Clazz.defineMethod (c$, "angstromsToPixels", 
 function (distance) {
-return Clazz.doubleToInt (Math.floor (this.scalePixelsPerAngstrom * distance));
+return this.scalePixelsPerAngstrom * distance;
 }, "~N");
 Clazz.defineMethod (c$, "translateXYBy", 
 function (xDelta, yDelta) {
@@ -480,21 +480,25 @@ if (f != 0.0) info += "translate y " + f + ";";
 return info;
 });
 Clazz.defineMethod (c$, "getOrientationText", 
-function (type) {
+function (type, isBest) {
 switch (type) {
 case 4129:
 return this.getMoveToText (1, false);
 case 1073742132:
-return this.getRotationQ ().toString ();
+var q = this.getRotationQ ();
+if (isBest) q = q.inv ();
+return q.toString ();
 case 1073742178:
 var sb =  new JU.SB ();
-JV.TransformManager.truncate2 (sb, this.getTranslationXPercent ());
-JV.TransformManager.truncate2 (sb, this.getTranslationYPercent ());
+var d = this.getTranslationXPercent ();
+JV.TransformManager.truncate2 (sb, (isBest ? -d : d));
+d = this.getTranslationYPercent ();
+JV.TransformManager.truncate2 (sb, (isBest ? -d : d));
 return sb.toString ();
 default:
 return this.getMoveToText (1, true) + "\n#OR\n" + this.getRotateZyzText (true);
 }
-}, "~N");
+}, "~N,~B");
 Clazz.defineMethod (c$, "getRotationQ", 
 function () {
 return JU.Quat.newM (this.matrixRotate);
@@ -924,6 +928,22 @@ Clazz.defineMethod (c$, "getVibrationPoint",
 function (v, pt, scale) {
 return v.setCalcPoint (pt, this.vibrationT, (Float.isNaN (scale) ? this.vibrationScale : scale), this.vwr.g.modulationScale);
 }, "JU.Vibration,JU.T3,~N");
+Clazz.defineMethod (c$, "transformPt2Df", 
+function (v, pt) {
+if (v.z == -3.4028235E38 || v.z == 3.4028235E38) {
+this.transformPt2D (v);
+pt.set (this.iScrPt.x, this.iScrPt.y, this.iScrPt.z);
+} else {
+this.transformPt3f (v, pt);
+}}, "JU.T3,JU.P3");
+Clazz.defineMethod (c$, "transformPtScrT32D", 
+function (v, pt) {
+if (v.z == -3.4028235E38 || v.z == 3.4028235E38) {
+this.transformPt2D (v);
+pt.set (this.iScrPt.x, this.iScrPt.y, this.iScrPt.z);
+} else {
+this.transformPtScrT3 (v, pt);
+}}, "JU.T3,JU.P3");
 Clazz.defineMethod (c$, "transformPt2D", 
 function (ptXyp) {
 if (ptXyp.z == -3.4028235E38) {
@@ -1453,13 +1473,15 @@ Clazz.defineMethod (c$, "setCenterAt",
 function (relativeTo, pt) {
 var pt1 = JU.P3.newP (pt);
 switch (relativeTo) {
+case 1073741826:
+break;
 case 96:
 pt1.add (this.vwr.ms.getAverageAtomPoint ());
 break;
 case 1678381065:
 pt1.add (this.vwr.getBoundBoxCenter ());
 break;
-case 1073741826:
+default:
 pt1.setT (this.rotationCenterDefault);
 break;
 }
@@ -1472,8 +1494,26 @@ if (this.frameOffsets == null || modelIndex < 0 || modelIndex >= this.frameOffse
  else this.frameOffset.setT (this.frameOffsets[modelIndex]);
 }, "~N");
 Clazz.defineMethod (c$, "setSelectedTranslation", 
-function (bsAtoms, xyz, xy) {
-this.bsSelectedAtoms = bsAtoms;
+function (bsAtoms, xyz, xy, x) {
+if (!this.perspectiveDepth) {
+var v =  new JU.V3 ();
+switch (xyz) {
+case 'X':
+case 'x':
+v.set (x, 0, 0);
+break;
+case 'Y':
+case 'y':
+v.set (0, x, 0);
+break;
+case 'Z':
+case 'z':
+v.set (0, 0, x);
+break;
+}
+this.vwr.moveAtoms (null, null, this.matrixRotate, v, this.internalRotationCenter, false, bsAtoms, true);
+return;
+}this.bsSelectedAtoms = bsAtoms;
 switch (xyz) {
 case 'X':
 case 'x':
@@ -1488,7 +1528,7 @@ case 'z':
 this.ptOffset.z += xy;
 break;
 }
-}, "JU.BS,~S,~N");
+}, "JU.BS,~S,~N,~N");
 Clazz.defineMethod (c$, "setNavFps", 
 function (navFps) {
 this.navFps = navFps;

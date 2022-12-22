@@ -13,7 +13,7 @@
 // BH 6/1/2014 8:32:12 AM added Help button; better mouse/keypress handling
 // BH 1/5/2013 12:45:19 PM
 
-Jmol.Console = {
+;Jmol.Console = {
 	buttons:{},
 	buttonWidth:100,
 	click:function(id) {
@@ -21,7 +21,7 @@ Jmol.Console = {
 	}	
 }
 
-Jmol._consoleGetImageDialog = function(vwr, title, imageMap) {
+Jmol.consoleGetImageDialog = function(vwr, title, imageMap) {
   // JmolObjectInterface
   return new Jmol.Console.Image(vwr, title, imageMap);
 }
@@ -182,6 +182,9 @@ Jmol.Console.JSConsole = function(appletConsole) {
   }
 	Jmol.$html(id + "_inputdiv", '<textarea id="' + id + '_input" style="width:'+w+'px;height:'+h+'px"></textarea>');
 	Jmol.$html(id + "_outputdiv", '<textarea id="' + id + '_output" style="width:'+w+'px;height:'+(h*2)+'px"></textarea>');
+
+		Jmol.Cache.setDragDrop(this.applet, "console_output");
+		Jmol.Cache.setDragDrop(this.applet, "console_input");
 
 	Jmol.$bind("#" + id + "_input", "keydown keypress keyup", function(event) { console.input.keyEvent(event) });
 	Jmol.$bind("#" + id + "_input", "mousedown touchstart", function(event) { console.ignoreMouse=true });
@@ -352,3 +355,4 @@ Jmol.Console.Button.prototype.html = function() {
 	return s;
 }
 
+;

@@ -12,8 +12,13 @@ var ac = this.parseInt ();
 var bondCount = this.parseInt ();
 this.readAtoms (ac);
 this.readBonds (bondCount);
+if (this.asc.ac == 0 && this.line.equals ("0") && !this.merging) {
+var atom = this.asc.addNewAtom ();
+this.setAtomCoordXYZ (atom, NaN, NaN, 0);
+this.addJmolScript ("delete thisModel");
+} else {
 this.set2D ();
-this.continuing = false;
+}this.continuing = false;
 });
 Clazz.defineMethod (c$, "readAtoms", 
  function (ac) {
@@ -31,6 +36,7 @@ elementSymbol = JU.PT.trim (elementSymbol, "-");
 atom.formalCharge = -1;
 }atom.elementSymbol = elementSymbol;
 }
+if (ac > 0) this.asc.setModelInfoForSet ("dimension", "2D", this.asc.iSet);
 }, "~N");
 Clazz.defineMethod (c$, "readBonds", 
  function (bondCount) {

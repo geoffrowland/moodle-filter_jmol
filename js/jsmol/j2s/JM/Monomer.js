@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JM");
-Clazz.load (["JM.Group"], "JM.Monomer", ["java.lang.Float", "JU.Measure", "$.P3", "$.Quat", "J.c.STR", "JM.ProteinStructure", "$.Resolver", "JU.Escape", "$.Logger", "JV.JC"], function () {
+Clazz.load (["JM.Group"], "JM.Monomer", ["java.lang.Float", "JU.Measure", "$.P3", "$.Quat", "J.c.STR", "JM.BioResolver", "$.ProteinStructure", "JU.Escape", "$.Logger", "JV.JC"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.bioPolymer = null;
 this.offsets = null;
@@ -10,6 +10,7 @@ this.omega = NaN;
 this.straightness = NaN;
 this.mu = NaN;
 this.theta = NaN;
+this.backboneBlockVis = false;
 Clazz.instantialize (this, arguments);
 }, JM, "Monomer", JM.Group);
 Clazz.makeConstructor (c$, 
@@ -63,7 +64,7 @@ var m = groups[ipt];
 if (offset == 1 && !m.isConnectedPrevious ()) return -1;
 if ("\0".equals (name)) return m.leadAtomIndex;
 var atoms = this.chain.model.ms.at;
-for (var i = m.firstAtomIndex; i <= m.lastAtomIndex; i++) if (name == null || name.equalsIgnoreCase (atoms[i].getAtomName ())) return i;
+for (var i = m.firstAtomIndex; i <= m.lastAtomIndex; i++) if (atoms[i] != null && (name == null || name.equalsIgnoreCase (atoms[i].getAtomName ()))) return i;
 
 }}return -1;
 }, "~S,~N");
@@ -237,7 +238,7 @@ var iPrev = this.monomerIndex - mStep;
 var prev = (mStep < 1 || this.monomerIndex <= 0 ? null : this.bioPolymer.monomers[iPrev]);
 var q2 = this.getQuaternion (qType);
 var q1 = (mStep < 1 ? JU.Quat.getQuaternionFrameV (JV.JC.axisX, JV.JC.axisY, JV.JC.axisZ, false) : prev == null ? null : prev.getQuaternion (qType));
-if (q1 == null || q2 == null) return this.getHelixData (tokType, qType, mStep);
+if (q1 == null || q2 == null) return Clazz.superCall (this, JM.Monomer, "getHelixData", [tokType, qType, mStep]);
 var a = (mStep < 1 ? JU.P3.new3 (0, 0, 0) : prev.getQuaternionFrameCenter (qType));
 var b = this.getQuaternionFrameCenter (qType);
 return (a == null || b == null ? this.getHelixData (tokType, qType, mStep) : JU.Escape.escapeHelical ((tokType == 135176 ? "helixaxis" + this.getUniqueID () : null), tokType, a, b, JU.Measure.computeHelicalAxis (a, b, q2.div (q1))));
@@ -342,7 +343,7 @@ return NaN;
 }, "~N");
 Clazz.overrideMethod (c$, "getGroup1", 
 function () {
-return (this.groupID < JM.Resolver.predefinedGroup1Names.length ? JM.Resolver.predefinedGroup1Names[this.groupID] : this.group1.charCodeAt (0) > 1 ? this.group1 : this.group1.charCodeAt (0) == 1 ? '?' : (this.group1 = this.getGroup1b ()));
+return (this.groupID < JM.BioResolver.predefinedGroup1Names.length ? JM.BioResolver.predefinedGroup1Names[this.groupID] : this.group1.charCodeAt (0) > 1 ? this.group1 : this.group1.charCodeAt (0) == 1 ? '?' : (this.group1 = this.getGroup1b ()));
 });
 Clazz.defineMethod (c$, "getGroup1b", 
 function () {
@@ -350,6 +351,10 @@ return '?';
 });
 Clazz.overrideMethod (c$, "setGroupID", 
 function (group3) {
-this.groupID = JM.Resolver.getGroupIdFor (group3);
+this.groupID = JM.BioResolver.getGroupIdFor (group3);
 }, "~S");
+Clazz.overrideMethod (c$, "toString", 
+function () {
+return "[" + this.getGroup3 () + "-" + this.getSeqcodeString () + " " + this.getStructure () + "]";
+});
 });

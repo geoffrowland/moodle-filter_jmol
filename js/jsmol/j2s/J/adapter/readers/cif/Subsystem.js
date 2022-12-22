@@ -44,7 +44,7 @@ var tFactor = wdd.sub (sigma_nu.mul (w3d));
 JU.Logger.info ("sigma_nu = " + sigma_nu);
 var s0 = this.msRdr.cr.asc.getSymmetry ();
 var vu43 = s0.getUnitCellVectors ();
-var vr43 = JU.SimpleUnitCell.getReciprocal (vu43, null);
+var vr43 = JU.SimpleUnitCell.getReciprocal (vu43, null, 1);
 var mard3 =  new JU.Matrix (null, 3 + this.d, 3);
 var mar3 =  new JU.Matrix (null, 3, 3);
 var mard3a = mard3.getArray ();
@@ -60,36 +60,50 @@ var uc_nu =  new Array (4);
 uc_nu[0] = vu43[0];
 for (var i = 0; i < 3; i++) uc_nu[i + 1] = JU.V3.new3 (a[i][0], a[i][1], a[i][2]);
 
-uc_nu = JU.SimpleUnitCell.getReciprocal (uc_nu, null);
+uc_nu = JU.SimpleUnitCell.getReciprocal (uc_nu, null, 1);
 this.symmetry = (this.msRdr.cr.getInterface ("JS.Symmetry")).getUnitCell (uc_nu, false, null);
 this.modMatrices =  Clazz.newArray (-1, [sigma_nu, tFactor]);
 if (!setOperators) return;
 this.isFinalized = true;
-JU.Logger.info ("unit cell parameters: " + this.symmetry.getUnitCellInfo ());
-this.symmetry.createSpaceGroup (-1, "[subsystem " + this.code + "]",  new JU.Lst ());
+JU.Logger.info ("unit cell parameters: " + this.symmetry.getUnitCellInfo (true));
+this.symmetry.createSpaceGroup (-1, "[subsystem " + this.code + "]",  new JU.Lst (), this.d);
 var nOps = s0.getSpaceGroupOperationCount ();
 for (var iop = 0; iop < nOps; iop++) {
 var rv = s0.getOperationRsVs (iop);
 var r0 = rv.getRotation ();
 var v0 = rv.getTranslation ();
-var r = this.w.mul (r0).mul (winv);
-var v = this.w.mul (v0);
+var r = this.cleanMatrix (this.w.mul (r0).mul (winv));
+var v = this.cleanMatrix (this.w.mul (v0));
 var code = this.code;
 if (this.isMixed (r)) {
 for (var e, $e = this.msRdr.htSubsystems.entrySet ().iterator (); $e.hasNext () && ((e = $e.next ()) || true);) {
 var ss = e.getValue ();
 if (ss === this) continue;
-var rj = ss.w.mul (r0).mul (winv);
+var rj = this.cleanMatrix (ss.w.mul (r0).mul (winv));
 if (!this.isMixed (rj)) {
 r = rj;
 v = ss.w.mul (v0);
 code = ss.code;
 break;
 }}
-}var jf = this.symmetry.addOp (code, r, v, sigma_nu);
+}var jf = this.symmetry.addSubSystemOp (code, r, v, sigma_nu);
 JU.Logger.info (this.code + "." + (iop + 1) + (this.code.equals (code) ? "   " : ">" + code + " ") + jf);
 }
 }, "~B");
+Clazz.defineMethod (c$, "cleanMatrix", 
+ function (m) {
+var a = m.getArray ();
+var d1 = a.length;
+var d2 = a[0].length;
+for (var i = d1; --i >= 0; ) for (var j = d2; --j >= 0; ) if (J.adapter.readers.cif.Subsystem.approxZero (a[i][j])) a[i][j] = 0;
+
+
+return m;
+}, "JU.Matrix");
+c$.approxZero = Clazz.defineMethod (c$, "approxZero", 
+ function (d) {
+return d < 1e-7 && d > -1.0E-7;
+}, "~N");
 Clazz.defineMethod (c$, "isMixed", 
  function (r) {
 var a = r.getArray ();

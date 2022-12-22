@@ -15,6 +15,7 @@ this.symopNormixes = null;
 this.visible = true;
 this.lighting = 1073741958;
 this.colorType = 0;
+this.reverseColor = false;
 this.haveXyPoints = false;
 this.diameter = 0;
 this.width = 0;
@@ -94,7 +95,7 @@ this.isShell = false;
 this.havePlanarContours = false;
 this.haveXyPoints = false;
 this.isModelConnected = false;
-this.isTriangleSet = false;
+this.isDrawPolygon = false;
 this.isTwoSided = false;
 this.lattice = null;
 this.mat4 = null;
@@ -106,7 +107,7 @@ this.showPoints = false;
 this.showTriangles = false;
 this.slabbingObject = null;
 this.slabOptions = null;
-this.spanningVectors = null;
+this.oabc = null;
 this.symopNormixes = null;
 this.title = null;
 this.unitCell = null;
@@ -140,7 +141,7 @@ return this.normixes;
 }, "~A");
 Clazz.defineMethod (c$, "getNormals", 
 function (vertices, plane) {
-this.normixCount = (this.isTriangleSet ? this.pc : this.vc);
+this.normixCount = (this.isDrawPolygon ? this.pc : this.vc);
 if (this.normixCount < 0) return null;
 var normals =  new Array (this.normixCount);
 for (var i = this.normixCount; --i >= 0; ) normals[i] =  new JU.V3 ();
@@ -151,7 +152,7 @@ this.sumVertexNormals (vertices, normals);
 var normal = JU.V3.new3 (plane.x, plane.y, plane.z);
 for (var i = this.normixCount; --i >= 0; ) normals[i] = normal;
 
-}if (!this.isTriangleSet) for (var i = this.normixCount; --i >= 0; ) {
+}if (!this.isDrawPolygon) for (var i = this.normixCount; --i >= 0; ) {
 normals[i].normalize ();
 }
 return normals;
@@ -197,7 +198,7 @@ var vB = vertices[face[1]];
 var vC = vertices[face[2]];
 if (vA.distanceSquared (vB) < min || vB.distanceSquared (vC) < min || vA.distanceSquared (vC) < min) continue;
 JU.Measure.calcNormalizedNormal (vA, vB, vC, m.vTemp, m.vAB);
-if (m.isTriangleSet) {
+if (m.isDrawPolygon) {
 normals[i].setT (m.vTemp);
 } else {
 var l = m.vTemp.length ();
@@ -355,19 +356,47 @@ function (isAll) {
 var info =  new java.util.Hashtable ();
 info.put ("id", this.thisID);
 info.put ("vertexCount", Integer.$valueOf (this.vc));
-info.put ("polygonCount", Integer.$valueOf (this.pc));
 info.put ("haveQuads", Boolean.$valueOf (this.haveQuads));
 info.put ("haveValues", Boolean.$valueOf (this.vvs != null));
+var np = this.pc;
 if (isAll) {
 if (this.vc > 0) {
 info.put ("vertices", JU.AU.arrayCopyPt (this.vs, this.vc));
 if (this.bsSlabDisplay != null) info.put ("bsVertices", this.getVisibleVBS ());
-}if (this.vvs != null) info.put ("vertexValues", JU.AU.arrayCopyF (this.vvs, this.vc));
-if (this.pc > 0) {
-info.put ("polygons", JU.AU.arrayCopyII (this.pis, this.pc));
-if (this.bsSlabDisplay != null) info.put ("bsPolygons", this.bsSlabDisplay);
-}}return info;
+}if (this.vvs != null) {
+info.put ("vertexValues", JU.AU.arrayCopyF (this.vvs, this.vc));
+}if (np > 0) {
+var ii = J.shape.Mesh.nonNull (this.pis, np);
+info.put ("polygons", ii);
+np = ii.length;
+if (this.bsSlabDisplay != null) {
+var bs = (ii.length == this.pc ? JU.BS.copy (this.bsSlabDisplay) : J.shape.Mesh.nonNullBS (this.bsSlabDisplay, this.pis, this.pc));
+info.put ("bsPolygons", bs);
+np = bs.cardinality ();
+}}}info.put ("polygonCount", Integer.$valueOf (np));
+return info;
 }, "~B");
+c$.nonNullBS = Clazz.defineMethod (c$, "nonNullBS", 
+ function (bsSlabDisplay, pis, pc) {
+var bs =  new JU.BS ();
+for (var pt = 0, i = 0; i < pc; i++) {
+if (pis[i] != null) {
+if (bsSlabDisplay.get (i)) bs.set (pt);
+pt++;
+}}
+return bs;
+}, "JU.BS,~A,~N");
+c$.nonNull = Clazz.defineMethod (c$, "nonNull", 
+ function (pis, pc) {
+var n = 0;
+for (var i = pc; --i >= 0; ) if (pis[i] != null) {
+n++;
+}
+var ii =  Clazz.newIntArray (n, 0);
+if (n > 0) for (var pt = 0, i = 0; i < pc; i++) if (pis[i] != null) ii[pt++] = pis[i];
+
+return ii;
+}, "~A,~N");
 Clazz.defineMethod (c$, "getBoundingBox", 
 function () {
 return null;

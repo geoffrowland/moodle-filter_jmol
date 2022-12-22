@@ -44,7 +44,6 @@ var vectors = this.shape;
 if (!vectors.isActive) return false;
 var mads = vectors.mads;
 if (mads == null) return false;
-var atoms = vectors.atoms;
 var colixes = vectors.colixes;
 var needTranslucent = false;
 this.vectorScale = this.vwr.getFloat (1648361473);
@@ -57,6 +56,7 @@ this.vibrationOn = this.vwr.tm.vibrationOn;
 this.headScale = -0.2;
 if (this.vectorScale < 0) this.headScale = -this.headScale;
 var haveModulations = false;
+var atoms = this.ms.at;
 for (var i = this.ms.ac; --i >= 0; ) {
 var atom = atoms[i];
 if (!this.isVisibleForMe (atom)) continue;
@@ -165,7 +165,7 @@ this.g3d.fillCylinderBits (2, d, this.ptTemp4, this.ptTemp2);
 }
 }if (this.drawShaft) {
 this.pTemp3.set (atom.sX, atom.sY, atom.sZ);
-if (this.standardVector) this.g3d.fillCylinderBits (1, this.diameter, this.pTemp3, this.screenArrowHead);
+if (this.standardVector) this.g3d.fillCylinderBits (2, this.diameter, this.pTemp3, this.screenArrowHead);
  else this.g3d.fillCylinderBits (2, this.diameter, this.screenVectorStart, this.screenArrowHead);
 }if (this.drawCap) this.g3d.fillConeScreen3f (2, this.headWidthPixels, this.screenArrowHead, this.screenVectorEnd, false);
 }, "JM.Atom,JU.Vibration");

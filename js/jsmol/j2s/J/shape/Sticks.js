@@ -5,10 +5,12 @@ this.myMask = 0;
 this.reportAll = false;
 this.bsOrderSet = null;
 this.selectedBonds = null;
+this.closestAtom = null;
 this.ptXY = null;
 Clazz.instantialize (this, arguments);
 }, J.shape, "Sticks", J.shape.Shape);
 Clazz.prepareFields (c$, function () {
+this.closestAtom =  Clazz.newIntArray (1, 0);
 this.ptXY =  new JU.P3i ();
 });
 Clazz.overrideMethod (c$, "initShape", 
@@ -49,7 +51,7 @@ this.selectedBonds = null;
 return;
 }if ("bondOrder" === propertyName) {
 if (this.bsOrderSet == null) this.bsOrderSet =  new JU.BS ();
-var order = (value).shortValue ();
+var order = (value).intValue ();
 var iter = (this.selectedBonds != null ? this.ms.getBondIterator (this.selectedBonds) : this.ms.getBondIteratorForType (65535, bs));
 while (iter.hasNext ()) {
 this.bsOrderSet.set (iter.nextIndex ());
@@ -108,20 +110,20 @@ bond.atom2.setClickable (this.vf);
 });
 Clazz.overrideMethod (c$, "getShapeState", 
 function () {
-return this.vwr.getBondState (this, this.bsOrderSet, this.reportAll);
+return null;
 });
 Clazz.overrideMethod (c$, "checkObjectHovered", 
 function (x, y, bsVisible) {
 var pt =  new JU.P3 ();
-var bond = this.findPickedBond (x, y, bsVisible, pt);
+var bond = this.findPickedBond (x, y, bsVisible, pt, this.closestAtom);
 if (bond == null) return false;
-this.vwr.highlightBond (bond.index, true);
+this.vwr.highlightBond (bond.index, this.closestAtom[0], x, y);
 return true;
 }, "~N,~N,JU.BS");
 Clazz.overrideMethod (c$, "checkObjectClicked", 
 function (x, y, modifiers, bsVisible, drawPicking) {
 var pt =  new JU.P3 ();
-var bond = this.findPickedBond (x, y, bsVisible, pt);
+var bond = this.findPickedBond (x, y, bsVisible, pt, this.closestAtom);
 if (bond == null) return null;
 var modelIndex = bond.atom1.mi;
 var info = bond.getIdentity ();
@@ -132,11 +134,11 @@ map.put ("modelIndex", Integer.$valueOf (modelIndex));
 map.put ("model", this.vwr.getModelNumberDotted (modelIndex));
 map.put ("type", "bond");
 map.put ("info", info);
-this.vwr.setStatusAtomPicked (-3, "[\"bond\",\"" + bond.getIdentity () + "\"," + pt.x + "," + pt.y + "," + pt.z + "]", map);
+this.vwr.setStatusAtomPicked (-3, "[\"bond\",\"" + bond.getIdentity () + "\"," + pt.x + "," + pt.y + "," + pt.z + "]", map, false);
 return map;
 }, "~N,~N,~N,JU.BS,~B");
 Clazz.defineMethod (c$, "findPickedBond", 
- function (x, y, bsVisible, pt) {
+ function (x, y, bsVisible, pt, closestAtom) {
 var dmin2 = 100;
 if (this.vwr.gdata.isAntialiased ()) {
 x <<= 1;
@@ -153,15 +155,17 @@ var atom2 = bond.atom2;
 if (!atom1.checkVisible () || !atom2.checkVisible ()) continue;
 v.ave (atom1, atom2);
 var d2 = this.coordinateInRange (x, y, v, dmin2, this.ptXY);
-if (d2 >= 0) {
+if (d2 >= 0 && Math.abs (atom1.sY - atom2.sY) + Math.abs (atom1.sX - atom2.sX) > 40) {
 var f = 1 * (this.ptXY.x - atom1.sX) / (atom2.sX - atom1.sX);
 if (f < 0.4 || f > 0.6) continue;
 dmin2 = d2;
 pickedBond = bond;
+if (closestAtom != null) closestAtom[0] = (f < 0.5 ? atom1.i : atom2.i);
 pt.setT (v);
 }}
 return pickedBond;
-}, "~N,~N,JU.BS,JU.P3");
+}, "~N,~N,JU.BS,JU.P3,~A");
 Clazz.defineStatics (c$,
-"MAX_BOND_CLICK_DISTANCE_SQUARED", 100);
+"MAX_BOND_CLICK_DISTANCE_SQUARED", 100,
+"XY_THREASHOLD", 40);
 });

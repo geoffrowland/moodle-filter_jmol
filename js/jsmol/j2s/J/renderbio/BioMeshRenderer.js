@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.renderbio");
-Clazz.load (["J.api.JmolBioMeshRenderer", "J.render.MeshRenderer", "JU.A4", "$.M3", "$.P3", "$.V3"], "J.renderbio.BioMeshRenderer", ["JU.BS", "J.shape.Mesh", "JU.GData", "$.Logger", "$.Normix"], function () {
+Clazz.load (["J.render.MeshRenderer", "JU.A4", "$.M3", "$.P3", "$.V3"], "J.renderbio.BioMeshRenderer", ["JU.BS", "J.shape.Mesh", "JU.GData", "$.Logger", "$.Normix"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.meshes = null;
 this.meshReady = null;
@@ -23,7 +23,7 @@ this.mat = null;
 this.bsTemp = null;
 this.norml = null;
 Clazz.instantialize (this, arguments);
-}, J.renderbio, "BioMeshRenderer", J.render.MeshRenderer, J.api.JmolBioMeshRenderer);
+}, J.renderbio, "BioMeshRenderer", J.render.MeshRenderer);
 Clazz.prepareFields (c$, function () {
 this.norm =  new JU.V3 ();
 this.wing =  new JU.V3 ();
@@ -41,7 +41,7 @@ Clazz.overrideMethod (c$, "render",
 function () {
 return false;
 });
-Clazz.overrideMethod (c$, "initialize", 
+Clazz.defineMethod (c$, "initialize", 
 function (bsr, bioShape, monomerCount) {
 this.bsr = bsr;
 this.bsRenderMesh = JU.BS.newN (monomerCount);
@@ -57,7 +57,7 @@ mesh.normalsTemp = null;
 mesh.initialize (1073741958, null, null);
 }this.renderMesh2 (mesh);
 }, "J.shape.Mesh");
-Clazz.overrideMethod (c$, "setFancyRibbon", 
+Clazz.defineMethod (c$, "setFancyRibbon", 
 function (i) {
 try {
 if ((this.meshes[i] == null || !this.meshReady[i]) && !this.createMesh (i, this.bsr.madBeg, this.bsr.madMid, this.bsr.madEnd, this.bsr.aspectRatio, this.bsr.isNucleic ? 4 : 7)) return;
@@ -74,7 +74,7 @@ throw e;
 }
 }
 }, "~N");
-Clazz.overrideMethod (c$, "setFancyConic", 
+Clazz.defineMethod (c$, "setFancyConic", 
 function (i, tension) {
 try {
 if ((this.meshes[i] == null || !this.meshReady[i]) && !this.createMesh (i, this.bsr.madBeg, this.bsr.madMid, this.bsr.madEnd, 1, tension)) return;
@@ -91,7 +91,7 @@ throw e;
 }
 }
 }, "~N,~N");
-Clazz.overrideMethod (c$, "setFancyArrowHead", 
+Clazz.defineMethod (c$, "setFancyArrowHead", 
 function (i) {
 try {
 this.doCap0 = true;
@@ -256,18 +256,18 @@ throw e;
 }
 }
 }}, "~N,~N");
-Clazz.overrideMethod (c$, "renderMeshes", 
+Clazz.defineMethod (c$, "renderMeshes", 
 function () {
 if (this.bsRenderMesh.isEmpty ()) return;
 this.setColix (this.bsr.colix);
 for (var i = this.bsRenderMesh.nextSetBit (0); i >= 0; i = this.bsRenderMesh.nextSetBit (i + 1)) this.renderBioMesh (this.meshes[i]);
 
 });
-Clazz.overrideMethod (c$, "initBS", 
+Clazz.defineMethod (c$, "initBS", 
 function () {
 this.bsRenderMesh.clearAll ();
 });
-Clazz.overrideMethod (c$, "check", 
+Clazz.defineMethod (c$, "check", 
 function (doCap0, doCap1) {
 this.doCap0 = doCap0;
 this.doCap1 = doCap1;
@@ -275,7 +275,7 @@ return (this.exportType == 1 || this.checkDiameter (this.bsr.diameterBeg) || thi
 }, "~B,~B");
 Clazz.defineMethod (c$, "checkDiameter", 
  function (d) {
-return ( new Boolean ( new Boolean (this.bsr.isHighRes & d > 3).valueOf () || d >= 8).valueOf ());
+return (this.bsr.isHighRes && d > 3 || d >= 8);
 }, "~N");
 Clazz.defineStatics (c$,
 "ABSOLUTE_MIN_MESH_SIZE", 3,

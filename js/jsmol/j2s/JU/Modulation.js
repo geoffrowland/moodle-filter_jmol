@@ -1,5 +1,5 @@
 Clazz.declarePackage ("JU");
-Clazz.load (null, "JU.Modulation", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "JU.Escape", "$.Logger"], function () {
+Clazz.load (null, "JU.Modulation", ["java.lang.Float", "java.util.Hashtable", "JU.AU", "$.PT", "JU.Escape", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.qCoefs = null;
 this.a1 = 0;
@@ -173,6 +173,10 @@ if (i < n - 1) p[i] += (1 - n) * l[n - 2][i] / n;
 }
 JU.Modulation.legendre = l;
 }, "~N");
+Clazz.overrideMethod (c$, "toString", 
+function () {
+return "[Modulation " + this.type + " " + JU.PT.toJSON (null, this.params) + "]";
+});
 Clazz.defineStatics (c$,
 "TWOPI", 6.283185307179586,
 "TYPE_DISP_FOURIER", 'f',

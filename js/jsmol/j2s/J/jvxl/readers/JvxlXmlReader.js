@@ -1,5 +1,5 @@
 Clazz.declarePackage ("J.jvxl.readers");
-Clazz.load (["J.jvxl.readers.VolumeFileReader"], "J.jvxl.readers.JvxlXmlReader", ["java.lang.Float", "$.NullPointerException", "java.util.Hashtable", "JU.AU", "$.BS", "$.CU", "$.Lst", "$.P3", "$.P4", "$.PT", "$.SB", "J.jvxl.data.JvxlCoder", "$.MeshData", "J.jvxl.readers.XmlReader", "J.shapesurface.IsosurfaceMesh", "JU.C", "$.ColorEncoder", "$.Escape", "$.Logger"], function () {
+Clazz.load (["J.jvxl.readers.VolumeFileReader"], "J.jvxl.readers.JvxlXmlReader", ["java.lang.Double", "$.Float", "$.NullPointerException", "java.util.Hashtable", "JU.AU", "$.BS", "$.CU", "$.Lst", "$.P3", "$.P4", "$.PT", "$.SB", "J.jvxl.data.JvxlCoder", "$.MeshData", "J.jvxl.readers.XmlReader", "J.shapesurface.IsosurfaceMesh", "JU.C", "$.ColorEncoder", "$.Escape", "$.Logger"], function () {
 c$ = Clazz.decorateAsClass (function () {
 this.JVXL_VERSION = "2.3";
 this.surfaceDataCount = 0;
@@ -90,8 +90,8 @@ return true;
 }, "~B");
 Clazz.overrideMethod (c$, "readParameters", 
 function () {
-var s = this.xr.getXmlData ("jvxlFileTitle", null, false, false);
-this.jvxlFileHeaderBuffer = JU.SB.newS (s);
+var s = this.xr.getXmlDataLF ("jvxlFileTitle", null, false, false, true);
+this.jvxlFileHeaderBuffer = JU.SB.newS (s == null ? "" : s);
 this.xr.toTag ("jvxlVolumeData");
 var data = this.tempDataXml = this.xr.getXmlData ("jvxlVolumeData", null, true, false);
 this.volumetricOrigin.setT (this.xr.getXmlPoint (data, "origin"));
@@ -105,6 +105,10 @@ JU.Logger.info ("jvxl file surfaces: " + this.nSurfaces);
 JU.Logger.info ("using default edge fraction base and range");
 JU.Logger.info ("using default color fraction base and range");
 this.cJvxlEdgeNaN = String.fromCharCode (this.edgeFractionBase + this.edgeFractionRange);
+});
+Clazz.overrideMethod (c$, "getJVXLCutoff", 
+function () {
+return this.params.cutoff;
 });
 Clazz.defineMethod (c$, "readVector", 
 function (voxelVectorIndex) {
@@ -133,11 +137,17 @@ this.xr.skipTag ("jvxlSurface");
 }, "~N,~B");
 Clazz.defineMethod (c$, "jvxlReadSurfaceInfo", 
 function () {
-var s;
 var data = this.xr.getXmlData ("jvxlSurfaceInfo", null, true, true);
 this.isXLowToHigh = J.jvxl.readers.XmlReader.getXmlAttrib (data, "isXLowToHigh").equals ("true");
-this.jvxlCutoff = this.parseFloatStr (J.jvxl.readers.XmlReader.getXmlAttrib (data, "cutoff"));
-if (!Float.isNaN (this.jvxlCutoff)) JU.Logger.info ("JVXL read: cutoff " + this.jvxlCutoff);
+var s = J.jvxl.readers.XmlReader.getXmlAttrib (data, "cutoff");
+if (s.indexOf (" ") < 0) {
+this.jvxlCutoff = this.parseFloatStr (s);
+if (!Double.isNaN (this.jvxlCutoff)) JU.Logger.info ("JVXL read: cutoff " + this.jvxlCutoff);
+} else {
+this.jvxlCutoffRange = this.parseFloatArrayStr (s);
+this.jvxlCutoff = this.jvxlCutoffRange[0];
+JU.Logger.info ("JVXL read: cutoff " + JU.Escape.eAF (this.jvxlCutoffRange));
+}this.params.cutoff = this.jvxlCutoff;
 var nContourData = this.parseIntStr (J.jvxl.readers.XmlReader.getXmlAttrib (data, "nContourData"));
 this.haveContourData = (nContourData > 0);
 this.params.isContoured = this.jvxlData.isModelConnected = J.jvxl.readers.XmlReader.getXmlAttrib (data, "contoured").equals ("true");
@@ -225,10 +235,20 @@ s = J.jvxl.readers.XmlReader.getXmlAttrib (data, "rendering");
 if (s.length > 0) this.jvxlData.rendering = s;
 this.jvxlData.colorScheme = J.jvxl.readers.XmlReader.getXmlAttrib (data, "colorScheme");
 if (this.jvxlData.colorScheme.length == 0) this.jvxlData.colorScheme = (this.jvxlDataIsColorMapped ? "roygb" : null);
-if (this.jvxlData.thisSet < 0) {
+if (this.jvxlData.thisSet == null) {
 var n = this.parseIntStr (J.jvxl.readers.XmlReader.getXmlAttrib (data, "set"));
-if (n > 0) this.jvxlData.thisSet = n - 1;
-}this.jvxlData.slabValue = this.parseIntStr (J.jvxl.readers.XmlReader.getXmlAttrib (data, "slabValue"));
+if (n > 0) {
+this.jvxlData.thisSet =  new JU.BS ();
+this.jvxlData.thisSet.set (n - 1);
+}var a = J.jvxl.readers.XmlReader.getXmlAttrib (data, "subset");
+if (a != null && a.length > 2) {
+var sets = a.$replace ('[', ' ').$replace (']', ' ').trim ().$plit (" ");
+if (sets.length > 0) {
+this.jvxlData.thisSet =  new JU.BS ();
+for (var i = sets.length; --i >= 0; ) {
+this.jvxlData.thisSet.set (JU.PT.parseInt (sets[i]) - 1);
+}
+}}}this.jvxlData.slabValue = this.parseIntStr (J.jvxl.readers.XmlReader.getXmlAttrib (data, "slabValue"));
 this.jvxlData.isSlabbable = (J.jvxl.readers.XmlReader.getXmlAttrib (data, "slabbable").equalsIgnoreCase ("true"));
 this.jvxlData.diameter = this.parseIntStr (J.jvxl.readers.XmlReader.getXmlAttrib (data, "diameter"));
 if (this.jvxlData.diameter == -2147483648) this.jvxlData.diameter = 0;

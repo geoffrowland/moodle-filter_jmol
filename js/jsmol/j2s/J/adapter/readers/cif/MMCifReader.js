@@ -17,17 +17,21 @@ this.modelIndex = 0;
 this.chainSum = null;
 this.chainAtomCount = null;
 this.isLigandBondBug = false;
+this.mident = null;
 this.requiresSorting = false;
 this.structConnMap = null;
 this.structConnList = "";
 this.doSetBonds = false;
 this.modelStrings = "";
+this.done = false;
 Clazz.instantialize (this, arguments);
 }, J.adapter.readers.cif, "MMCifReader", J.adapter.readers.cif.CifReader);
 Clazz.overrideMethod (c$, "initSubclass", 
 function () {
 this.setIsPDB ();
+this.mident = JU.M4.newM4 (null);
 this.isMMCIF = true;
+if (this.isDSSP1) this.asc.setInfo ("isDSSP1", Boolean.TRUE);
 if (this.htParams.containsKey ("isMutate")) this.asc.setInfo ("isMutate", Boolean.TRUE);
 this.doSetBonds = this.checkFilterKey ("ADDBONDS");
 this.byChain = this.checkFilterKey ("BYCHAIN");
@@ -44,14 +48,18 @@ this.chainAtomCounts =  new java.util.Hashtable ();
 });
 Clazz.overrideMethod (c$, "processSubclassEntry", 
 function () {
-if (this.key0.startsWith ("_pdbx_struct_assembly_gen.") || this.key0.startsWith ("_struct_conn.") || this.key0.startsWith ("_struct_ref_seq_dif.")) this.processSubclassLoopBlock ();
- else if (this.key.equals ("_rna3d") || this.key.equals ("_dssr")) {
+if (this.key0.startsWith ("_pdbx_struct_assembly_gen.") || this.key0.startsWith ("_struct_conn.") || this.key0.startsWith ("_struct_ref_seq_dif.") || this.key0.startsWith ("_struct_conf.") || this.key0.startsWith ("_struct_sheet_range.")) this.processSubclassLoopBlock ();
+ else if (this.key.equals ("_rna3d")) {
 this.addedData = this.data;
 this.addedDataKey = this.key;
+} else if (this.key.equals ("_dssr")) {
+this.dssr = this.vwr.parseJSONMap (this.reader.readLine ());
+this.reader.readLine ();
 }});
 Clazz.overrideMethod (c$, "processSubclassLoopBlock", 
 function () {
-if (this.key0.startsWith ("_pdbx_struct_oper_list.")) return this.processStructOperListBlock ();
+if (this.key0.startsWith ("_struct_ncs_oper.")) return this.processStructOperListBlock (true);
+if (this.key0.startsWith ("_pdbx_struct_oper_list.")) return this.processStructOperListBlock (false);
 if (this.key0.startsWith ("_pdbx_struct_assembly_gen.")) return this.processAssemblyGenBlock ();
 if (this.key0.startsWith ("_struct_ref_seq_dif.")) return this.processSequence ();
 if (this.isCourseGrained) return false;
@@ -126,10 +134,11 @@ if (this.doCheckUnitCell) {
 this.ignoreFileSpaceGroupName = true;
 this.sgName = spaceGroup;
 this.fractionalizeCoordinates (true);
-this.asc.setModelInfoForSet ("biosymmetry", null, this.asc.iSet);
+this.asc.setCurrentModelInfo ("biosymmetry", null);
+this.asc.setCurrentModelInfo ("biosymmetryCount", null);
 this.asc.checkSpecial = false;
 if (this.byChain) return true;
-}}if (this.latticeCells != null && this.latticeCells[0] != 0) this.addJmolScript ("unitcell;");
+}}if (this.latticeCells != null && this.latticeCells[0] != 0) this.addJmolScript ("unitcell;axes on;axes unitcell;");
 if (this.requiresSorting) this.sortAssemblyModels ();
 return true;
 });
@@ -200,7 +209,7 @@ Clazz.defineMethod (c$, "processSequence",
 this.parseLoopParameters (J.adapter.readers.cif.MMCifReader.structRefFields);
 var g1;
 var g3;
-while (this.parser.getData ()) {
+while (this.cifParser.getData ()) {
 if (this.isNull (g1 = this.getField (1).toLowerCase ()) || g1.length != 1 || this.isNull (g3 = this.getField (0))) continue;
 if (this.htGroup1 == null) this.asc.setInfo ("htGroup1", this.htGroup1 =  new java.util.Hashtable ());
 this.htGroup1.put (g3, g1);
@@ -210,11 +219,11 @@ return true;
 Clazz.defineMethod (c$, "processAssemblyGenBlock", 
  function () {
 this.parseLoopParameters (J.adapter.readers.cif.MMCifReader.assemblyFields);
-while (this.parser.getData ()) {
+while (this.cifParser.getData ()) {
 var assem =  new Array (3);
 var count = 0;
 var p;
-var n = this.parser.getColumnCount ();
+var n = this.cifParser.getColumnCount ();
 for (var i = 0; i < n; ++i) {
 switch (p = this.fieldProperty (i)) {
 case 0:
@@ -282,15 +291,15 @@ for (var i = 0; i < opsLeft.length; i++) for (var j = 0; j < opsRight.length; j+
 return sb.toString ().substring (1);
 }, "~S,~S");
 Clazz.defineMethod (c$, "processStructOperListBlock", 
- function () {
-this.parseLoopParametersFor ("_pdbx_struct_oper_list", J.adapter.readers.cif.MMCifReader.operFields);
+ function (isNCS) {
+this.parseLoopParametersFor ((isNCS ? "_struct_ncs_oper" : "_pdbx_struct_oper_list"), isNCS ? J.adapter.readers.cif.MMCifReader.ncsoperFields : J.adapter.readers.cif.MMCifReader.operFields);
 var m =  Clazz.newFloatArray (16, 0);
 m[15] = 1;
-while (this.parser.getData ()) {
+while (this.cifParser.getData ()) {
 var count = 0;
 var id = null;
 var xyz = null;
-var n = this.parser.getColumnCount ();
+var n = this.cifParser.getColumnCount ();
 for (var i = 0; i < n; ++i) {
 var p = this.fieldProperty (i);
 switch (p) {
@@ -308,7 +317,7 @@ m[p] = this.parseFloatStr (this.field);
 }
 }
 if (id != null && (count == 12 || xyz != null && this.symmetry != null)) {
-JU.Logger.info ("assembly operator " + id + " " + xyz);
+JU.Logger.info ((isNCS ? "noncrystallographic symmetry operator " : "assembly operator ") + id + " " + xyz);
 var m4 =  new JU.M4 ();
 if (count != 12) {
 this.symmetry.getMatrixFromString (xyz, m, false, 0);
@@ -316,92 +325,61 @@ m[3] *= this.symmetry.getUnitCellInfoType (0) / 12;
 m[7] *= this.symmetry.getUnitCellInfoType (1) / 12;
 m[11] *= this.symmetry.getUnitCellInfoType (2) / 12;
 }m4.setA (m);
-this.addBiomt (id, m4);
+this.addMatrix (id, m4, isNCS);
 }}
 return true;
-});
-Clazz.defineMethod (c$, "addBiomt", 
-function (id, m4) {
+}, "~B");
+Clazz.defineMethod (c$, "addMatrix", 
+function (id, m4, isNCS) {
+if (isNCS) {
+if (m4.equals (this.mident)) return;
+m4.m33 = 0;
+if (this.lstNCS == null) this.lstNCS =  new JU.Lst ();
+this.lstNCS.addLast (m4);
+} else {
 if (this.htBiomts == null) this.htBiomts =  new java.util.Hashtable ();
 this.htBiomts.put (id, m4);
-}, "~S,JU.M4");
+}}, "~S,JU.M4,~B");
 Clazz.defineMethod (c$, "processChemCompLoopBlock", 
  function () {
 this.parseLoopParameters (J.adapter.readers.cif.MMCifReader.chemCompFields);
 var groupName;
 var hetName;
-while (this.parser.getData ()) if (!this.isNull (groupName = this.getField (0)) && !this.isNull (hetName = this.getField (1))) this.addHetero (groupName, hetName, true);
+while (this.cifParser.getData ()) if (!this.isNull (groupName = this.getField (0)) && !this.isNull (hetName = this.getField (1))) this.addHetero (groupName, hetName, true, true);
 
 return true;
 });
 Clazz.defineMethod (c$, "addHetero", 
-function (groupName, hetName, addNote) {
-if (!this.vwr.getJBR ().isHetero (groupName)) return;
+function (groupName, hetName, doCheck, addNote) {
+if (doCheck && !this.vwr.getJBR ().isHetero (groupName)) return;
 if (this.htHetero == null) this.htHetero =  new java.util.Hashtable ();
-if (this.htHetero.containsKey (groupName)) return;
+if (doCheck && this.htHetero.containsKey (groupName)) return;
 this.htHetero.put (groupName, hetName);
 if (addNote) this.appendLoadNote (groupName + " = " + hetName);
-}, "~S,~S,~B");
+}, "~S,~S,~B,~B");
 Clazz.defineMethod (c$, "processStructConfLoopBlock", 
  function () {
-this.parseLoopParametersFor ("_struct_conf", J.adapter.readers.cif.MMCifReader.structConfFields);
-if (!this.checkAllFieldsPresent (J.adapter.readers.cif.MMCifReader.structConfFields, -1, true)) {
-this.parser.skipLoop (true);
+if (this.ignoreStructure) {
+this.skipLoop (false);
 return false;
-}while (this.parser.getData ()) {
+}this.parseLoopParametersFor ("_struct_conf", J.adapter.readers.cif.MMCifReader.structConfFields);
+if (!this.checkAllFieldsPresent (J.adapter.readers.cif.MMCifReader.structConfFields, -1, true)) {
+this.skipLoop (true);
+return false;
+}while (this.cifParser.getData ()) {
 var structure =  new J.adapter.smarter.Structure (-1, J.c.STR.HELIX, J.c.STR.HELIX, null, 0, 0, null);
-var n = this.parser.getColumnCount ();
-for (var i = 0; i < n; ++i) {
-switch (this.fieldProperty (i)) {
-case -1:
-break;
-case 0:
-if (this.field.startsWith ("TURN")) structure.structureType = structure.substructureType = J.c.STR.TURN;
- else if (!this.field.startsWith ("HELX")) structure.structureType = structure.substructureType = J.c.STR.NONE;
-break;
-case 1:
-structure.startChainStr = this.field;
-structure.startChainID = this.vwr.getChainID (this.field, true);
-break;
-case 2:
-structure.startSequenceNumber = this.parseIntStr (this.field);
-break;
-case 3:
-structure.startInsertionCode = this.firstChar;
-break;
-case 4:
-structure.endChainStr = this.field;
-structure.endChainID = this.vwr.getChainID (this.field, true);
-break;
-case 5:
-structure.endSequenceNumber = this.parseIntStr (this.field);
-break;
-case 9:
-structure.substructureType = J.adapter.smarter.Structure.getHelixType (this.parseIntStr (this.field));
-break;
-case 6:
-structure.endInsertionCode = this.firstChar;
-break;
-case 7:
-structure.structureID = this.field;
-break;
-case 8:
-structure.serialID = this.parseIntStr (this.field);
-break;
-}
-}
-this.asc.addStructure (structure);
+var type = this.getField (0);
+if (type.startsWith ("TURN")) structure.structureType = structure.substructureType = J.c.STR.TURN;
+ else if (!type.startsWith ("HELX")) structure.structureType = structure.substructureType = J.c.STR.NONE;
+ else structure.substructureType = J.adapter.smarter.Structure.getHelixType (this.parseIntStr (this.getField (9)));
+structure.serialID = this.parseIntStr (this.getField (8));
+structure.structureID = this.getField (7);
+this.addStructure (structure);
 }
 return true;
 });
-Clazz.defineMethod (c$, "processStructSheetRangeLoopBlock", 
- function () {
-this.parseLoopParametersFor ("_struct_sheet_range", J.adapter.readers.cif.MMCifReader.structSheetRangeFields);
-if (!this.checkAllFieldsPresent (J.adapter.readers.cif.MMCifReader.structSheetRangeFields, -1, true)) {
-this.parser.skipLoop (true);
-return false;
-}while (this.parser.getData ()) {
-var structure =  new J.adapter.smarter.Structure (-1, J.c.STR.SHEET, J.c.STR.SHEET, this.getField (0), this.parseIntStr (this.getField (7)), 1, null);
+Clazz.defineMethod (c$, "addStructure", 
+ function (structure) {
 structure.startChainID = this.vwr.getChainID (this.getField (1), true);
 structure.startSequenceNumber = this.parseIntStr (this.getField (2));
 structure.startInsertionCode = this.getField (3).charAt (0);
@@ -409,7 +387,18 @@ structure.endChainID = this.vwr.getChainID (this.getField (4), true);
 structure.endSequenceNumber = this.parseIntStr (this.getField (5));
 structure.endInsertionCode = this.getField (6).charAt (0);
 this.asc.addStructure (structure);
-}
+}, "J.adapter.smarter.Structure");
+Clazz.defineMethod (c$, "processStructSheetRangeLoopBlock", 
+ function () {
+if (this.ignoreStructure) {
+this.skipLoop (false);
+return false;
+}this.parseLoopParametersFor ("_struct_sheet_range", J.adapter.readers.cif.MMCifReader.structSheetRangeFields);
+if (!this.checkAllFieldsPresent (J.adapter.readers.cif.MMCifReader.structSheetRangeFields, -1, true)) {
+this.skipLoop (true);
+return false;
+}while (this.cifParser.getData ()) this.addStructure ( new J.adapter.smarter.Structure (-1, J.c.STR.SHEET, J.c.STR.SHEET, this.getField (0), this.parseIntStr (this.getField (7)), 1, null));
+
 return true;
 });
 Clazz.defineMethod (c$, "processStructSiteBlock", 
@@ -419,7 +408,7 @@ var htSite = null;
 this.htSites =  new java.util.Hashtable ();
 var seqNum;
 var resID;
-while (this.parser.getData ()) {
+while (this.cifParser.getData ()) {
 if (this.isNull (seqNum = this.getField (3)) || this.isNull (resID = this.getField (1))) continue;
 var siteID = this.getField (0);
 htSite = this.htSites.get (siteID);
@@ -458,7 +447,6 @@ var sum =  new JU.P3 ();
 var count = 0;
 var bsAtoms =  new JU.BS ();
 var nAtomsTotal = 0;
-var mident = JU.M4.newM4 (null);
 var isBioCourse = (this.isBiomolecule && this.isCourseGrained);
 for (var i = operators.size (); --i >= 0; ) {
 var ops = JU.PT.split (operators.get (i), ",");
@@ -489,8 +477,8 @@ if (!this.isBiomolecule) continue;
 for (var j = 0; j < ops.length; j++) {
 var m = this.getOpMatrix (ops[j]);
 if (m == null) return 0;
-if (m.equals (mident)) {
-biomts.add (0, mident);
+if (m.equals (this.mident)) {
+biomts.add (0, this.mident);
 biomtchains.add (0, chainlist);
 } else {
 biomts.addLast (m);
@@ -534,7 +522,7 @@ return m;
 Clazz.defineMethod (c$, "processStructConnLoopBlock", 
  function () {
 this.parseLoopParametersFor ("_struct_conn", J.adapter.readers.cif.MMCifReader.structConnFields);
-while (this.parser.getData ()) {
+while (this.cifParser.getData ()) {
 var sym1 = this.getField (5);
 var sym2 = this.getField (11);
 if (!sym1.equals (sym2) || !this.isNull (sym1) && !sym1.equals ("1_555")) continue;
@@ -555,7 +543,7 @@ Clazz.defineMethod (c$, "processCompBondLoopBlock",
  function () {
 this.doSetBonds = true;
 this.parseLoopParametersFor ("_chem_comp_bond", J.adapter.readers.cif.MMCifReader.chemCompBondFields);
-while (this.parser.getData ()) {
+while (this.cifParser.getData ()) {
 var comp = this.getField (0);
 var atom1 = this.getField (1);
 var atom2 = this.getField (2);
@@ -623,9 +611,11 @@ this.requiresSorting = true;
 } else {
 this.modelStrings += key;
 }}if (this.iHaveDesiredModel && this.asc.atomSetCount > 0 && !isAssembly) {
-this.parser.skipLoop (false);
+this.done = true;
+if (this.cifParser != null) {
+this.skipLoop (false);
 this.skipping = false;
-this.continuing = true;
+}this.continuing = true;
 return -2147483648;
 }var modelNumberToUse = (this.useFileModelNumbers ? modelNo : ++this.modelIndex);
 this.setHetero ();
@@ -646,6 +636,9 @@ this.asc.setInfo ("hetNames", this.htHetero);
 Clazz.defineStatics (c$,
 "OPER_ID", 12,
 "OPER_XYZ", 13,
+"FAMILY_NCS_CAT", "_struct_ncs_oper.",
+"FAMILY_NCS", "_struct_ncs_oper",
+"ncsoperFields",  Clazz.newArray (-1, ["*_matrix[1][1]", "*_matrix[1][2]", "*_matrix[1][3]", "*_vector[1]", "*_matrix[2][1]", "*_matrix[2][2]", "*_matrix[2][3]", "*_vector[2]", "*_matrix[3][1]", "*_matrix[3][2]", "*_matrix[3][3]", "*_vector[3]", "*_id", "*_symmetry_operation"]),
 "FAMILY_OPER_CAT", "_pdbx_struct_oper_list.",
 "FAMILY_OPER", "_pdbx_struct_oper_list",
 "operFields",  Clazz.newArray (-1, ["*_matrix[1][1]", "*_matrix[1][2]", "*_matrix[1][3]", "*_vector[1]", "*_matrix[2][1]", "*_matrix[2][2]", "*_matrix[2][3]", "*_vector[2]", "*_matrix[3][1]", "*_matrix[3][2]", "*_matrix[3][3]", "*_vector[3]", "*_id", "*_symmetry_operation"]),

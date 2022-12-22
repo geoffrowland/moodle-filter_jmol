@@ -23,6 +23,7 @@ this.bsExcludedTriangles = null;
 this.bsExcludedPlanes = null;
 this.edgeData = null;
 this.excludePartialCubes = true;
+this.isDensityRange = false;
 this.mode = 0;
 this.vertexValues = null;
 this.edgeCount = 0;
@@ -85,6 +86,7 @@ this.colorDensity = params.colorDensity;
 this.isContoured = params.thePlane == null && params.isContoured && !this.colorDensity;
 this.cutoff = params.cutoff;
 this.isCutoffAbsolute = params.isCutoffAbsolute;
+this.isDensityRange = (params.cutoffRange != null);
 this.contourType = params.contourType;
 this.isSquared = params.isSquared;
 this.isXLowToHigh = params.isXLowToHigh;
@@ -218,7 +220,7 @@ this.$isInside = (this.allInside || this.bsVoxels.get (pti));
 break;
 case 2:
 this.$isInside = (this.allInside || this.bsVoxels.get (pti));
-v = this.vertexValues[i] = (this.bsExcludedVertices.get (pti) ? NaN : this.$isInside ? 1 : 0);
+v = this.vertexValues[i] = ((this.isDensityRange ? !this.$isInside : this.bsExcludedVertices.get (pti)) ? NaN : this.$isInside ? 1 : 0);
 break;
 default:
 case 1:

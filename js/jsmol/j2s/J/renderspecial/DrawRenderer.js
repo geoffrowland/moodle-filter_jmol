@@ -32,10 +32,12 @@ function () {
 this.needTranslucent = false;
 this.imageFontScaling = this.vwr.imageFontScaling;
 var draw = this.shape;
-this.isPrecision = true;
 for (var i = draw.meshCount; --i >= 0; ) {
 var mesh = this.dmesh = draw.meshes[i];
-if (mesh.connectedAtoms != null) {
+if (mesh == null) {
+System.out.println ("DrawRenderer mesh is null?");
+return false;
+}if (mesh.connectedAtoms != null) {
 if (mesh.connectedAtoms[0] < 0) continue;
 mesh.vs =  new Array (4);
 mesh.vc = 4;
@@ -86,11 +88,14 @@ return;
 this.renderXyPoint ();
 }}var tension = 5;
 switch (this.drawType) {
+case J.shapespecial.Draw.EnumDrawType.CYLINDER:
+this.allowDashed = false;
 default:
 this.render2b (false);
 return;
 case J.shapespecial.Draw.EnumDrawType.CIRCULARPLANE:
 if (this.dmesh.scale > 0) this.width *= this.dmesh.scale;
+this.allowDashed = false;
 this.render2b (false);
 return;
 case J.shapespecial.Draw.EnumDrawType.CIRCLE:
@@ -134,7 +139,7 @@ break;
 }
 if (this.diameter == 0) this.diameter = 3;
 if (isCurved) {
-this.g3d.addRenderer (553648147);
+this.g3d.addRenderer (553648143);
 for (var i = 0, i0 = 0; i < nPoints - 1; i++) {
 this.g3d.fillHermite (tension, this.diameter, this.diameter, this.diameter, this.p3Screens[i0], this.p3Screens[i], this.p3Screens[i + 1], this.p3Screens[i + (i == nPoints - 2 ? 1 : 2)]);
 i0 = i;
@@ -250,7 +255,7 @@ this.pt0.x *= this.vwr.tm.width / 100;
 this.pt0.y *= this.vwr.tm.height / 100;
 this.diameter = Clazz.floatToInt (this.diameter * this.vwr.getScreenDim () / 100);
 }this.diameter *= f;
-this.pt1i.set (Clazz.floatToInt (this.pt0.x * f), Clazz.floatToInt (this.vwr.tm.height - this.pt0.y * f), Clazz.floatToInt (this.vwr.tm.cameraDistance));
+this.pt1i.set (Clazz.floatToInt (this.pt0.x), Clazz.floatToInt (this.vwr.tm.height - this.pt0.y), Clazz.floatToInt (this.vwr.tm.cameraDistance));
 this.g3d.fillSphereI (this.diameter, this.pt1i);
 });
 Clazz.defineMethod (c$, "renderXyArrow", 
@@ -266,7 +271,7 @@ var zoomDimension = this.vwr.getScreenDim ();
 var scaleFactor = zoomDimension / 20;
 this.pt1.scaleAdd2 (this.dmesh.scale * scaleFactor, this.pt1, this.pt0);
 if (this.diameter == 0) this.diameter = 1;
-if (this.diameter < 0) this.g3d.drawDottedLineBits (this.pt0, this.pt1);
+if (this.diameter < 0) this.g3d.drawDashedLineBits (8, 4, this.pt0, this.pt1);
  else this.g3d.fillCylinderBits (2, this.diameter, this.pt0, this.pt1);
 this.renderArrowHead (this.pt0, this.pt1, 0, true, false, false);
 }, "~N");
@@ -307,7 +312,7 @@ headDiameter = Math.round (this.vTemp.length () * .5);
 this.diameter = Clazz.doubleToInt (headDiameter / 5);
 }if (this.diameter < 1) this.diameter = 1;
 if (headDiameter > 2) this.g3d.fillConeScreen3f (2, headDiameter, this.s1f, this.s2f, isBarb);
-if (withShaft) this.g3d.fillCylinderScreen3I (4, this.diameter, this.s0f, this.s1f, null, null, 0);
+if (withShaft) this.g3d.fillCylinderScreen3I (2, this.diameter, this.s0f, this.s1f, null, null, 0);
 }, "JU.T3,JU.T3,~N,~B,~B,~B");
 Clazz.defineMethod (c$, "getArrowScale", 
  function () {
@@ -330,7 +335,7 @@ for (var i = this.dmesh.pc; --i >= 0; ) {
 if (!this.isPolygonDisplayable (i)) continue;
 var vertexIndexes = this.dmesh.pis[i];
 if (vertexIndexes == null) continue;
-for (var j = (this.dmesh.isTriangleSet ? 3 : vertexIndexes.length); --j >= 0; ) {
+for (var j = (this.dmesh.isDrawPolygon ? 3 : vertexIndexes.length); --j >= 0; ) {
 var k = vertexIndexes[j];
 if (this.bsHandles.get (k)) continue;
 this.bsHandles.set (k);
@@ -343,11 +348,17 @@ break;
 Clazz.defineMethod (c$, "renderInfo", 
  function () {
 if (this.isExport || this.mesh.title == null || this.vwr.getDrawHover () || !this.g3d.setC (this.vwr.cm.colixBackgroundContrast)) return;
+var f0 = this.vwr.shm.getShapePropertyIndex (22, "font", -1);
+var f = f0;
+var lastFID = -1;
+var haveFont = false;
 for (var i = this.dmesh.pc; --i >= 0; ) if (this.isPolygonDisplayable (i)) {
-var size = this.vwr.getFloat (570425356);
-if (size <= 0) size = 14;
-this.vwr.gdata.setFontFid (this.vwr.gdata.getFontFid (size * this.imageFontScaling));
-var s = this.mesh.title[i < this.mesh.title.length ? i : this.mesh.title.length - 1];
+if (!haveFont || this.dmesh.fontID != lastFID) {
+f = this.vwr.shm.getShapePropertyIndex (22, "font", i);
+lastFID = f.fid;
+this.vwr.gdata.setFont (this.imageFontScaling == 1 ? f : this.vwr.gdata.getFont3DFSS (f.fontFace, f.fontStyle, f.fontSize * this.imageFontScaling));
+haveFont = true;
+}var s = this.mesh.title[i < this.mesh.title.length ? i : this.mesh.title.length - 1];
 var pt = 0;
 if (s.length > 1 && s.charAt (0) == '>') {
 pt = this.dmesh.pis[i].length - 1;
@@ -356,6 +367,7 @@ if (this.drawType === J.shapespecial.Draw.EnumDrawType.ARC) this.pt1f.setT (this
 }if (this.drawType !== J.shapespecial.Draw.EnumDrawType.ARC) this.pt1f.setT (this.vertices[this.dmesh.pis[i][pt]]);
 this.tm.transformPtScr (this.pt1f, this.pt1i);
 var offset = Math.round (5 * this.imageFontScaling);
+if (this.dmesh.titleColor != null) this.vwr.gdata.setColor (this.dmesh.titleColor.intValue ());
 this.g3d.drawString (s, null, this.pt1i.x + offset, this.pt1i.y - offset, this.pt1i.z, this.pt1i.z, 0);
 break;
 }
