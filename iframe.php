@@ -321,17 +321,10 @@ if ($controls !== '0') {
         case 'HTML5':
             echo '<option title = "JSmol using HTML5" value = "HTML5" selected = "selected">JSmol</option>';
             echo '<option title = "GLmol using WebGL" value = "WEBGL">GLmol</option>';
-            echo '<option title = "Jmol using Java" value = "SIGNED">Jmol</option>';
         break;
         case 'WEBGL':
             echo '<option title = "JSmol using HTML5" value = "HTML5">JSmol</option>';
             echo '<option title = "GLmol using WebGL" value = "WEBGL"selected = "selected">GLmol</option>';
-            echo '<option title = "Jmol using Java" value = "SIGNED">Jmol</option>';
-        break;
-        case 'SIGNED':
-            echo '<option title = "JSmol using HTML5" value = "HTML5">JSmol</option>';
-            echo '<option title = "GLmol using WebGL" value = "WEBGL">GLmol</option>';
-            echo '<option title = "Jmol using Java" value = "SIGNED" selected = "selected">Jmol</option>';
         break;
     }
     echo '</select>';
@@ -360,8 +353,6 @@ echo 'makeLiveImage: "'.$wwwroot.'/filter/jmol/pix/play_256.png",';
 echo 'coverImage: "'.$coverpath.'",';
 echo 'deferUncover: true,';
 echo 'j2sPath: "'.$wwwroot.'/filter/jmol/js/jsmol/j2s",';
-echo 'jarPath: "'.$wwwroot.'/filter/jmol/js/jsmol/java",';
-echo 'jarFile: "JmolAppletSigned.jar",';
 echo 'disableInitialConsole: true,';
 echo 'disableJ2SLoadMonitor: true,';
 echo 'readyFunction: null,';
@@ -377,26 +368,7 @@ echo 'fixsize();';
 // Write J(S)mol to div.
 echo '$("#jmolstructure").html(Jmol.getAppletHtml("jmolApplet0", Info));';
 echo 'Jmol._alertNoBinary = true;';
-if ($technol === "SIGNED") {
-    if ($bname == 'opr' && $bplatform == 'linux') {
-        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
-        echo ''.get_string('nojavasupport', 'filter_jmol', true).'</div>");';
-    } else if ($bname == 'chrome' && $bversion > 34 && $bplatform == 'linux') {
-        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
-        echo ''.get_string('nojavasupport', 'filter_jmol', true).'</div>");';
-    } else if ($bname == 'chrome' && $bversion > 44 && $bplatform != '!linux') {
-        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
-        echo ''.get_string('nojavasupport', 'filter_jmol', true).'</div>");';
-    } else if ($bname == 'edge') {
-        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
-        echo ''.get_string('nojavasupport', 'filter_jmol', true).'</div>");';
-    } else {
-        echo 'if (!navigator.javaEnabled()){';
-        echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
-        echo ''.get_string('nojava', 'filter_jmol', true).'</div>");';
-        echo '}';
-    }
-} else if ($technol === "HTML5") {
+if ($technol === "HTML5") {
     if ($bname == 'msie' && $bversion < 9) {
         echo '$("#jmolstructure").html("<div style=\"background-color: yellow; height: 100%\">';
         echo ''.get_string('nohtml5', 'filter_jmol', true).'</div>");';
@@ -462,7 +434,6 @@ echo 'x = "_USE="+x;';
 echo 'var str = $(location).attr("href");';
 echo 'var res = str.replace("_USE=HTML5", x);';
 echo 'res = res.replace("_USE=WEBGL", x);';
-echo 'res = res.replace("_USE=SIGNED", x);';
 echo 'res = res.replace("&DEFER=1", "&DEFER=0");';
 echo '$(location).attr("href", res);';
 echo '});';
