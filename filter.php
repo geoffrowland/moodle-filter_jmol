@@ -67,7 +67,7 @@ class filter_jmol extends moodle_text_filter {
         $search = $search1.$search2;
         // Bigscreen loaded here, rather than in child iframe, to support Internet Explorer.
         $newtext = preg_replace_callback($search, 'filter_jmol_replace_callback', $text);
-        if (($newtext !== $text) && !isset($jmolenabled)) {
+        if ((strval(trim($newtext)) !== strval(trim($text))) && !isset($jmolenabled)) {
             $jmolenabled = true;
             $PAGE->requires->js(new moodle_url('/filter/jmol/js/bigscreen.min.js'));
             $newtext = '
